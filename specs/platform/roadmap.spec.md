@@ -170,6 +170,17 @@ edits and old-snapshot retention across republish. Domain race tests and
 evidence, transactional persistence, showroom visibility and public delivery
 remain unimplemented integration requirements.
 
+Inventory access now has a request-local application policy helper requiring
+scoped opaque authentication, the coordinated audit limiter, active confirmed
+dealer membership and the exact SpiceDB read/write/publish permission. Owner
+identity inconsistencies and pending/revoked/foreign memberships fail closed;
+denied/failed decisions audit only a fixed inventory collection target. Controlled
+fake and race tests cover the role/permission matrix, missing scopes, dependency
+failures and audit/limiter behavior. `make check check-contracts` passes and required
+review found no blocker. This helper registers no HTTP route and grants no
+standalone operation: actor-scoped PostgreSQL access, transactional authority
+rechecks/history/audit and generated service composition remain to implement.
+
 Hosted run [39841513337](https://github.com/elsell/pianotechpros/actions/runs/39841513337)
 on `96ec85f` finished Android Gradle and unsigned iOS simulator Xcode jobs
 successfully, alongside real-service acceptance. Its aggregate run is marked

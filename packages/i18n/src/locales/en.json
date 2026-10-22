@@ -133,5 +133,7 @@
   "dealer.discardHelp": "Your unsaved shop profile changes will be lost.",
   "dealer.discard": "Discard changes",
   "dealer.continueEditing": "Continue editing",
-  "staff.invalidExpiry": "Enter a whole number from 1 to 168 hours."
+  "staff.invalidExpiry": "Enter a whole number from 1 to 168 hours.",
+  "errors.draftCleanupFailed": "You are signed out, but local draft cleanup failed. Retry to remove drafts from this browser.",
+  "inventory.retryCleanup": "Retry draft cleanup"
 }

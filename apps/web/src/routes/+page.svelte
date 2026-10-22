@@ -5,6 +5,7 @@
   import { createTranslator, type MessageKey, type SupportedLocale, type Translator } from '@pianotechpros/i18n';
   import { applicationSession, beginApplicationSignIn, clearApplicationSession, refreshApplicationSession, revokeApplicationSession, type ApplicationSession } from '$lib/auth';
 
+  import { clearBrowserInventoryRecovery } from '$lib/inventory/recovery-storage';
   import DealerDirectory from '$lib/dealer/DealerDirectory.svelte';
 
   export let data: { locale: SupportedLocale; config: ClientRuntimeConfig };
@@ -12,6 +13,7 @@
   let ready = false;
   let dealerCredential: ApplicationSession | null = null;
   let generation = 0;
+  let cleanupFailed = false;
   onDestroy(() => { generation++; if (refreshTimer) clearTimeout(refreshTimer); });
   let errorKey: MessageKey | null = null;
   let accessState: SessionAccessState = 'authentication_required';
@@ -124,7 +126,12 @@
     accessState = 'authentication_required';
     profile = null;
     dealerCredential = null;
-    await revokeApplicationSession(data.config);
+    try { await revokeApplicationSession(data.config); cleanupFailed = false; }
+    catch { cleanupFailed = true; errorKey = 'errors.draftCleanupFailed'; }
+  }
+  async function retryDraftCleanup() {
+    try { await clearBrowserInventoryRecovery(); cleanupFailed = false; errorKey = null; }
+    catch { cleanupFailed = true; errorKey = 'errors.draftCleanupFailed'; }
   }
   function rejectDealerSession() {
     if (!dealerCredential || applicationSession()?.token !== dealerCredential.token) return;
@@ -148,5 +155,6 @@
     {#key profile.id}<DealerDirectory accountId={profile.id} apiURL={data.config.apiURL} credential={dealerCredential} {i18n} onSessionRejected={rejectDealerSession} />{/key}
   {/if}
   {#if errorKey}<p role="alert">{i18n.t(errorKey)}</p>{/if}
+  {#if cleanupFailed}<button onclick={retryDraftCleanup}>{i18n.t('inventory.retryCleanup')}</button>{/if}
 </main>
 <style>main{font:16px system-ui;max-width:68rem;margin:5vh auto;padding:2rem}button{padding:.65rem 1rem;border:0;border-radius:.5rem;background:#111;color:white}</style>

@@ -206,3 +206,12 @@ console.log('client API boundary rejects alternate transports and allows only ex
 result = check({ 'apps/web/src/lib/browser-events.ts': protectedBaseline['apps/web/src/lib/browser-events.ts'] + "\nfetch('/unreviewed');\n" });
 assert.notEqual(result.status, 0, 'reviewed browser capability adapter cannot acquire arbitrary transport');
 assert.match(result.stderr, /browser-events/);
+
+result = check({ 'apps/web/src/lib/inventory/recovery-storage.ts': "indexedDB.open('drafts', 1); localStorage.getItem('marker'); new TextEncoder().encode('data'); new TextDecoder().decode(new Uint8Array(12));" });
+assert.equal(result.status, 0, result.stderr);
+for (const source of ["fetch('/private');", "new WebSocket('wss://example.invalid');", "globalThis.fetch('/private');"]) {
+  result = check({ 'apps/web/src/lib/inventory/recovery-storage.ts': source });
+  assert.notEqual(result.status, 0, 'storage capability must not allow network bypass');
+}
+result = check({ 'apps/web/src/lib/unreviewed-storage.ts': "indexedDB.open('drafts', 1);" });
+assert.notEqual(result.status, 0, 'storage globals are scoped to the reviewed adapter');

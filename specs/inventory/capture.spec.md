@@ -130,3 +130,33 @@ Disposal while persistence is pending suppresses the later remote request.
 Storage failures expose only a fixed diagnostic, never raw storage exceptions.
 The in-memory controller remains usable without this capability for tests and
 non-durable consumers; that mode must not be presented as durable autosave.
+
+## Browser recovery storage
+
+Browser checkpoints use IndexedDB and AES-256-GCM with a non-exportable Web Crypto
+key per application user. Each write uses a fresh 96-bit nonce and authenticates
+user identity, account generation and journal key as additional data. IndexedDB
+contains ciphertext, nonce and scope metadata, never plaintext checkpoints.
+Keys reside in the same browser profile: this protects stored payload representation,
+not against malicious same-origin code or a compromised browser profile.
+
+Account handles capture a generation. Clearing browser recovery atomically removes
+all account keys and draft rows; existing handles cannot read or write afterward,
+even when the same user opens a new handle. Crypto work runs outside transactions;
+write transactions recheck generation before committing. Ciphertext tampering and
+storage failures fail closed with fixed diagnostic errors. Browser acceptance must
+use real IndexedDB and Web Crypto, including reload, concurrent handles, tampering,
+account isolation and stale writes after clearing. Native storage remains separate.
+
+Web sign-out removes the session and mounted private state before awaiting draft
+cleanup. A non-sensitive localStorage cleanup marker is written before deletion;
+failed deletion leaves it set. Existing storage handles reject reads/writes while
+it is set, and opening recovery first retries cleanup. The marker is removed only
+after the atomic database clear commits. Cleanup failure shows localized retry
+feedback. Remote session revocation is still attempted independently of cleanup.
+
+The client transport structural gate permits IndexedDB/localStorage and encoding
+primitives only in the reviewed browser recovery-storage adapter. It continues to
+reject fetch, sockets and global transport bypasses there; the adapter is not a
+blanket transport exemption. Gate regressions cover both permitted storage calls
+and forbidden network calls.

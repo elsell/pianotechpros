@@ -252,6 +252,17 @@ a delayed write, and a real journal/controller combination recovers a lost-respo
 attempt after restart without duplicate mutation. The barrier preserves the prior
 uncertain intent and sanitizes storage exceptions. Platform storage, background
 local-draft persistence and account cleanup still need client composition.
+Browser recovery now has a real IndexedDB/Web Crypto adapter: per-user
+non-extractable AES-GCM keys, authenticated scope/generation, fresh nonces and
+transactional invalidation. Web sign-out clears draft keys and ciphertext with a
+persistent cleanup marker and localized retry feedback. Real Chromium acceptance
+passes page reload, account isolation, concurrent account handles, tamper rejection,
+old-handle rejection after sign-out and delayed encryption during pending cleanup.
+The existing dealer browser journey also passes after sign-out integration.
+This supplies browser storage; native protection, capture editor mounting and
+continuous draft checkpoint scheduling remain outstanding. Encryption does not
+protect against malicious code running in the same origin/browser profile.
+
 
 
 

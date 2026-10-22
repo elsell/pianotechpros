@@ -41,6 +41,10 @@ const safeGlobals = new Set([
   'Boolean', 'Date', 'Error', 'JSON', 'Math', 'Number', 'Object', 'Promise', 'Set', 'URL',
   'clearTimeout', 'crypto', 'setTimeout',
 ]);
+const storageGlobals = new Set(['indexedDB', 'localStorage', 'TextEncoder', 'TextDecoder', 'Uint8Array']);
+function safeGlobal(relative, name) {
+  return safeGlobals.has(name) || relative === 'apps/web/src/lib/inventory/recovery-storage.ts' && storageGlobals.has(name);
+}
 const safeWindowMembers = new Set(['location', 'sessionStorage']);
 const browserGlobalReferences = new Set([
   'content', 'document', 'frameElement', 'frames', 'globalThis',
@@ -328,12 +332,12 @@ function inspectSource(relative, file, source, index) {
       const rootNode = rootIdentifierNode(node.expression);
       const rootName = rootNode?.text;
       if (rootNode && ['globalThis', 'navigator', 'self'].includes(rootName) && !isLexicallyBound(rootNode)) violation = true;
-      else if (rootNode && rootName !== 'window' && !isLexicallyBound(rootNode) && !safeGlobals.has(rootName)) violation = true;
+      else if (rootNode && rootName !== 'window' && !isLexicallyBound(rootNode) && !safeGlobal(relative, rootName)) violation = true;
     }
     if (ts.isNewExpression(node)) {
       const rootNode = rootIdentifierNode(node.expression);
       const rootName = rootNode?.text;
-      if (rootNode && !isLexicallyBound(rootNode) && !safeGlobals.has(rootName)) violation = true;
+      if (rootNode && !isLexicallyBound(rootNode) && !safeGlobal(relative, rootName)) violation = true;
     }
     ts.forEachChild(node, visit);
   }

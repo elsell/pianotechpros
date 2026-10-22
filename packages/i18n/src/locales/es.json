@@ -133,5 +133,7 @@
   "dealer.discardHelp": "Se perderán los cambios no guardados del perfil de la tienda.",
   "dealer.discard": "Descartar cambios",
   "dealer.continueEditing": "Seguir editando",
-  "staff.invalidExpiry": "Introduce un número entero de 1 a 168 horas."
+  "staff.invalidExpiry": "Introduce un número entero de 1 a 168 horas.",
+  "errors.draftCleanupFailed": "Has cerrado sesión, pero no se pudieron eliminar los borradores locales. Reintenta eliminarlos de este navegador.",
+  "inventory.retryCleanup": "Reintentar eliminar borradores"
 }

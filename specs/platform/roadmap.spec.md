@@ -158,6 +158,18 @@ review found no blocker. Atomic
 persistence/audit/history, publication-status updates and voice-proposal merging
 remain prerequisites before exposing these commands.
 
+Publication domain commands now construct an explicit public allowlist and
+defensively copy date, money and ordered photo references. Readiness rejects
+missing facts and foreign/unready photos; private serial/cost/notes/location and
+hidden prices cannot enter the public type. Lifecycle overlays preserve the
+snapshot while changing availability; unpublish/archive hide it and corrections
+never automatically restore visibility. Tests cover private-field serialization,
+mutated inputs/returned views, cross-dealer references, sale with unrelated draft
+edits and old-snapshot retention across republish. Domain race tests and
+`make check check-contracts` pass; required review found no blocker. Trusted media
+evidence, transactional persistence, showroom visibility and public delivery
+remain unimplemented integration requirements.
+
 Hosted run [39841513337](https://github.com/elsell/pianotechpros/actions/runs/39841513337)
 on `96ec85f` finished Android Gradle and unsigned iOS simulator Xcode jobs
 successfully, alongside real-service acceptance. Its aggregate run is marked

@@ -117,3 +117,16 @@ clock. Expired or corrupt data is removed and never returned. This policy does n
 authorize offline mutation queues or replace current server permission checks.
 Platform protected-storage adapters, account sign-out cleanup and write-ahead
 integration before remote saves remain required before enabling autosave.
+
+## Write-ahead save barrier
+
+The editor accepts an optional injected attempt-persistence capability. Protected
+capture composition must provide it using the scoped journal. Before issuing a
+remote mutation, the editor awaits persistence of a copied checkpoint containing
+the exact attempted attributes/revision and current local draft. Persistence
+failure sends no remote request and preserves edits; a newly prepared attempt can
+be corrected, while a previously uncertain attempt retains its original intent.
+Disposal while persistence is pending suppresses the later remote request.
+Storage failures expose only a fixed diagnostic, never raw storage exceptions.
+The in-memory controller remains usable without this capability for tests and
+non-durable consumers; that mode must not be presented as durable autosave.

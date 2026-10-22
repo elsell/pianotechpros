@@ -246,6 +246,13 @@ cover foreign/corrupt/expired data, delayed reads/writes, oversized values and
 retryable deletion failures; restart tests preserve uncertain attempts and typing.
 Platform protection, account cleanup and write-ahead integration are not yet wired,
 so this is not evidence of device/browser durable recovery or autosave acceptance.
+The editor now supports a write-ahead persistence barrier before remote edits.
+Tests prove storage failure prevents dispatch, disposal suppresses dispatch after
+a delayed write, and a real journal/controller combination recovers a lost-response
+attempt after restart without duplicate mutation. The barrier preserves the prior
+uncertain intent and sanitizes storage exceptions. Platform storage, background
+local-draft persistence and account cleanup still need client composition.
+
 
 
 

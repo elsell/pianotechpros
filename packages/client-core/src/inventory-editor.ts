@@ -7,6 +7,7 @@ export interface InventoryEditorState<A,R> {
 export function createInventoryEditor<A,R extends InventoryEditorRecord<A>>(port:{
  initial:R; recovery?:InventoryEditorCheckpoint<A,R>; copy(input:A):A; equal(a:A,b:A):boolean;
  edit(attributes:A,revision:number):Promise<R>;get():Promise<R>;
+ persistAttempt?(checkpoint:InventoryEditorCheckpoint<A,R>):Promise<void>;
  classify(error:unknown):'denied'|'conflict'|'rejected'|'uncertain';
 }){
  const copyRecord=(r:R):R=>({...r,attributes:port.copy(r.attributes)});
@@ -31,22 +32,29 @@ export function createInventoryEditor<A,R extends InventoryEditorRecord<A>>(port
   publish({failure:error,latest:null,conflict:state.conflict||kind==='conflict',uncertain:write?kind==='uncertain':state.uncertain});
  }
  function accept(record:R){pending=null;publish({baseline:copyRecord(record),latest:null,uncertain:false,conflict:false,failure:null});}
- return Object.freeze({
-  snapshot,
-  checkpoint():InventoryEditorCheckpoint<A,R>|null{
+ function checkpoint():InventoryEditorCheckpoint<A,R>|null{
    if(disposed||state.denied||!state.baseline||state.draft===null)return null;
    return {version:1,baseline:copyRecord(state.baseline),draft:port.copy(state.draft),pending:pending?{attributes:port.copy(pending.attributes),revision:pending.revision}:null,conflict:state.conflict};
-  },
+  }
+ return Object.freeze({
+  snapshot,
+  checkpoint,
   subscribe(listener:(s:InventoryEditorState<A,R>)=>void){if(disposed){listener(snapshot());return ()=>{};}listeners.add(listener);listener(snapshot());return ()=>{listeners.delete(listener);};},
   change(input:A){if(disposed||state.denied||!state.baseline)return;publish({draft:port.copy(input),failure:null});},
   async save(){
    if(disposed||state.denied||state.busy||state.conflict||!state.baseline||state.draft===null||(!state.dirty&&!pending))return;
-   pending??={attributes:port.copy(state.draft),revision:state.baseline.revision};const attempt=pending;
+   const previouslyPending=pending!==null;
+   pending??={attributes:port.copy(state.draft),revision:state.baseline.revision};const attempt=pending;let sent=false;
    publish({busy:true,failure:null});
-   try{const result=await port.edit(port.copy(attempt.attributes),attempt.revision);if(disposed||state.denied)return;if(!valid(result,attempt.revision+1)||result.revision!==attempt.revision+1)throw new Error('invalid_inventory_revision');
+   try{
+    if(port.persistAttempt){const saved=checkpoint();if(!saved)return;await port.persistAttempt(saved);if(disposed||state.denied)return;}
+    sent=true;const result=await port.edit(port.copy(attempt.attributes),attempt.revision);if(disposed||state.denied)return;if(!valid(result,attempt.revision+1)||result.revision!==attempt.revision+1)throw new Error('invalid_inventory_revision');
     // Preserve subsequent typing; when unchanged locally adopt server normalization.
     const unchanged=state.draft!==null&&port.equal(state.draft,attempt.attributes);if(unchanged)publish({draft:port.copy(result.attributes)});accept(result);
-   }catch(error){if(!disposed)failure(error,true);}finally{publish({busy:false});}
+   }catch(error){if(!disposed){
+    if(sent)failure(error,true);
+    else {if(!previouslyPending)pending=null;publish({failure:new Error('inventory_recovery_unavailable')});}
+   }}finally{publish({busy:false});}
   },
   async recover(){
    if(disposed||state.denied||state.busy||!state.baseline||(!state.conflict&&!state.uncertain))return;

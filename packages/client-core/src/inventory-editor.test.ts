@@ -54,3 +54,41 @@ test('checkpoints exclude transient errors and reject foreign identity',()=>{
  assert.equal(isInventoryEditorCheckpoint(saved,{dealerID:'shop',recordID:'piano'},attrs,record),true);assert.equal(isInventoryEditorCheckpoint(saved,{dealerID:'other',recordID:'piano'},attrs,record),false);
  const foreign={...saved,baseline:{...saved.baseline,id:'other'}};assert.throws(()=>fixture(foreign));f.c.dispose();assert.equal(f.c.checkpoint(),null);
 });
+
+test('write-ahead storage must finish before remote edit and retains typing while waiting',async()=>{
+ let release!:()=>void;let persisted:InventoryEditorCheckpoint<typeof initial.attributes,typeof initial>|null=null;let calls=0;
+ const c=createInventoryEditor({initial,copy:(a:typeof initial.attributes)=>structuredClone(a),equal:(a,b)=>JSON.stringify(a)===JSON.stringify(b),classify:()=> 'uncertain' as const,
+  persistAttempt:async checkpoint=>{persisted=checkpoint;await new Promise<void>(resolve=>{release=resolve;});},get:async()=>initial,
+  edit:async(attributes,revision)=>{calls++;return {...initial,revision:revision+1,attributes};},
+ });
+ c.change({title:'Attempt',price:{minor:200}});const saving=c.save();assert.equal(calls,0);assert.equal((persisted as InventoryEditorCheckpoint<typeof initial.attributes,typeof initial>|null)?.pending?.attributes.title,'Attempt');c.change({title:'Later typing',price:{minor:300}});release();await saving;assert.equal(calls,1);assert.equal(c.snapshot().draft?.title,'Later typing');
+});
+test('storage failure prevents remote mutation and releases a new unsent attempt',async()=>{
+ let fail=true;let calls=0;
+ const c=createInventoryEditor({initial,copy:(a:typeof initial.attributes)=>structuredClone(a),equal:(a,b)=>JSON.stringify(a)===JSON.stringify(b),classify:()=> 'uncertain' as const,
+  persistAttempt:async()=>{if(fail)throw Error('PRIVATE-STORAGE-DETAIL');},get:async()=>initial,
+  edit:async(attributes,revision)=>{calls++;return {...initial,revision:revision+1,attributes};},
+ });
+ c.change({title:'First',price:{minor:200}});await c.save();assert.equal(calls,0);assert.equal(c.snapshot().uncertain,false);assert.ok(!String(c.snapshot().failure).includes('PRIVATE-STORAGE-DETAIL'));assert.equal(c.checkpoint()?.pending,null);
+ c.change({title:'Corrected',price:{minor:300}});fail=false;await c.save();assert.equal(c.snapshot().baseline?.attributes.title,'Corrected');assert.equal(calls,1);
+});
+test('disposing during write-ahead persistence prevents a later remote request',async()=>{
+ let release!:()=>void;let calls=0;
+ const c=createInventoryEditor({initial,copy:(a:typeof initial.attributes)=>structuredClone(a),equal:(a,b)=>JSON.stringify(a)===JSON.stringify(b),classify:()=> 'uncertain' as const,
+  persistAttempt:async()=>{await new Promise<void>(resolve=>{release=resolve;});},get:async()=>initial,
+  edit:async(attributes,revision)=>{calls++;return {...initial,revision:revision+1,attributes};},
+ });c.change({title:'Private',price:{minor:200}});const saving=c.save();c.dispose();release();await saving;assert.equal(calls,0);assert.equal(c.snapshot().draft,null);
+});
+
+test('scoped journal restores a lost-response attempt after editor restart',async()=>{
+ const {createInventoryRecoveryJournal}=await import('./inventory-recovery.js');
+ let stored:string|null=null;let remote=structuredClone(initial);let requests=0;
+ const attributes=(v:unknown):v is typeof initial.attributes=>!!v&&typeof v==='object'&&'title'in v&&typeof v.title==='string'&&'price'in v&&!!v.price&&typeof v.price==='object'&&'minor'in v.price&&Number.isSafeInteger(v.price.minor);
+ const record=(v:unknown):v is typeof initial=>!!v&&typeof v==='object'&&'attributes'in v&&attributes(v.attributes);
+ const scope={userID:'user',dealerID:'shop',recordID:'piano'};
+ const journal=createInventoryRecoveryJournal({scope,now:()=>1000,validate:(v:unknown):v is InventoryEditorCheckpoint<typeof initial.attributes,typeof initial>=>isInventoryEditorCheckpoint(v,scope,attributes,record),storage:{read:async()=>stored,write:async(_key,value)=>{stored=value;},remove:async()=>{stored=null;}}});
+ const port={initial,copy:(a:typeof initial.attributes)=>structuredClone(a),equal:(a:typeof initial.attributes,b:typeof initial.attributes)=>JSON.stringify(a)===JSON.stringify(b),classify:()=> 'uncertain' as const,persistAttempt:journal.save,get:async()=>remote,
+ edit:async(a:typeof initial.attributes,revision:number)=>{requests++;const checkpoint=await journal.load();assert.deepEqual(checkpoint?.pending,{attributes:a,revision});remote={...initial,revision:revision+1,attributes:structuredClone(a)};throw Error('response lost');}};
+ const first=createInventoryEditor(port);first.change({title:'Persisted intent',price:{minor:200}});await first.save();first.dispose();const recovery=await journal.load();assert.ok(recovery);
+ const second=createInventoryEditor({...port,recovery});assert.equal(requests,1);assert.equal(second.snapshot().uncertain,true);await second.recover();assert.equal(second.snapshot().baseline?.revision,2);assert.equal(second.snapshot().uncertain,false);assert.equal(requests,1);
+});

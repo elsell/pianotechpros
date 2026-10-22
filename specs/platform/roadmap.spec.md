@@ -1,6 +1,16 @@
 # Platform roadmap
 
-## Current milestone: public scaffold
+## Current milestone: feature-complete product
+
+The user clarified that scaffold completion does not satisfy the request.
+`product-parity.spec.md` records the audited legacy baseline and the completion
+matrix. All product rows remain open. Sequence work through dealer authorization,
+inventory/drafts/photos, publication/lifecycle/QR, voice, showroom/inquiries and
+customer/technician profile parity; resolve security findings and collect real
+web/native interaction evidence throughout. Signing and production cutover alone
+remain deferred by user instruction.
+
+## Completed foundation: public scaffold
 
 Fresh Go API, SvelteKit web and Expo iOS/Android foundation generated from Make
 App, with authentication, authorization, audit and generated contracts. Existing

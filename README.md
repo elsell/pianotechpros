@@ -9,6 +9,11 @@ dictation and showroom workflows are specified but not implemented yet.
 The existing application continues running independently; this repository has no
 deployment connection to it.
 
+The delivery target is a **feature-complete web, iOS and Android rebuild**.
+The foundation is complete; product implementation is in progress. The
+[legacy parity matrix](specs/platform/product-parity.spec.md) tracks the required
+features and the evidence needed before claiming completion.
+
 ## Start locally
 
 Install Go 1.25.13, Node 22.17.0, pnpm 11.0.7, Python 3, Make, Git and Docker

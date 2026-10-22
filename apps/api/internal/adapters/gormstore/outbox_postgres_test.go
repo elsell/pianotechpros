@@ -1,0 +1,591 @@
+package gormstore
+
+import (
+	"context"
+	"errors"
+	"flag"
+	"sync"
+	"testing"
+	"time"
+
+	"github.com/elsell/pianotechpros/apps/api/internal/domain/audit"
+	"github.com/elsell/pianotechpros/apps/api/internal/domain/identity"
+	"github.com/elsell/pianotechpros/apps/api/internal/ports"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+)
+
+var postgresTestDSN = flag.String("database-dsn", "", "PostgreSQL integration test DSN")
+
+func TestConcurrentFirstIdentityExchangeIsIdempotent(t *testing.T) {
+	if *postgresTestDSN == "" {
+		t.Skip("-database-dsn is required for PostgreSQL integration")
+	}
+	store, err := Open("postgres", *postgresTestDSN)
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now().UTC()
+	claims := ports.Claims{Issuer: "https://concurrent.example/" + newTestID(), Subject: "subject", Email: newTestID() + "@example.com", EmailVerified: true}
+	userID := identity.UserID(claims.Issuer, claims.Subject)
+	const workers = 8
+	errorsByWorker := make([]error, workers)
+	var wait sync.WaitGroup
+	for i := 0; i < workers; i++ {
+		wait.Add(1)
+		go func(index int) {
+			defer wait.Done()
+			provisioned := audit.Event{ID: newTestID(), OwnerUserID: userID, ActorUserID: userID, Action: audit.UserProvisioned, TargetType: "user", TargetID: userID, Outcome: audit.Succeeded, CorrelationID: newTestID(), OccurredAt: now}
+			profile := provisioned
+			profile.ID, profile.Action = newTestID(), audit.UserProfileSynchronized
+			_, errorsByWorker[index] = store.ResolveOrCreate(context.Background(), claims, provisioned, profile, audit.Event{}, true)
+		}(i)
+	}
+	wait.Wait()
+	for index, err := range errorsByWorker {
+		if err != nil {
+			t.Fatalf("concurrent exchange %d failed: %v", index, err)
+		}
+	}
+	var users, identities, audits int64
+	if err := store.DB.Model(&userModel{}).Where("id = ?", userID).Count(&users).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := store.DB.Model(&identityModel{}).Where("issuer = ? AND subject = ?", claims.Issuer, claims.Subject).Count(&identities).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := store.DB.Model(&auditEventModel{}).Where("owner_user_id = ? AND action = ?", userID, audit.UserProvisioned).Count(&audits).Error; err != nil {
+		t.Fatal(err)
+	}
+	if users != 1 || identities != 1 || audits != 1 {
+		t.Fatalf("concurrent exchange duplicated state: users=%d identities=%d audits=%d", users, identities, audits)
+	}
+}
+
+func newTestID() string { return uuid.NewString() }
+
+func TestDeadLettersAreOwnerScopedAndRequeuedWithAudit(t *testing.T) {
+	if *postgresTestDSN == "" {
+		t.Skip("-database-dsn is required for PostgreSQL integration")
+	}
+	store, err := Open("postgres", *postgresTestDSN)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := context.Background()
+	tx := store.DB.WithContext(ctx).Begin()
+	if tx.Error != nil {
+		t.Fatal(tx.Error)
+	}
+	t.Cleanup(func() { _ = tx.Rollback().Error })
+	now := time.Now().UTC()
+	for _, id := range []string{"dead-owner", "dead-subject", "dead-other"} {
+		if err := tx.Create(&userModel{ID: id, Status: identity.StatusActive, CreatedAt: now, UpdatedAt: now}).Error; err != nil {
+			t.Fatal(err)
+		}
+	}
+	deadAt := now
+	row := authorizationOutboxModel{ID: "dead-change", ResourceType: "resource", ResourceID: "example/id", Relation: "viewer", SubjectType: "user", SubjectID: "dead-subject", OwnerUserID: "dead-owner", ActorUserID: "dead-owner", Operation: ports.AuthorizationTouch, Attempts: 5, FailureCode: "dependency_failure", DeadLetteredAt: &deadAt, CreatedAt: now}
+	if err := tx.Create(&row).Error; err != nil {
+		t.Fatal(err)
+	}
+	txStore := &Store{DB: tx}
+	request := ports.PageRequest{Limit: 10, Snapshot: now.Add(time.Second)}
+	visible, err := txStore.ListAuthorizationDeadLetters(ctx, "dead-owner", request)
+	if err != nil || len(visible.Items) != 1 || visible.Items[0].ID != row.ID {
+		t.Fatalf("owner did not see dead letter: %+v %v", visible, err)
+	}
+	hidden, err := txStore.ListAuthorizationDeadLetters(ctx, "dead-other", request)
+	if err != nil || len(hidden.Items) != 0 {
+		t.Fatalf("dead letter leaked cross-user: %+v %v", hidden, err)
+	}
+	subjectHidden, err := txStore.ListAuthorizationDeadLetters(ctx, "dead-subject", request)
+	if err != nil || len(subjectHidden.Items) != 0 {
+		t.Fatalf("dead letter leaked to relationship subject: %+v %v", subjectHidden, err)
+	}
+	event := audit.Event{ID: "dead-requeue-event", OwnerUserID: "dead-owner", ActorUserID: "dead-owner", Action: audit.AuthorizationDeadLetterRequeued, TargetType: "authorization_change", TargetID: row.ID, Outcome: audit.Succeeded, CorrelationID: "request", OccurredAt: now}
+	wrongEvent := event
+	wrongEvent.ID, wrongEvent.OwnerUserID, wrongEvent.ActorUserID = "wrong-requeue-event", "dead-other", "dead-other"
+	if _, err := txStore.RequeueAuthorizationDeadLetter(ctx, row.ID, "dead-other", "worker-other", time.Minute, wrongEvent); !errors.Is(err, ports.ErrNotFound) {
+		t.Fatalf("cross-user requeue returned %v", err)
+	}
+	wrongEvent.ID, wrongEvent.OwnerUserID, wrongEvent.ActorUserID = "subject-requeue-event", "dead-subject", "dead-subject"
+	if _, err := txStore.RequeueAuthorizationDeadLetter(ctx, row.ID, "dead-subject", "worker-subject", time.Minute, wrongEvent); !errors.Is(err, ports.ErrNotFound) {
+		t.Fatalf("relationship subject requeue returned %v", err)
+	}
+	claimed, err := txStore.RequeueAuthorizationDeadLetter(ctx, row.ID, "dead-owner", "worker-owner", time.Minute, event)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if claimed.ID != row.ID || claimed.LockedBy != "worker-owner" || claimed.LockedUntil.IsZero() {
+		t.Fatalf("requeued change was not atomically claimed: %+v", claimed)
+	}
+	var recovered authorizationOutboxModel
+	if err := tx.Where("id = ?", row.ID).First(&recovered).Error; err != nil {
+		t.Fatal(err)
+	}
+	if recovered.DeadLetteredAt != nil || recovered.Attempts != 0 || recovered.FailureCode != "" || recovered.LockedBy != "worker-owner" || recovered.LockedUntil == nil {
+		t.Fatalf("dead-letter state not cleared: %+v", recovered)
+	}
+	var auditCount int64
+	if err := tx.Model(&auditEventModel{}).Where("id = ?", event.ID).Count(&auditCount).Error; err != nil || auditCount != 1 {
+		t.Fatalf("requeue audit missing: count=%d err=%v", auditCount, err)
+	}
+}
+
+func TestAccountDeactivationAtomicallyRevokesSessionsAndAudits(t *testing.T) {
+	if *postgresTestDSN == "" {
+		t.Skip("-database-dsn is required for PostgreSQL integration")
+	}
+	store, err := Open("postgres", *postgresTestDSN)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := context.Background()
+	tx := store.DB.WithContext(ctx).Begin()
+	if tx.Error != nil {
+		t.Fatal(tx.Error)
+	}
+	t.Cleanup(func() { _ = tx.Rollback().Error })
+	txStore := &Store{DB: tx}
+	now := time.Now().UTC()
+	if err := tx.Create(&userModel{ID: "deactivate-user", Status: identity.StatusActive, CreatedAt: now, UpdatedAt: now}).Error; err != nil {
+		t.Fatal(err)
+	}
+	tokenHash := make([]byte, 32)
+	tokenHash[0] = 1
+	createdEvent := audit.Event{ID: "deactivate-session-created", OwnerUserID: "deactivate-user", ActorUserID: "deactivate-user", Action: audit.SessionCreated, TargetType: "user", TargetID: "deactivate-user", Outcome: audit.Succeeded, CorrelationID: "request", OccurredAt: now}
+	absoluteExpiresAt := now.Add(90 * time.Minute)
+	if err := txStore.SaveSession(ctx, ports.SessionRecord{TokenHash: tokenHash, IdentityTokenHash: make([]byte, 32), UserID: "deactivate-user", Scopes: []string{"api:user"}, ExpiresAt: now.Add(time.Hour), AbsoluteExpiresAt: absoluteExpiresAt}, createdEvent); err != nil {
+		t.Fatal(err)
+	}
+	rotatedHash := make([]byte, 32)
+	rotatedHash[0] = 2
+	revokedEvent := audit.Event{ID: "rotate-session-revoked", OwnerUserID: "deactivate-user", ActorUserID: "deactivate-user", Action: audit.SessionRevoked, TargetType: "user", TargetID: "deactivate-user", Outcome: audit.Succeeded, CorrelationID: "request", OccurredAt: now}
+	rotatedEvent := audit.Event{ID: "rotate-session-created", OwnerUserID: "deactivate-user", ActorUserID: "deactivate-user", Action: audit.SessionCreated, TargetType: "user", TargetID: "deactivate-user", Outcome: audit.Succeeded, CorrelationID: "request", OccurredAt: now}
+	actualExpiry, err := txStore.RotateSessionHash(ctx, tokenHash, now, ports.SessionRecord{TokenHash: rotatedHash, UserID: "deactivate-user", Scopes: []string{"api:user"}, ExpiresAt: now.Add(2 * time.Hour)}, revokedEvent, rotatedEvent)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if delta := actualExpiry.Sub(absoluteExpiresAt); delta < -time.Microsecond || delta > time.Microsecond {
+		t.Fatalf("rotation extended the absolute session lifetime: %v", actualExpiry)
+	}
+	if _, err := txStore.ResolveSession(ctx, tokenHash, now); !errors.Is(err, ports.ErrNotFound) {
+		t.Fatalf("rotated credential remained valid: %v", err)
+	}
+	if principal, err := txStore.ResolveSession(ctx, rotatedHash, now); err != nil || principal.UserID != "deactivate-user" {
+		t.Fatalf("replacement credential invalid: %+v %v", principal, err)
+	}
+	event := audit.Event{ID: "deactivate-event", OwnerUserID: "deactivate-user", ActorUserID: "deactivate-user", Action: audit.UserDeactivated, TargetType: "user", TargetID: "deactivate-user", Outcome: audit.Succeeded, CorrelationID: "request", OccurredAt: now}
+	if err := txStore.DisableUser(ctx, "deactivate-user", event); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := txStore.GetUser(ctx, "deactivate-user"); !errors.Is(err, ports.ErrNotFound) {
+		t.Fatalf("disabled user remained active: %v", err)
+	}
+	if _, err := txStore.ResolveSession(ctx, tokenHash, now); !errors.Is(err, ports.ErrNotFound) {
+		t.Fatalf("disabled account session remained usable: %v", err)
+	}
+	var auditCount int64
+	if err := tx.Model(&auditEventModel{}).Where("id = ? AND action = ?", event.ID, audit.UserDeactivated).Count(&auditCount).Error; err != nil || auditCount != 1 {
+		t.Fatalf("deactivation audit missing: count=%d err=%v", auditCount, err)
+	}
+}
+
+func TestAuditEventsAreAppendOnlyAndVisibleOnlyToActorOrOwner(t *testing.T) {
+	if *postgresTestDSN == "" {
+		t.Skip("-database-dsn is required for PostgreSQL integration")
+	}
+	store, err := Open("postgres", *postgresTestDSN)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := context.Background()
+	tx := store.DB.WithContext(ctx).Begin()
+	if tx.Error != nil {
+		t.Fatal(tx.Error)
+	}
+	t.Cleanup(func() { _ = tx.Rollback().Error })
+	for _, id := range []string{"audit-owner", "audit-actor", "audit-stranger"} {
+		if err := tx.Create(&userModel{ID: id, CreatedAt: time.Now(), UpdatedAt: time.Now()}).Error; err != nil {
+			t.Fatal(err)
+		}
+	}
+	event := audit.Event{ID: "audit-event", OwnerUserID: "audit-owner", ActorUserID: "audit-actor", Action: audit.ResourceViewed, TargetType: "habit", TargetID: "habit-id", Outcome: audit.Succeeded, CorrelationID: "request-id", OccurredAt: time.Now().UTC()}
+	txStore := &Store{DB: tx}
+	claims := ports.Claims{Issuer: "https://audit.example", Subject: "new-user"}
+	provisionedID := identity.UserID(claims.Issuer, claims.Subject)
+	wrongProvisioning := audit.Event{ID: "wrong-provision", OwnerUserID: provisionedID, ActorUserID: provisionedID, Action: audit.UserProvisioned, TargetType: "user", TargetID: "other-user", Outcome: audit.Succeeded, CorrelationID: "request", OccurredAt: event.OccurredAt}
+	wrongProfile := wrongProvisioning
+	wrongProfile.Action = audit.UserProfileSynchronized
+	if _, err := txStore.ResolveOrCreate(ctx, claims, wrongProvisioning, wrongProfile, audit.Event{}, true); !errors.Is(err, ports.ErrInvalidArgument) {
+		t.Fatalf("mismatched provisioning audit accepted: %v", err)
+	}
+	provisioning := wrongProvisioning
+	provisioning.ID, provisioning.TargetID = "correct-provision", provisionedID
+	profile := wrongProfile
+	profile.ID, profile.TargetID = "profile-unused", provisionedID
+	if _, err := txStore.ResolveOrCreate(ctx, claims, provisioning, profile, audit.Event{}, true); err != nil {
+		t.Fatal(err)
+	}
+	changedClaims := claims
+	changedClaims.Email, changedClaims.DisplayName = "changed@example.com", "Changed"
+	profile.ID = "profile-changed"
+	if user, err := txStore.ResolveOrCreate(ctx, changedClaims, provisioning, profile, audit.Event{}, true); err != nil || user.Email != changedClaims.Email || user.DisplayName != changedClaims.DisplayName {
+		t.Fatalf("profile synchronization failed: %+v %v", user, err)
+	}
+	otherClaims := changedClaims
+	otherClaims.Subject = "other-subject"
+	otherID := identity.UserID(otherClaims.Issuer, otherClaims.Subject)
+	otherProvisioning := provisioning
+	otherProvisioning.ID, otherProvisioning.OwnerUserID, otherProvisioning.ActorUserID, otherProvisioning.TargetID = "other-provision", otherID, otherID, otherID
+	otherProfile := profile
+	otherProfile.ID, otherProfile.OwnerUserID, otherProfile.ActorUserID, otherProfile.TargetID = "other-profile", otherID, otherID, otherID
+	if _, err := txStore.ResolveOrCreate(ctx, otherClaims, otherProvisioning, otherProfile, audit.Event{}, true); !errors.Is(err, ports.ErrNotFound) {
+		t.Fatalf("one invited email provisioned multiple identities: %v", err)
+	}
+	var profileAuditCount int64
+	if err := tx.Model(&auditEventModel{}).Where("id = ? AND action = ?", profile.ID, audit.UserProfileSynchronized).Count(&profileAuditCount).Error; err != nil || profileAuditCount != 1 {
+		t.Fatalf("profile update audit missing: count=%d err=%v", profileAuditCount, err)
+	}
+	var provisionedCount int64
+	if err := tx.Model(&userModel{}).Where("id = ?", provisionedID).Count(&provisionedCount).Error; err != nil || provisionedCount != 1 {
+		t.Fatalf("successfully audited user provisioning missing: count=%d err=%v", provisionedCount, err)
+	}
+	if err := txStore.AppendAuditEvent(ctx, event); err != nil {
+		t.Fatal(err)
+	}
+	secondEvent := event
+	secondEvent.ID = "audit-event-z"
+	if err := txStore.AppendAuditEvent(ctx, secondEvent); err != nil {
+		t.Fatal(err)
+	}
+	page := ports.PageRequest{Limit: 10, Snapshot: event.OccurredAt.Add(time.Second)}
+	for userID, expected := range map[string]int{"audit-owner": 2, "audit-actor": 2} {
+		visible, err := txStore.ListAuditEvents(ctx, userID, page)
+		if err != nil || len(visible.Events) != expected {
+			t.Fatalf("event not visible to %s: %+v %v", userID, visible, err)
+		}
+	}
+	hidden, err := txStore.ListAuditEvents(ctx, "audit-stranger", page)
+	if err != nil || len(hidden.Events) != 0 {
+		t.Fatalf("event leaked cross-user: %+v %v", hidden, err)
+	}
+	firstPage, err := txStore.ListAuditEvents(ctx, "audit-owner", ports.PageRequest{Limit: 1, Snapshot: page.Snapshot})
+	if err != nil || len(firstPage.Events) != 1 || !firstPage.HasMore {
+		t.Fatalf("first same-time audit page is invalid: %+v %v", firstPage, err)
+	}
+	secondPage, err := txStore.ListAuditEvents(ctx, "audit-owner", ports.PageRequest{Limit: 1, Snapshot: page.Snapshot, AfterID: firstPage.Events[0].ID, AfterCreated: firstPage.Events[0].OccurredAt})
+	if err != nil || len(secondPage.Events) != 1 || secondPage.Events[0].ID == firstPage.Events[0].ID {
+		t.Fatalf("same-time audit traversal skipped or duplicated an event: %+v %v", secondPage, err)
+	}
+	if err := tx.SavePoint("before_update").Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := tx.Model(&auditEventModel{}).Where("id = ?", event.ID).Update("outcome", audit.Denied).Error; err == nil {
+		t.Fatal("database accepted audit update")
+	}
+	if err := tx.RollbackTo("before_update").Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := tx.SavePoint("before_delete").Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := tx.Where("id = ?", event.ID).Delete(&auditEventModel{}).Error; err == nil {
+		t.Fatal("database accepted audit delete")
+	}
+	if err := tx.RollbackTo("before_delete").Error; err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestAuthorizationOutboxLeasesAreOwnedRecoverableAndFIFO(t *testing.T) {
+	if *postgresTestDSN == "" {
+		t.Skip("-database-dsn is required for PostgreSQL integration")
+	}
+	store, err := Open("postgres", *postgresTestDSN)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := context.Background()
+	if err := store.DB.WithContext(ctx).Where("resource_type = ? AND resource_id = ?", "resource", "lease-test").Delete(&authorizationOutboxModel{}).Error; err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		_ = store.DB.WithContext(ctx).Where("resource_type = ? AND resource_id = ?", "resource", "lease-test").Delete(&authorizationOutboxModel{}).Error
+	})
+	now := time.Date(2026, 7, 17, 0, 0, 0, 0, time.UTC)
+	if err := store.DB.WithContext(ctx).Clauses(clause.OnConflict{DoNothing: true}).Create(&userModel{ID: "outbox-user", Status: identity.StatusActive, CreatedAt: now, UpdatedAt: now}).Error; err != nil {
+		t.Fatal(err)
+	}
+	for _, row := range []authorizationOutboxModel{
+		{ID: "a", ResourceType: "resource", ResourceID: "lease-test", Relation: "owner", SubjectType: "user", SubjectID: "outbox-user", OwnerUserID: "outbox-user", ActorUserID: "outbox-user", Operation: ports.AuthorizationTouch, CreatedAt: now},
+		{ID: "b", ResourceType: "resource", ResourceID: "lease-test", Relation: "owner", SubjectType: "user", SubjectID: "outbox-user", OwnerUserID: "outbox-user", ActorUserID: "outbox-user", Operation: ports.AuthorizationDelete, CreatedAt: now},
+	} {
+		if err := store.DB.WithContext(ctx).Create(&row).Error; err != nil {
+			t.Fatal(err)
+		}
+	}
+	first, err := store.ClaimAuthorizationChanges(ctx, "worker-a", 30*time.Second, 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(first) != 1 || first[0].ID != "a" {
+		t.Fatalf("same-resource operations were not FIFO: %+v", first)
+	}
+	second, err := store.ClaimAuthorizationChanges(ctx, "worker-b", 30*time.Second, 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(second) != 0 {
+		t.Fatalf("second worker claimed locked resource stream: %+v", second)
+	}
+	completionEvent := audit.Event{ID: "lease-completed", OwnerUserID: "outbox-user", ActorUserID: "outbox-user", Action: audit.AuthorizationApplied, TargetType: "resource", TargetID: "lease-test", Outcome: audit.Succeeded, CorrelationID: "request", OccurredAt: time.Now().UTC()}
+	if err := store.CompleteAuthorizationChangeWithAudit(ctx, "a", "worker-b", completionEvent); !errors.Is(err, ports.ErrNotFound) {
+		t.Fatalf("non-owner completed lease: %v", err)
+	}
+	if err := store.RenewAuthorizationChange(ctx, "a", "worker-b", 2*time.Minute); !errors.Is(err, ports.ErrNotFound) {
+		t.Fatalf("non-owner renewed lease: %v", err)
+	}
+	if err := store.DB.WithContext(ctx).Model(&authorizationOutboxModel{}).Where("id = ?", "a").Update("locked_until", gorm.Expr("CURRENT_TIMESTAMP - INTERVAL '1 second'")).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := store.CompleteAuthorizationChangeWithAudit(ctx, "a", "worker-a", completionEvent); !errors.Is(err, ports.ErrNotFound) {
+		t.Fatalf("expired owner completed lease: %v", err)
+	}
+	if err := store.RenewAuthorizationChange(ctx, "a", "worker-a", 2*time.Minute); !errors.Is(err, ports.ErrNotFound) {
+		t.Fatalf("expired owner renewed lease: %v", err)
+	}
+	recovered, err := store.ClaimAuthorizationChanges(ctx, "worker-b", 30*time.Second, 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(recovered) != 1 || recovered[0].ID != "a" {
+		t.Fatalf("expired lease was not recovered: %+v", recovered)
+	}
+	if err := store.CompleteAuthorizationChangeWithAudit(ctx, "a", "worker-b", completionEvent); err != nil {
+		t.Fatal(err)
+	}
+	next, err := store.ClaimAuthorizationChanges(ctx, "worker-b", 30*time.Second, 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(next) != 1 || next[0].ID != "b" {
+		t.Fatalf("next FIFO operation unavailable after completion: %+v", next)
+	}
+}
+
+func TestAuthorizationOutboxProducerClockSkewCannotInvertResourceOrder(t *testing.T) {
+	if *postgresTestDSN == "" {
+		t.Skip("-database-dsn is required for PostgreSQL integration")
+	}
+	store, err := Open("postgres", *postgresTestDSN)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := context.Background()
+	resourceID := "clock-skew-" + uuid.NewString()
+	ownerID := "clock-owner-" + uuid.NewString()
+	if err := store.DB.WithContext(ctx).Create(&userModel{ID: ownerID, Status: identity.StatusActive, CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC()}).Error; err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		_ = store.DB.WithContext(ctx).Where("resource_type = ? AND resource_id = ?", "resource", resourceID).Delete(&authorizationOutboxModel{}).Error
+		_ = store.DB.WithContext(ctx).Where("resource_type = ? AND resource_id = ?", "resource", resourceID).Delete(&authorizationResourceLockModel{}).Error
+		_ = store.DB.WithContext(ctx).Where("id = ?", ownerID).Delete(&userModel{}).Error
+	})
+
+	touchTx := store.DB.WithContext(ctx).Begin()
+	if touchTx.Error != nil {
+		t.Fatal(touchTx.Error)
+	}
+	touch := authorizationOutboxModel{ID: uuid.NewString(), ResourceType: "resource", ResourceID: resourceID, Relation: "owner", SubjectType: "user", SubjectID: ownerID, OwnerUserID: ownerID, ActorUserID: ownerID, Operation: ports.AuthorizationTouch, CreatedAt: time.Now().UTC().Add(24 * time.Hour)}
+	if err := touchTx.Create(&touch).Error; err != nil {
+		_ = touchTx.Rollback().Error
+		t.Fatal(err)
+	}
+
+	deleteTx := store.DB.WithContext(ctx).Begin()
+	if deleteTx.Error != nil {
+		_ = touchTx.Rollback().Error
+		t.Fatal(deleteTx.Error)
+	}
+	var deleteBackendPID int
+	if err := deleteTx.Table("pg_stat_activity").Select("pid").Where("pid = pg_backend_pid()").Scan(&deleteBackendPID).Error; err != nil {
+		_ = touchTx.Rollback().Error
+		_ = deleteTx.Rollback().Error
+		t.Fatal(err)
+	}
+	deleteResult := make(chan error, 1)
+	deleteRow := authorizationOutboxModel{ID: uuid.NewString(), ResourceType: "resource", ResourceID: resourceID, Relation: "owner", SubjectType: "user", SubjectID: ownerID, OwnerUserID: ownerID, ActorUserID: ownerID, Operation: ports.AuthorizationDelete, CreatedAt: time.Now().UTC().Add(-24 * time.Hour)}
+	go func() { deleteResult <- deleteTx.Create(&deleteRow).Error }()
+	waitDeadline := time.Now().Add(2 * time.Second)
+	waiting := false
+	for !waiting && time.Now().Before(waitDeadline) {
+		var ungrantedLocks int64
+		if err := store.DB.WithContext(ctx).Table("pg_locks").Where("pid = ? AND granted = ?", deleteBackendPID, false).Count(&ungrantedLocks).Error; err != nil {
+			_ = touchTx.Rollback().Error
+			_ = deleteTx.Rollback().Error
+			t.Fatal(err)
+		}
+		waiting = ungrantedLocks > 0
+		if !waiting {
+			time.Sleep(10 * time.Millisecond)
+		}
+	}
+	if !waiting {
+		_ = touchTx.Rollback().Error
+		_ = <-deleteResult
+		_ = deleteTx.Rollback().Error
+		t.Fatal("later producer was not observed waiting on the same-resource serializer")
+	}
+	if err := touchTx.Commit().Error; err != nil {
+		_ = deleteTx.Rollback().Error
+		t.Fatal(err)
+	}
+	if err := <-deleteResult; err != nil {
+		_ = deleteTx.Rollback().Error
+		t.Fatal(err)
+	}
+	if err := deleteTx.Commit().Error; err != nil {
+		t.Fatal(err)
+	}
+	var rows []authorizationOutboxModel
+	if err := store.DB.WithContext(ctx).Where("resource_type = ? AND resource_id = ?", "resource", resourceID).Order("created_at ASC").Find(&rows).Error; err != nil {
+		t.Fatal(err)
+	}
+	if len(rows) != 2 || rows[0].ID != touch.ID || rows[1].ID != deleteRow.ID || !rows[0].CreatedAt.Before(rows[1].CreatedAt) {
+		t.Fatalf("database did not preserve producer order under clock skew: %+v", rows)
+	}
+}
+
+func TestAuthorizationCompletionAttributesCrossUserRelationshipToOwnerAndActor(t *testing.T) {
+	if *postgresTestDSN == "" {
+		t.Skip("-database-dsn is required for PostgreSQL integration")
+	}
+	store, err := Open("postgres", *postgresTestDSN)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tx := store.DB.Begin()
+	if tx.Error != nil {
+		t.Fatal(tx.Error)
+	}
+	t.Cleanup(func() { _ = tx.Rollback().Error })
+	store = &Store{DB: tx}
+	ctx := context.Background()
+	now := time.Now().UTC().Truncate(time.Microsecond)
+	ownerID, actorID, viewerID := "owner-"+uuid.NewString(), "actor-"+uuid.NewString(), "viewer-"+uuid.NewString()
+	for _, id := range []string{ownerID, actorID, viewerID} {
+		if err := tx.Create(&userModel{ID: id, Email: id + "@example.com", Status: identity.StatusActive, CreatedAt: now, UpdatedAt: now}).Error; err != nil {
+			t.Fatal(err)
+		}
+	}
+	row := authorizationOutboxModel{ID: uuid.NewString(), ResourceType: "resource", ResourceID: uuid.NewString(), Relation: "viewer", SubjectType: "user", SubjectID: viewerID, OwnerUserID: ownerID, ActorUserID: actorID, Operation: ports.AuthorizationTouch, CreatedAt: now}
+	if err := tx.Create(&row).Error; err != nil {
+		t.Fatal(err)
+	}
+	claimed, err := store.ClaimAuthorizationChanges(ctx, "sharing-worker", time.Minute, 10)
+	if err != nil || len(claimed) != 1 || claimed[0].ID != row.ID {
+		t.Fatalf("cross-user relationship was not claimed: changes=%+v err=%v", claimed, err)
+	}
+	event := audit.Event{ID: uuid.NewString(), OwnerUserID: ownerID, ActorUserID: actorID, Action: audit.AuthorizationApplied, TargetType: row.ResourceType, TargetID: row.ResourceID, Outcome: audit.Succeeded, CorrelationID: uuid.NewString(), OccurredAt: now}
+	if err := store.CompleteAuthorizationChangeWithAudit(ctx, row.ID, "sharing-worker", event); err != nil {
+		t.Fatalf("cross-user relationship could not complete: %v", err)
+	}
+	var persisted auditEventModel
+	if err := tx.Where("id = ?", event.ID).First(&persisted).Error; err != nil || persisted.OwnerUserID != ownerID || persisted.ActorUserID != actorID {
+		t.Fatalf("relationship audit attribution drifted: %+v err=%v", persisted, err)
+	}
+}
+
+func TestHealthRejectsBehindOrDirtyMigrationLedger(t *testing.T) {
+	if *postgresTestDSN == "" {
+		t.Skip("-database-dsn is required for PostgreSQL integration")
+	}
+	store, err := Open("postgres", *postgresTestDSN)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := context.Background()
+	var ledger schemaMigrationModel
+	if err := store.DB.WithContext(ctx).Table("schema_migrations").First(&ledger).Error; err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := store.DB.WithContext(ctx).Table("schema_migrations").Where("version IN ?", []uint{2, ledger.Version}).Updates(map[string]any{"version": ledger.Version, "dirty": ledger.Dirty}).Error; err != nil {
+			t.Error(err)
+		}
+	})
+	if err := store.DB.WithContext(ctx).Table("schema_migrations").Where("version = ?", ledger.Version).Updates(map[string]any{"version": 2, "dirty": false}).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := store.Health(ctx); err == nil {
+		t.Fatal("health accepted an outdated migration ledger")
+	}
+	if err := store.DB.WithContext(ctx).Table("schema_migrations").Where("version = ?", 2).Updates(map[string]any{"version": ledger.Version, "dirty": true}).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := store.Health(ctx); err == nil {
+		t.Fatal("health accepted a dirty migration ledger")
+	}
+	if err := store.DB.WithContext(ctx).Table("schema_migrations").Where("version = ?", ledger.Version).Update("dirty", false).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := store.DB.WithContext(ctx).Table("schema_migrations").Create(&schemaMigrationModel{Version: 999, Dirty: false}).Error; err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := store.DB.WithContext(ctx).Table("schema_migrations").Where("version = ?", 999).Delete(&schemaMigrationModel{}).Error; err != nil {
+			t.Error(err)
+		}
+	})
+	if err := store.Health(ctx); err == nil {
+		t.Fatal("health accepted multiple migration ledger rows")
+	}
+}
+
+func TestAuthorizationResourceWritesAreSerializedAcrossConnections(t *testing.T) {
+	if *postgresTestDSN == "" {
+		t.Skip("-database-dsn is required for PostgreSQL integration")
+	}
+	store, err := Open("postgres", *postgresTestDSN)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := context.Background()
+	enteredFirst := make(chan struct{})
+	releaseFirst := make(chan struct{})
+	enteredSecond := make(chan struct{})
+	firstDone := make(chan error, 1)
+	secondDone := make(chan error, 1)
+	go func() {
+		firstDone <- store.WithinResource(ctx, "resource", "serialized-test", func(context.Context) error { close(enteredFirst); <-releaseFirst; return nil })
+	}()
+	select {
+	case <-enteredFirst:
+	case <-time.After(5 * time.Second):
+		t.Fatal("first writer did not acquire serializer")
+	}
+	go func() {
+		secondDone <- store.WithinResource(ctx, "resource", "serialized-test", func(context.Context) error { close(enteredSecond); return nil })
+	}()
+	select {
+	case <-enteredSecond:
+		t.Fatal("second writer entered before first released resource lock")
+	case <-time.After(250 * time.Millisecond):
+	}
+	close(releaseFirst)
+	if err := <-firstDone; err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case <-enteredSecond:
+	case <-time.After(5 * time.Second):
+		t.Fatal("second writer did not enter after release")
+	}
+	if err := <-secondDone; err != nil {
+		t.Fatal(err)
+	}
+}

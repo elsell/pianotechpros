@@ -1,0 +1,96 @@
+package config
+
+import "testing"
+
+func TestRawEnvironmentParsingFailsClosed(t *testing.T) {
+	t.Setenv("PIANOTECHPROS_SCALAR_DOCS_DISABLED", "maybe")
+	if err := validateRawEnvironment(); err == nil {
+		t.Fatal("invalid boolean silently enabled its false fallback")
+	}
+	t.Setenv("PIANOTECHPROS_SCALAR_DOCS_DISABLED", "true")
+	t.Setenv("PIANOTECHPROS_SESSION_TTL_MINUTES", "0")
+	if err := validateRawEnvironment(); err == nil {
+		t.Fatal("out-of-range integer silently selected fallback behavior")
+	}
+}
+func TestInvitedEmailsAreNormalizedDeduplicatedAndValidated(t *testing.T) {
+	t.Setenv("PIANOTECHPROS_ACCOUNT_INVITED_EMAILS", " Invited@Example.COM,invited@example.com ")
+	values := normalizedList("PIANOTECHPROS_ACCOUNT_INVITED_EMAILS")
+	if len(values) != 1 || values[0] != "invited@example.com" {
+		t.Fatalf("unexpected invitations: %v", values)
+	}
+	config := Config{AccountInvitedEmails: []string{"not-an-email"}}
+	if err := config.validate(); err == nil {
+		t.Fatal("invalid invitation email accepted")
+	}
+}
+
+func TestSecureConfigurationRejectsPlaintextBoundaries(t *testing.T) {
+	base := Config{PublicBaseURL: "https://api.example", DatabaseDSN: "postgres://app:secret@db.example/app?sslmode=verify-full", CursorSigningKey: "01234567890123456789012345678901", OIDCIssuer: "https://id.example/dex", OIDCAudiences: []string{"web", "mobile", "docs"}, OIDCDocsClientID: "docs", OIDCDocsRedirectURI: "https://api.example/docs", SpiceDBEndpoint: "spicedb.example:50051", SpiceDBToken: "secret", CORSAllowedOrigins: []string{"https://app.example"}, AuditEventsPerMinute: 120, AuditLimiterPrincipals: 10000, SessionTTLMinutes: 60, SessionAbsoluteTTLMinutes: 720}
+	base.MetricsBearerToken = "01234567890123456789012345678901"
+	if err := base.validate(); err != nil {
+		t.Fatalf("secure config rejected: %v", err)
+	}
+	tests := []struct {
+		name   string
+		change func(*Config)
+	}{
+		{"database TLS disabled", func(c *Config) { c.DatabaseDSN = "postgres://db.example/app?sslmode=disable" }},
+		{"OIDC plaintext", func(c *Config) { c.OIDCIssuer = "http://id.example/dex" }},
+		{"docs client missing audience", func(c *Config) { c.OIDCAudiences = []string{"web", "mobile"} }},
+		{"docs redirect wrong path", func(c *Config) { c.OIDCDocsRedirectURI = "https://api.example/callback" }},
+		{"docs redirect wrong origin", func(c *Config) { c.OIDCDocsRedirectURI = "https://other.example/docs" }},
+		{"docs redirect invalid scheme", func(c *Config) {
+			c.OIDCInsecure = true
+			c.OIDCDocsRedirectURI = "ftp://api.example/docs"
+			c.PublicBaseURL = "ftp://api.example"
+		}},
+		{"SpiceDB missing token", func(c *Config) { c.SpiceDBToken = "" }},
+		{"CORS wildcard", func(c *Config) { c.CORSAllowedOrigins = []string{"*"} }},
+		{"CORS path", func(c *Config) { c.CORSAllowedOrigins = []string{"https://app.example/path"} }},
+		{"invalid trusted proxy", func(c *Config) { c.TrustedProxyCIDRs = []string{"not-a-network"} }},
+		{"audit rate disabled", func(c *Config) { c.AuditEventsPerMinute = 0 }},
+		{"absolute session shorter than rotating session", func(c *Config) { c.SessionAbsoluteTTLMinutes = 59 }},
+		{"plaintext OTLP without explicit insecure mode", func(c *Config) { c.OTLPHTTPEndpoint = "http://collector.example:4318" }},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			candidate := base
+			test.change(&candidate)
+			if err := candidate.validate(); err == nil {
+				t.Fatal("expected configuration rejection")
+			}
+		})
+	}
+}
+
+func TestExplicitLocalInsecureConfiguration(t *testing.T) {
+	config := Config{PublicBaseURL: "http://localhost:8080", DatabaseDSN: "postgres://app:app@localhost/app?sslmode=disable", DatabaseInsecure: true, CursorSigningKey: "01234567890123456789012345678901", OIDCIssuer: "http://localhost:5556/dex", OIDCAudiences: []string{"web", "mobile", "docs"}, OIDCDocsClientID: "docs", OIDCDocsRedirectURI: "http://localhost:8080/docs", OIDCInsecure: true, SpiceDBEndpoint: "localhost:50051", SpiceDBInsecure: true, CORSAllowedOrigins: []string{"http://localhost:5173"}, AuditEventsPerMinute: 120, AuditLimiterPrincipals: 10000, SessionTTLMinutes: 60, SessionAbsoluteTTLMinutes: 720}
+	config.MetricsBearerToken = "01234567890123456789012345678901"
+	if err := config.validate(); err != nil {
+		t.Fatal(err)
+	}
+}
+func TestDisabledScalarDoesNotRequirePhantomDocsClient(t *testing.T) {
+	config := Config{PublicBaseURL: "https://api.example", DatabaseDSN: "postgres://app:secret@db.example/app?sslmode=verify-full", CursorSigningKey: "01234567890123456789012345678901", MetricsBearerToken: "01234567890123456789012345678901", OIDCIssuer: "https://id.example/dex", OIDCAudiences: []string{"web", "mobile"}, ScalarDocsDisabled: true, SpiceDBEndpoint: "spicedb.example:50051", SpiceDBToken: "secret", AuditEventsPerMinute: 120, AuditLimiterPrincipals: 10000, SessionTTLMinutes: 60, SessionAbsoluteTTLMinutes: 720}
+	if err := config.validate(); err != nil {
+		t.Fatalf("docs-disabled production config required phantom Scalar credentials: %v", err)
+	}
+}
+func TestKnownLocalSecretsAreRejectedAtSecureBoundaries(t *testing.T) {
+	config := Config{PublicBaseURL: "https://api.example", DatabaseDSN: "postgres://app:secret@db.example/app?sslmode=verify-full", CursorSigningKey: "local-development-cursor-signing-key-change-me", MetricsBearerToken: "local-development-metrics-token-change-me", OIDCIssuer: "https://id.example/dex", OIDCAudiences: []string{"web"}, ScalarDocsDisabled: true, SpiceDBEndpoint: "spicedb.example:50051", SpiceDBToken: "secret", AuditEventsPerMinute: 120, AuditLimiterPrincipals: 10000, SessionTTLMinutes: 60, SessionAbsoluteTTLMinutes: 720}
+	if err := config.validate(); err == nil {
+		t.Fatal("secure configuration accepted publicly known local credentials")
+	}
+}
+func TestMigrationDatabaseValidationUsesSameTLSBoundary(t *testing.T) {
+	if err := ValidateDatabase("postgres://db.example/app?sslmode=disable", false); err == nil {
+		t.Fatal("migration accepted plaintext database without explicit insecure mode")
+	}
+	if err := ValidateDatabase("postgres://db.example/app?sslmode=verify-full", false); err != nil {
+		t.Fatal(err)
+	}
+	if err := ValidateDatabase("postgres://localhost/app?sslmode=disable", true); err != nil {
+		t.Fatal(err)
+	}
+}

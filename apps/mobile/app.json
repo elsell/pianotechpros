@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "PianoTechPros",
+    "slug": "pianotechpros",
+    "version": "1.0.0",
+    "scheme": "pianotechpros",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0b145a"
+    },
+    "runtimeVersion": { "policy": "appVersion" },
+    "updates": { "enabled": false, "checkAutomatically": "NEVER" },
+    "plugins": ["expo-router", "expo-secure-store", "expo-dev-client"],
+    "ios": {
+      "bundleIdentifier": "com.pianotechpros.pianotechpros",
+      "buildNumber": "1",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.pianotechpros.pianotechpros",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0b145a"
+      }
+    },
+    "web": { "favicon": "./assets/favicon.png" }
+  }
+}

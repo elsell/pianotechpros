@@ -1,0 +1,17 @@
+package dbmigrations
+
+import "embed"
+
+// Files contains the reviewed PostgreSQL migrations applied by cmd/migrate.
+//
+//go:embed *.sql
+var Files embed.FS
+
+//go:embed released-v14.sha256
+var priorReleaseChecksums []byte
+
+// PriorReleaseVersion is the last immutable released migration inventory.
+const PriorReleaseVersion uint = 14
+
+// LatestVersion is the migration version required by API readiness.
+const LatestVersion uint = 17

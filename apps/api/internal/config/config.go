@@ -1,0 +1,301 @@
+package config
+
+import (
+	"errors"
+	"net"
+	"net/mail"
+	"net/url"
+	"os"
+	"strconv"
+	"strings"
+)
+
+type Config struct {
+	HTTPAddr, PublicBaseURL, DatabaseDSN, CursorSigningKey, OIDCIssuer, OIDCBackchannelURL, OIDCDocsClientID, OIDCDocsRedirectURI, SpiceDBEndpoint, SpiceDBToken, AccountProvisioningMode string
+	MetricsBearerToken                                                                                                                                                                    string
+	OTLPHTTPEndpoint, OTelServiceName                                                                                                                                                     string
+	OIDCAudiences                                                                                                                                                                         []string
+	AccountInvitedEmails                                                                                                                                                                  []string
+	InvitationAdminIdentities                                                                                                                                                             []string
+	DatabaseInsecure, OIDCInsecure, SpiceDBInsecure                                                                                                                                       bool
+	ScalarDocsDisabled                                                                                                                                                                    bool
+	AccountSelfDeactivationEnabled                                                                                                                                                        bool
+	OTLPInsecure                                                                                                                                                                          bool
+	CORSAllowedOrigins                                                                                                                                                                    []string
+	TrustedProxyCIDRs                                                                                                                                                                     []string
+	AuditEventsPerMinute, AuditLimiterPrincipals                                                                                                                                          int
+	DatabaseMaxOpenConns, DatabaseMaxIdleConns, DatabaseConnMaxLifetime, DatabaseConnMaxIdleTime                                                                                          int
+	SessionTTLMinutes                                                                                                                                                                     int
+	SessionAbsoluteTTLMinutes                                                                                                                                                             int
+	AuthorizationMaxAttempts                                                                                                                                                              int
+	RequestsPerMinute, RequestLimiterSources                                                                                                                                              int
+}
+
+func Load() (Config, error) {
+	if err := validateRawEnvironment(); err != nil {
+		return Config{}, err
+	}
+	c := Config{
+		HTTPAddr:                       value("PIANOTECHPROS_HTTP_ADDR", ":8080"),
+		PublicBaseURL:                  os.Getenv("PIANOTECHPROS_PUBLIC_BASE_URL"),
+		DatabaseDSN:                    os.Getenv("PIANOTECHPROS_DATABASE_DSN"),
+		DatabaseInsecure:               boolean("PIANOTECHPROS_DATABASE_INSECURE"),
+		CursorSigningKey:               os.Getenv("PIANOTECHPROS_CURSOR_SIGNING_KEY"),
+		MetricsBearerToken:             os.Getenv("PIANOTECHPROS_METRICS_BEARER_TOKEN"),
+		OTLPHTTPEndpoint:               os.Getenv("PIANOTECHPROS_OTEL_EXPORTER_OTLP_ENDPOINT"),
+		OTLPInsecure:                   boolean("PIANOTECHPROS_OTEL_EXPORTER_OTLP_INSECURE"),
+		OTelServiceName:                value("PIANOTECHPROS_OTEL_SERVICE_NAME", "pianotechpros-api"),
+		AccountProvisioningMode:        value("PIANOTECHPROS_ACCOUNT_PROVISIONING_MODE", "open"),
+		AccountInvitedEmails:           normalizedList("PIANOTECHPROS_ACCOUNT_INVITED_EMAILS"),
+		InvitationAdminIdentities:      list("PIANOTECHPROS_INVITATION_ADMIN_IDENTITIES"),
+		OIDCIssuer:                     os.Getenv("PIANOTECHPROS_OIDC_ISSUER"),
+		OIDCBackchannelURL:             os.Getenv("PIANOTECHPROS_OIDC_BACKCHANNEL_URL"),
+		OIDCAudiences:                  list("PIANOTECHPROS_OIDC_AUDIENCES"),
+		OIDCDocsClientID:               os.Getenv("PIANOTECHPROS_OIDC_DOCS_CLIENT_ID"),
+		OIDCDocsRedirectURI:            os.Getenv("PIANOTECHPROS_OIDC_DOCS_REDIRECT_URI"),
+		OIDCInsecure:                   boolean("PIANOTECHPROS_OIDC_INSECURE"),
+		SpiceDBEndpoint:                os.Getenv("PIANOTECHPROS_SPICEDB_ENDPOINT"),
+		SpiceDBToken:                   os.Getenv("PIANOTECHPROS_SPICEDB_TOKEN"),
+		SpiceDBInsecure:                boolean("PIANOTECHPROS_SPICEDB_INSECURE"),
+		CORSAllowedOrigins:             list("PIANOTECHPROS_CORS_ALLOWED_ORIGINS"),
+		TrustedProxyCIDRs:              list("PIANOTECHPROS_TRUSTED_PROXY_CIDRS"),
+		AuditEventsPerMinute:           integer("PIANOTECHPROS_AUDIT_EVENTS_PER_MINUTE", 120),
+		AuditLimiterPrincipals:         integer("PIANOTECHPROS_AUDIT_LIMITER_PRINCIPALS", 10000),
+		ScalarDocsDisabled:             boolean("PIANOTECHPROS_SCALAR_DOCS_DISABLED"),
+		AccountSelfDeactivationEnabled: boolean("PIANOTECHPROS_ACCOUNT_SELF_DEACTIVATION_ENABLED"),
+		DatabaseMaxOpenConns:           integer("PIANOTECHPROS_DATABASE_MAX_OPEN_CONNS", 25),
+		DatabaseMaxIdleConns:           integer("PIANOTECHPROS_DATABASE_MAX_IDLE_CONNS", 10),
+		DatabaseConnMaxLifetime:        integer("PIANOTECHPROS_DATABASE_CONN_MAX_LIFETIME_SECONDS", 1800),
+		DatabaseConnMaxIdleTime:        integer("PIANOTECHPROS_DATABASE_CONN_MAX_IDLE_SECONDS", 300),
+		SessionTTLMinutes:              integer("PIANOTECHPROS_SESSION_TTL_MINUTES", 60),
+		SessionAbsoluteTTLMinutes:      integer("PIANOTECHPROS_SESSION_ABSOLUTE_TTL_MINUTES", 720),
+		AuthorizationMaxAttempts:       integer("PIANOTECHPROS_AUTHORIZATION_MAX_ATTEMPTS", 5),
+		RequestsPerMinute:              integer("PIANOTECHPROS_REQUESTS_PER_MINUTE", 300),
+		RequestLimiterSources:          integer("PIANOTECHPROS_REQUEST_LIMITER_SOURCES", 10000),
+	}
+	if err := c.validate(); err != nil {
+		return Config{}, err
+	}
+	return c, nil
+}
+
+func validateRawEnvironment() error {
+	for _, key := range []string{"PIANOTECHPROS_DATABASE_INSECURE", "PIANOTECHPROS_OIDC_INSECURE", "PIANOTECHPROS_SPICEDB_INSECURE", "PIANOTECHPROS_SCALAR_DOCS_DISABLED", "PIANOTECHPROS_ACCOUNT_SELF_DEACTIVATION_ENABLED", "PIANOTECHPROS_OTEL_EXPORTER_OTLP_INSECURE"} {
+		// pianotechpros-env-inventory: allow-computed validated configuration helper key
+		if raw := os.Getenv(key); raw != "" {
+			if _, err := strconv.ParseBool(raw); err != nil {
+				return errors.New("invalid boolean configuration for " + key)
+			}
+		}
+	}
+	ranges := []struct {
+		key      string
+		min, max int
+	}{
+		{"PIANOTECHPROS_AUDIT_EVENTS_PER_MINUTE", 1, 10000},
+		{"PIANOTECHPROS_AUDIT_LIMITER_PRINCIPALS", 100, 1000000},
+		{"PIANOTECHPROS_DATABASE_MAX_OPEN_CONNS", 1, 100000},
+		{"PIANOTECHPROS_DATABASE_MAX_IDLE_CONNS", 0, 100000},
+		{"PIANOTECHPROS_DATABASE_CONN_MAX_LIFETIME_SECONDS", 1, 86400},
+		{"PIANOTECHPROS_DATABASE_CONN_MAX_IDLE_SECONDS", 1, 86400},
+		{"PIANOTECHPROS_SESSION_TTL_MINUTES", 5, 1440},
+		{"PIANOTECHPROS_SESSION_ABSOLUTE_TTL_MINUTES", 5, 10080},
+		{"PIANOTECHPROS_AUTHORIZATION_MAX_ATTEMPTS", 1, 100},
+		{"PIANOTECHPROS_REQUESTS_PER_MINUTE", 1, 100000},
+		{"PIANOTECHPROS_REQUEST_LIMITER_SOURCES", 100, 1000000},
+	}
+	for _, item := range ranges {
+		// pianotechpros-env-inventory: allow-computed validated configuration helper key
+		raw := os.Getenv(item.key)
+		if raw == "" {
+			continue
+		}
+		value, err := strconv.Atoi(raw)
+		if err != nil || value < item.min || value > item.max {
+			return errors.New("invalid integer configuration for " + item.key)
+		}
+	}
+	return nil
+}
+
+func (c Config) validate() error {
+	if c.PublicBaseURL == "" || c.DatabaseDSN == "" || len(c.CursorSigningKey) < 32 || len(c.MetricsBearerToken) < 32 || c.OIDCIssuer == "" || len(c.OIDCAudiences) == 0 || c.SpiceDBEndpoint == "" {
+		return errors.New("database, OIDC audiences, and SpiceDB configuration is required")
+	}
+	if !c.ScalarDocsDisabled && (c.OIDCDocsClientID == "" || c.OIDCDocsRedirectURI == "") {
+		return errors.New("OIDC docs configuration is required while Scalar documentation is enabled")
+	}
+	localSecrets := c.CursorSigningKey == "local-development-cursor-signing-key-change-me" || c.MetricsBearerToken == "local-development-metrics-token-change-me"
+	if localSecrets && !(c.DatabaseInsecure && c.OIDCInsecure && c.SpiceDBInsecure) {
+		return errors.New("local development signing and metrics credentials cannot be used at a secure boundary")
+	}
+	if c.AuditEventsPerMinute < 1 || c.AuditEventsPerMinute > 10000 || c.AuditLimiterPrincipals < 100 || c.AuditLimiterPrincipals > 1000000 {
+		return errors.New("audit rate limit configuration is out of range")
+	}
+	if c.SessionTTLMinutes != 0 && (c.SessionTTLMinutes < 5 || c.SessionTTLMinutes > 1440) {
+		return errors.New("session TTL must be between 5 and 1440 minutes")
+	}
+	if c.SessionAbsoluteTTLMinutes != 0 && (c.SessionAbsoluteTTLMinutes < c.SessionTTLMinutes || c.SessionAbsoluteTTLMinutes > 10080) {
+		return errors.New("session absolute TTL must be at least the rotating TTL and at most seven days")
+	}
+	if c.AuthorizationMaxAttempts != 0 && (c.AuthorizationMaxAttempts < 1 || c.AuthorizationMaxAttempts > 100) {
+		return errors.New("authorization max attempts is out of range")
+	}
+	if (c.RequestsPerMinute != 0 || c.RequestLimiterSources != 0) && (c.RequestsPerMinute < 1 || c.RequestsPerMinute > 100000 || c.RequestLimiterSources < 100 || c.RequestLimiterSources > 1000000) {
+		return errors.New("request rate limit configuration is out of range")
+	}
+	if c.AccountProvisioningMode != "" && c.AccountProvisioningMode != "open" && c.AccountProvisioningMode != "existing" {
+		return errors.New("account provisioning mode must be open or existing")
+	}
+	for _, email := range c.AccountInvitedEmails {
+		if !validEmail(email) {
+			return errors.New("account invited emails must contain valid normalized addresses")
+		}
+	}
+	for _, configured := range c.InvitationAdminIdentities {
+		separator := strings.LastIndex(configured, "#")
+		if separator < 1 || separator == len(configured)-1 {
+			return errors.New("invitation administrator identities must use issuer#subject")
+		}
+		issuer, err := url.Parse(configured[:separator])
+		if err != nil || issuer.Host == "" || issuer.User != nil || issuer.RawQuery != "" || issuer.Fragment != "" || (issuer.Scheme != "https" && !(c.OIDCInsecure && issuer.Scheme == "http")) {
+			return errors.New("invitation administrator identities must contain a valid issuer and non-empty subject")
+		}
+	}
+	if c.OTLPHTTPEndpoint != "" {
+		endpoint, err := url.Parse(c.OTLPHTTPEndpoint)
+		if err != nil || endpoint.Host == "" || endpoint.User != nil || endpoint.RawQuery != "" || endpoint.Fragment != "" || (endpoint.Scheme != "https" && !(c.OTLPInsecure && endpoint.Scheme == "http")) || c.OTelServiceName == "" {
+			return errors.New("OTLP endpoint must be an absolute HTTPS URL unless OTLP insecure mode is explicit")
+		}
+	}
+	poolConfigured := c.DatabaseMaxOpenConns != 0 || c.DatabaseMaxIdleConns != 0 || c.DatabaseConnMaxLifetime != 0 || c.DatabaseConnMaxIdleTime != 0
+	if poolConfigured && (c.DatabaseMaxOpenConns < 1 || c.DatabaseMaxIdleConns < 0 || c.DatabaseMaxIdleConns > c.DatabaseMaxOpenConns || c.DatabaseConnMaxLifetime < 1 || c.DatabaseConnMaxIdleTime < 1) {
+		return errors.New("database pool configuration is invalid")
+	}
+	if err := ValidateDatabase(c.DatabaseDSN, c.DatabaseInsecure); err != nil {
+		return err
+	}
+	issuer, err := url.Parse(c.OIDCIssuer)
+	if err != nil || issuer.Host == "" || issuer.User != nil || issuer.RawQuery != "" || issuer.Fragment != "" {
+		return errors.New("OIDC issuer must be an absolute URL without credentials, query, or fragment")
+	}
+	if !c.OIDCInsecure && issuer.Scheme != "https" {
+		return errors.New("OIDC issuer must use HTTPS unless OIDC_INSECURE is true")
+	}
+	if c.OIDCInsecure && issuer.Scheme != "http" && issuer.Scheme != "https" {
+		return errors.New("OIDC issuer must use HTTP or HTTPS")
+	}
+	if c.OIDCBackchannelURL != "" {
+		backchannel, err := url.Parse(c.OIDCBackchannelURL)
+		if err != nil || backchannel.Host == "" || backchannel.User != nil || backchannel.RawQuery != "" || backchannel.Fragment != "" || backchannel.Path != issuer.Path {
+			return errors.New("OIDC backchannel URL must be an absolute URL with the same path as the public issuer and without credentials, query, or fragment")
+		}
+		if backchannel.Scheme != "https" && !(c.OIDCInsecure && backchannel.Scheme == "http") {
+			return errors.New("OIDC backchannel URL must use HTTPS unless OIDC_INSECURE is true")
+		}
+	}
+	publicBase, err := url.Parse(c.PublicBaseURL)
+	if err != nil || publicBase.Host == "" || publicBase.User != nil || publicBase.Path != "" || publicBase.RawQuery != "" || publicBase.Fragment != "" || (publicBase.Scheme != "https" && !(c.OIDCInsecure && publicBase.Scheme == "http")) {
+		return errors.New("public API base URL must be a secure origin unless OIDC insecure mode is explicit")
+	}
+	if !c.ScalarDocsDisabled {
+		docsRedirect, err := url.Parse(c.OIDCDocsRedirectURI)
+		if err != nil || docsRedirect.Host == "" || docsRedirect.User != nil || docsRedirect.RawQuery != "" || docsRedirect.Fragment != "" {
+			return errors.New("OIDC docs redirect must be an absolute URL without credentials, query, or fragment")
+		}
+		if docsRedirect.Scheme != "http" && docsRedirect.Scheme != "https" {
+			return errors.New("OIDC docs redirect must use HTTP or HTTPS")
+		}
+		if !c.OIDCInsecure && docsRedirect.Scheme != "https" {
+			return errors.New("OIDC docs redirect must use HTTPS unless OIDC_INSECURE is true")
+		}
+		if docsRedirect.Path != "/docs" || !includes(c.OIDCAudiences, c.OIDCDocsClientID) {
+			return errors.New("OIDC docs redirect must target /docs and its client ID must be an allowed audience")
+		}
+		if publicBase.Scheme != docsRedirect.Scheme || publicBase.Host != docsRedirect.Host {
+			return errors.New("public API base URL must match the OIDC docs redirect origin")
+		}
+	}
+	if !c.SpiceDBInsecure && c.SpiceDBToken == "" {
+		return errors.New("secure SpiceDB requires a preshared token")
+	}
+	for _, origin := range c.CORSAllowedOrigins {
+		parsed, err := url.Parse(origin)
+		if err != nil || parsed.Host == "" || parsed.Path != "" || parsed.RawQuery != "" || parsed.Fragment != "" || (parsed.Scheme != "https" && !(c.OIDCInsecure && parsed.Scheme == "http")) {
+			return errors.New("CORS origins must be secure origins without paths")
+		}
+	}
+	for _, network := range c.TrustedProxyCIDRs {
+		if _, _, err := net.ParseCIDR(network); err != nil {
+			return errors.New("trusted proxy CIDRs must be valid network prefixes")
+		}
+	}
+	return nil
+}
+func ValidateDatabase(dsn string, insecure bool) error {
+	database, err := url.Parse(dsn)
+	if err != nil || (database.Scheme != "postgres" && database.Scheme != "postgresql") || database.Host == "" {
+		return errors.New("database DSN must be an absolute PostgreSQL URL")
+	}
+	if !insecure && database.Query().Get("sslmode") != "verify-full" {
+		return errors.New("database sslmode=verify-full is required unless DATABASE_INSECURE is true")
+	}
+	return nil
+}
+func includes(values []string, target string) bool {
+	for _, value := range values {
+		if value == target {
+			return true
+		}
+	}
+	return false
+}
+
+func value(key, fallback string) string {
+	// pianotechpros-env-inventory: allow-computed validated configuration helper key
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return fallback
+}
+
+// pianotechpros-env-inventory: allow-computed validated configuration helper key
+func boolean(key string) bool { value, _ := strconv.ParseBool(os.Getenv(key)); return value }
+func integer(key string, fallback int) int {
+	// pianotechpros-env-inventory: allow-computed validated configuration helper key
+	raw := os.Getenv(key)
+	if raw == "" {
+		return fallback
+	}
+	value, err := strconv.Atoi(raw)
+	if err != nil {
+		return 0
+	}
+	return value
+}
+func list(key string) []string {
+	var out []string
+	// pianotechpros-env-inventory: allow-computed validated configuration helper key
+	for _, value := range strings.Split(os.Getenv(key), ",") {
+		if value = strings.TrimSpace(value); value != "" {
+			out = append(out, value)
+		}
+	}
+	return out
+}
+func normalizedList(key string) []string {
+	seen := map[string]struct{}{}
+	var out []string
+	for _, value := range list(key) {
+		value = strings.ToLower(value)
+		if _, exists := seen[value]; !exists {
+			seen[value] = struct{}{}
+			out = append(out, value)
+		}
+	}
+	return out
+}
+func validEmail(value string) bool {
+	address, err := mail.ParseAddress(value)
+	return err == nil && address.Name == "" && address.Address == value && strings.Contains(value, "@")
+}

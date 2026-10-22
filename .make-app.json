@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 4,
+  "generatorVersion": "v0.5.15-0.20261001121956-005eb2e3f5e6",
+  "name": "PianoTechPros",
+  "slug": "pianotechpros",
+  "bundlePrefix": "com.pianotechpros",
+  "module": "github.com/elsell/pianotechpros",
+  "domains": []
+}

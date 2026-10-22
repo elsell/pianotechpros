@@ -1,0 +1,62 @@
+package main
+
+import (
+	"context"
+	"errors"
+	"github.com/elsell/pianotechpros/apps/api/internal/adapters/auditretention"
+	"github.com/elsell/pianotechpros/apps/api/internal/adapters/observability"
+	"log/slog"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+)
+
+func main() {
+	dsn := os.Getenv("PIANOTECHPROS_AUDIT_RETENTION_DSN")
+	days, daysErr := strconv.Atoi(os.Getenv("PIANOTECHPROS_AUDIT_RETENTION_DAYS"))
+	batch, batchErr := strconv.Atoi(os.Getenv("PIANOTECHPROS_AUDIT_RETENTION_BATCH_SIZE"))
+	dryRun, dryRunErr := strconv.ParseBool(value("PIANOTECHPROS_AUDIT_RETENTION_DRY_RUN", "true"))
+	if dsn == "" || daysErr != nil || days < 30 || days > 3650 || batchErr != nil || batch < 1 || batch > 10000 || dryRunErr != nil {
+		panic(errors.New("validated retention DSN, 30-3650 days, batch size 1-10000, and dry-run flag are required"))
+	}
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		panic(err)
+	}
+	now := time.Now().UTC()
+	cutoff := now.Add(-time.Duration(days) * 24 * time.Hour)
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	runner := auditretention.Runner{DB: db, Probe: observability.StructuredLog{Logger: logger}}
+	if dryRun {
+		count, err := runner.Count(context.Background(), cutoff)
+		if err != nil {
+			panic(err)
+		}
+		logger.Info("audit retention dry run", "eligible_events", count)
+		return
+	}
+	total := 0
+	for {
+		deleted, err := runner.DeleteBatch(context.Background(), cutoff, time.Now().UTC(), batch)
+		if err != nil {
+			panic(err)
+		}
+		total += deleted
+		if deleted < batch {
+			break
+		}
+	}
+	logger.Info("audit retention complete", "deleted_events", total)
+}
+
+func value(key, fallback string) string {
+	// pianotechpros-env-inventory: allow-computed required retention configuration key
+	if value := strings.TrimSpace(os.Getenv(key)); value != "" {
+		return value
+	}
+	return fallback
+}

@@ -1,0 +1,50 @@
+package main
+
+import (
+	"database/sql"
+	"errors"
+	"log/slog"
+	"os"
+	"strconv"
+
+	"github.com/elsell/pianotechpros/apps/api/internal/adapters/dbmigrations"
+	"github.com/elsell/pianotechpros/apps/api/internal/config"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
+	_ "github.com/jackc/pgx/v5/stdlib"
+)
+
+func main() {
+	dsn := os.Getenv("PIANOTECHPROS_DATABASE_DSN")
+	insecure, _ := strconv.ParseBool(os.Getenv("PIANOTECHPROS_DATABASE_INSECURE"))
+	if err := config.ValidateDatabase(dsn, insecure); err != nil {
+		slog.Error("database configuration invalid", "error", err)
+		os.Exit(1)
+	}
+	db, err := sql.Open("pgx", dsn)
+	if err != nil {
+		slog.Error("database open failed", "error", err)
+		os.Exit(1)
+	}
+	defer db.Close()
+	source, err := iofs.New(dbmigrations.Files, ".")
+	if err != nil {
+		slog.Error("migration source failed", "error", err)
+		os.Exit(1)
+	}
+	database, err := postgres.WithInstance(db, &postgres.Config{})
+	if err != nil {
+		slog.Error("migration database failed", "error", err)
+		os.Exit(1)
+	}
+	runner, err := migrate.NewWithInstance("iofs", source, "postgres", database)
+	if err != nil {
+		slog.Error("migration runner failed", "error", err)
+		os.Exit(1)
+	}
+	if err := runner.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		slog.Error("migration failed", "error", err)
+		os.Exit(1)
+	}
+}

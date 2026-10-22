@@ -1,4 +1,5 @@
 <script lang="ts">
+  import DealerStaff from './DealerStaff.svelte';
   import DealerProfileForm from './DealerProfileForm.svelte';
   import { onMount } from 'svelte';
   import { createDealerApiClient, DealerClientError, type DealerProfile } from '@pianotechpros/api-client';
@@ -18,6 +19,17 @@
   let form: { initial: DealerProfile | null } | null = null;
   let savedNotice = false;
   let active = true;
+  let staffShop: string | null = null;
+  function staffAPI(id: string) {
+    return {
+      listStaff: (cursor: string | undefined = undefined) => withCredential((api) => api.listStaff(id, cursor)),
+      listInvitations: (cursor: string | undefined = undefined) => withCredential((api) => api.listInvitations(id, cursor)),
+      changeRole: (userID: string, role: 'editor' | 'viewer', revision: number) => withCredential((api) => api.changeStaffRole(id, userID, role, revision)),
+      remove: (userID: string, revision: number) => withCredential((api) => api.removeStaff(id, userID, revision)),
+      createInvitation: (role: 'editor' | 'viewer', hours: number) => withCredential((api) => api.createInvitation(id, role, hours)),
+      revokeInvitation: (invitationID: string) => withCredential((api) => api.revokeInvitation(id, invitationID)),
+    };
+  }
   async function withCredential<T>(operation: (api: ReturnType<typeof createDealerApiClient>) => Promise<T>): Promise<T> {
     const session = credential;
     try { return await operation(createDealerApiClient(apiURL, () => Date.parse(session.expiresAt) > Date.now() ? session.token : null)); }
@@ -47,13 +59,13 @@
 <section class="directory" aria-labelledby="shops-heading">
   <header>
     <div><h2 id="shops-heading">{i18n.t('dealer.heading')}</h2><p>{i18n.t('dealer.intro')}</p></div>
-    <button disabled={Boolean(form)} onclick={() => { savedNotice = false; form = { initial: null }; }}>{i18n.t('dealer.create')}</button>
-    <button class="secondary" disabled={state.listLoading || Boolean(form)} onclick={() => directory.refresh()}>{i18n.t('dealer.refresh')}</button>
+    <button disabled={Boolean(form) || Boolean(staffShop)} onclick={() => { savedNotice = false; form = { initial: null }; }}>{i18n.t('dealer.create')}</button>
+    <button class="secondary" disabled={state.listLoading || Boolean(form) || Boolean(staffShop)} onclick={() => directory.refresh()}>{i18n.t('dealer.refresh')}</button>
   </header>
   <div class="workspace">
     <nav aria-labelledby="shops-heading" aria-busy={state.listLoading}>
       {#each state.items as shop (shop.id)}
-        <button disabled={Boolean(form)} class:selected={state.selectedId === shop.id} aria-pressed={state.selectedId === shop.id} onclick={() => directory.select(shop.id)}>{shop.name}</button>
+        <button disabled={Boolean(form) || Boolean(staffShop)} class:selected={state.selectedId === shop.id} aria-pressed={state.selectedId === shop.id} onclick={() => directory.select(shop.id)}>{shop.name}</button>
       {/each}
       {#if state.listLoading}<p role="status">{i18n.t('common.loading')}</p>{/if}
       {#if state.listFailure}
@@ -63,12 +75,14 @@
     </nav>
     <div class="profile" aria-live="polite" aria-busy={state.detailLoading}>
       {#if savedNotice}<p role="status">{i18n.t('dealer.saved')}</p>{/if}
-      {#if form}<DealerProfileForm initial={form.initial} {i18n} api={formAPI} onSaved={saved} onCancel={() => { form = null; }} />
+      {#if staffShop}{#key staffShop}<DealerStaff shopName={state.selected?.name ?? ''} api={staffAPI(staffShop)} {i18n} onBack={() => { staffShop = null; }} />{/key}
+      {:else if form}<DealerProfileForm initial={form.initial} {i18n} api={formAPI} onSaved={saved} onCancel={() => { form = null; }} />
       {:else if state.detailLoading}<p role="status">{i18n.t('common.loading')}</p>
       {:else if state.detailFailure}<p role="alert">{i18n.t(state.detailFailure)}</p><button onclick={() => directory.select(state.selectedId)}>{i18n.t('dealer.retry')}</button>
       {:else if state.selected}
         {@const shop = state.selected}
         <h3>{shop.name}</h3>
+        <button onclick={() => { savedNotice = false; staffShop = shop.id; }}>{i18n.t('staff.manage')}</button>
         <button onclick={() => { savedNotice = false; form = { initial: shop }; }}>{i18n.t('dealer.edit')}</button>
         {#if shop.tagline}<p class="tagline">{shop.tagline}</p>{/if}
         {#if shop.description}<p class="prose">{shop.description}</p>{/if}

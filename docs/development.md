@@ -60,5 +60,5 @@ PIANOTECHPROS_API_URL=http://127.0.0.1:8089 pnpm --filter @pianotechpros/web dev
 Then run `node scripts/dealer-web-acceptance.mjs` from the repository root.
 It starts a disposable HTTP fixture on port 8089 and uses installed Playwright
 Chromium to check Spanish pagination/retry, keyboard profile selection, narrow
-layout and sign-out races. It uses synthetic sessions and does not contact real
+layout, profile creation/edit conflicts, staff administration and sign-out races. It uses synthetic sessions and does not contact real
 identity or database services. Full-stack acceptance remains a separate gate.

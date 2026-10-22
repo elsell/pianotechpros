@@ -210,3 +210,25 @@ reuse is invalid. Continuations exclude subsequently created entries but report
 the current state of earlier entries, including removal/consumption. The storage
 read rechecks owner authority under the same resource-first lock order used by
 staff mutations. List responses disable caching and referrers.
+
+### Web staff administration
+
+The selected shop exposes an owner-only administration view. Load members and
+invitations through the authenticated list APIs; a denial shows an unavailable
+state without granting actions. Preserve pagination independently for both lists.
+Show immutable user identifiers until a separately authorized staff-profile
+projection exists; never invent a display name from an identifier. Owner rows
+have no role/removal controls. Active editor/viewer rows support revision-checked
+role changes and a two-step removal confirmation. Pending grants, removed staff,
+consumed/revoked invitations and expiry dates have localized presentation.
+
+Invitation creation selects editor/viewer and a bounded expiry. Its one-time
+secret is shown only in the mounted view alongside the dealer/invitation IDs
+needed for consumption; never place it in a URL, persistent browser storage or
+logs. Creation is not idempotent: do not automatically retry after failure.
+Keep a successful issued token visible through list refresh failure until the
+user dismisses it or leaves the view. Revocation requires explicit confirmation.
+Any mutation conflict preserves the displayed state and asks for refresh before
+another attempt. Session/shop teardown invalidates late results and clears secrets.
+Framework-independent request sequencing lives in shared client-core; platform
+models provide their own controls and localized failure presentation.

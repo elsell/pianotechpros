@@ -88,7 +88,13 @@ explicit revision review. Review caught transient session outages unmounting
 forms; a failing browser regression now passes after keeping the account-scoped
 workflow mounted across outage/recovery and credential rotation. Both pending
 creation intent and entered edits survive. Full service-stack browser journeys,
-staff screens and native presentation remain unfinished. DL-01 through DL-04 remain open. No security
+native presentation and invitation consumption remain unfinished. The web staff
+view now supports independent member/invitation pagination, revision-checked
+role changes and confirmed removal/revocation. One-time invitation codes stay
+in memory and clear on dismissal, successful revocation or teardown. Shared
+controller tests cover pagination, owner protection and late secret suppression;
+browser fixture coverage includes denied administration, conflict refresh,
+pending grants, confirmed removal and invitation revocation. DL-01 through DL-04 remain open. No security
 finding is waived.
 
 ## Completed foundation: public scaffold

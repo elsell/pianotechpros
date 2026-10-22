@@ -8,6 +8,10 @@ const shops = new Map(['atelier', 'studio'].map((id) => [id, { id, name: id === 
 let refreshMode = 'failure';
 let rotations = 0;
 const sessions = new Set(['browser-test-session']);
+const members = new Map([['test-owner', { userID: 'test-owner', role: 'owner', revision: 1, active: true, grantPending: false }], ['test-editor', { userID: 'test-editor', role: 'editor', revision: 1, active: true, grantPending: false }]]);
+const staffInvitations = new Map();
+let staffConflict = true;
+let denyStaff = false;
 const creations = new Map();
 let createRequests = 0;
 let conflictOnce = true;
@@ -38,6 +42,21 @@ const server = createServer(async (req, res) => {
     assert.equal(creations.get(key).raw, raw);
     if (createRequests === 1) return send(503, { code: 'unavailable' });
     return send(201, { data: creations.get(key).shop });
+  }
+  if (url.pathname.includes('/staff') && denyStaff) return send(404, { code: 'not_found' });
+  if (url.pathname.includes('/staff-invitations')) {
+    if (req.method === 'GET') return send(200, { data: [...staffInvitations.values()], meta: {} });
+    if (url.pathname.endsWith('/revoke')) { const id = url.pathname.split('/').at(-2); staffInvitations.get(id).revokedAt = new Date().toISOString(); res.writeHead(204).end(); return; }
+    const issued = { id: 'staff-invitation', dealerID: 'created-shop', dealerName: 'My edited shop', role: body.role, expiresAt: '2030-01-01T00:00:00Z', token: 'one-time-test-secret' };
+    const { token, ...summary } = issued; staffInvitations.set(issued.id, summary); return send(201, { data: issued });
+  }
+  if (url.pathname.includes('/staff')) {
+    if (req.method === 'GET') return send(200, { data: [...members.values()], meta: {} });
+    const id = url.pathname.split('/').at(-2); const member = members.get(id);
+    if (staffConflict) { staffConflict = false; member.revision++; return send(409, { code: 'conflict' }); }
+    if (body.expectedRevision !== member.revision) return send(409, { code: 'conflict' });
+    member.revision++; if (url.pathname.endsWith('/revoke')) member.active = false; else { member.role = body.role; member.grantPending = true; }
+    return send(200, { data: member });
   }
   if (req.method === 'PUT') {
     const shop = shops.get(url.pathname.split('/').at(-1));
@@ -115,6 +134,42 @@ try {
   await page.getByRole('button', { name: 'Guardar cambios', exact: true }).click();
   await page.getByRole('heading', { name: 'My edited shop', exact: true }).waitFor();
   assert.equal(shops.get('created-shop').revision, 3);
+  await page.getByRole('button', { name: 'Administrar personal', exact: true }).click();
+  await page.getByText('test-owner', { exact: true }).waitFor();
+  assert.equal(await page.locator('article').filter({ hasText: 'test-owner' }).getByRole('button').count(), 0);
+  await page.getByRole('button', { name: 'Cambiar a lector', exact: true }).click();
+  await page.getByText('El acceso cambió en otro lugar. Actualiza y revisa antes de hacer otro cambio.', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Actualizar personal', exact: true }).click();
+  await page.getByRole('button', { name: 'Cambiar a lector', exact: true }).click();
+  await page.getByText(/Actualización de acceso pendiente/).waitFor();
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+  await page.screenshot({ path: '/tmp/piano-staff-narrow.png', fullPage: true });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.getByRole('button', { name: 'Eliminar acceso', exact: true }).click();
+  assert.equal(members.get('test-editor').active, true);
+  await page.getByRole('button', { name: 'Confirmar eliminación', exact: true }).click();
+  await page.getByText(/Eliminado/).waitFor();
+  await page.getByRole('button', { name: 'Crear invitación', exact: true }).click();
+  const code = page.getByLabel('Código de invitación de un solo uso', { exact: true });
+  await code.waitFor();
+  assert.equal(JSON.parse(await code.inputValue()).token, 'one-time-test-secret');
+  assert.ok(!page.url().includes('one-time-test-secret'));
+  await page.getByRole('button', { name: 'Actualizar personal', exact: true }).click();
+  assert.equal(JSON.parse(await code.inputValue()).token, 'one-time-test-secret');
+  await page.getByRole('button', { name: 'Revocar invitación', exact: true }).click();
+  assert.equal(staffInvitations.get('staff-invitation').revokedAt, undefined);
+  await page.getByRole('button', { name: 'Confirmar revocación', exact: true }).click();
+  await page.getByText(/Revocada/).waitFor();
+  assert.equal(await code.count(), 0);
+  await page.getByRole('button', { name: 'Volver al perfil', exact: true }).click();
+  denyStaff = true;
+  await page.getByRole('button', { name: 'Administrar personal', exact: true }).click();
+  await page.getByText('La administración del personal no está disponible o no tienes permiso.', { exact: true }).waitFor();
+  assert.equal(await page.getByRole('button', { name: 'Crear invitación', exact: true }).count(), 0);
+  await page.getByRole('button', { name: 'Volver al perfil', exact: true }).click();
+  denyStaff = false;
+
   await page.getByRole('button', { name: 'Cargar más tiendas', exact: true }).click();
   await page.getByRole('button', { name: 'Studio Pianos', exact: true }).focus();
   await page.keyboard.press('Enter');
@@ -146,5 +201,5 @@ try {
   releaseRefresh();
   assert.equal(await page.evaluate(() => window.refreshResult), 'discarded');
   assert.equal(await page.evaluate(() => sessionStorage.getItem('pianotechpros_application_session')), null);
-  console.log('Dealer web creation retry, conflict review, form retention through session outages, Spanish pagination, keyboard selection, responsive layout and sign-out isolation passed');
+  console.log('Dealer web staff permissions/conflicts/removal/invitation revocation, creation retry, conflict review, form retention through session outages, Spanish pagination, keyboard selection, responsive layout and sign-out isolation passed');
 } finally { releaseRefresh(); releaseDetail(); await browser.close(); server.close(); }

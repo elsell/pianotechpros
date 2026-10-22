@@ -1,5 +1,5 @@
 import { chromium, errors } from 'playwright'
-import { createRetryDeadline, sendAndCaptureTryResponse } from './scalar-retry-deadline.mjs'
+import { createRetryDeadline, sendAndCaptureTryResponse, waitForStableCredential } from './scalar-retry-deadline.mjs'
 
 const baseURL = process.env.SCALAR_ACCEPTANCE_BASE_URL ?? 'http://localhost:8080'
 const email = process.env.SCALAR_ACCEPTANCE_EMAIL ?? 'developer@example.com'
@@ -35,7 +35,33 @@ try {
   if (tokenResponse.status() !== 200) {
     throw new Error(`Scalar token exchange returned ${tokenResponse.status()}: ${await tokenResponse.text()}`)
   }
+  const tokenPayload = await tokenResponse.json()
+  if (typeof tokenPayload.access_token !== 'string' || tokenPayload.access_token.length === 0) {
+    throw new Error('Scalar token exchange omitted the application access token')
+  }
+  for (let attempt = 0; attempt < 50 && !popup.isClosed(); attempt += 1) {
+    await page.waitForTimeout(100)
+  }
+  if (!popup.isClosed()) {
+    throw new Error('Scalar authorization popup did not close after token exchange')
+  }
+  await waitForStableCredential({
+    now: () => performance.now(),
+    matches: (expectedCredential, timeout) => {
+      let timeoutID
+      return Promise.race([
+        page.locator('input.scalar-password-input').evaluateAll(
+          (inputs, credential) => inputs.some((input) => input.value === credential),
+          expectedCredential,
+        ),
+        new Promise((resolve) => { timeoutID = setTimeout(() => resolve(undefined), timeout) }),
+      ]).finally(() => clearTimeout(timeoutID))
+    },
+    pause: (milliseconds) => page.waitForTimeout(milliseconds),
+  }, tokenPayload.access_token, 5_000)
+
   async function waitForAuthorizedTryRequest(buttonName, pathname) {
+    let requestControlObserved = false
     const retryDeadline = createRetryDeadline(() => performance.now(), credentialApplicationTimeoutMilliseconds)
     const pauseBeforeRetry = async () => {
       const remaining = retryDeadline.remaining()
@@ -56,12 +82,27 @@ try {
         await pauseBeforeRetry()
         continue
       }
+      const sendRequestButton = page.getByRole('button', { name: /Send Request/ })
+      const sendRequestReady = await sendRequestButton.waitFor({
+        state: 'visible',
+        timeout: retryDeadline.timeout(responseTimeoutMilliseconds),
+      }).then(() => true).catch((error) => {
+        if (error instanceof errors.TimeoutError) return false
+        throw error
+      })
+      if (!sendRequestReady) {
+        const closeClientButton = page.getByRole('button', { name: 'Close Client' })
+        if (await closeClientButton.isVisible()) await clickBeforeDeadline(closeClientButton)
+        await pauseBeforeRetry()
+        continue
+      }
+      requestControlObserved = true
       const responseOutcome = await sendAndCaptureTryResponse(
         () => page.waitForResponse(
           (response) => response.url().startsWith(`${baseURL}${pathname}`) && response.request().method() === 'GET',
           { timeout: retryDeadline.timeout(responseTimeoutMilliseconds) },
         ),
-        () => clickBeforeDeadline(page.getByRole('button', { name: /Send Request/ })),
+        () => clickBeforeDeadline(sendRequestButton),
       )
       if (responseOutcome.error && !(responseOutcome.error instanceof errors.TimeoutError)) throw responseOutcome.error
       const response = responseOutcome.response ?? null
@@ -81,12 +122,19 @@ try {
       await clickBeforeDeadline(page.getByRole('button', { name: 'Close Client' }))
       await pauseBeforeRetry()
     }
+    if (!requestControlObserved) {
+      throw new Error(`Scalar did not render the Try It request control for ${pathname} after the bounded UI wait`)
+    }
     throw new Error(`Scalar omitted the OIDC bearer token for ${pathname} after the bounded credential-application wait`)
   }
 
   const me = await waitForAuthorizedTryRequest(/Test Request.*get \/v1\/me\)/i, '/v1/me')
   if (me?.data?.email !== email) {
     throw new Error(`Scalar /v1/me returned the wrong principal: ${JSON.stringify(me)}`)
+  }
+  const audit = await waitForAuthorizedTryRequest(/Test Request.*get \/v1\/audit-events\)/i, '/v1/audit-events')
+  if (!Array.isArray(audit?.data) || !audit.data.some(event => event.action === 'user.viewed')) {
+    throw new Error('Scalar audit history did not include the authenticated profile read')
   }
   console.log('Scalar browser OIDC and identity Try It acceptance passed')
 } finally {

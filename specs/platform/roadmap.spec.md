@@ -44,8 +44,8 @@ acceptance are first-class work, not a final styling pass.
    advisories. Review any unpatched transitive findings for actual reachability;
    do not suppress the security gate to make CI green. Re-run age/security,
    native compatibility, browser/API acceptance and container scans.
-2. Obtain successful hosted Android and unsigned iOS simulator builds. Run
-   interactive sign-in/sign-out recovery checks on named native builds.
+2. Run interactive sign-in/sign-out recovery checks on named native builds;
+   hosted Android and unsigned iOS compilation is verified below.
 3. Specify dealer/staff authorization and adversarial cross-dealer tests.
 4. Implement a single end-to-end private capture slice: photos, recoverable draft,
    inventory list/detail, and typed/manual entry with native controls.
@@ -61,7 +61,7 @@ claim is made by this scaffold milestone.
 
 ## SDK compatibility follow-up
 
-The initial hosted browser/API acceptance passed on commit `0cfea9d` (run
+The initial hosted API/Compose acceptance passed on commit `0cfea9d` (run
 [39799502085](https://github.com/elsell/pianotechpros/actions/runs/39799502085)).
 Both native jobs stopped at the outdated Expo patch compatibility check.
 The SDK 55.0.32 refresh passes frozen installation with pnpm 11.0.7, all 19
@@ -70,4 +70,60 @@ with nine documented exact exceptions, and both Metro exports locally. Local
 exports used a temporary watch-folder setting for memory-backed dependencies
 because of host disk pressure; that machine-specific setting is not committed.
 Hosted jobs now export platform bundles before compilation in a normal checkout.
-Hosted native compilation for this refresh is still pending.
+Hosted Android and unsigned iOS compilation for this refresh passed.
+
+## Current hosted evidence
+
+Commit `52cdd34` was checked in run
+[39812943749](https://github.com/elsell/pianotechpros/actions/runs/39812943749).
+API/Compose acceptance, including its container builds, passed. Both hosted
+platform exports, Expo Doctor and native compatibility checks passed in ordinary
+checkouts. Both Android Gradle `assembleDebug` and unsigned iOS simulator Xcode
+compilation passed. These establish compilation, not native interaction acceptance.
+
+The verification job failed at `govulncheck`: **23 reachable vulnerabilities**
+with the CI-pinned Go 1.25.12. The earlier local count of 16 used Go 1.25.13;
+neither result passes the security gate. The separate release-style container
+build check after `make verify` did not run. The refreshed JavaScript graph still
+reports 72 npm findings (1 critical, 48 high, 19 moderate, 4 low).
+
+Registry checks on 2026-10-22 confirmed that the suggested node-forge 1.4.1,
+braces 3.0.4 and sprintf-js 1.1.4 versions are not published. Their affected paths
+include Expo signing tooling and build/test utilities; this is not proof of
+unreachability. Signing remains deferred. Other advisory fixes are published,
+but require compatibility, supply-chain and regression review before adoption.
+Issue #2 remains the release-blocking remediation work; no audit threshold or
+vulnerability exception has been introduced to obtain a passing result.
+
+## Browser acceptance correction
+
+Completion review found that the no-example template's Compose harness fetched
+web HTML but did not invoke a browser. The earlier API/Compose success must not
+be treated as browser interaction evidence. The harness now invokes real
+Playwright web and Scalar journeys: Spanish rendering, PKCE sign-in, profile
+restoration, sign-out, and authenticated profile/audit requests from Scalar.
+Run [39815345999](https://github.com/elsell/pianotechpros/actions/runs/39815345999)
+on `6a475dd` passed the web Spanish/PKCE/restoration/sign-out journey, but Scalar
+failed to observe its bearer credential. The no-example harness had omitted the
+template's popup-close and stable-credential readiness gate. That behavior is
+restored with its eight passing deadline/readiness tests. Run
+[39820827096](https://github.com/elsell/pianotechpros/actions/runs/39820827096)
+on `fee2368` then passed the complete live acceptance job: the web journey,
+Scalar PKCE and authenticated profile/audit requests, and API/Compose checks.
+Native checks in this PR were path-skipped; actual compilation evidence remains
+the main-branch run above.
+
+## Scaffold completion boundary
+
+The public repository has fresh history and reviewed Make App provenance. The
+Go API, web and native foundations are present; photo-first capture and native
+experience contracts are recorded. Project-specific unit/type/structure/race/age
+checks, live browser/API acceptance, Android compilation and unsigned iOS
+compilation have evidence above. The browser follow-up changes only acceptance
+scripts and specifications, so the native build evidence still applies.
+
+This completes the scaffold deliverable, not a release approval. Dependency
+security remediation in issue #2, product vertical slices, interactive native
+and physical-device QA, final store identities and signing remain outstanding.
+The legacy service, GitOps, DNS and data have not been changed. No production
+credentials, deployment hooks or signing material were added.

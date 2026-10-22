@@ -27,6 +27,9 @@ curl -fsS http://localhost:8080/readyz >/dev/null
 for _ in $(seq 1 180); do curl -fsS http://localhost:5173 >/dev/null 2>&1 && break; sleep 1; done
 curl -fsS http://localhost:5173 >/dev/null
 
+node scripts/web-browser-acceptance.mjs
+node scripts/scalar-browser-acceptance.mjs
+
 token() {
   curl -fsS -X POST http://localhost:5556/dex/token -d grant_type=password -d "client_id=$1" -d "username=$2" -d password=password -d scope='openid profile email' |
     python3 -c 'import json,sys;print(json.load(sys.stdin)["id_token"])'

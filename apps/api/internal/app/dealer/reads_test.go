@@ -78,10 +78,16 @@ func (p *readPermissions) Check(_ context.Context, kind, id, permission, user st
 	return p.grants[kind+":"+id+":"+permission+":"+user], nil
 }
 func (p *readPermissions) WriteRelationship(_ context.Context, kind, id, relation, subject, user string) error {
+	if p.err != nil {
+		return p.err
+	}
 	if subject != "user" || (relation != "owner" && relation != "editor" && relation != "viewer") {
 		return ports.ErrInvalidArgument
 	}
 	p.grants[kind+":"+id+":view:"+user] = true
+	if relation == "owner" {
+		p.grants[kind+":"+id+":manage_profile:"+user] = true
+	}
 	return nil
 }
 func (p *readPermissions) DeleteRelationship(_ context.Context, kind, id, relation, subject, user string) error {

@@ -14,7 +14,7 @@ type Service interface {
 	Create(context.Context, string, string, domain.Attributes) (domain.Entity, error)
 	List(context.Context, string, string, int) ([]domain.Entity, string, error)
 	Get(context.Context, string, domain.ID) (domain.Entity, error)
-	Update(context.Context, string, domain.ID, domain.Attributes) (domain.Entity, error)
+	Update(context.Context, string, domain.ID, int64, domain.Attributes) (domain.Entity, error)
 	Delete(context.Context, string, domain.ID) error
 }
 
@@ -90,7 +90,7 @@ func Register(api huma.API, service Service) {
 		return out, nil
 	})
 	huma.Register(api, huma.Operation{OperationID: "update-dealer", Method: http.MethodPut, Path: path + "/{id}", Security: security}, func(ctx context.Context, input *DealerUpdateInput) (*DealerItemOutput, error) {
-		entity, err := service.Update(ctx, input.Authorization, domain.ID(input.ID), mapper.UpdateAttributes(input.Body))
+		entity, err := service.Update(ctx, input.Authorization, domain.ID(input.ID), input.Body.ExpectedRevision, mapper.UpdateAttributes(input.Body))
 		if err != nil {
 			return nil, shared.MapError(err, true)
 		}

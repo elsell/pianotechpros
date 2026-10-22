@@ -50,7 +50,7 @@ func TestScaffoldAuthenticatesAndFailsClosedWithoutPolicy(t *testing.T) {
 			return err
 		}},
 		{"update", func(authorization string) error {
-			_, err := service.Update(context.Background(), authorization, domain.ID("id"), domain.Attributes{})
+			_, err := service.Update(context.Background(), authorization, domain.ID("id"), 1, domain.Attributes{})
 			return err
 		}},
 		{"delete", func(authorization string) error {

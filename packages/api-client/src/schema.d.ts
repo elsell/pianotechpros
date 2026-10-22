@@ -273,46 +273,48 @@ export interface components {
              */
             readonly $schema?: string;
             accent_color: string;
-            appointment_note: string;
-            banner_alt_text: string;
-            city: string;
-            delivery_note: string;
-            description: string;
+            appointment_note?: string;
+            banner_alt_text?: string;
+            city?: string;
+            delivery_note?: string;
+            description?: string;
             email: string;
             name: string;
-            phone: string;
-            postal_code: string;
-            region: string;
-            service_note: string;
+            phone?: string;
+            postal_code?: string;
+            region?: string;
+            service_note?: string;
             showroom_published: boolean;
             slug: string;
-            street_address_1: string;
-            street_address_2: string;
-            tagline: string;
-            warranty_note: string;
-            website_url: string;
+            street_address_1?: string;
+            street_address_2?: string;
+            tagline?: string;
+            warranty_note?: string;
+            website_url?: string;
         };
         DealerItem: {
             accent_color: string;
-            appointment_note: string;
-            banner_alt_text: string;
-            city: string;
-            delivery_note: string;
-            description: string;
+            appointment_note?: string;
+            banner_alt_text?: string;
+            city?: string;
+            delivery_note?: string;
+            description?: string;
             email: string;
             id: string;
             name: string;
-            phone: string;
-            postal_code: string;
-            region: string;
-            service_note: string;
+            phone?: string;
+            postal_code?: string;
+            region?: string;
+            /** Format: int64 */
+            revision: number;
+            service_note?: string;
             showroom_published: boolean;
             slug: string;
-            street_address_1: string;
-            street_address_2: string;
-            tagline: string;
-            warranty_note: string;
-            website_url: string;
+            street_address_1?: string;
+            street_address_2?: string;
+            tagline?: string;
+            warranty_note?: string;
+            website_url?: string;
         };
         DealerItemOutputBody: {
             /**
@@ -341,24 +343,26 @@ export interface components {
              */
             readonly $schema?: string;
             accent_color: string;
-            appointment_note: string;
-            banner_alt_text: string;
-            city: string;
-            delivery_note: string;
-            description: string;
+            appointment_note?: string;
+            banner_alt_text?: string;
+            city?: string;
+            delivery_note?: string;
+            description?: string;
             email: string;
+            /** Format: int64 */
+            expectedRevision: number;
             name: string;
-            phone: string;
-            postal_code: string;
-            region: string;
-            service_note: string;
+            phone?: string;
+            postal_code?: string;
+            region?: string;
+            service_note?: string;
             showroom_published: boolean;
             slug: string;
-            street_address_1: string;
-            street_address_2: string;
-            tagline: string;
-            warranty_note: string;
-            website_url: string;
+            street_address_1?: string;
+            street_address_2?: string;
+            tagline?: string;
+            warranty_note?: string;
+            website_url?: string;
         };
         ErrorDetail: {
             /** @description Where the error occurred, e.g. 'body.items[3].tags' or 'path.thing-id' */

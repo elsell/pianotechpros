@@ -3,9 +3,9 @@
 `profile.spec.md` defines the product policy. The generated Huma registrar is
 registered through the generator-owned composition registry. Private get/list
 now require an authenticated scoped session, active stored membership, SpiceDB
-view permission, principal audit budget and successful audit append. Mutation
-services remain closed. Membership administration, creation/update application
-protocols and complete client journeys remain unfinished.
+view permission, principal audit budget and successful audit append. Creation publishes its committed owner outbox event before returning readiness,
+and owner profile updates use the repository CAS and transactional audit.
+Membership administration and complete client journeys remain unfinished.
 
 ## Membership and revision storage
 

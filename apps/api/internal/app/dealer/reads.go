@@ -11,7 +11,7 @@ import (
 	"github.com/elsell/pianotechpros/apps/api/internal/ports"
 )
 
-func (s *Service) readPrincipal(ctx context.Context, authorization string) (string, error) {
+func (s *Service) principalForAuditedOperation(ctx context.Context, authorization string) (string, error) {
 	if s.Auth == nil {
 		return "", ports.ErrAuthorizationPolicyNotConfigured
 	}
@@ -33,7 +33,7 @@ func (s *Service) readPrincipal(ctx context.Context, authorization string) (stri
 func (s *Service) readEvent(ctx context.Context, owner, actor string, action audit.Action, id string, outcome audit.Outcome) error {
 	return s.Audits.AppendAuditEvent(ctx, shared.NewAuditEvent(ctx, s.Clock, owner, actor, action, "dealer", id, outcome))
 }
-func (s *Service) deniedRead(ctx context.Context, actor string, id domain.ID, cause error) error {
+func (s *Service) deniedDecision(ctx context.Context, actor string, id domain.ID, cause error) error {
 	outcome := audit.Denied
 	if !errors.Is(cause, ports.ErrNotFound) {
 		outcome = audit.Failed
@@ -46,7 +46,7 @@ func (s *Service) deniedRead(ctx context.Context, actor string, id domain.ID, ca
 func (s *Service) canView(ctx context.Context, actor string, id, auditTarget domain.ID) (bool, error) {
 	allowed, err := s.Authorizer.Check(ctx, "dealer", string(id), "view", actor)
 	if err != nil {
-		return false, s.deniedRead(ctx, actor, auditTarget, err)
+		return false, s.deniedDecision(ctx, actor, auditTarget, err)
 	}
 	if !allowed {
 		if err := s.readEvent(ctx, actor, actor, audit.ResourceAccessDenied, string(auditTarget), audit.Denied); err != nil {
@@ -55,13 +55,13 @@ func (s *Service) canView(ctx context.Context, actor string, id, auditTarget dom
 	}
 	return allowed, nil
 }
-func (s *Service) observeRead(ctx context.Context, name string) {
+func (s *Service) observeSuccess(ctx context.Context, name string) {
 	if s.Probe != nil {
 		s.Probe.Observe(ctx, ports.ProbeEvent{Name: name, Outcome: "succeeded", CorrelationID: shared.CorrelationID(ctx)})
 	}
 }
 func (s *Service) Get(ctx context.Context, authorization string, id domain.ID) (domain.Entity, error) {
-	actor, err := s.readPrincipal(ctx, authorization)
+	actor, err := s.principalForAuditedOperation(ctx, authorization)
 	if err != nil {
 		return domain.Entity{}, err
 	}
@@ -71,7 +71,7 @@ func (s *Service) Get(ctx context.Context, authorization string, id domain.ID) (
 	item, err := s.Repository.Get(ctx, actor, id)
 	if err != nil {
 		if errors.Is(err, ports.ErrNotFound) {
-			err = s.deniedRead(ctx, actor, id, ports.ErrNotFound)
+			err = s.deniedDecision(ctx, actor, id, ports.ErrNotFound)
 		}
 		return domain.Entity{}, err
 	}
@@ -85,11 +85,11 @@ func (s *Service) Get(ctx context.Context, authorization string, id domain.ID) (
 	if err := s.readEvent(ctx, item.OwnerUserID, actor, audit.ResourceViewed, string(id), audit.Succeeded); err != nil {
 		return domain.Entity{}, err
 	}
-	s.observeRead(ctx, "dealer.viewed")
+	s.observeSuccess(ctx, "dealer.viewed")
 	return item, nil
 }
 func (s *Service) List(ctx context.Context, authorization, cursor string, limit int) ([]domain.Entity, string, error) {
-	actor, err := s.readPrincipal(ctx, authorization)
+	actor, err := s.principalForAuditedOperation(ctx, authorization)
 	if err != nil {
 		return nil, "", err
 	}
@@ -135,6 +135,6 @@ func (s *Service) List(ctx context.Context, authorization, cursor string, limit 
 	if err := s.readEvent(ctx, actor, actor, audit.ResourceListed, "dealer", audit.Succeeded); err != nil {
 		return nil, "", err
 	}
-	s.observeRead(ctx, "dealer.listed")
+	s.observeSuccess(ctx, "dealer.listed")
 	return items, next, nil
 }

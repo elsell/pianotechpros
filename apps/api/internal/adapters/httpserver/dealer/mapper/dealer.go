@@ -6,7 +6,7 @@ import (
 )
 
 func Item(entity domain.Entity) dto.DealerItem {
-	return dto.DealerItem{ID: string(entity.ID), Name: entity.Name, Slug: entity.Slug, Email: entity.Email, Phone: entity.Phone, WebsiteUrl: entity.WebsiteUrl, Tagline: entity.Tagline, Description: entity.Description, StreetAddress1: entity.StreetAddress1, StreetAddress2: entity.StreetAddress2, City: entity.City, Region: entity.Region, PostalCode: entity.PostalCode, AppointmentNote: entity.AppointmentNote, DeliveryNote: entity.DeliveryNote, WarrantyNote: entity.WarrantyNote, ServiceNote: entity.ServiceNote, BannerAltText: entity.BannerAltText, AccentColor: entity.AccentColor, ShowroomPublished: entity.ShowroomPublished}
+	return dto.DealerItem{ID: string(entity.ID), Revision: entity.Revision, Name: entity.Name, Slug: entity.Slug, Email: entity.Email, Phone: entity.Phone, WebsiteUrl: entity.WebsiteUrl, Tagline: entity.Tagline, Description: entity.Description, StreetAddress1: entity.StreetAddress1, StreetAddress2: entity.StreetAddress2, City: entity.City, Region: entity.Region, PostalCode: entity.PostalCode, AppointmentNote: entity.AppointmentNote, DeliveryNote: entity.DeliveryNote, WarrantyNote: entity.WarrantyNote, ServiceNote: entity.ServiceNote, BannerAltText: entity.BannerAltText, AccentColor: entity.AccentColor, ShowroomPublished: entity.ShowroomPublished}
 }
 
 func Attributes(input dto.DealerCreate) domain.Attributes {

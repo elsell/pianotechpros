@@ -13,7 +13,7 @@ done
 export MAKE_APP_UID="${MAKE_APP_UID:-$(id -u)}" MAKE_APP_GID="${MAKE_APP_GID:-$(id -g)}"
 export COMPOSE_PROJECT_NAME="make-app-acceptance-${MAKE_APP_ACCEPTANCE_RUN_ID:-$$}"
 export PIANOTECHPROS_ACCOUNT_PROVISIONING_MODE=existing
-export PIANOTECHPROS_ACCOUNT_INVITED_EMAILS=developer@example.com
+export PIANOTECHPROS_ACCOUNT_INVITED_EMAILS=developer@example.com,second@example.com
 cleanup() { status=$?; if [[ "$status" -ne 0 ]]; then docker compose ps -a >&2 || true; docker compose logs --tail=200 >&2 || true; fi; docker compose down --volumes --remove-orphans --rmi local >/dev/null 2>&1 || true; rm -rf "$lock_dir"; return "$status"; }
 trap cleanup EXIT
 
@@ -47,6 +47,8 @@ session() {
 expect_status() { expected="$1"; shift; actual="$(curl -sS -o /dev/null -w '%{http_code}' "$@")"; [[ "$actual" == "$expected" ]] || { echo "expected HTTP $expected, got $actual: $*" >&2; return 1; }; }
 
 owner_token="$(session pianotechpros-web developer@example.com)"
+other_token="$(session pianotechpros-web second@example.com)"
+DEALER_ACCEPTANCE_OWNER_SESSION="$owner_token" DEALER_ACCEPTANCE_OTHER_SESSION="$other_token" python3 scripts/dealer-api-acceptance.py
 expect_status 401 http://localhost:8080/v1/me
 expect_status 401 -H 'Authorization: Bearer malformed' http://localhost:8080/v1/me
 me="$(curl -fsS -H "Authorization: Bearer $owner_token" http://localhost:8080/v1/me)"

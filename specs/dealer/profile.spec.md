@@ -102,5 +102,43 @@ dealer ID. Supplied-ID GET denials may record that supplied ID. A dependency or 
 response. Pagination advances over candidates, including omitted candidates,
 so an empty page can have a continuation cursor. Authenticated encrypted cursors conceal candidate IDs and bind the actor,
 dealer domain, snapshot and last candidate; another actor or tampering is invalid.
-List success is audited once for the collection. Creation/update/membership APIs
-remain closed until their separate mutation and outbox protocols are implemented.
+List success is audited once for the collection. Membership administration remains closed until its separate policy and outbox
+protocols are implemented. Creation and profile updates follow the protocols below.
+
+## Profile update command
+
+PUT replaces editable profile attributes and requires `expectedRevision >= 1`.
+Responses expose `revision`. An authenticated owner needs active membership and
+`dealer:manage_profile`; editors/viewers cannot update settings. Missing, revoked
+or disallowed dealer IDs return not-found and record a denial before any revision
+comparison. Invalid values return the machine-readable bad-request code. Read
+current state, check permission and founding ownership, preserve immutable ID,
+owner and creation time, then submit the caller's revision to the repository CAS.
+Stale revisions and duplicate slugs return conflict without overwriting data.
+The repository rechecks active owner membership under its write transaction and
+commits the update plus audit together. Return the incremented revision only on
+success. Omitted optional text fields clear their value; they are not required or
+nonempty in the HTTP input schema. Domain length and format rules still apply.
+
+## Creation and retry protocol
+
+POST requires a printable ASCII idempotency key of 16–128 bytes. Normalize and
+validate attributes, hash their canonical JSON, then atomically create the shop,
+owner membership, creation audit, idempotency reservation and claimed owner
+relationship outbox event. IDs and owner come from injected server capabilities.
+The request publishes the owner relationship under the resource serializer,
+renewing its bounded lease before a call whose timeout is shorter than the lease.
+Outbox completion and its authorization-applied audit commit together. A write,
+audit, lease or serializer failure returns no profile; the persisted event remains
+for recovery by the existing background worker after lease expiry. Synchronous
+publication failures record an authorization-failed audit; automatic retries and
+dead-letter limits remain owned by the configured background worker.
+
+An identical retry returns the current profile for the original shop (not a new
+shop or a frozen creation snapshot). Changed attributes with the same key conflict.
+Retry claims an outstanding owner event when available; another worker's lease
+returns authorization-pending, and a dead-letter returns authorization-dead-lettered.
+A later non-creation relationship event is left for the background worker. Only
+an active owner membership plus fully consistent manage-profile permission permits
+returning a ready profile. Replay returns require a successful read audit. Never
+return ready merely because an outbox row cannot be claimed or a row exists.

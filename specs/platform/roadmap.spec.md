@@ -18,13 +18,15 @@ reads, profile revisions and atomic write/audit behavior now have real PostgreSQ
 coverage, including concurrent slug/CAS writers and restricted runtime-role
 permissions. The race-enabled adapter suite passes. Dealer private get/list now
 apply both membership and SpiceDB checks with audit and principal limiting;
-mutation endpoints remain closed. Real isolated SpiceDB tests through the runtime
+creation and profile updates now implement the mutation/outbox protocols. Real isolated SpiceDB tests through the runtime
 proxy pass the owner/editor/viewer permission matrix, cross-dealer denial,
 revocation and rejection of runtime schema writes. Application/HTTP read tests
 cover denial and dependency failures. Review identified candidate-ID disclosure
 through pagination/audit; encrypted dealer cursors and collection-targeted list
-denials address it. Membership administration, mutation protocols and client
-journeys remain unfinished. DL-01 through DL-04 remain open. No security finding
+denials address it. Creation/update stateful-fake and HTTP tests cover retry
+recovery, atomic audit failures, stale revision conflict and denied access.
+A hosted real-service dealer journey is wired but not yet verified for this
+change. Membership administration and client journeys remain unfinished. DL-01 through DL-04 remain open. No security finding
 is waived.
 
 ## Completed foundation: public scaffold

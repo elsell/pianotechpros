@@ -46,14 +46,6 @@ func (s *Service) requireConfiguredPolicy(ctx context.Context, authorization str
 	return ports.ErrAuthorizationPolicyNotConfigured
 }
 
-func (s *Service) Create(ctx context.Context, authorization, _ string, _ domain.Attributes) (domain.Entity, error) {
-	return domain.Entity{}, s.requireConfiguredPolicy(ctx, authorization)
-}
-
-func (s *Service) Update(ctx context.Context, authorization string, _ domain.ID, _ domain.Attributes) (domain.Entity, error) {
-	return domain.Entity{}, s.requireConfiguredPolicy(ctx, authorization)
-}
-
 func (s *Service) Delete(ctx context.Context, authorization string, _ domain.ID) error {
 	return s.requireConfiguredPolicy(ctx, authorization)
 }

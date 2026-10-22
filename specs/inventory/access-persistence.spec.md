@@ -103,3 +103,23 @@ Concurrent updates from one revision yield exactly one winner. Manual and accept
 voice edits retain their source; voice proposal confirmation belongs to the
 application boundary, not a permissive raw HTTP source parameter. Attribute edits
 do not publish or change public snapshots.
+
+## Application record commands
+
+The application offers empty-draft creation, private get and manual attribute edit.
+Every invocation obtains fresh policy authority; access objects cannot be supplied
+by callers. Creation requires a printable 16–128 byte idempotency key, generates
+an opaque record ID and `PT-<ID>` stock number, and uses one audit timestamp for
+both initial record timestamps. Retry identity generation does not alter the
+reserved intent. Manual edit accepts only typed attributes and expected revision;
+it always uses the manual source. Voice application is a separate future command
+that must validate explicit proposal confirmation.
+
+Repository not-found (including authority revoked after preflight) generates a
+collection-targeted denied audit under the already acquired principal budget.
+No record is returned on repository/audit failure. Missing dependencies fail closed
+after authentication. Domain invalid fields, no-change and exhausted revisions
+map to stable invalid-argument errors; stale revisions remain conflicts. Successful
+operations emit typed probes only after repository completion. These commands do
+not register HTTP routes; generated composition and boundary tests are required
+before exposing them.

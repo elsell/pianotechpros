@@ -205,6 +205,14 @@ coverage passes competing CAS writers, stale and cross-user/dealer edits,
 no-op/invalid input, stock collisions and audit-failure rollback. Status and public
 snapshots cannot be changed by this operation. HTTP and client integration remain
 open; this storage evidence does not establish an end-user editing workflow.
+Application commands now compose fresh session/membership/SpiceDB/limiter policy
+with transactional empty-draft creation, private read and manual attribute edits.
+Stateful-fake tests cover idempotent recovery, revision conflicts, malformed input,
+missing dependencies, repository failures and collection-scoped auditing when
+permission disappears after preflight. Manual editing cannot inject a voice source.
+These commands still need generated HTTP composition and wire-boundary coverage
+before web/native integration; no inventory route is exposed by this change.
+
 
 `make check check-contracts` passes without a structural-gate exception; the
 disposable database and its volume were removed after verification.

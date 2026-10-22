@@ -80,8 +80,15 @@ localized loading/retry/pagination states. A real Chromium journey against a
 controlled HTTP fixture passes Spanish rendering, keyboard selection, a 390px
 layout without overflow, late profile responses after sign-out, and late refresh
 credential rejection. The mounted directory is bound to the verified credential;
-private content clears immediately on sign-out. The full service-stack browser
-journey, profile editing and native presentation remain unfinished. DL-01 through DL-04 remain open. No security
+private content clears immediately on sign-out. Web creation/edit forms now cover all profile fields, preserve one creation
+snapshot/key through uncertain outcomes, and require explicit review before
+rebasing conflicted edits. Browser fixture acceptance passes a lost-response
+creation retry with one persisted shop and a concurrent profile edit with
+explicit revision review. Review caught transient session outages unmounting
+forms; a failing browser regression now passes after keeping the account-scoped
+workflow mounted across outage/recovery and credential rotation. Both pending
+creation intent and entered edits survive. Full service-stack browser journeys,
+staff screens and native presentation remain unfinished. DL-01 through DL-04 remain open. No security
 finding is waived.
 
 ## Completed foundation: public scaffold

@@ -191,10 +191,37 @@ Profiles show contact and showroom settings; raw revision numbers and internal
 IDs are not product copy. No untrusted URL becomes a clickable link in this slice.
 
 The mounted directory receives a verified account and an opaque credential bound
-to that session. Credential replacement remounts its scope. Sign-out hides private
+to that session. Account replacement remounts its scope. Each operation captures the current credential; ordinary rotation preserves open forms. An old credential rejection cannot invalidate a newer credential. Sign-out hides private
 content immediately before awaiting revocation; unmount, expiry and terminal
 rejection invalidate pending profile loads and refresh timers. A refresh response
 cannot restore storage after the starting credential has been removed or replaced.
 Browser acceptance uses a stateful HTTP fixture to exercise localized rendering,
 empty-page continuation, selection, delayed reads and sign-out isolation. This
 fixture evidence does not replace the required real PostgreSQL/OIDC/SpiceDB journey.
+
+## Profile form submission
+
+Web creation and editing use a labeled form grouped into identity/contact,
+address, showroom appearance and customer-service notes. Required values and
+limits mirror the API contract. Optional fields remain editable and clearable.
+Create supplies a fresh random idempotency key for one submitted snapshot. If
+network/service failure leaves the outcome uncertain, keep that exact snapshot
+and key, disable edits and offer retry. Never silently start another creation
+with changed attributes after an uncertain outcome. Validation or duplicate-slug
+rejection permits correction and a new attempt. Closing an uncertain creation
+requires retaining its intent in the mounted workflow; closing the browser is
+not yet durable draft recovery. Durable inventory drafts remain a separate requirement.
+
+Editing sends the revision originally loaded, never automatically fetches and
+uses a new revision after conflict. On conflict retain every entered value and
+explain that the user must review current data before trying again. Owner-only
+profile updates remain enforced by the API; until explicit client capability
+metadata exists, an edit action states that only shop owners can save changes.
+A rejected mutation does not discard form values. Session teardown discards
+private form state and prevents late completion from changing the next session.
+
+A transient session-service outage keeps the account-scoped form mounted while
+the local session remains valid, including an uncertain creation intent. Rotation
+updates the credential before profile revalidation so retry can use it during
+a profile-service outage. Only terminal rejection, expiry, sign-out or account
+replacement clears this private state.

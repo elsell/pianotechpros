@@ -54,9 +54,11 @@
     try {
       const next = await refreshApplicationSession(data.config);
       if (expected !== generation) return;
+      if (profile) dealerCredential = next;
       await loadProfile(next);
       if (expected !== generation) return;
       accessState = 'authenticated_online';
+      errorKey = null;
       refreshAttempt = 0;
       if (sessionExpiryAdvanced(expiresAt, next.expiresAt)) scheduleRefresh(next.expiresAt);
       else scheduleExpiration(next.expiresAt);
@@ -142,8 +144,8 @@
   {:else if accessState === 'authenticated_offline' && applicationSession()}<p>{i18n.t('auth.offline')}</p><button onclick={signOut}>{i18n.t('auth.signOut')}</button>
   {:else if profile}<p>{i18n.t('auth.signedInAs', { name: profile.displayName || profile.email })}</p><button onclick={signOut}>{i18n.t('auth.signOut')}</button>
   {:else}<p>{i18n.t('app.ready')}</p><button onclick={signIn}>{i18n.t('auth.signIn')}</button>{/if}
-  {#if profile && dealerCredential && accessState === 'authenticated_online'}
-    {#key dealerCredential.token}<DealerDirectory accountId={profile.id} apiURL={data.config.apiURL} credential={dealerCredential} {i18n} onSessionRejected={rejectDealerSession} />{/key}
+  {#if profile && dealerCredential}
+    {#key profile.id}<DealerDirectory accountId={profile.id} apiURL={data.config.apiURL} credential={dealerCredential} {i18n} onSessionRejected={rejectDealerSession} />{/key}
   {/if}
   {#if errorKey}<p role="alert">{i18n.t(errorKey)}</p>{/if}
 </main>

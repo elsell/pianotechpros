@@ -12,6 +12,9 @@ const members = new Map([['test-owner', { userID: 'test-owner', role: 'owner', r
 const staffInvitations = new Map();
 let staffConflict = true;
 let denyStaff = false;
+let invitationAccepted = false;
+let accessChecks = 0;
+const joinToken = 'A'.repeat(43);
 const creations = new Map();
 let createRequests = 0;
 let conflictOnce = true;
@@ -43,6 +46,14 @@ const server = createServer(async (req, res) => {
     if (createRequests === 1) return send(503, { code: 'unavailable' });
     return send(201, { data: creations.get(key).shop });
   }
+  if (url.pathname.includes('/staff-invitations/external-invite/')) {
+    if (body.token !== joinToken || invitationAccepted) return send(400, { code: 'invalid_invitation' });
+    if (url.pathname.endsWith('/preview')) return send(200, { data: { id: 'external-invite', dealerID: 'invited-shop', dealerName: 'Invited Pianos', role: 'viewer', expiresAt: '2030-01-01T00:00:00Z' } });
+    invitationAccepted = true;
+    shops.set('invited-shop', { ...shops.get('studio'), id: 'invited-shop', name: 'Invited Pianos' });
+    return send(200, { data: { dealerID: 'invited-shop', userID: 'test-owner', active: true, grantPending: true } });
+  }
+  if (url.pathname === '/v1/dealers/invited-shop' && invitationAccepted && ++accessChecks === 1) return send(404, { code: 'not_found' });
   if (url.pathname.includes('/staff') && denyStaff) return send(404, { code: 'not_found' });
   if (url.pathname.includes('/staff-invitations')) {
     if (req.method === 'GET') return send(200, { data: [...staffInvitations.values()], meta: {} });
@@ -169,6 +180,38 @@ try {
   assert.equal(await page.getByRole('button', { name: 'Crear invitación', exact: true }).count(), 0);
   await page.getByRole('button', { name: 'Volver al perfil', exact: true }).click();
   denyStaff = false;
+  await page.getByRole('button', { name: 'Unirse a una tienda', exact: true }).click();
+  await page.getByLabel('Pega tu código de invitación', { exact: true }).fill('invalid-private-code');
+  await page.getByRole('button', { name: 'Revisar invitación', exact: true }).click();
+  await page.getByText('Este código no es válido, ha caducado o ya no está disponible. Pide una nueva invitación al propietario.', { exact: true }).waitFor();
+  const privateCode = JSON.stringify({ dealerID: 'invited-shop', invitationID: 'external-invite', token: joinToken });
+  await page.getByLabel('Pega tu código de invitación', { exact: true }).fill(privateCode);
+  await page.getByRole('button', { name: 'Revisar invitación', exact: true }).click();
+  await page.getByRole('heading', { name: 'Invited Pianos', exact: true }).waitFor();
+  await page.getByLabel('Pega tu código de invitación', { exact: true }).fill(privateCode + ' ');
+  assert.equal(await page.getByRole('button', { name: 'Aceptar invitación', exact: true }).count(), 0);
+  await page.getByRole('button', { name: 'Revisar invitación', exact: true }).click();
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+  await page.screenshot({ path: '/tmp/piano-join-narrow.png', fullPage: true });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.getByRole('button', { name: 'Aceptar invitación', exact: true }).click();
+  await page.getByText('Invitación aceptada.', { exact: true }).waitFor();
+  assert.equal(await page.getByLabel('Pega tu código de invitación', { exact: true }).count(), 0);
+  await page.getByRole('button', { name: 'Comprobar acceso a la tienda', exact: true }).click();
+  await page.getByText('El acceso aún no está disponible. Si acabas de aceptar, espera un momento y vuelve a comprobarlo.', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Comprobar acceso a la tienda', exact: true }).click();
+  await page.getByRole('button', { name: 'Administrar personal', exact: true }).waitFor();
+  assert.equal(accessChecks, 3);
+  assert.ok(!page.url().includes(joinToken));
+  const storage = await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }));
+  assert.ok(!storage.includes(joinToken));
+  await page.getByRole('button', { name: 'Unirse a una tienda', exact: true }).click();
+  await page.getByLabel('Pega tu código de invitación', { exact: true }).fill(privateCode);
+  await page.getByRole('button', { name: 'Revisar invitación', exact: true }).click();
+  await page.getByText('Este código no es válido, ha caducado o ya no está disponible. Pide una nueva invitación al propietario.', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Cancelar', exact: true }).click();
+
 
   await page.getByRole('button', { name: 'Cargar más tiendas', exact: true }).click();
   await page.getByRole('button', { name: 'Studio Pianos', exact: true }).focus();
@@ -201,5 +244,5 @@ try {
   releaseRefresh();
   assert.equal(await page.evaluate(() => window.refreshResult), 'discarded');
   assert.equal(await page.evaluate(() => sessionStorage.getItem('pianotechpros_application_session')), null);
-  console.log('Dealer web staff permissions/conflicts/removal/invitation revocation, creation retry, conflict review, form retention through session outages, Spanish pagination, keyboard selection, responsive layout and sign-out isolation passed');
+  console.log('Dealer web invitation preview/acceptance/pending/replay, staff permissions/conflicts/removal/invitation revocation, creation retry, conflict review, form retention through session outages, Spanish pagination, keyboard selection, responsive layout and sign-out isolation passed');
 } finally { releaseRefresh(); releaseDetail(); await browser.close(); server.close(); }

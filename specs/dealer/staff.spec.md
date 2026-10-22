@@ -232,3 +232,21 @@ Any mutation conflict preserves the displayed state and asks for refresh before
 another attempt. Session/shop teardown invalidates late results and clears secrets.
 Framework-independent request sequencing lives in shared client-core; platform
 models provide their own controls and localized failure presentation.
+
+### Invitation consumption clients
+
+An authenticated user can paste the private JSON code emitted by the owner view.
+The code has exactly `dealerID`, `invitationID` and a canonical 32-byte base64url
+`token`; bounded parsing never includes input values in errors. Codes stay in
+memory and never enter URLs, browser storage, logs or analytics. Preview submits
+the token in the request body and displays only the returned shop name, offered
+role and expiry. Changing the code invalidates its preview immediately. Acceptance
+requires a separate explicit action against that same previewed code.
+
+After successful acceptance, clear the token and show pending-grant state when
+appropriate. An explicit check reads the selected shop through ordinary dealer
+access before entering it; pending access is not shown as usable. If the accept
+response is lost, offer an access check and an explicit retry of the same code,
+without claiming acceptance succeeded. Invalid/expired/consumed codes have a
+localized generic rejection; do not reveal who consumed a code. Closing the view
+or changing accounts clears input and invalidates late preview/accept responses.

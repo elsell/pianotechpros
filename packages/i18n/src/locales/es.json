@@ -118,5 +118,15 @@
   "staff.failed": "No se pudo completar la solicitud. Actualiza para comprobar el estado actual antes de volver a intentarlo.",
   "staff.conflict": "El acceso cambió en otro lugar. Actualiza y revisa antes de hacer otro cambio.",
   "staff.denied": "La administración del personal no está disponible o no tienes permiso.",
-  "staff.expired": "Caducada"
+  "staff.expired": "Caducada",
+  "staff.join": "Unirse a una tienda",
+  "staff.pasteCode": "Pega tu código de invitación",
+  "staff.preview": "Revisar invitación",
+  "staff.accept": "Aceptar invitación",
+  "staff.invalidCode": "Este código no es válido, ha caducado o ya no está disponible. Pide una nueva invitación al propietario.",
+  "staff.joinFailed": "No se pudo confirmar el resultado. Comprueba tu acceso o inténtalo de nuevo.",
+  "staff.accepted": "Invitación aceptada.",
+  "staff.checkAccess": "Comprobar acceso a la tienda",
+  "staff.accessPending": "El acceso aún no está disponible. Si acabas de aceptar, espera un momento y vuelve a comprobarlo.",
+  "staff.previewHelp": "Comprueba la tienda y el rol antes de aceptar."
 }

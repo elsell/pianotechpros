@@ -1,9 +1,10 @@
 <script lang="ts">
+  import DealerJoin from './DealerJoin.svelte';
   import DealerStaff from './DealerStaff.svelte';
   import DealerProfileForm from './DealerProfileForm.svelte';
   import { onMount } from 'svelte';
   import { createDealerApiClient, DealerClientError, type DealerProfile } from '@pianotechpros/api-client';
-  import { createDealerDirectory, type SessionCredential } from '@pianotechpros/client-core';
+  import { createDealerDirectory, type SessionCredential, type DealerInvitationCode } from '@pianotechpros/client-core';
   import type { MessageKey, Translator } from '@pianotechpros/i18n';
 
   export let accountId: string;
@@ -20,6 +21,14 @@
   let savedNotice = false;
   let active = true;
   let staffShop: string | null = null;
+  let joinOpen = false;
+  const joinAPI = {
+    preview: (input: DealerInvitationCode) => withCredential((api) => api.previewInvitation(input.dealerID, input.invitationID, input.token)),
+    accept: (input: DealerInvitationCode) => withCredential((api) => api.acceptInvitation(input.dealerID, input.invitationID, input.token)),
+    access: (id: string) => withCredential((api) => api.get(id)),
+  };
+  async function joined(id: string) { joinOpen = false; await directory.refresh(); await directory.select(id); }
+
   function staffAPI(id: string) {
     return {
       listStaff: (cursor: string | undefined = undefined) => withCredential((api) => api.listStaff(id, cursor)),
@@ -59,13 +68,14 @@
 <section class="directory" aria-labelledby="shops-heading">
   <header>
     <div><h2 id="shops-heading">{i18n.t('dealer.heading')}</h2><p>{i18n.t('dealer.intro')}</p></div>
-    <button disabled={Boolean(form) || Boolean(staffShop)} onclick={() => { savedNotice = false; form = { initial: null }; }}>{i18n.t('dealer.create')}</button>
-    <button class="secondary" disabled={state.listLoading || Boolean(form) || Boolean(staffShop)} onclick={() => directory.refresh()}>{i18n.t('dealer.refresh')}</button>
+    <button disabled={Boolean(form) || Boolean(staffShop) || joinOpen} onclick={() => { savedNotice = false; joinOpen = true; }}>{i18n.t('staff.join')}</button>
+    <button disabled={Boolean(form) || Boolean(staffShop) || joinOpen} onclick={() => { savedNotice = false; form = { initial: null }; }}>{i18n.t('dealer.create')}</button>
+    <button class="secondary" disabled={state.listLoading || Boolean(form) || Boolean(staffShop) || joinOpen} onclick={() => directory.refresh()}>{i18n.t('dealer.refresh')}</button>
   </header>
   <div class="workspace">
     <nav aria-labelledby="shops-heading" aria-busy={state.listLoading}>
       {#each state.items as shop (shop.id)}
-        <button disabled={Boolean(form) || Boolean(staffShop)} class:selected={state.selectedId === shop.id} aria-pressed={state.selectedId === shop.id} onclick={() => directory.select(shop.id)}>{shop.name}</button>
+        <button disabled={Boolean(form) || Boolean(staffShop) || joinOpen} class:selected={state.selectedId === shop.id} aria-pressed={state.selectedId === shop.id} onclick={() => directory.select(shop.id)}>{shop.name}</button>
       {/each}
       {#if state.listLoading}<p role="status">{i18n.t('common.loading')}</p>{/if}
       {#if state.listFailure}
@@ -75,7 +85,8 @@
     </nav>
     <div class="profile" aria-live="polite" aria-busy={state.detailLoading}>
       {#if savedNotice}<p role="status">{i18n.t('dealer.saved')}</p>{/if}
-      {#if staffShop}{#key staffShop}<DealerStaff shopName={state.selected?.name ?? ''} api={staffAPI(staffShop)} {i18n} onBack={() => { staffShop = null; }} />{/key}
+      {#if joinOpen}<DealerJoin {accountId} api={joinAPI} {i18n} onCancel={() => { joinOpen = false; }} onJoined={joined} />
+      {:else if staffShop}{#key staffShop}<DealerStaff shopName={state.selected?.name ?? ''} api={staffAPI(staffShop)} {i18n} onBack={() => { staffShop = null; }} />{/key}
       {:else if form}<DealerProfileForm initial={form.initial} {i18n} api={formAPI} onSaved={saved} onCancel={() => { form = null; }} />
       {:else if state.detailLoading}<p role="status">{i18n.t('common.loading')}</p>
       {:else if state.detailFailure}<p role="alert">{i18n.t(state.detailFailure)}</p><button onclick={() => directory.select(state.selectedId)}>{i18n.t('dealer.retry')}</button>

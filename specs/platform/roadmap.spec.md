@@ -88,7 +88,13 @@ explicit revision review. Review caught transient session outages unmounting
 forms; a failing browser regression now passes after keeping the account-scoped
 workflow mounted across outage/recovery and credential rotation. Both pending
 creation intent and entered edits survive. Full service-stack browser journeys,
-native presentation and invitation consumption remain unfinished. The web staff
+native presentation remains unfinished. Web invitation consumption now has a
+bounded private-code parser, explicit preview/acceptance and ordinary-access
+confirmation before shop entry. Core tests cover malformed inputs, mismatched
+identities, lost-response recovery and late responses. Browser fixture acceptance
+passes invalid codes, preview invalidation, pending grants, replay rejection and
+absence of codes from URLs/browser storage. These fixture checks do not prove
+the full service-stack browser journey. The web staff
 view now supports independent member/invitation pagination, revision-checked
 role changes and confirmed removal/revocation. One-time invitation codes stay
 in memory and clear on dismissal, successful revocation or teardown. Shared

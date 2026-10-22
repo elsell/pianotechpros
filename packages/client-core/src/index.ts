@@ -180,3 +180,4 @@ export { createSessionLifecycle, type SessionLease } from './session-lifecycle';
 export { createDealerDirectory, type DealerDirectoryPort, type DealerDirectoryState } from './dealer-directory';
 export { createDealerCreation } from './dealer-creation';
 export { createDealerStaff, type DealerStaffPort, type DealerStaffState, type StaffMember, type StaffInvitation, type IssuedStaffInvitation, type StaffRole } from './dealer-staff';
+export { createDealerJoin, parseDealerInvitationCode, InvitationCodeError, type DealerInvitationCode, type DealerInvitationPreview, type DealerJoinState } from './dealer-join';

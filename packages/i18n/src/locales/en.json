@@ -118,5 +118,15 @@
   "staff.failed": "The request could not be completed. Refresh to check the current state before trying again.",
   "staff.conflict": "Staff access changed elsewhere. Refresh and review before making another change.",
   "staff.denied": "Staff administration is unavailable or you do not have permission.",
-  "staff.expired": "Expired"
+  "staff.expired": "Expired",
+  "staff.join": "Join a shop",
+  "staff.pasteCode": "Paste your invitation code",
+  "staff.preview": "Review invitation",
+  "staff.accept": "Accept invitation",
+  "staff.invalidCode": "This invitation code is invalid, expired or no longer available. Ask the shop owner for a new invitation.",
+  "staff.joinFailed": "The result could not be confirmed. Check your access or try again.",
+  "staff.accepted": "Invitation accepted.",
+  "staff.checkAccess": "Check shop access",
+  "staff.accessPending": "Access is not available yet. If you just accepted, wait a moment and check again.",
+  "staff.previewHelp": "Check the shop and role before accepting."
 }

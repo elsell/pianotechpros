@@ -28,3 +28,9 @@ type Repository interface {
 	Update(context.Context, string, domain.Entity, audit.Event) error
 	Delete(context.Context, string, domain.ID, ports.AuthorizationChange, audit.Event) error
 }
+
+// StaffRepository is separate from profile persistence so membership mutation
+// cannot accidentally become a generic profile CRUD operation.
+type StaffRepository interface {
+	RevokeMembership(context.Context, string, domain.ID, string, int64, string, audit.Event) (domain.Membership, error)
+}

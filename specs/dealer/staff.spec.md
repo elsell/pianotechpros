@@ -93,3 +93,23 @@ staff role, bounded lifetime and mutually exclusive consumption/revocation state
 Consumed recipients differ from the issuing owner; consumption timestamps lie
 within the invitation lifetime. State transitions return new values and preserve
 the original value, preventing partial mutation on validation failure.
+
+### Staff revocation persistence boundary
+
+The staff repository revocation command takes the acting owner, dealer, subject,
+expected revision, independently generated outbox ID and audit event. It locks the
+authorization resource before the dealer and current membership, verifies the persisted founding owner's confirmed
+active membership and active account, and rejects owner removal. It derives the
+relationship deletion from the stored role rather than accepting a caller's role.
+Local revocation, clearing any pending grant, the relationship deletion and the
+successful membership audit commit together. A stale revision changes nothing.
+Queue the deletion after every existing dealer relationship event (at least one
+PostgreSQL microsecond later when necessary), so a pending earlier grant cannot
+be applied after the revocation. Application orchestration must additionally check
+SpiceDB, authenticate, rate-limit and audit denials before exposing this command.
+
+Membership audit targets use a canonical JSON array `[dealerID,userID]` rather
+than a user ID alone, which is ambiguous across dealers. The persistence boundary
+validates this target against the command. Resource locks precede membership locks
+to match outbox publication/completion; the existing database ordering trigger
+assigns the strictly increasing queue timestamp.

@@ -1,6 +1,7 @@
 package dealer
 
 import (
+	"encoding/json"
 	"errors"
 	"math"
 	"strings"
@@ -165,4 +166,10 @@ func (m Membership) ConfirmGrant(expected int64, now time.Time) (Membership, err
 	}
 	m.GrantedRevision = m.Revision
 	return m, nil
+}
+
+// MembershipKey identifies a dealer/user pair without delimiter ambiguity.
+func MembershipKey(dealerID ID, userID string) string {
+	encoded, _ := json.Marshal([2]string{string(dealerID), userID})
+	return string(encoded)
 }

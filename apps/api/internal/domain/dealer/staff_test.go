@@ -220,3 +220,17 @@ func TestReactivationCannotReusePreviousRemoteGrant(t *testing.T) {
 		t.Fatalf("confirmed revoked membership: %v", err)
 	}
 }
+
+func TestMembershipKeyPreservesDealerAndUserBoundaries(t *testing.T) {
+	keys := map[string]bool{}
+	for _, pair := range [][2]string{{"a", "b/c"}, {"a/b", "c"}, {"a", "b"}, {"other", "b"}, {"a\"", "b"}, {"a", "\"b"}} {
+		key := MembershipKey(ID(pair[0]), pair[1])
+		if keys[key] {
+			t.Fatalf("ambiguous membership target: %q", key)
+		}
+		keys[key] = true
+	}
+	if got := MembershipKey("dealer", "user"); got != `["dealer","user"]` {
+		t.Fatalf("unstable target: %s", got)
+	}
+}

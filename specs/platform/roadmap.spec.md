@@ -36,7 +36,14 @@ dealer reads/updates require confirmation, while founding-owner creation has a
 restricted pending read. Outbox completion confirms only the matching active
 revision in the same transaction as audit. Real PostgreSQL tests pass audit rollback,
 superseded/revoked grants, runtime credentials and fail-closed migration backfill.
-Staff persistence/application endpoints and client journeys remain unfinished. DL-01 through DL-04 remain open. No security finding
+Staff revocation persistence now atomically denies local access, clears pending
+grants, queues relationship removal and records a dealer/user-specific audit.
+Real PostgreSQL tests cover owner protection, stale revisions, inactive owners,
+audit/outbox rollback, runtime privileges and concurrent removals. Review found
+a resource/membership lock-order cycle; acquiring the resource lock first fixes
+it. A deterministic worker-completion/removal test passes with the fix and fails
+under the original lock order. Invitation and role-change persistence, application
+endpoints and client journeys remain unfinished. DL-01 through DL-04 remain open. No security finding
 is waived.
 
 ## Completed foundation: public scaffold

@@ -25,7 +25,10 @@ export async function refreshApplicationSession(config: ClientRuntimeConfig): Pr
   return refreshSessionCredential(
     current,
     async (credential) => createSessionApiClient(config.apiURL, () => credential.token).refresh(),
-    async (replacement) => saveApplicationSession(replacement),
+    async (replacement) => {
+      if (applicationSession()?.token !== current.token) throw { kind: 'expired' } as const;
+      saveApplicationSession(replacement);
+    },
   );
 }
 export async function revokeApplicationSession(config: ClientRuntimeConfig): Promise<void> {

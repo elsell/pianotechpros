@@ -8,6 +8,7 @@ export type DealerDirectoryState<T, Failure> = Readonly<{
   nextCursor?: string;
   listLoading: boolean;
   listFailure: Failure | null;
+  listFailureOperation: 'refresh' | 'more' | null;
   selectedId: string | null;
   selected: T | null;
   detailLoading: boolean;
@@ -17,7 +18,7 @@ export type DealerDirectoryState<T, Failure> = Readonly<{
 /** Account-scoped reads only; platform models own navigation and translated copy. */
 export function createDealerDirectory<T extends { id: string }, Failure>(classify: (error: unknown) => Failure) {
   type State = DealerDirectoryState<T, Failure>;
-  const empty = (accountId: string | null): State => ({ accountId, items: [], nextCursor: undefined, listLoading: false, listFailure: null, selectedId: null, selected: null, detailLoading: false, detailFailure: null });
+  const empty = (accountId: string | null): State => ({ accountId, items: [], nextCursor: undefined, listLoading: false, listFailure: null, listFailureOperation: null, selectedId: null, selected: null, detailLoading: false, detailFailure: null });
   let state = empty(null);
   let port: DealerDirectoryPort<T> | null = null;
   let scope = 0;
@@ -40,15 +41,15 @@ export function createDealerDirectory<T extends { id: string }, Failure>(classif
     const generation = ++listGeneration;
     const cursor = append ? state.nextCursor : undefined;
     const current = () => scope === capturedScope && generation === listGeneration;
-    publish({ listLoading: true, listFailure: null });
+    publish({ listLoading: true, listFailure: null, listFailureOperation: null });
     try {
       const page = await currentPort.list(cursor);
       if (!current()) return;
       const rows = new Map((append ? state.items : []).map((row) => [row.id, row]));
       for (const row of page.items) rows.set(row.id, row);
-      publish({ items: Object.freeze([...rows.values()]), nextCursor: page.nextCursor, listLoading: false, listFailure: null });
+      publish({ items: Object.freeze([...rows.values()]), nextCursor: page.nextCursor, listLoading: false, listFailure: null, listFailureOperation: null });
     } catch (error) {
-      if (current()) publish({ listLoading: false, listFailure: classify(error) });
+      if (current()) publish({ listLoading: false, listFailure: classify(error), listFailureOperation: append ? 'more' : 'refresh' });
     }
   }
   return Object.freeze({

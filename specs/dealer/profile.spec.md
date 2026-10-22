@@ -179,3 +179,22 @@ Overlapping load-more requests coalesce, while refresh invalidates their results
 A failed selected-profile read never displays the previous dealer's details.
 Failure presentation uses an injected machine-error classifier; shared core
 contains no translated copy, framework state or persistent credential storage.
+
+## Web shop directory
+
+After profile verification, the web home presents the authenticated user's shops
+with an explicit selection and a readable profile panel. Loading, empty, retry,
+load-more and unavailable-detail states have localized text and keyboard-accessible
+controls. Selecting a different shop clears the old profile immediately. A failed
+read shows a retry action without inventing permission or membership state.
+Profiles show contact and showroom settings; raw revision numbers and internal
+IDs are not product copy. No untrusted URL becomes a clickable link in this slice.
+
+The mounted directory receives a verified account and an opaque credential bound
+to that session. Credential replacement remounts its scope. Sign-out hides private
+content immediately before awaiting revocation; unmount, expiry and terminal
+rejection invalidate pending profile loads and refresh timers. A refresh response
+cannot restore storage after the starting credential has been removed or replaced.
+Browser acceptance uses a stateful HTTP fixture to exercise localized rendering,
+empty-page continuation, selection, delayed reads and sign-out isolation. This
+fixture evidence does not replace the required real PostgreSQL/OIDC/SpiceDB journey.

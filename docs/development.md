@@ -47,3 +47,18 @@ remain fallbacks if BroadcastChannel is unavailable. Close the adapter on teardo
 `python3 scripts/check-generated-contracts.py` verifies contracts in temporary
 storage. It never overwrites your local changes; use `make generate` explicitly
 when you intend to update the generated files.
+
+
+### Dealer web fixture journey
+
+For the isolated browser regression, start the web app in one terminal:
+
+```sh
+PIANOTECHPROS_API_URL=http://127.0.0.1:8089 pnpm --filter @pianotechpros/web dev --port 5179
+```
+
+Then run `node scripts/dealer-web-acceptance.mjs` from the repository root.
+It starts a disposable HTTP fixture on port 8089 and uses installed Playwright
+Chromium to check Spanish pagination/retry, keyboard profile selection, narrow
+layout and sign-out races. It uses synthetic sessions and does not contact real
+identity or database services. Full-stack acceptance remains a separate gate.

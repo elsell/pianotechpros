@@ -97,3 +97,17 @@ test('account replacement clears previously loaded pagination', async () => {
   assert.equal(directory.snapshot().nextCursor, undefined);
   assert.deepEqual(directory.snapshot().items, []);
 });
+
+test('retry distinguishes failed refresh from failed append when an old cursor exists', async () => {
+  const port = new Directory(); port.pages.set('', { items: [shop('old')], nextCursor: 'old-next' });
+  const directory = createDealerDirectory<Shop, string>(classify);
+  directory.replaceSession('alice', port); await directory.refresh();
+  port.pages.delete(''); await directory.refresh();
+  assert.equal(directory.snapshot().listFailureOperation, 'refresh');
+  assert.equal(directory.snapshot().nextCursor, 'old-next');
+  port.pages.set('', { items: [shop('fresh')], nextCursor: 'new-next' });
+  await directory.refresh();
+  assert.equal(directory.snapshot().listFailureOperation, null);
+  await directory.loadMore();
+  assert.equal(directory.snapshot().listFailureOperation, 'more');
+});

@@ -75,8 +75,13 @@ preserving revisions, creation idempotency and sanitized machine errors. Local
 HTTP tests cover wire behavior, credential rotation and invitation secret handling.
 The framework-independent directory has controlled-fake tests for empty pages,
 retry, pagination coalescing and late-response isolation across account/selection
-changes. Web/native presentation integration and interaction journeys remain
-unfinished. DL-01 through DL-04 remain open. No security
+changes. The web directory now shows membership-scoped shops and selected profiles with
+localized loading/retry/pagination states. A real Chromium journey against a
+controlled HTTP fixture passes Spanish rendering, keyboard selection, a 390px
+layout without overflow, late profile responses after sign-out, and late refresh
+credential rejection. The mounted directory is bound to the verified credential;
+private content clears immediately on sign-out. The full service-stack browser
+journey, profile editing and native presentation remain unfinished. DL-01 through DL-04 remain open. No security
 finding is waived.
 
 ## Completed foundation: public scaffold

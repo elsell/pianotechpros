@@ -9,6 +9,7 @@ import (
 // RecordRepository rechecks local authority and commits operation audit in its transaction.
 // Callers must first enforce the request-local policy, including SpiceDB and rate limits.
 type RecordRepository interface {
+	ReviseRecord(context.Context, string, string, string, int64, domain.Attributes, domain.Source, audit.Event) (domain.Record, error)
 	CreateDraft(context.Context, string, domain.Record, string, audit.Event) (domain.Record, bool, error)
 	GetRecord(context.Context, string, string, string, audit.Event) (domain.Record, error)
 }

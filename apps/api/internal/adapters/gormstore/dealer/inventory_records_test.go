@@ -209,3 +209,111 @@ func TestInventoryDraftHistoryFailureRollsBack(t *testing.T) {
 		}
 	}
 }
+
+func TestInventoryAttributeRevisionAtomicConflictAndScope(t *testing.T) {
+	admin := connection(t, false)
+	e, c, k, a := persistentFixture(t, admin)
+	runtime := connection(t, true)
+	r := New(runtime)
+	ctx := context.Background()
+	if _, _, err := r.Create(ctx, e, c, k, a); err != nil {
+		t.Fatal(err)
+	}
+	completeGrant(t, runtime, c, a)
+	draft, err := inventory.NewDraft(string(e.ID)+"-edit", string(e.ID), "EDIT", testTime)
+	if err != nil {
+		t.Fatal(err)
+	}
+	event := a
+	event.ID += "-draft"
+	event.TargetType = "inventory"
+	event.TargetID = draft.ID
+	if _, _, err := r.CreateDraft(ctx, e.OwnerUserID, draft, "edit", event); err != nil {
+		t.Fatal(err)
+	}
+	attributes := draft.Attributes
+	attributes.Title = "Grand piano"
+	attributes.PrivateNotes = "private"
+	attributes.Featured = true
+	event.ID += "-update"
+	event.Action = audit.ResourceUpdated
+	updated, err := r.ReviseRecord(ctx, e.OwnerUserID, string(e.ID), draft.ID, 1, attributes, inventory.Manual, event)
+	if err != nil || updated.Revision != 2 || updated.Title != attributes.Title || updated.Status != inventory.Draft {
+		t.Fatalf("edit: %+v %v", updated, err)
+	}
+	stale := event
+	stale.ID += "-stale"
+	if _, err := r.ReviseRecord(ctx, e.OwnerUserID, string(e.ID), draft.ID, 1, attributes, inventory.Manual, stale); !errors.Is(err, ports.ErrConflict) {
+		t.Fatalf("stale edit: %v", err)
+	}
+	stale.ActorUserID = "outsider"
+	if _, err := r.ReviseRecord(ctx, "outsider", string(e.ID), draft.ID, 1, attributes, inventory.Manual, stale); !errors.Is(err, ports.ErrNotFound) {
+		t.Fatalf("cross-user edit: %v", err)
+	}
+	stale.ActorUserID = e.OwnerUserID
+	if _, err := r.ReviseRecord(ctx, e.OwnerUserID, "other-dealer", draft.ID, 1, attributes, inventory.Manual, stale); !errors.Is(err, ports.ErrNotFound) {
+		t.Fatalf("cross-dealer edit: %v", err)
+	}
+	noChange := event
+	noChange.ID += "-no-change"
+	if _, err := r.ReviseRecord(ctx, e.OwnerUserID, string(e.ID), draft.ID, 2, updated.Attributes, inventory.Manual, noChange); !errors.Is(err, inventory.ErrNoChange) {
+		t.Fatalf("no-op: %v", err)
+	}
+	invalid := updated.Attributes
+	invalid.StockNumber = ""
+	if _, err := r.ReviseRecord(ctx, e.OwnerUserID, string(e.ID), draft.ID, 2, invalid, inventory.Manual, noChange); !errors.Is(err, inventory.ErrInvalidFields) {
+		t.Fatalf("invalid attributes: %v", err)
+	}
+	other, err := inventory.NewDraft(draft.ID+"-other", string(e.ID), "OTHER", testTime)
+	if err != nil {
+		t.Fatal(err)
+	}
+	create := event
+	create.ID += "-other"
+	create.Action = audit.ResourceCreated
+	create.TargetID = other.ID
+	if _, _, err := r.CreateDraft(ctx, e.OwnerUserID, other, "other", create); err != nil {
+		t.Fatal(err)
+	}
+	collision := updated.Attributes
+	collision.StockNumber = other.StockNumber
+	if _, err := r.ReviseRecord(ctx, e.OwnerUserID, string(e.ID), draft.ID, 2, collision, inventory.Manual, noChange); !errors.Is(err, ports.ErrConflict) {
+		t.Fatalf("stock conflict: %v", err)
+	}
+	// Duplicate audit ID fails after updating the row, which must roll back.
+	attributes.Title = "must roll back"
+	if got, err := r.ReviseRecord(ctx, e.OwnerUserID, string(e.ID), draft.ID, 2, attributes, inventory.Manual, event); err == nil || got.ID != "" {
+		t.Fatalf("audit failure: %+v %v", got, err)
+	}
+	read := event
+	read.ID += "-read"
+	read.Action = audit.ResourceViewed
+	current, err := r.GetRecord(ctx, e.OwnerUserID, string(e.ID), draft.ID, read)
+	if err != nil || current.Revision != 2 || current.Title != updated.Title {
+		t.Fatalf("rollback: %+v %v", current, err)
+	}
+	var history inventoryHistoryModel
+	if err := admin.Where("record_id=? AND revision=2", draft.ID).Take(&history).Error; err != nil || history.Kind != "attributes" || history.Source != "manual" {
+		t.Fatalf("history: %+v %v", history, err)
+	}
+	var count int64
+	if err := admin.Table("inventory_history").Where("record_id=?", draft.ID).Count(&count).Error; err != nil || count != 2 {
+		t.Fatal("unexpected history")
+	}
+	// Concurrent CAS updates cannot silently overwrite one another.
+	results := make(chan error, 2)
+	for _, suffix := range []string{"a", "b"} {
+		go func(suffix string) {
+			input := current.Attributes
+			input.Title = suffix
+			ev := event
+			ev.ID += "-concurrent-" + suffix
+			_, err := r.ReviseRecord(ctx, e.OwnerUserID, string(e.ID), draft.ID, 2, input, inventory.Voice, ev)
+			results <- err
+		}(suffix)
+	}
+	first, second := <-results, <-results
+	if !((first == nil && errors.Is(second, ports.ErrConflict)) || (second == nil && errors.Is(first, ports.ErrConflict))) {
+		t.Fatalf("CAS outcomes: %v %v", first, second)
+	}
+}

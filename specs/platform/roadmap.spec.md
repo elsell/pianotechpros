@@ -198,7 +198,13 @@ revoked/cross-user reads, duplicate-stock conflicts, denied history rewrites and
 record deletion, plus rollback on audit and history failures. Review findings for
 translated constraint errors and migration readiness were fixed. `make check`
 and contract drift checks pass. This is storage infrastructure; inventory HTTP
-commands, editing persistence, photos and product journeys are still open.
+commands, photos and product journeys are still open.
+Attribute editing persistence now applies the domain revision command under the
+same authority locks, with atomic audit/private history. Real PostgreSQL race
+coverage passes competing CAS writers, stale and cross-user/dealer edits,
+no-op/invalid input, stock collisions and audit-failure rollback. Status and public
+snapshots cannot be changed by this operation. HTTP and client integration remain
+open; this storage evidence does not establish an end-user editing workflow.
 
 `make check check-contracts` passes without a structural-gate exception; the
 disposable database and its volume were removed after verification.

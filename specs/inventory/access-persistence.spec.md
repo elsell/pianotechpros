@@ -87,3 +87,19 @@ history. Missing local authority cannot use idempotency to recover a record.
 Draft creation/read lock dealer resource, dealer, membership and active account
 before any inventory lookup/write. The application must separately enforce
 SpiceDB and audit rate limits before invoking these repository capabilities.
+
+## Attribute revision storage
+
+Attribute updates accept actor/dealer/record identity, an expected revision, typed
+attributes, source and a successful update audit. They recheck `manage_inventory`
+authority under the same locks before loading the dealer-scoped record. The domain
+revision command validates and normalizes facts, rejects no-op/stale/invalid edits,
+and increments exactly once. It never accepts status, ownership or timestamps
+from an attribute payload. The audit occurrence time supplies the command time.
+The next attributes and private snapshot history commit with the audit atomically;
+any failure rolls back all three. Stock collisions map to conflict. Unknown or
+inaccessible records return not-found before stale-revision information.
+Concurrent updates from one revision yield exactly one winner. Manual and accepted
+voice edits retain their source; voice proposal confirmation belongs to the
+application boundary, not a permissive raw HTTP source parameter. Attribute edits
+do not publish or change public snapshots.

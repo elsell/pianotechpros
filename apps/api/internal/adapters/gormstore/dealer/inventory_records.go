@@ -193,3 +193,63 @@ func (r *Repository) GetRecord(ctx context.Context, actor, dealerID, id string, 
 	}
 	return result, nil
 }
+
+// ReviseRecord changes only private attributes. Publication has a separate boundary.
+func (r *Repository) ReviseRecord(ctx context.Context, actor, dealerID, id string, expected int64, attributes domain.Attributes, source domain.Source, event audit.Event) (domain.Record, error) {
+	if dealerID == "" || !inventoryEventValid(event, actor, id, audit.ResourceUpdated) {
+		return domain.Record{}, ports.ErrInvalidArgument
+	}
+	var result domain.Record
+	err := r.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		owner, err := lockInventoryAuthority(tx, actor, dealerID, dealer.ManageInventory)
+		if err != nil {
+			return err
+		}
+		if event.OwnerUserID != owner {
+			return ports.ErrInvalidArgument
+		}
+		current, err := inventoryRead(tx.Clauses(clause.Locking{Strength: "UPDATE"}), dealerID, id)
+		if err != nil {
+			return err
+		}
+		next, history, err := current.Revise(attributes, expected, actor, source, event.OccurredAt)
+		if errors.Is(err, domain.ErrConflict) {
+			return ports.ErrConflict
+		}
+		if err != nil {
+			return err
+		}
+		encoded, err := json.Marshal(next.Attributes)
+		if err != nil {
+			return err
+		}
+		changed := tx.Model(&inventoryRecordModel{}).Where("id=? AND dealer_id=? AND revision=?", id, dealerID, expected).Updates(map[string]any{"stock_number": next.StockNumber, "attributes": json.RawMessage(encoded), "revision": next.Revision, "updated_at": next.UpdatedAt})
+		if changed.Error != nil {
+			var pg *pgconn.PgError
+			if errors.Is(changed.Error, gorm.ErrDuplicatedKey) || errors.As(changed.Error, &pg) && pg.Code == "23505" && pg.ConstraintName == "inventory_records_dealer_id_stock_number_key" {
+				return ports.ErrConflict
+			}
+			return changed.Error
+		}
+		if changed.RowsAffected != 1 {
+			return ports.ErrConflict
+		}
+		if err := tx.Create(fromAudit(event)).Error; err != nil {
+			return err
+		}
+		snapshot, err := json.Marshal(next)
+		if err != nil {
+			return err
+		}
+		row := inventoryHistoryModel{RecordID: id, DealerID: dealerID, Revision: next.Revision, ActorUserID: actor, Source: string(history.Source), Kind: history.Kind, Snapshot: snapshot, AuditID: event.ID, CreatedAt: history.At}
+		if err := tx.Create(&row).Error; err != nil {
+			return err
+		}
+		result = next
+		return nil
+	})
+	if err != nil {
+		return domain.Record{}, inventoryError(err)
+	}
+	return result, nil
+}

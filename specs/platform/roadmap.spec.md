@@ -10,6 +10,13 @@ customer/technician profile parity; resolve security findings and collect real
 web/native interaction evidence throughout. Signing and production cutover alone
 remain deferred by user instruction.
 
+Dealer implementation has started: the profile/access contract, typed fields,
+profile validation, generated repository/HTTP boundaries and contracts exist.
+Optional-field, Unicode and malformed-profile tests pass, as do `make check`
+and contract drift checks. All dealer endpoints still fail closed. Membership
+persistence, unique slugs, revisions, SpiceDB policy and client journeys are
+unfinished; DL-01 through DL-04 remain open. No security finding is waived.
+
 ## Completed foundation: public scaffold
 
 Fresh Go API, SvelteKit web and Expo iOS/Android foundation generated from Make

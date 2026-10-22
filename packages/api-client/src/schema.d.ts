@@ -55,6 +55,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/dealers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list-dealers"];
+        put?: never;
+        post: operations["create-dealer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dealers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get-dealer"];
+        put: operations["update-dealer"];
+        post?: never;
+        delete: operations["delete-dealer"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/invitations": {
         parameters: {
             query?: never;
@@ -233,6 +265,101 @@ export interface components {
             expiresAt: string;
             token: string;
         };
+        DealerCreate: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/DealerCreate.json
+             */
+            readonly $schema?: string;
+            accent_color: string;
+            appointment_note: string;
+            banner_alt_text: string;
+            city: string;
+            delivery_note: string;
+            description: string;
+            email: string;
+            name: string;
+            phone: string;
+            postal_code: string;
+            region: string;
+            service_note: string;
+            showroom_published: boolean;
+            slug: string;
+            street_address_1: string;
+            street_address_2: string;
+            tagline: string;
+            warranty_note: string;
+            website_url: string;
+        };
+        DealerItem: {
+            accent_color: string;
+            appointment_note: string;
+            banner_alt_text: string;
+            city: string;
+            delivery_note: string;
+            description: string;
+            email: string;
+            id: string;
+            name: string;
+            phone: string;
+            postal_code: string;
+            region: string;
+            service_note: string;
+            showroom_published: boolean;
+            slug: string;
+            street_address_1: string;
+            street_address_2: string;
+            tagline: string;
+            warranty_note: string;
+            website_url: string;
+        };
+        DealerItemOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/DealerItemOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["DealerItem"];
+        };
+        DealerListOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/DealerListOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["DealerItem"][];
+            meta: components["schemas"]["MetaStruct"];
+        };
+        DealerUpdate: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/DealerUpdate.json
+             */
+            readonly $schema?: string;
+            accent_color: string;
+            appointment_note: string;
+            banner_alt_text: string;
+            city: string;
+            delivery_note: string;
+            description: string;
+            email: string;
+            name: string;
+            phone: string;
+            postal_code: string;
+            region: string;
+            service_note: string;
+            showroom_published: boolean;
+            slug: string;
+            street_address_1: string;
+            street_address_2: string;
+            tagline: string;
+            warranty_note: string;
+            website_url: string;
+        };
         ErrorDetail: {
             /** @description Where the error occurred, e.g. 'body.items[3].tags' or 'path.thing-id' */
             location?: string;
@@ -298,6 +425,9 @@ export interface components {
              */
             readonly $schema?: string;
             data: components["schemas"]["UserDTO"];
+        };
+        MetaStruct: {
+            nextCursor?: string;
         };
         PaginationMeta: {
             nextCursor?: string;
@@ -403,6 +533,177 @@ export interface operations {
         };
     };
     "requeue-authorization-dead-letter": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "list-dealers": {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                Authorization?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DealerListOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "create-dealer": {
+        parameters: {
+            query?: never;
+            header: {
+                Authorization?: string;
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DealerCreate"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DealerItemOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "get-dealer": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DealerItemOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "update-dealer": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DealerUpdate"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DealerItemOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "delete-dealer": {
         parameters: {
             query?: never;
             header?: {

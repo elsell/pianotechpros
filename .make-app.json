@@ -5,5 +5,11 @@
   "slug": "pianotechpros",
   "bundlePrefix": "com.pianotechpros",
   "module": "github.com/elsell/pianotechpros",
-  "domains": []
+  "domains": [
+    {
+      "name": "dealer",
+      "plural": "dealers",
+      "fields": "name:string,slug:string,email:string,phone:string,website_url:string,tagline:string,description:string,street_address_1:string,street_address_2:string,city:string,region:string,postal_code:string,appointment_note:string,delivery_note:string,warranty_note:string,service_note:string,banner_alt_text:string,accent_color:string,showroom_published:bool"
+    }
+  ]
 }

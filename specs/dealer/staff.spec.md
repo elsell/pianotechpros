@@ -191,3 +191,22 @@ The shared HTTP error transformer removes raw validation details and input value
 for these operations, including malformed JSON, while preserving status and
 stable error code. Framework parsing failures must not echo a token in an error
 response. This applies before application-level token validation as well.
+
+### Owner administration lists
+
+`GET /v1/dealers/{id}/staff` lists the founding owner and current/revoked staff,
+including role, revision, active state and pending-grant state. It never exposes
+provider identities or email. `GET /v1/dealers/{id}/staff-invitations` lists offered
+role, creation/expiry, consumed recipient/time and revocation time. Its storage
+projection excludes token digests; raw tokens are never recoverable from a list.
+
+Both lists require confirmed local founding-owner access, active account and
+SpiceDB `manage_members`, consume the principal budget and append a successful
+read audit before returning data. Failed audits return neither items nor cursor.
+Queries are bounded (default 50, maximum 100), ordered by creation time then stable
+user/invitation ID. An encrypted authenticated cursor binds actor, dealer, list
+kind, creation snapshot and last row. Cross-dealer, cross-list and cross-actor
+reuse is invalid. Continuations exclude subsequently created entries but report
+the current state of earlier entries, including removal/consumption. The storage
+read rechecks owner authority under the same resource-first lock order used by
+staff mutations. List responses disable caching and referrers.

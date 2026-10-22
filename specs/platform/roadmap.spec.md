@@ -64,8 +64,14 @@ exposed a translated unique-constraint error mapping bug (duplicate slug returne
 500); profile writes now map it to conflict, and database tests use production
 error-translation settings. GORM unstructured SQL logging is disabled; a
 subprocess regression proves query parameters are not echoed on database errors.
-Staff listing and client journeys remain unfinished. DL-01 through DL-04 remain open. No security finding
-is waived.
+Owner staff and invitation lists now use bounded, actor/dealer/list-bound encrypted
+cursors, owner/SpiceDB checks, persistence rechecks and audit-before-response.
+Invitation projections exclude token digests. Real PostgreSQL race tests and
+application/HTTP boundary tests pass; code review found no blocking issue. The
+real-service acceptance script now covers list pagination and terminal states,
+but those added assertions have not yet run against the full service stack.
+Client journeys remain unfinished. DL-01 through DL-04 remain open. No security
+finding is waived.
 
 ## Completed foundation: public scaffold
 

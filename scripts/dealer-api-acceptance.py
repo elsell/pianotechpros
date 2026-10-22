@@ -116,3 +116,33 @@ revocable_path = invites + "/" + revocable["id"]
 request("POST", revocable_path + "/revoke", expected=204)
 request("POST", revocable_path + "/preview", {"token": revocable["token"]}, token=outsider, expected=400)
 print("Dealer staff invitation, pending grant, role edit, removal and reinvitation acceptance passed")
+
+# Owner administration lists expose operational state, never invitation secrets.
+request("GET", path + "/staff", token=outsider, expected=404)
+request("GET", invites, token=outsider, expected=404)
+request("GET", path + "/staff", token="", expected=401)
+request("GET", invites, token="", expected=401)
+member_page = request("GET", path + "/staff?limit=1")
+assert len(member_page["data"]) == 1
+member_cursor = member_page["meta"]["nextCursor"]
+second_member_page = request("GET", path + "/staff?limit=1&cursor=" + urllib.parse.quote(member_cursor))
+assert len(second_member_page["data"]) == 1 and not second_member_page["meta"].get("nextCursor")
+assert {row["userID"] for row in member_page["data"] + second_member_page["data"]} == {other_id, request("GET", "/v1/me")["data"]["id"]}
+request("GET", invites + "?cursor=" + urllib.parse.quote(member_cursor), expected=400)
+listed = []
+query = invites + "?limit=1"
+for _ in range(4):
+    page = request("GET", query)
+    listed.extend(page["data"])
+    cursor = page["meta"].get("nextCursor")
+    if not cursor:
+        break
+    query = invites + "?limit=1&cursor=" + urllib.parse.quote(cursor)
+assert len(listed) == 3
+by_id = {row["id"]: row for row in listed}
+assert by_id[issued["id"]]["consumedBy"] == other_id
+assert by_id[replacement["id"]]["consumedBy"] == other_id
+assert by_id[revocable["id"]]["revokedAt"]
+serialized = json.dumps(listed).lower()
+assert "token" not in serialized and "digest" not in serialized
+print("Owner staff and invitation list pagination, terminal state and secret exclusion acceptance passed")

@@ -87,6 +87,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/dealers/{id}/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list-dealer-staff"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/dealers/{id}/staff-invitations": {
         parameters: {
             query?: never;
@@ -94,7 +110,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["list-dealer-staff-invitations"];
         put?: never;
         post: operations["create-dealer-staff-invitation"];
         delete?: never;
@@ -593,12 +609,37 @@ export interface components {
             role: "editor" | "viewer";
             token: string;
         };
+        StaffInvitationListOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/StaffInvitationListOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["StaffInvitationSummary"][];
+            meta: components["schemas"]["StaffListMeta"];
+        };
         StaffInvitationPreview: {
             dealerID: string;
             dealerName: string;
             /** Format: date-time */
             expiresAt: string;
             id: string;
+            /** @enum {string} */
+            role: "editor" | "viewer";
+        };
+        StaffInvitationSummary: {
+            /** Format: date-time */
+            consumedAt?: string;
+            consumedBy?: string;
+            /** Format: date-time */
+            createdAt: string;
+            dealerID: string;
+            /** Format: date-time */
+            expiresAt: string;
+            id: string;
+            /** Format: date-time */
+            revokedAt?: string;
             /** @enum {string} */
             role: "editor" | "viewer";
         };
@@ -610,6 +651,19 @@ export interface components {
              */
             readonly $schema?: string;
             token: string;
+        };
+        StaffListMeta: {
+            nextCursor?: string;
+        };
+        StaffListOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/StaffListOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["StaffMember"][];
+            meta: components["schemas"]["StaffListMeta"];
         };
         StaffMember: {
             active: boolean;
@@ -928,6 +982,78 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "list-dealer-staff": {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffListOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "list-dealer-staff-invitations": {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffInvitationListOutputBody"];
+                };
             };
             /** @description Error */
             default: {

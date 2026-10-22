@@ -22,3 +22,14 @@ type StaffInvitationIssued struct {
 	StaffInvitationPreview
 	Token string `json:"token"`
 }
+
+type StaffInvitationSummary struct {
+	ID         string     `json:"id"`
+	DealerID   string     `json:"dealerID"`
+	Role       string     `json:"role" enum:"editor,viewer"`
+	CreatedAt  time.Time  `json:"createdAt"`
+	ExpiresAt  time.Time  `json:"expiresAt"`
+	ConsumedBy string     `json:"consumedBy,omitempty"`
+	ConsumedAt *time.Time `json:"consumedAt,omitempty"`
+	RevokedAt  *time.Time `json:"revokedAt,omitempty"`
+}

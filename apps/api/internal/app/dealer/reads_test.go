@@ -275,3 +275,10 @@ func (*readStore) RevokeStaffInvitation(context.Context, string, domain.ID, stri
 func (*readStore) AcceptStaffInvitation(context.Context, string, domain.ID, string, [32]byte, string, audit.Event, ports.Clock) (domain.Membership, error) {
 	return domain.Membership{}, ports.ErrAuthorizationPolicyNotConfigured
 }
+
+func (*readStore) ListStaff(context.Context, string, domain.ID, StaffPageRequest) (StaffPage, error) {
+	return StaffPage{}, ports.ErrAuthorizationPolicyNotConfigured
+}
+func (*readStore) ListStaffInvitations(context.Context, string, domain.ID, StaffPageRequest) (InvitationPage, error) {
+	return InvitationPage{}, ports.ErrAuthorizationPolicyNotConfigured
+}

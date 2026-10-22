@@ -34,6 +34,7 @@ type Repository interface {
 // StaffRepository is separate from profile persistence so membership mutation
 // cannot accidentally become a generic profile CRUD operation.
 type StaffRepository interface {
+	ListStaff(context.Context, string, domain.ID, StaffPageRequest) (StaffPage, error)
 	ChangeMembershipRole(context.Context, string, domain.ID, string, domain.Role, int64, string, string, audit.Event) (domain.Membership, error)
 	RevokeMembership(context.Context, string, domain.ID, string, int64, string, audit.Event) (domain.Membership, error)
 }
@@ -46,8 +47,23 @@ type InvitationCandidate struct {
 }
 
 type StaffInvitations interface {
+	ListStaffInvitations(context.Context, string, domain.ID, StaffPageRequest) (InvitationPage, error)
 	StaffInvitationCandidate(context.Context, string, domain.ID, string, [32]byte) (InvitationCandidate, error)
 	CreateStaffInvitation(context.Context, string, domain.StaffInvitation, audit.Event) error
 	RevokeStaffInvitation(context.Context, string, domain.ID, string, audit.Event) error
 	AcceptStaffInvitation(context.Context, string, domain.ID, string, [32]byte, string, audit.Event, ports.Clock) (domain.Membership, error)
+}
+
+type StaffPageRequest struct {
+	AfterID                string
+	AfterCreated, Snapshot time.Time
+	Limit                  int
+}
+type StaffPage struct {
+	Items   []domain.Membership
+	HasMore bool
+}
+type InvitationPage struct {
+	Items   []domain.InvitationSummary
+	HasMore bool
 }

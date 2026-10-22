@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+var ErrRateLimited = errors.New("rate limited")
+
 var ErrNotFound = errors.New("not found")
 var ErrInvalidArgument = errors.New("invalid argument")
 var ErrConflict = errors.New("conflict")

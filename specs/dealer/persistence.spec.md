@@ -1,10 +1,11 @@
 # Dealer persistence and transport
 
 `profile.spec.md` defines the product policy. The generated Huma registrar is
-registered through the generator-owned composition registry, but its application
-service still authenticates then fails closed. Storage implementation does not
-activate dealer access. Membership administration, SpiceDB checks and complete
-client journeys remain unfinished.
+registered through the generator-owned composition registry. Private get/list
+now require an authenticated scoped session, active stored membership, SpiceDB
+view permission, principal audit budget and successful audit append. Mutation
+services remain closed. Membership administration, creation/update application
+protocols and complete client journeys remain unfinished.
 
 ## Membership and revision storage
 

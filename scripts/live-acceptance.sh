@@ -27,6 +27,7 @@ docker compose up -d --build spicedb dex api web
 for _ in $(seq 1 180); do curl -fsS http://localhost:8080/readyz >/dev/null 2>&1 && curl -fsS http://localhost:5556/dex/.well-known/openid-configuration >/dev/null 2>&1 && break; sleep 1; done
 curl -fsS http://localhost:8080/healthz >/dev/null
 curl -fsS http://localhost:8080/readyz >/dev/null
+(cd apps/api && go test ./internal/adapters/spicedb -spicedb-endpoint localhost:50051 -spicedb-token local-development-runtime-change-me -spicedb-insecure)
 for _ in $(seq 1 180); do curl -fsS http://localhost:5173 >/dev/null 2>&1 && break; sleep 1; done
 curl -fsS http://localhost:5173 >/dev/null
 

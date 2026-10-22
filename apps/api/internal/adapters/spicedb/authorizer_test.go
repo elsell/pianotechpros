@@ -1,16 +1,27 @@
 package spicedb
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestRequiredSchemaComparisonRejectsDrift(t *testing.T) {
 	if !schemaCurrent(RequiredSchema) {
 		t.Fatal("required schema rejected itself")
 	}
-	if !schemaCurrent("definition user {}\n\ndefinition resource { relation owner: user permission view = owner permission update = owner permission delete = owner }") {
+	if !schemaCurrent(strings.Join(strings.Fields(RequiredSchema), " ")) {
 		t.Fatal("equivalent provider formatting rejected")
 	}
-	if !schemaCurrent("definition resource { relation owner: user permission view = owner permission update = owner permission delete = owner }\ndefinition user {}") {
+	definitions := strings.Split(RequiredSchema, "definition ")[1:]
+	var reordered string
+	for i := len(definitions) - 1; i >= 0; i-- {
+		reordered += "definition " + definitions[i] + "\n"
+	}
+	if !schemaCurrent(reordered) {
 		t.Fatal("equivalent provider ordering rejected")
+	}
+	if schemaCurrent(strings.ReplaceAll(RequiredSchema, "permission manage_profile = owner", "permission manage_profile = owner + editor")) {
+		t.Fatal("expanded profile permissions accepted")
 	}
 	if schemaCurrent("definition user {}") {
 		t.Fatal("incomplete schema accepted")

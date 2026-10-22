@@ -6,3 +6,15 @@ definition resource {
   permission update = owner
   permission delete = owner
 }
+
+definition dealer {
+  relation owner: user
+  relation editor: user
+  relation viewer: user
+  permission view = owner + editor + viewer
+  permission manage_profile = owner
+  permission manage_members = owner
+  permission manage_inventory = owner + editor
+  permission publish_inventory = owner + editor
+  permission manage_inquiries = owner + editor
+}

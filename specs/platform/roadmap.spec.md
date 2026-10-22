@@ -16,10 +16,16 @@ Optional-field, Unicode and malformed-profile tests pass, as do `make check`
 and contract drift checks. Membership persistence, unique slugs, actor-scoped
 reads, profile revisions and atomic write/audit behavior now have real PostgreSQL
 coverage, including concurrent slug/CAS writers and restricted runtime-role
-permissions. The race-enabled adapter suite passes. All dealer endpoints still
-fail closed: membership administration, SpiceDB application policy and client
-journeys are unfinished. DL-01 through DL-04 remain open. No security finding is
-waived.
+permissions. The race-enabled adapter suite passes. Dealer private get/list now
+apply both membership and SpiceDB checks with audit and principal limiting;
+mutation endpoints remain closed. Real isolated SpiceDB tests through the runtime
+proxy pass the owner/editor/viewer permission matrix, cross-dealer denial,
+revocation and rejection of runtime schema writes. Application/HTTP read tests
+cover denial and dependency failures. Review identified candidate-ID disclosure
+through pagination/audit; encrypted dealer cursors and collection-targeted list
+denials address it. Membership administration, mutation protocols and client
+journeys remain unfinished. DL-01 through DL-04 remain open. No security finding
+is waived.
 
 ## Completed foundation: public scaffold
 

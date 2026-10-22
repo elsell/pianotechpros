@@ -45,7 +45,7 @@ type App struct {
 
 var ErrUnauthenticated = errors.New("unauthenticated")
 var ErrForbidden = errors.New("forbidden")
-var ErrRateLimited = errors.New("rate limited")
+var ErrRateLimited = ports.ErrRateLimited
 
 const authorizationLease = 2 * time.Minute
 const authorizationCallTimeout = 30 * time.Second

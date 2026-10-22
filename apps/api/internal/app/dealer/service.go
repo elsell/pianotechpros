@@ -50,14 +50,6 @@ func (s *Service) Create(ctx context.Context, authorization, _ string, _ domain.
 	return domain.Entity{}, s.requireConfiguredPolicy(ctx, authorization)
 }
 
-func (s *Service) List(ctx context.Context, authorization, _ string, _ int) ([]domain.Entity, string, error) {
-	return nil, "", s.requireConfiguredPolicy(ctx, authorization)
-}
-
-func (s *Service) Get(ctx context.Context, authorization string, _ domain.ID) (domain.Entity, error) {
-	return domain.Entity{}, s.requireConfiguredPolicy(ctx, authorization)
-}
-
 func (s *Service) Update(ctx context.Context, authorization string, _ domain.ID, _ domain.Attributes) (domain.Entity, error) {
 	return domain.Entity{}, s.requireConfiguredPolicy(ctx, authorization)
 }

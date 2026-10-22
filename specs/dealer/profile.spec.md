@@ -70,3 +70,37 @@ identity, duplicate slug races, idempotency collisions, revoked/pending membersh
 cross-shop IDs, role escalation, last-owner preservation, expired/consumed tokens,
 authorization/audit failures and successful permitted journeys. Client forms use
 shared localized errors, native keyboard/picker interactions and recoverable edits.
+
+## Typed permission contract
+
+The `dealer` SpiceDB object uses its immutable dealer ID directly. Its `owner`,
+`editor` and `viewer` relations accept only `user` subjects. Permission names are:
+`view` (all three roles), `manage_profile` and `manage_members` (owner only),
+`manage_inventory`, `publish_inventory` and `manage_inquiries` (owner or editor).
+There is no generic delete permission. Neither an unrelated dealer relation nor a
+relationship on the legacy generic `resource` object grants dealer access.
+Removing a relationship removes its permissions under fully consistent checks.
+The API uses the existing runtime capability proxy; the expanded schema does
+not add schema-write capability to the runtime credential. Real SpiceDB tests
+must cover the role/permission matrix, cross-dealer isolation and revocation.
+
+## Private profile reads
+
+A read requires an opaque application session with a nonempty user ID and the
+`api:user` scope. Authenticate before checking configuration, then consume the
+configured principal audit budget before persistence or authorization work.
+GET checks active persisted membership and fully consistent `dealer:view`;
+missing, revoked and unauthorized dealer IDs all return the same not-found code.
+Denials are audited to the acting user's visibility, without exposing the shop
+owner. Permission dependency failures fail closed and emit a failed decision.
+A successful read is returned only after its audit append succeeds.
+
+Lists read at most 100 membership-scoped candidates at a stable creation-time
+snapshot, then check `dealer:view` for each. Pending/denied candidates are omitted
+and each denial is audited against the collection rather than a server-discovered
+dealer ID. Supplied-ID GET denials may record that supplied ID. A dependency or audit failure discards the entire
+response. Pagination advances over candidates, including omitted candidates,
+so an empty page can have a continuation cursor. Authenticated encrypted cursors conceal candidate IDs and bind the actor,
+dealer domain, snapshot and last candidate; another actor or tampering is invalid.
+List success is audited once for the collection. Creation/update/membership APIs
+remain closed until their separate mutation and outbox protocols are implemented.

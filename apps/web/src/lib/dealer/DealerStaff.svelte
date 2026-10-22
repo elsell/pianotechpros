@@ -7,7 +7,7 @@
   export let shopName: string;
   export let i18n: Translator;
   export let onBack: () => void;
-  const controller = createDealerStaff(api);
+  const controller = createDealerStaff(api, (error) => error instanceof DealerClientError && (error.status === 401 || ['not_found', 'forbidden'].includes(error.code)));
   let state = controller.snapshot();
   let now = Date.now();
   let role: StaffRole = 'viewer';

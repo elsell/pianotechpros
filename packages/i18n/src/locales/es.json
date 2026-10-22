@@ -132,5 +132,6 @@
   "dealer.discardTitle": "¿Descartar los cambios?",
   "dealer.discardHelp": "Se perderán los cambios no guardados del perfil de la tienda.",
   "dealer.discard": "Descartar cambios",
-  "dealer.continueEditing": "Seguir editando"
+  "dealer.continueEditing": "Seguir editando",
+  "staff.invalidExpiry": "Introduce un número entero de 1 a 168 horas."
 }

@@ -21,7 +21,7 @@ export interface DealerStaffState {
   ready: boolean;
   failure: unknown;
 }
-export function createDealerStaff(port: DealerStaffPort) {
+export function createDealerStaff(port: DealerStaffPort, accessDenied: (failure: unknown) => boolean) {
   const empty = (): DealerStaffState => ({ members: [], invitations: [], issued: null, busy: false, ready: false, failure: null });
   let state = empty();
   let disposed = false;
@@ -31,11 +31,22 @@ export function createDealerStaff(port: DealerStaffPort) {
     state = Object.freeze({ ...state, ...patch });
     for (const listener of listeners) listener(state);
   }
+  function rejectAccess(failure: unknown) {
+    publish({ ...empty(), busy: state.busy, memberCursor: undefined, invitationCursor: undefined, failure });
+  }
+  async function observeAccess<T>(request: Promise<T>): Promise<T> {
+    try { return await request; }
+    catch (failure) {
+      // Clear immediately, even while the sibling list request is pending.
+      if (accessDenied(failure)) rejectAccess(failure);
+      throw failure;
+    }
+  }
   async function run(work: () => Promise<void>, needsReady = true) {
     if (disposed || state.busy || (needsReady && !state.ready)) return;
     publish({ busy: true, failure: null });
     try { await work(); }
-    catch (failure) { publish({ failure, ready: false }); }
+    catch (failure) { publish(accessDenied(failure) ? { ...empty(), memberCursor: undefined, invitationCursor: undefined, failure } : { failure, ready: false }); }
     finally { publish({ busy: false }); }
   }
   const merge = <T>(old: readonly T[], next: T[], id: (row: T) => string) => [...new Map([...old, ...next].map((row) => [id(row), row])).values()];
@@ -44,7 +55,12 @@ export function createDealerStaff(port: DealerStaffPort) {
     snapshot: () => state,
     subscribe(listener: (value: DealerStaffState) => void) { listeners.add(listener); listener(state); return () => { listeners.delete(listener); }; },
     refresh: () => run(async () => {
-      const [members, invitations] = await Promise.all([port.listStaff(), port.listInvitations()]);
+      const results = await Promise.allSettled([observeAccess(port.listStaff()), observeAccess(port.listInvitations())]);
+      const rejected = results.filter((result) => result.status === 'rejected');
+      if (rejected.length) throw (rejected.find((result) => accessDenied(result.reason)) ?? rejected[0]).reason;
+      const [memberResult, invitationResult] = results;
+      if (memberResult.status !== 'fulfilled' || invitationResult.status !== 'fulfilled') return;
+      const members = memberResult.value; const invitations = invitationResult.value;
       publish({ members: members.items, memberCursor: members.nextCursor, invitations: invitations.items, invitationCursor: invitations.nextCursor, ready: true });
     }, false),
     moreStaff: () => run(async () => { if (!state.memberCursor) return; const page = await port.listStaff(state.memberCursor); publish({ members: merge(state.members, page.items, (row) => row.userID), memberCursor: page.nextCursor }); }),

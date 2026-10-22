@@ -107,3 +107,20 @@ results after disposal cannot restore state or navigate. Successful saves replac
 the form with the saved shop profile. Shared orchestration must have controlled
 fake coverage for conflicts, failures, uncertain creation and disposal; runtime
 keyboard, discard dialog, large text and navigation acceptance remain required.
+
+## Native staff administration
+
+The profile opens staff administration in a native stack screen. Use grouped
+member and invitation sections with independent pagination, native pull refresh,
+localized pending/removed/expired states and scalable text. Owner rows expose no
+mutation controls; editor/viewer changes send the displayed revision. Native
+destructive confirmation dialogs identify the selected member/invitation and
+must not act after dismissal or account teardown. Conflict requires refresh.
+
+Invitation creation offers explicit viewer/editor choices and an integer expiry
+from 1 through 168 hours. The returned one-time code is selectable in memory;
+never auto-copy, auto-share or persist it. Clear it on dismissal, confirmed
+revocation, explicit access rejection or screen teardown. Transient refresh
+failure retains it for recovery. No automatic retry of invitation creation.
+Acceptance still requires the separate join workflow. Device confirmation,
+selection/copy, keyboard, screen-reader and large-text checks remain mandatory.

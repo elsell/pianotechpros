@@ -125,7 +125,16 @@ cover stale/foreign revisions, concurrent commands and corrected validation erro
 Save returns to a refreshed profile; list/profile focus refresh prevents stale
 navigation results. Both Metro exports, `make check check-contracts`, i18n and
 boundary gates pass; required read-only review found no blocker. Native staff
-administration, inventory and publication slices remain unfinished. Runtime
+administration now has grouped paginated member/invitation lists, pending states,
+role changes, destructive confirmation dialogs, bounded invitation expiry and
+memory-only selectable codes. Shared staff state clears on explicit access
+rejection while transient failures retain issued codes. Review exposed a parallel
+list failure race; per-request rejection handling and serialization through both
+responses fix it. Controlled-fake tests cover both response orders, and Chromium
+fixture acceptance proves prior member data and codes disappear on rejection.
+Required follow-up review found no remaining blocker. Inventory and publication
+slices remain unfinished. The staff slice passes `make check check-contracts`,
+both final Metro platform exports and the Chromium fixture journey. Runtime
 keyboard, discard-dialog, navigation, large-text and accessibility acceptance is
 still required; these checks do not establish native interaction quality.
 

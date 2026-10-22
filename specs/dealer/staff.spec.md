@@ -226,8 +226,10 @@ Invitation creation selects editor/viewer and a bounded expiry. Its one-time
 secret is shown only in the mounted view alongside the dealer/invitation IDs
 needed for consumption; never place it in a URL, persistent browser storage or
 logs. Creation is not idempotent: do not automatically retry after failure.
-Keep a successful issued token visible through list refresh failure until the
-user dismisses it or leaves the view. Revocation requires explicit confirmation.
+Keep a successful issued token visible through transient list refresh failure until
+the user dismisses it or leaves the view. Explicit authentication/access rejection
+clears members, invitations, cursors and issued secrets immediately. It must never
+leave a former authorized view visible. Revocation requires explicit confirmation.
 Any mutation conflict preserves the displayed state and asks for refresh before
 another attempt. Session/shop teardown invalidates late results and clears secrets.
 Framework-independent request sequencing lives in shared client-core; platform

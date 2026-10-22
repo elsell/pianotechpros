@@ -173,6 +173,14 @@ try {
   await page.getByRole('button', { name: 'Confirmar revocación', exact: true }).click();
   await page.getByText(/Revocada/).waitFor();
   assert.equal(await code.count(), 0);
+  await page.getByRole('button', { name: 'Crear invitación', exact: true }).click();
+  await code.waitFor();
+  denyStaff = true;
+  await page.getByRole('button', { name: 'Actualizar personal', exact: true }).click();
+  await page.getByText('La administración del personal no está disponible o no tienes permiso.', { exact: true }).waitFor();
+  assert.equal(await code.count(), 0);
+  assert.equal(await page.getByText('test-owner', { exact: true }).count(), 0);
+  assert.equal(await page.getByText('test-editor', { exact: true }).count(), 0);
   await page.getByRole('button', { name: 'Volver al perfil', exact: true }).click();
   denyStaff = true;
   await page.getByRole('button', { name: 'Administrar personal', exact: true }).click();

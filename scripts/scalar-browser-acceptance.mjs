@@ -88,6 +88,10 @@ try {
   if (me?.data?.email !== email) {
     throw new Error(`Scalar /v1/me returned the wrong principal: ${JSON.stringify(me)}`)
   }
+  const audit = await waitForAuthorizedTryRequest(/Test Request.*get \/v1\/audit-events\)/i, '/v1/audit-events')
+  if (!Array.isArray(audit?.data) || !audit.data.some(event => event.action === 'user.viewed')) {
+    throw new Error('Scalar audit history did not include the authenticated profile read')
+  }
   console.log('Scalar browser OIDC and identity Try It acceptance passed')
 } finally {
   await browser.close()

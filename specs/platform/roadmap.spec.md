@@ -61,7 +61,7 @@ claim is made by this scaffold milestone.
 
 ## SDK compatibility follow-up
 
-The initial hosted browser/API acceptance passed on commit `0cfea9d` (run
+The initial hosted API/Compose acceptance passed on commit `0cfea9d` (run
 [39799502085](https://github.com/elsell/pianotechpros/actions/runs/39799502085)).
 Both native jobs stopped at the outdated Expo patch compatibility check.
 The SDK 55.0.32 refresh passes frozen installation with pnpm 11.0.7, all 19
@@ -70,4 +70,36 @@ with nine documented exact exceptions, and both Metro exports locally. Local
 exports used a temporary watch-folder setting for memory-backed dependencies
 because of host disk pressure; that machine-specific setting is not committed.
 Hosted jobs now export platform bundles before compilation in a normal checkout.
-Hosted native compilation for this refresh is still pending.
+Hosted iOS compilation for this refresh is still pending.
+
+## Current hosted evidence
+
+Commit `52cdd34` is being checked in run
+[39812943749](https://github.com/elsell/pianotechpros/actions/runs/39812943749).
+API/Compose acceptance, including its container builds, passed. Both hosted
+platform exports, Expo Doctor and native compatibility checks passed in ordinary
+checkouts. Android Gradle `assembleDebug` passed. The Android job is finishing
+post-build steps; unsigned iOS Xcode compilation remains in progress.
+
+The verification job failed at `govulncheck`: **23 reachable vulnerabilities**
+with the CI-pinned Go 1.25.12. The earlier local count of 16 used Go 1.25.13;
+neither result passes the security gate. The separate release-style container
+build check after `make verify` did not run. The refreshed JavaScript graph still
+reports 72 npm findings (1 critical, 48 high, 19 moderate, 4 low).
+
+Registry checks on 2026-10-22 confirmed that the suggested node-forge 1.4.1,
+braces 3.0.4 and sprintf-js 1.1.4 versions are not published. Their affected paths
+include Expo signing tooling and build/test utilities; this is not proof of
+unreachability. Signing remains deferred. Other advisory fixes are published,
+but require compatibility, supply-chain and regression review before adoption.
+Issue #2 remains the release-blocking remediation work; no audit threshold or
+vulnerability exception has been introduced to obtain a passing result.
+
+## Browser acceptance correction
+
+Completion review found that the no-example template's Compose harness fetched
+web HTML but did not invoke a browser. The earlier API/Compose success must not
+be treated as browser interaction evidence. The harness now invokes real
+Playwright web and Scalar journeys: Spanish rendering, PKCE sign-in, profile
+restoration, sign-out, and authenticated profile/audit requests from Scalar.
+Hosted execution of these newly connected journeys remains pending.

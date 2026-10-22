@@ -88,12 +88,10 @@ Try It requests to `/v1/me` and a protected resource endpoint. Protocol-only
 reconstruction is supporting evidence, not a substitute for this browser boundary.
 The harness permits bounded UI retries while Scalar renders the Try It request
 control and applies a successfully exchanged credential, but must fail if the
-control never appears or Scalar never attaches the bearer credential. It opens
-Try It only after the exact exchanged credential matches throughout the complete
-expected sequence of repeated observations spanning Scalar's 500-millisecond
-debounced authentication-store settling interval. An observed mismatch resets
-both the interval and its matching-observation count; slow or stalled browser
-observations cannot replace that sequence or extend its absolute bound.
+control never appears or Scalar never attaches the bearer credential. The browser harness uses a bounded 45-second retry window, observes the bearer
+header on each outgoing request, and requires a successful authenticated response.
+The credential-settling helper has separate unit coverage; its repeated-observation
+behavior is not claimed as browser evidence unless the harness invokes it.
 Every harness invocation has a unique Compose project and performs project and
 volume cleanup both before setup and on exit. Interrupted, stale, or concurrent
 runs must not share migration state or persistence fixtures.
@@ -111,6 +109,12 @@ separator-stripping title forms would otherwise collide in Huma.
 The browser also opens the web client with `es-ES`, verifies negotiation to the
 supported `es` locale, checks the document language, and observes Spanish catalog
 copy. Static catalog checks alone are not sufficient rendering evidence.
+The no-example scaffold must invoke both browser harnesses from live acceptance.
+Its protected-resource check uses audit history, not an absent example domain.
+The web journey completes real Dex sign-in with S256 PKCE, renders the resolved
+profile, restores it after reload, signs out, and remains signed out after reload.
+Use the shared locale catalog for assertions and bounded locator waits; never
+replace these journeys with mocked HTTP responses or a successful HTML fetch.
 Shared runtime tests exercise supported and unsupported locale selection,
 interpolation, singular and plural forms, and locale-aware number/date formatting.
 The Expo adapter is tested with controlled device-locale readers for supported

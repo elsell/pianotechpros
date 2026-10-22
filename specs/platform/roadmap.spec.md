@@ -138,6 +138,16 @@ both final Metro platform exports and the Chromium fixture journey. Runtime
 keyboard, discard-dialog, navigation, large-text and accessibility acceptance is
 still required; these checks do not establish native interaction quality.
 
+Inventory implementation has started with `../inventory/record.spec.md` and a
+framework-free domain model for all private editor fields. Validation preserves
+unknown values, partial-date precision, exact money and custom manufacturer text;
+draft construction requires injected identity, stock and time. Controlled tests
+cover invalid calendar dates, Unicode bounds, money precision and caller-owned
+pointer isolation. The domain race suite and `make check check-contracts` pass; required read-only review
+found no blocker. No inventory route, persistence, lifecycle transition, public
+projection or client workflow is enabled by this foundation; those parity
+requirements remain open.
+
 Hosted run [39839184001](https://github.com/elsell/pianotechpros/actions/runs/39839184001)
 on `9afe4d9` passed its real-service acceptance job: browser Spanish/PKCE/session
 restoration/sign-out, Scalar identity requests, dealer creation/read/edit/retries

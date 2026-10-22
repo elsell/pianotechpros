@@ -17,6 +17,19 @@ var _ application.StaffRepository = (*Repository)(nil)
 // RevokeMembership commits local denial before asynchronous relationship cleanup.
 // The application separately enforces the fully consistent SpiceDB decision.
 func (r *Repository) RevokeMembership(ctx context.Context, actor string, dealerID domain.ID, subject string, expected int64, changeID string, event audit.Event) (domain.Membership, error) {
+	return r.mutateMembership(ctx, actor, dealerID, subject, expected, changeID, "", event, func(m domain.Membership) (domain.Membership, error) { return m.Revoke(expected, event.OccurredAt) })
+}
+
+func (r *Repository) ChangeMembershipRole(ctx context.Context, actor string, dealerID domain.ID, subject string, role domain.Role, expected int64, deleteID, touchID string, event audit.Event) (domain.Membership, error) {
+	if touchID == "" || touchID == deleteID {
+		return domain.Membership{}, ports.ErrInvalidArgument
+	}
+	return r.mutateMembership(ctx, actor, dealerID, subject, expected, deleteID, touchID, event, func(m domain.Membership) (domain.Membership, error) {
+		return m.ChangeRole(role, expected, event.OccurredAt)
+	})
+}
+
+func (r *Repository) mutateMembership(ctx context.Context, actor string, dealerID domain.ID, subject string, expected int64, changeID, touchID string, event audit.Event, transition func(domain.Membership) (domain.Membership, error)) (domain.Membership, error) {
 	if actor == "" || dealerID == "" || subject == "" || expected < 1 || changeID == "" || !event.Valid() || event.ActorUserID != actor || event.OwnerUserID != actor || event.Action != audit.ResourceUpdated || event.Outcome != audit.Succeeded || event.TargetType != "dealer_membership" || event.TargetID != domain.MembershipKey(dealerID, subject) {
 		return domain.Membership{}, ports.ErrInvalidArgument
 	}
@@ -45,7 +58,7 @@ func (r *Repository) RevokeMembership(ctx context.Context, actor string, dealerI
 			return err
 		}
 		membership := domain.Membership{DealerID: domain.ID(current.DealerID), UserID: current.UserID, Role: domain.Role(current.Role), Active: current.Active, Revision: current.Revision, GrantedRevision: current.GrantedRevision, CreatedAt: current.CreatedAt, UpdatedAt: current.UpdatedAt}
-		revoked, err := membership.Revoke(expected, event.OccurredAt)
+		next, err := transition(membership)
 		if errors.Is(err, domain.ErrRevisionConflict) {
 			return ports.ErrConflict
 		}
@@ -57,7 +70,19 @@ func (r *Repository) RevokeMembership(ctx context.Context, actor string, dealerI
 		if err := tx.Create(&change).Error; err != nil {
 			return err
 		}
-		update := tx.Model(&membershipModel{}).Where("dealer_id=? AND user_id=? AND revision=?", dealerID, subject, expected).Updates(map[string]any{"active": false, "revision": revoked.Revision, "updated_at": revoked.UpdatedAt, "pending_authorization_change_id": nil, "pending_authorization_revision": nil})
+		updates := map[string]any{"active": next.Active, "role": string(next.Role), "revision": next.Revision, "updated_at": next.UpdatedAt, "pending_authorization_change_id": nil, "pending_authorization_revision": nil}
+		if next.Active {
+			touch := change
+			touch.ID = touchID
+			touch.Operation = ports.AuthorizationTouch
+			touch.Relation = string(next.Role)
+			if err := tx.Create(&touch).Error; err != nil {
+				return err
+			}
+			updates["pending_authorization_change_id"] = touchID
+			updates["pending_authorization_revision"] = next.Revision
+		}
+		update := tx.Model(&membershipModel{}).Where("dealer_id=? AND user_id=? AND revision=?", dealerID, subject, expected).Updates(updates)
 		if update.Error != nil {
 			return update.Error
 		}
@@ -67,7 +92,7 @@ func (r *Repository) RevokeMembership(ctx context.Context, actor string, dealerI
 		if err := tx.Create(fromAudit(event)).Error; err != nil {
 			return err
 		}
-		result = revoked
+		result = next
 		return nil
 	})
 	if errors.Is(err, gorm.ErrRecordNotFound) {

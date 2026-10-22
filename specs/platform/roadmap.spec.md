@@ -42,8 +42,14 @@ Real PostgreSQL tests cover owner protection, stale revisions, inactive owners,
 audit/outbox rollback, runtime privileges and concurrent removals. Review found
 a resource/membership lock-order cycle; acquiring the resource lock first fixes
 it. A deterministic worker-completion/removal test passes with the fix and fails
-under the original lock order. Invitation and role-change persistence, application
-endpoints and client journeys remain unfinished. DL-01 through DL-04 remain open. No security finding
+under the original lock order. Role-change persistence now queues old-role deletion before the replacement
+grant and advances the membership revision atomically with audit. Role edits and
+removals have authenticated, principal-limited HTTP commands with owner/SpiceDB
+checks, revision conflicts and explicit pending-grant responses. Stateful-fake
+application/HTTP tests and generated registration tests cover denial and failure
+boundaries; PostgreSQL tests cover ordered confirmation, rollback and concurrent
+runtime-role edits. Real HTTP/SpiceDB staff journeys, invitation persistence,
+listing and client journeys remain unfinished. DL-01 through DL-04 remain open. No security finding
 is waived.
 
 ## Completed foundation: public scaffold

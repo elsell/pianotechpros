@@ -21,6 +21,7 @@ type Page struct {
 }
 
 type Repository interface {
+	StaffRepository
 	Create(context.Context, domain.Entity, ports.AuthorizationChange, ports.Idempotency, audit.Event) (domain.Entity, bool, error)
 	List(context.Context, string, PageRequest) (Page, error)
 	Get(context.Context, string, domain.ID) (domain.Entity, error)
@@ -32,5 +33,6 @@ type Repository interface {
 // StaffRepository is separate from profile persistence so membership mutation
 // cannot accidentally become a generic profile CRUD operation.
 type StaffRepository interface {
+	ChangeMembershipRole(context.Context, string, domain.ID, string, domain.Role, int64, string, string, audit.Event) (domain.Membership, error)
 	RevokeMembership(context.Context, string, domain.ID, string, int64, string, audit.Event) (domain.Membership, error)
 }

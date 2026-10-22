@@ -255,3 +255,10 @@ func TestListDiscardsResultsOnDependencyAndAuditFailures(t *testing.T) {
 		})
 	}
 }
+
+func (*readStore) RevokeMembership(context.Context, string, domain.ID, string, int64, string, audit.Event) (domain.Membership, error) {
+	return domain.Membership{}, ports.ErrAuthorizationPolicyNotConfigured
+}
+func (*readStore) ChangeMembershipRole(context.Context, string, domain.ID, string, domain.Role, int64, string, string, audit.Event) (domain.Membership, error) {
+	return domain.Membership{}, ports.ErrAuthorizationPolicyNotConfigured
+}

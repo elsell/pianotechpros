@@ -113,3 +113,29 @@ than a user ID alone, which is ambiguous across dealers. The persistence boundar
 validates this target against the command. Resource locks precede membership locks
 to match outbox publication/completion; the existing database ordering trigger
 assigns the strictly increasing queue timestamp.
+
+### Role-change persistence boundary
+
+Role editing uses the same resource-first lock order and active founding-owner
+checks as removal. It requires an expected revision and two distinct outbox IDs.
+The transaction derives the previous role from the locked membership, queues its
+delete before touching the requested editor/viewer role, advances the local
+revision and associates the new pending touch with that exact revision. The old
+grant revision remains unchanged, so no access is granted until completion of
+the new touch. Both events, the membership change and its audit commit atomically.
+A role edit cannot reactivate removed staff or alter the founding owner. Editing
+to the existing role still creates a new audited revision with a refreshed grant.
+
+### Role/removal HTTP commands
+
+`PUT /v1/dealers/{id}/staff/{userID}/role` takes `role` (`editor` or
+`viewer`) and `expectedRevision`. `POST /v1/dealers/{id}/staff/{userID}/revoke`
+takes `expectedRevision`. Both return the committed membership envelope, including
+revision, active state and `grantPending`; a pending role is not usable access.
+These commands authenticate an opaque scoped application session, consume the
+principal budget, verify confirmed local founding-owner membership and the
+`manage_members` SpiceDB permission, then invoke the transactional staff port.
+Do not publish synchronously or return a false ready state. Unknown/cross-dealer
+subjects are concealed; stale edits return conflict and immutable-owner or invalid
+role edits return a stable bad-request code. Denials are audited. Atomic persistence
+rechecks remain required even after the application checks.

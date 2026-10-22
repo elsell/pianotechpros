@@ -87,6 +87,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/dealers/{id}/staff/{userID}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["revoke-dealer-staff"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dealers/{id}/staff/{userID}/role": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["change-dealer-staff-role"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/invitations": {
         parameters: {
             query?: never;
@@ -454,6 +486,51 @@ export interface components {
             readonly $schema?: string;
             data: components["schemas"]["DataStruct"];
         };
+        StaffMember: {
+            active: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            dealerID: string;
+            grantPending: boolean;
+            /** Format: int64 */
+            revision: number;
+            /** @enum {string} */
+            role: "owner" | "editor" | "viewer";
+            /** Format: date-time */
+            updatedAt: string;
+            userID: string;
+        };
+        StaffOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/StaffOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["StaffMember"];
+        };
+        StaffRevocation: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/StaffRevocation.json
+             */
+            readonly $schema?: string;
+            /** Format: int64 */
+            expectedRevision: number;
+        };
+        StaffRoleChange: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/StaffRoleChange.json
+             */
+            readonly $schema?: string;
+            /** Format: int64 */
+            expectedRevision: number;
+            /** @enum {string} */
+            role: "editor" | "viewer";
+        };
         UserDTO: {
             displayName: string;
             email: string;
@@ -726,6 +803,82 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "revoke-dealer-staff": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                id: string;
+                userID: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffRevocation"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "change-dealer-staff-role": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                id: string;
+                userID: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffRoleChange"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffOutputBody"];
+                };
             };
             /** @description Error */
             default: {

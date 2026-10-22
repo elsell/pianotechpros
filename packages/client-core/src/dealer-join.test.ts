@@ -66,3 +66,14 @@ test('late acceptance after disposal cannot repopulate the next screen', async (
   await c.preview(code); const accepting = c.accept(); c.dispose(); release(member); await accepting;
   assert.equal(c.snapshot().accepted, false); assert.equal(c.snapshot().preview, null);
 });
+
+test('leaving the join screen during access recovery cannot authorize navigation', async () => {
+  let release!: (value: { id: string }) => void;
+  const pending = new Promise<{ id: string }>((resolve) => { release = resolve; });
+  const c = createDealerJoin('recipient', { preview: async () => preview, accept: async () => member, access: () => pending });
+  await c.preview(code); await c.accept();
+  const checking = c.checkAccess();
+  c.dispose(); release({ id: 'shop' }); await checking;
+  assert.equal(c.snapshot().accessReady, false);
+  assert.equal(c.snapshot().preview, null);
+});

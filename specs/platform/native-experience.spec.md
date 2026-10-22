@@ -70,3 +70,21 @@ required separately from TypeScript checks or Metro exports.
 
 Layout and safe-area reference reviewed for this slice:
 https://developer.apple.com/design/human-interface-guidelines/layout
+
+## Native invitation consumption
+
+The shop list offers Join shop as a separate native stack screen. Users paste a
+private invitation code into a labelled multiline field with spelling correction
+and capitalization disabled. No clipboard auto-read, URL parameter, storage or
+analytics contains the code. Editing the field invalidates the preview. Preview
+shows the shop, assigned role and localized expiry before a distinct Accept
+action; acceptance is never triggered by navigation or preview.
+
+Use the shared join controller through the credential-bound dealer adapter.
+Clear entered code on successful acceptance/access and discard screen state on
+back/dismissal or account change. Keep uncertain acceptance recoverable through
+an explicit ordinary-access check; pending authorization must not open the shop.
+Replace the join route with the profile only after that check succeeds. The
+keyboard must not hide actions, content must scroll with large text, and busy,
+failure and pending states must use localized accessible feedback. Runtime
+keyboard, back navigation and screen-reader evidence remain separate gates.

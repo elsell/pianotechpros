@@ -25,8 +25,8 @@ cover denial and dependency failures. Review identified candidate-ID disclosure
 through pagination/audit; encrypted dealer cursors and collection-targeted list
 denials address it. Creation/update stateful-fake and HTTP tests cover retry
 recovery, atomic audit failures, stale revision conflict and denied access.
-A hosted real-service dealer journey is wired but not yet verified for this
-change. Staff membership/invitation behavior is specified in `../dealer/staff.spec.md`;
+The hosted real-service dealer journey has passed as recorded below.
+Staff membership/invitation behavior is specified in `../dealer/staff.spec.md`;
 domain transitions now enforce local role capabilities, immutable founding owner,
 revision-safe revocation/reactivation, one-time consumption and exact expiry.
 Review exposed stale-grant reuse on reinvitation; domain capabilities now require
@@ -68,8 +68,8 @@ Owner staff and invitation lists now use bounded, actor/dealer/list-bound encryp
 cursors, owner/SpiceDB checks, persistence rechecks and audit-before-response.
 Invitation projections exclude token digests. Real PostgreSQL race tests and
 application/HTTP boundary tests pass; code review found no blocking issue. The
-real-service acceptance script now covers list pagination and terminal states,
-but those added assertions have not yet run against the full service stack.
+real-service acceptance script covers list pagination and terminal states;
+those assertions passed against the hosted service stack on `9afe4d9`.
 The shared typed client facade now covers dealer profile and staff operations,
 preserving revisions, creation idempotency and sanitized machine errors. Local
 HTTP tests cover wire behavior, credential rotation and invitation secret handling.
@@ -111,8 +111,25 @@ deletion; a controlled-fake regression covers deletion failure and retry.
 Both Metro platform exports, `make check check-contracts`, and mobile
 type/i18n/boundary checks pass. Required read-only review found no blocking issue. These
 are export checks, not Gradle/Xcode builds or device interaction acceptance.
-Native creation, editing, staff administration and invitation consumption remain
-unfinished, along with the inventory and publication product slices.
+Native invitation consumption now provides a keyboard-aware, localized paste,
+preview, explicit acceptance and access-confirmation screen. The shared controller
+discards late responses after dismissal; its regression suite covers pending
+access, lost responses, mismatched identities and leaving during access recovery.
+Both platform exports, `make check check-contracts`, mobile type/i18n/boundary
+checks and read-only review pass.
+Native creation, editing and staff administration remain unfinished, along with
+the inventory and publication product slices. Native runtime interaction evidence
+is still required for both dealer screens.
+
+Hosted run [39839184001](https://github.com/elsell/pianotechpros/actions/runs/39839184001)
+on `9afe4d9` passed its real-service acceptance job: browser Spanish/PKCE/session
+restoration/sign-out, Scalar identity requests, dealer creation/read/edit/retries
+and cross-user denial, invitation/grant/role/removal/reinvitation, and owner list
+pagination/terminal states/secret exclusion. Dealer journeys in this job are HTTP
+API checks, not browser interaction checks. The verify job failed on 23 reachable
+Go vulnerabilities; Android/iOS
+native jobs were still running when inspected. This does not establish a passing
+release or native interaction acceptance for the newer mobile changes.
 
 ## Completed foundation: public scaffold
 

@@ -159,3 +159,28 @@ func (r *Repository) AcceptStaffInvitation(ctx context.Context, actor string, de
 	}
 	return result, nil
 }
+
+// StaffInvitationCandidate returns an internal authorization candidate, not a
+// preview. The application must validate expiry and issuer SpiceDB permission.
+func (r *Repository) StaffInvitationCandidate(ctx context.Context, actor string, dealerID domain.ID, id string, digest [32]byte) (application.InvitationCandidate, error) {
+	if actor == "" || dealerID == "" || id == "" || digest == ([32]byte{}) {
+		return application.InvitationCandidate{}, domain.ErrInvalidInvitation
+	}
+	var row struct {
+		Invitation invitationModel `gorm:"embedded"`
+		DealerName string
+	}
+	err := r.DB.WithContext(ctx).Table("dealer_staff_invitations AS i").Select("i.*, d.name AS dealer_name").
+		Joins("JOIN dealer_models d ON d.id=i.dealer_id AND d.owner_user_id=i.owner_user_id").
+		Joins("JOIN dealer_memberships m ON m.dealer_id=d.id AND m.user_id=i.owner_user_id AND m.role='owner' AND m.active AND m.granted_revision=m.revision").
+		Joins("JOIN user_models issuer ON issuer.id=i.owner_user_id AND issuer.status='active'").
+		Where("i.id=? AND i.dealer_id=? AND i.token_digest=? AND i.consumed_at IS NULL AND i.revoked_at IS NULL", id, dealerID, digest[:]).
+		Where("EXISTS (SELECT 1 FROM user_models recipient WHERE recipient.id=? AND recipient.status='active')", actor).Take(&row).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		err = domain.ErrInvalidInvitation
+	}
+	if err != nil {
+		return application.InvitationCandidate{}, err
+	}
+	return application.InvitationCandidate{Invitation: invitationEntity(row.Invitation), DealerName: row.DealerName}, nil
+}

@@ -450,10 +450,40 @@ func TestInvitationDatabaseRejectsInvalidPersistedStates(t *testing.T) {
 				row.RevokedAt = &consumed
 			}
 			err := db.Transaction(func(tx *gorm.DB) error { return tx.Create(&row).Error })
-			var invalid *pgconn.PgError
-			if !errors.As(err, &invalid) || invalid.Code != "23514" {
+			if !errors.Is(err, gorm.ErrCheckConstraintViolated) {
 				t.Fatalf("invalid persisted state not rejected by check constraint: %v", err)
 			}
 		})
+	}
+}
+
+func TestInvitationCandidateRequiresLiveTokenAndActiveAccounts(t *testing.T) {
+	db := database(t)
+	r := New(db)
+	ctx := context.Background()
+	e, c, k, a := fixture(t)
+	if _, _, err := r.Create(ctx, e, c, k, a); err != nil {
+		t.Fatal(err)
+	}
+	completeGrant(t, db, c, a)
+	invite, created := inviteFixture(t)
+	if err := r.CreateStaffInvitation(ctx, "owner", invite, created); err != nil {
+		t.Fatal(err)
+	}
+	candidate, err := r.StaffInvitationCandidate(ctx, "staff", e.ID, invite.ID, invite.TokenDigest)
+	if err != nil || candidate.Invitation.ID != invite.ID || candidate.DealerName != e.Name {
+		t.Fatalf("live candidate: %+v %v", candidate, err)
+	}
+	if _, err := r.StaffInvitationCandidate(ctx, "", e.ID, invite.ID, invite.TokenDigest); err == nil {
+		t.Fatal("unscoped invitation read accepted")
+	}
+	if _, err := r.StaffInvitationCandidate(ctx, "staff", e.ID, invite.ID, sha256.Sum256([]byte("wrong"))); !errors.Is(err, domain.ErrInvalidInvitation) {
+		t.Fatalf("wrong digest: %v", err)
+	}
+	if err := db.Table("user_models").Where("id=?", "owner").Update("status", "disabled").Error; err != nil {
+		t.Fatal(err)
+	}
+	if _, err := r.StaffInvitationCandidate(ctx, "staff", e.ID, invite.ID, invite.TokenDigest); !errors.Is(err, domain.ErrInvalidInvitation) {
+		t.Fatalf("disabled issuer: %v", err)
 	}
 }

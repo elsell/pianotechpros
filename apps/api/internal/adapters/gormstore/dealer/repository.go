@@ -105,7 +105,7 @@ func (r *Repository) Create(ctx context.Context, entity domain.Entity, change po
 			return nil
 		}
 		if err := tx.Create(fromEntity(entity)).Error; err != nil {
-			return err
+			return profileWriteError(err)
 		}
 		outbox := authorizationOutboxModel{ID: change.ID, ResourceType: change.ResourceType, ResourceID: change.ResourceID, Relation: change.Relation, SubjectType: change.SubjectType, SubjectID: change.SubjectID, OwnerUserID: change.OwnerUserID, ActorUserID: change.ActorUserID, Operation: change.Operation, LockedBy: change.LockedBy, CreatedAt: entity.CreatedAt}
 		if err := tx.Create(&outbox).Error; err != nil {
@@ -201,7 +201,7 @@ func (r *Repository) Update(ctx context.Context, actor string, entity domain.Ent
 		}
 		result := tx.Model(&model{}).Where("id = ? AND revision = ?", entity.ID, entity.Revision).Updates(map[string]any{"name": entity.Name, "slug": entity.Slug, "email": entity.Email, "phone": entity.Phone, "website_url": entity.WebsiteUrl, "tagline": entity.Tagline, "description": entity.Description, "street_address_1": entity.StreetAddress1, "street_address_2": entity.StreetAddress2, "city": entity.City, "region": entity.Region, "postal_code": entity.PostalCode, "appointment_note": entity.AppointmentNote, "delivery_note": entity.DeliveryNote, "warranty_note": entity.WarrantyNote, "service_note": entity.ServiceNote, "banner_alt_text": entity.BannerAltText, "accent_color": entity.AccentColor, "showroom_published": entity.ShowroomPublished, "updated_at": entity.UpdatedAt, "revision": entity.Revision + 1})
 		if result.Error != nil {
-			return result.Error
+			return profileWriteError(result.Error)
 		}
 		if result.RowsAffected != 1 {
 			return ports.ErrConflict
@@ -258,4 +258,14 @@ func toEntity(row model) domain.Entity {
 
 func fromAudit(event audit.Event) *auditModel {
 	return &auditModel{ID: event.ID, OwnerUserID: event.OwnerUserID, ActorUserID: event.ActorUserID, Action: event.Action, TargetType: event.TargetType, TargetID: event.TargetID, Outcome: event.Outcome, CorrelationID: event.CorrelationID, OccurredAt: event.OccurredAt}
+}
+
+// Production GORM translates unique violations and removes constraint names.
+// Interpret that translation only at the profile write, never at audit/outbox
+// writes, whose failures must remain infrastructure errors.
+func profileWriteError(err error) error {
+	if errors.Is(err, gorm.ErrDuplicatedKey) {
+		return ports.ErrConflict
+	}
+	return persistenceError(err)
 }

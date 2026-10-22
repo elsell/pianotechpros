@@ -11,6 +11,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"gorm.io/gorm/logger"
 	"strings"
 	"time"
 )
@@ -77,7 +78,7 @@ func Open(driver, dsn string) (*Store, error) {
 	if driver != "postgres" {
 		return nil, fmt.Errorf("unsupported database driver %q", driver)
 	}
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{TranslateError: true})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{TranslateError: true, Logger: logger.Discard})
 	if err != nil {
 		return nil, err
 	}

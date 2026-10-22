@@ -162,3 +162,32 @@ touch outbox and acceptance audit share one transaction. The acceptance audit's
 time is the actual consumption time. A fresh invite cannot replace an active
 membership. Replayed, expired, revoked, wrong-dealer and unknown invitations share
 the invalid-invitation result. Issuer/recipient deactivation also fails closed.
+
+### Invitation HTTP flow
+
+Owners create invitations with `POST /v1/dealers/{id}/staff-invitations`, supplying
+`role` and optional `expiresInHours` (default 72, range 1–168). The response alone
+contains a cryptographically random 32-byte token encoded as canonical unpadded
+base64url; persist its SHA-256 digest. Do not derive this token from resource IDs.
+Creation responses include `Cache-Control: no-store` and `Referrer-Policy: no-referrer`.
+Owner revocation uses `POST /v1/dealers/{id}/staff-invitations/{invitationID}/revoke`.
+
+Authenticated recipients POST a token in the JSON body to the corresponding
+`/preview` or `/accept` command; it never belongs in a query or request path.
+Clients carry it in a link fragment, remove the fragment before external navigation
+and never persist it as an application session. Preview reveals only invitation
+ID, dealer ID/name, role and expiry after the token, active accounts, confirmed
+issuer membership and issuer SpiceDB authority pass. Preview is audited and grants
+nothing. Acceptance rechecks transaction state and returns a membership with its
+pending-grant state; it never provisions an account or silently activates access.
+Malformed, unavailable, expired or replayed tokens return the same stable
+`invalid_invitation` error. Audit invalid/denied token operations against the fixed
+invitation collection, never the token, digest or privately discovered dealer ID.
+Permission/audit dependency failures return no preview or token. All responses
+containing invitation data disable caching; referrer policy is `no-referrer`.
+
+Invitation operations mark their input as sensitive in HTTP operation metadata.
+The shared HTTP error transformer removes raw validation details and input values
+for these operations, including malformed JSON, while preserving status and
+stable error code. Framework parsing failures must not echo a token in an error
+response. This applies before application-level token validation as well.

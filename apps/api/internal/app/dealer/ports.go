@@ -22,6 +22,7 @@ type Page struct {
 
 type Repository interface {
 	StaffRepository
+	StaffInvitations
 	Create(context.Context, domain.Entity, ports.AuthorizationChange, ports.Idempotency, audit.Event) (domain.Entity, bool, error)
 	List(context.Context, string, PageRequest) (Page, error)
 	Get(context.Context, string, domain.ID) (domain.Entity, error)
@@ -39,7 +40,13 @@ type StaffRepository interface {
 
 // StaffInvitations is the capability for invitation transactions. Account
 // provisioning remains a separate platform capability and cannot be bypassed.
+type InvitationCandidate struct {
+	Invitation domain.StaffInvitation
+	DealerName string
+}
+
 type StaffInvitations interface {
+	StaffInvitationCandidate(context.Context, string, domain.ID, string, [32]byte) (InvitationCandidate, error)
 	CreateStaffInvitation(context.Context, string, domain.StaffInvitation, audit.Event) error
 	RevokeStaffInvitation(context.Context, string, domain.ID, string, audit.Event) error
 	AcceptStaffInvitation(context.Context, string, domain.ID, string, [32]byte, string, audit.Event, ports.Clock) (domain.Membership, error)

@@ -87,6 +87,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/dealers/{id}/staff-invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["create-dealer-staff-invitation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dealers/{id}/staff-invitations/{invitationID}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["accept-dealer-staff-invitation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dealers/{id}/staff-invitations/{invitationID}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["preview-dealer-staff-invitation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dealers/{id}/staff-invitations/{invitationID}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["revoke-dealer-staff-invitation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/dealers/{id}/staff/{userID}/revoke": {
         parameters: {
             query?: never;
@@ -235,7 +299,7 @@ export interface components {
              * @description Stable machine-readable error code
              * @enum {string}
              */
-            code: "bad_request" | "unauthenticated" | "invalid_credential" | "forbidden" | "not_found" | "conflict" | "idempotency_conflict" | "validation_failed" | "rate_limited" | "authorization_pending" | "authorization_dead_lettered" | "authorization_policy_not_configured" | "unavailable" | "internal_error" | "request_failed" | "oidc_discovery_unavailable";
+            code: "invalid_invitation" | "bad_request" | "unauthenticated" | "invalid_credential" | "forbidden" | "not_found" | "conflict" | "idempotency_conflict" | "validation_failed" | "rate_limited" | "authorization_pending" | "authorization_dead_lettered" | "authorization_policy_not_configured" | "unavailable" | "internal_error" | "request_failed" | "oidc_discovery_unavailable";
             detail?: string;
             errors?: components["schemas"]["ErrorDetail"][] | null;
             /** Format: int64 */
@@ -434,6 +498,15 @@ export interface components {
             revokedAt?: string;
             revokedByUserId?: string;
         };
+        InvitationIssuedOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/InvitationIssuedOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["StaffInvitationIssued"];
+        };
         InvitationListOutputBody: {
             /**
              * Format: uri
@@ -452,6 +525,15 @@ export interface components {
              */
             readonly $schema?: string;
             data: components["schemas"]["InvitationDTO"];
+        };
+        InvitationPreviewOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/InvitationPreviewOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["StaffInvitationPreview"];
         };
         MeOutputBody: {
             /**
@@ -485,6 +567,49 @@ export interface components {
              */
             readonly $schema?: string;
             data: components["schemas"]["DataStruct"];
+        };
+        StaffInvitationCreate: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/StaffInvitationCreate.json
+             */
+            readonly $schema?: string;
+            /**
+             * Format: int64
+             * @default 72
+             */
+            expiresInHours: number;
+            /** @enum {string} */
+            role: "editor" | "viewer";
+        };
+        StaffInvitationIssued: {
+            dealerID: string;
+            dealerName: string;
+            /** Format: date-time */
+            expiresAt: string;
+            id: string;
+            /** @enum {string} */
+            role: "editor" | "viewer";
+            token: string;
+        };
+        StaffInvitationPreview: {
+            dealerID: string;
+            dealerName: string;
+            /** Format: date-time */
+            expiresAt: string;
+            id: string;
+            /** @enum {string} */
+            role: "editor" | "viewer";
+        };
+        StaffInvitationToken: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/StaffInvitationToken.json
+             */
+            readonly $schema?: string;
+            token: string;
         };
         StaffMember: {
             active: boolean;
@@ -792,6 +917,151 @@ export interface operations {
             };
             path: {
                 id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "create-dealer-staff-invitation": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffInvitationCreate"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitationIssuedOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "accept-dealer-staff-invitation": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                id: string;
+                invitationID: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffInvitationToken"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "preview-dealer-staff-invitation": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                id: string;
+                invitationID: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffInvitationToken"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitationPreviewOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "revoke-dealer-staff-invitation": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                id: string;
+                invitationID: string;
             };
             cookie?: never;
         };

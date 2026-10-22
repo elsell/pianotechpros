@@ -47,7 +47,7 @@ func connection(t *testing.T, runtime bool) *gorm.DB {
 	if runtime {
 		dsn.User = url.UserPassword("app", "app")
 	}
-	db, err := gorm.Open(postgres.Open(dsn.String()), &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)})
+	db, err := gorm.Open(postgres.Open(dsn.String()), &gorm.Config{TranslateError: true, Logger: logger.Default.LogMode(logger.Silent)})
 	if err != nil {
 		t.Fatal(err)
 	}

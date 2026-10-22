@@ -12,6 +12,7 @@ import (
 
 type Service interface {
 	StaffService
+	InvitationService
 	Create(context.Context, string, string, domain.Attributes) (domain.Entity, error)
 	List(context.Context, string, string, int) ([]domain.Entity, string, error)
 	Get(context.Context, string, domain.ID) (domain.Entity, error)
@@ -58,6 +59,7 @@ type DealerNoContentOutput struct{ Status int }
 
 func Register(api huma.API, service Service) {
 	registerStaff(api, service)
+	registerInvitations(api, service)
 	path := "/v1/dealers"
 	security := []map[string][]string{{"oidc": {}}}
 	huma.Register(api, huma.Operation{OperationID: "create-dealer", Method: http.MethodPost, Path: path, DefaultStatus: http.StatusCreated, Security: security}, func(ctx context.Context, input *DealerCreateInput) (*DealerItemOutput, error) {

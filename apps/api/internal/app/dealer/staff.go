@@ -27,22 +27,8 @@ func (s *Service) mutateStaff(ctx context.Context, authorization string, id doma
 	if s.NewID == nil {
 		return domain.Membership{}, ports.ErrAuthorizationPolicyNotConfigured
 	}
-	entity, err := s.Repository.Get(ctx, actor, id)
-	if err != nil {
-		if errors.Is(err, ports.ErrNotFound) {
-			err = s.deniedDecision(ctx, actor, id, err)
-		}
+	if _, err := s.authorizedStaffOwner(ctx, actor, id); err != nil {
 		return domain.Membership{}, err
-	}
-	if entity.OwnerUserID != actor {
-		return domain.Membership{}, s.deniedDecision(ctx, actor, id, ports.ErrNotFound)
-	}
-	allowed, err := s.Authorizer.Check(ctx, "dealer", string(id), "manage_members", actor)
-	if err != nil {
-		return domain.Membership{}, s.deniedDecision(ctx, actor, id, err)
-	}
-	if !allowed {
-		return domain.Membership{}, s.deniedDecision(ctx, actor, id, ports.ErrNotFound)
 	}
 	event := shared.NewAuditEvent(ctx, s.Clock, actor, actor, audit.ResourceUpdated, "dealer_membership", domain.MembershipKey(id, user), audit.Succeeded)
 	var member domain.Membership
@@ -69,4 +55,25 @@ func (s *Service) mutateStaff(ctx context.Context, authorization string, id doma
 	}
 	s.observeSuccess(ctx, name)
 	return member, nil
+}
+
+func (s *Service) authorizedStaffOwner(ctx context.Context, actor string, id domain.ID) (domain.Entity, error) {
+	entity, err := s.Repository.Get(ctx, actor, id)
+	if err != nil {
+		if errors.Is(err, ports.ErrNotFound) {
+			err = s.deniedDecision(ctx, actor, id, err)
+		}
+		return domain.Entity{}, err
+	}
+	if entity.OwnerUserID != actor {
+		return domain.Entity{}, s.deniedDecision(ctx, actor, id, ports.ErrNotFound)
+	}
+	allowed, err := s.Authorizer.Check(ctx, "dealer", string(id), "manage_members", actor)
+	if err != nil {
+		return domain.Entity{}, s.deniedDecision(ctx, actor, id, err)
+	}
+	if !allowed {
+		return domain.Entity{}, s.deniedDecision(ctx, actor, id, ports.ErrNotFound)
+	}
+	return entity, nil
 }

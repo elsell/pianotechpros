@@ -2,6 +2,7 @@
 """Exercise dealer HTTP journeys against disposable Compose services."""
 import json
 import os
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -23,8 +24,13 @@ def request(method, path, body=None, token=owner, expected=200, idempotency=key)
     except urllib.error.HTTPError as error:
         response = error
     with response:
-        status, payload = response.status, json.load(response)
-    assert status == expected, f"{method} {path}: expected {expected}, received {status} ({payload.get('code', '')})"
+        status = response.status
+        raw = response.read()
+        payload = json.loads(raw) if raw else {}
+        if "/staff-invitations" in path:
+            assert response.headers.get("Cache-Control") == "no-store"
+            assert response.headers.get("Referrer-Policy") == "no-referrer"
+    assert status in (expected if isinstance(expected, tuple) else (expected,)), f"{method} {path}: expected {expected}, received {status} ({payload.get('code', '')})"
     return payload
 
 
@@ -61,3 +67,52 @@ for _ in range(10):
     query = "/v1/audit-events?limit=100&cursor=" + urllib.parse.quote(cursor)
 assert {"resource.created", "authorization.relationship_applied", "resource.updated", "resource.viewed"} <= seen
 print("Dealer creation, owner publication, private reads, optimistic edits, retries, cross-user denial and audit acceptance passed")
+
+# Real opaque sessions, PostgreSQL and the SpiceDB outbox worker participate in
+# this invitation -> grant -> role edit -> removal -> reinvitation journey.
+other_id = request("GET", "/v1/me", token=outsider)["data"]["id"]
+invites = path + "/staff-invitations"
+request("POST", invites, {"role": "editor"}, token=outsider, expected=404)
+issued = request("POST", invites, {"role": "editor"}, expected=201)["data"]
+assert len(issued["token"]) == 43 and "digest" not in json.dumps(issued).lower()
+invitation = invites + "/" + issued["id"]
+secret = {"token": issued["token"]}
+request("POST", invitation + "/preview", secret, token="", expected=401)
+request("POST", invitation + "/preview", {"token": "malformed"}, token=outsider, expected=400)
+preview = request("POST", invitation + "/preview", secret, token=outsider)["data"]
+assert preview["dealerID"] == created["id"] and preview["role"] == "editor"
+assert "token" not in preview
+member = request("POST", invitation + "/accept", secret, token=outsider)["data"]
+assert member["userID"] == other_id and member["revision"] == 1 and member["grantPending"]
+request("POST", invitation + "/accept", secret, token=outsider, expected=400)
+
+
+def await_private_access():
+    for _ in range(40):
+        result = request("GET", path, token=outsider, expected=(200, 404))
+        if "data" in result:
+            return
+        time.sleep(0.5)
+    raise AssertionError("membership grant did not become usable")
+
+
+await_private_access()
+staff = path + "/staff/" + urllib.parse.quote(other_id, safe="")
+request("PUT", staff + "/role", {"role": "viewer", "expectedRevision": 1}, token=outsider, expected=404)
+changed = request("PUT", staff + "/role", {"role": "viewer", "expectedRevision": 1})["data"]
+assert changed["revision"] == 2 and changed["grantPending"]
+request("PUT", staff + "/role", {"role": "viewer", "expectedRevision": 1}, expected=409)
+await_private_access()
+request("PUT", path, {**update, "expectedRevision": 2}, token=outsider, expected=404)
+removed = request("POST", staff + "/revoke", {"expectedRevision": 2})["data"]
+assert removed["revision"] == 3 and not removed["active"]
+request("GET", path, token=outsider, expected=404)
+replacement = request("POST", invites, {"role": "viewer"}, expected=201)["data"]
+rejoined = request("POST", invites + "/" + replacement["id"] + "/accept", {"token": replacement["token"]}, token=outsider)["data"]
+assert rejoined["revision"] == 4 and rejoined["grantPending"]
+await_private_access()
+revocable = request("POST", invites, {"role": "viewer"}, expected=201)["data"]
+revocable_path = invites + "/" + revocable["id"]
+request("POST", revocable_path + "/revoke", expected=204)
+request("POST", revocable_path + "/preview", {"token": revocable["token"]}, token=outsider, expected=400)
+print("Dealer staff invitation, pending grant, role edit, removal and reinvitation acceptance passed")

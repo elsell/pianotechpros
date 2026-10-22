@@ -262,3 +262,16 @@ func (*readStore) RevokeMembership(context.Context, string, domain.ID, string, i
 func (*readStore) ChangeMembershipRole(context.Context, string, domain.ID, string, domain.Role, int64, string, string, audit.Event) (domain.Membership, error) {
 	return domain.Membership{}, ports.ErrAuthorizationPolicyNotConfigured
 }
+
+func (*readStore) StaffInvitationCandidate(context.Context, string, domain.ID, string, [32]byte) (InvitationCandidate, error) {
+	return InvitationCandidate{}, ports.ErrAuthorizationPolicyNotConfigured
+}
+func (*readStore) CreateStaffInvitation(context.Context, string, domain.StaffInvitation, audit.Event) error {
+	return ports.ErrAuthorizationPolicyNotConfigured
+}
+func (*readStore) RevokeStaffInvitation(context.Context, string, domain.ID, string, audit.Event) error {
+	return ports.ErrAuthorizationPolicyNotConfigured
+}
+func (*readStore) AcceptStaffInvitation(context.Context, string, domain.ID, string, [32]byte, string, audit.Event, ports.Clock) (domain.Membership, error) {
+	return domain.Membership{}, ports.ErrAuthorizationPolicyNotConfigured
+}

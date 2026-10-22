@@ -229,3 +229,8 @@ PostgreSQL is the sole time authority for authorization outbox leases so clock
 skew between API replicas cannot steal, extend, or complete another claim.
 Create responses are not successful until their owner relationship has been
 written; durable pending work remains retryable when SpiceDB is unavailable.
+
+The database bootstrap disables GORM's unstructured SQL logger. Query parameters
+can contain invitation digests or session material and must never appear in error
+or slow-query output. Infrastructure failures still propagate through ports to
+configured typed probes and error handling; SQL text/parameters are not telemetry.

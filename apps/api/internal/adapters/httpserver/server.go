@@ -95,7 +95,7 @@ type APIError struct {
 	Type   string              `json:"type,omitempty" format:"uri" default:"about:blank"`
 	Title  string              `json:"title,omitempty"`
 	Status int                 `json:"status,omitempty"`
-	Code   string              `json:"code" doc:"Stable machine-readable error code" enum:"bad_request,unauthenticated,invalid_credential,forbidden,not_found,conflict,idempotency_conflict,validation_failed,rate_limited,authorization_pending,authorization_dead_lettered,authorization_policy_not_configured,unavailable,internal_error,request_failed,oidc_discovery_unavailable"`
+	Code   string              `json:"code" doc:"Stable machine-readable error code" enum:"invalid_invitation,bad_request,unauthenticated,invalid_credential,forbidden,not_found,conflict,idempotency_conflict,validation_failed,rate_limited,authorization_pending,authorization_dead_lettered,authorization_policy_not_configured,unavailable,internal_error,request_failed,oidc_discovery_unavailable"`
 	Detail string              `json:"detail,omitempty"`
 	Errors []*huma.ErrorDetail `json:"errors,omitempty"`
 }
@@ -175,6 +175,7 @@ type Options struct {
 func New(application app.App, domains []string, options Options) (http.Handler, huma.API) {
 	mux := http.NewServeMux()
 	config := huma.DefaultConfig("PianoTechPros API", "1.0.0")
+	config.Transformers = append([]huma.Transformer{redactSensitiveInputErrors}, config.Transformers...)
 	config.DocsPath = ""
 	docsBase := strings.TrimRight(options.PublicBaseURL, "/")
 	config.Components.SecuritySchemes = map[string]*huma.SecurityScheme{"oidc": {Type: "oauth2", Description: "OIDC authorization code with PKCE exchanged for a scoped application session.", Flows: &huma.OAuthFlows{AuthorizationCode: &huma.OAuthFlow{AuthorizationURL: options.OIDCAuthorizationURL, TokenURL: docsBase + "/oidc/token", Scopes: map[string]string{"openid": "Authenticate with OIDC", "profile": "Read profile claims", "email": "Read email claim"}, Extensions: map[string]any{"x-scalar-client-id": options.OIDCDocsClientID, "x-scalar-redirect-uri": options.OIDCDocsRedirectURI, "x-usePkce": "SHA-256"}}}, Extensions: map[string]any{"x-default-scopes": []string{"openid", "profile", "email"}, "x-openid-connect-url": docsBase + "/oidc/.well-known/openid-configuration"}}}

@@ -54,8 +54,17 @@ active account. Acceptance rechecks expiry after locks, reactivation requires a
 new pending revision, and runtime DELETE/TRUNCATE privileges are explicitly
 revoked for invitations and memberships. Real PostgreSQL race tests pass
 concurrent acceptors, expiry during a resource-lock wait, replay, disabled
-accounts and audit/outbox rollback. Real HTTP/SpiceDB staff journeys, invitation
-application endpoints, listing and client journeys remain unfinished. DL-01 through DL-04 remain open. No security finding
+accounts and audit/outbox rollback. Invitation creation, preview, acceptance and revocation APIs now enforce
+canonical random tokens, session/principal limits, active accounts and issuer
+SpiceDB authority. Sensitive HTTP validation errors are redacted and responses
+disable caching/referrers. A real isolated PostgreSQL/Dex/SpiceDB journey through
+the runtime capability proxy passes invitation, pending-grant confirmation, role
+change, removal and reinvitation, including replay/cross-user denial. That run
+exposed a translated unique-constraint error mapping bug (duplicate slug returned
+500); profile writes now map it to conflict, and database tests use production
+error-translation settings. GORM unstructured SQL logging is disabled; a
+subprocess regression proves query parameters are not echoed on database errors.
+Staff listing and client journeys remain unfinished. DL-01 through DL-04 remain open. No security finding
 is waived.
 
 ## Completed foundation: public scaffold

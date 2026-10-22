@@ -139,3 +139,20 @@ optional facts remain nullable. All responses disable caching and referrers.
 Validation errors must never echo private input. Existing stable error envelopes
 apply, including 404 for inaccessible records and 409 for stale revisions. No
 inventory DELETE, publication, or unimplemented list route is registered.
+
+## Shared client adapter
+
+Web and native clients use one typed inventory adapter over generated OpenAPI and
+pinned openapi-fetch. Empty-draft creation retains caller idempotency; manual edits
+send an immutable attribute snapshot and expected revision in the JSON body.
+Private facts and tokens never enter URLs. Each request obtains the current opaque
+session from the existing transport. No client retry silently changes the intent
+or rebases an edit. Only generated contract fields cross this boundary.
+
+Errors retain only recognized machine code and HTTP status. Never attach response
+bodies, request objects, tokens, private fields or original transport exceptions.
+Network and malformed-protocol failures remain distinct; 401/404/409/429/503 keep
+status for presentation/session policy. Successful records must match requested
+dealer and (for get/edit) record identity, contain a positive safe revision and
+recognized status, and preserve exact safe integer monetary amounts. Invalid
+successful envelopes fail as protocol errors instead of becoming editable state.

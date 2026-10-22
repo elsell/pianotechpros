@@ -1,6 +1,9 @@
 package dto
 
-import "time"
+import (
+	"github.com/danielgtaylor/huma/v2"
+	"time"
+)
 
 type Money struct {
 	MinorUnits int64  `json:"minor_units" minimum:"0" maximum:"9007199254740991"`
@@ -43,4 +46,12 @@ type Item struct {
 	Attributes Attributes `json:"attributes"`
 	CreatedAt  time.Time  `json:"created_at"`
 	UpdatedAt  time.Time  `json:"updated_at"`
+}
+
+// Optional referenced objects need an explicit null alternative in OpenAPI.
+func (Attributes) TransformSchema(_ huma.Registry, schema *huma.Schema) *huma.Schema {
+	for _, key := range []string{"asking_price", "acquisition_cost", "manufactured"} {
+		schema.Properties[key] = &huma.Schema{AnyOf: []*huma.Schema{schema.Properties[key], {Type: "null"}}}
+	}
+	return schema
 }

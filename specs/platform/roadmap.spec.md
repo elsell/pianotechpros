@@ -220,7 +220,16 @@ authorization failure, limiting, forbidden status/source fields and private erro
 redaction. Composition restricts money to the explicit supported-currency policy.
 Generated contracts include these operations. The real-service acceptance script
 now includes the inventory journey; its hosted execution remains pending.
-Inventory listing, client integration and remaining product workflows remain open.
+The shared inventory client now uses generated contracts for create/get/edit,
+retains idempotency and revisions, snapshots nested edits before asynchronous
+credential acquisition, and exposes only safe machine errors. Real HTTP fixture
+tests cover rotated sessions, private-body transport, conflicts, malformed replies,
+unsafe integer money, invalid date precision/calendar and nullable clearing.
+Client integration exposed a nullable referenced-object schema mismatch; explicit
+OpenAPI null alternatives now match API money/date JSON, verified by an HTTP
+clear-to-unknown regression. Local project/contract checks, client tests and Go
+HTTP race tests pass; review findings were fixed. Inventory listing, web/native
+editing screens and remaining product workflows remain open.
 
 
 `make check check-contracts` passes without a structural-gate exception; the

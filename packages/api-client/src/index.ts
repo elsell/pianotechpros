@@ -15,3 +15,4 @@ export function createSessionApiClient(baseUrl: string, tokenProvider: TokenProv
 }
 
 export { createDealerApiClient, DealerClientError, type DealerProfile, type DealerProfileInput, type DealerStaffMember, type DealerStaffRole, type DealerInvitation, type DealerPage, type DealerErrorCode } from './dealer';
+export { createInventoryApiClient, InventoryClientError, type InventoryRecord, type InventoryAttributes, type InventoryErrorCode } from './inventory';

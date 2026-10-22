@@ -82,6 +82,12 @@ func TestInventoryHTTPRecordJourneyAndBoundaries(t *testing.T) {
 	request(http.MethodGet, path, "opaque", "", 404)
 	m.failure = nil
 	malformed := request(http.MethodPut, path, "opaque", `{"expectedRevision":2,"attributes":{"stock_number":"PT-EDIT","asking_price":{"minor_units":"PRIVATE-SENTINEL","currency":"USD"}}}`, 422)
+	cleared := request(http.MethodPut, path, "opaque", `{"expectedRevision":2,"attributes":{"stock_number":"PT-EDIT","asking_price":null,"acquisition_cost":null,"manufactured":null}}`, 200)["data"].(map[string]any)["attributes"].(map[string]any)
+	for _, field := range []string{"asking_price", "acquisition_cost", "manufactured"} {
+		if cleared[field] != nil {
+			t.Fatal("unknown fact became a value")
+		}
+	}
 	encoded, _ := json.Marshal(malformed)
 	if strings.Contains(string(encoded), "PRIVATE-SENTINEL") {
 		t.Fatal("validation leaked private input")

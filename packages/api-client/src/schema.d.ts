@@ -360,8 +360,8 @@ export interface components {
             type: string;
         };
         Attributes: {
-            acquisition_cost?: components["schemas"]["Money"];
-            asking_price?: components["schemas"]["Money"];
+            acquisition_cost?: components["schemas"]["Money"] | null;
+            asking_price?: components["schemas"]["Money"] | null;
             condition?: string;
             description?: string;
             featured?: boolean;
@@ -369,7 +369,7 @@ export interface components {
             form?: string;
             location?: string;
             make?: string;
-            manufactured?: components["schemas"]["ManufacturingDate"];
+            manufactured?: components["schemas"]["ManufacturingDate"] | null;
             model?: string;
             player_system?: boolean;
             price_visible?: boolean;

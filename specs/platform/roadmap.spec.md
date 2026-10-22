@@ -189,6 +189,17 @@ test caught missing embedded membership mapping; an explicit exported GORM
 embedding fixes it. The full dealer PostgreSQL race suite and targeted final
 runtime-role test pass; required review found no blocker. This is a preflight
 adapter only, not inventory record persistence or transactional permission locking.
+
+Migration 22 and the inventory repository now persist empty drafts and private
+reads with transactional membership/account rechecks. Same-intent retries return
+one record, and creation commits its record, immutable history and audit together.
+The isolated PostgreSQL runtime-role race suite passes concurrent retries,
+revoked/cross-user reads, duplicate-stock conflicts, denied history rewrites and
+record deletion, plus rollback on audit and history failures. Review findings for
+translated constraint errors and migration readiness were fixed. `make check`
+and contract drift checks pass. This is storage infrastructure; inventory HTTP
+commands, editing persistence, photos and product journeys are still open.
+
 `make check check-contracts` passes without a structural-gate exception; the
 disposable database and its volume were removed after verification.
 

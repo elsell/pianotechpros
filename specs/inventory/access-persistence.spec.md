@@ -65,3 +65,25 @@ Missing actor/dealer membership returns not-found, with no cross-user fallback.
 This preflight does not lock or reserve permission for a later mutation: inventory
 transactional repositories must perform the documented authority recheck under
 locks. Runtime credentials need only existing SELECT privileges for this query.
+
+## Initial record storage
+
+Migration 22 stores inventory identity/dealer, unique dealer-local stock number,
+revision/status and validated private attributes separately from immutable history.
+Each current revision references a history row through a deferred constraint.
+History stores the private revision snapshot, actor/source/kind and audit ID.
+An insert trigger verifies a matching successful inventory audit with the same
+actor, dealer owner, record and timestamp. The audit ID is not a permanent foreign
+key: bounded audit retention must remain possible without rewriting domain history.
+History UPDATE/DELETE is rejected by a trigger and runtime UPDATE/DELETE/TRUNCATE
+privileges are revoked. Runtime inventory DELETE/TRUNCATE is revoked.
+
+The first repository operations are lazy empty draft creation and audited get.
+Creation accepts only the domain's initial draft (server-generated stock/ID/time,
+no product facts), and actor/dealer-scoped idempotency represents that empty-draft
+intent. Retrying may supply new generated identity/stock but returns the originally
+reserved record's current revision; it appends a read audit, not a second creation
+history. Missing local authority cannot use idempotency to recover a record.
+Draft creation/read lock dealer resource, dealer, membership and active account
+before any inventory lookup/write. The application must separately enforce
+SpiceDB and audit rate limits before invoking these repository capabilities.

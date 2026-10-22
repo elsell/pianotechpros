@@ -26,8 +26,10 @@ must preserve sharing and public-listing navigation.
 
 ## Parity matrix
 
-All product rows are currently **not implemented** in the rebuild. Authentication
-has working foundation/browser evidence but still needs device interaction QA.
+All product rows are currently **incomplete** in the rebuild. Dealer profile and
+staff slices have API/client implementations and partial acceptance evidence;
+the roadmap records their verified scope. Authentication has working
+foundation/browser evidence but still needs device interaction QA.
 
 | ID | Required behavior | Legacy evidence | Completion journey |
 | --- | --- | --- | --- |

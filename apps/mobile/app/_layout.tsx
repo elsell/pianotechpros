@@ -6,6 +6,7 @@ function Navigation() {
   const theme = useNativeTheme();
   return <Stack screenOptions={{ headerTintColor: theme.text, headerStyle: { backgroundColor: theme.surface }, contentStyle: { backgroundColor: theme.background } }}>
     <Stack.Screen name="index" options={{ title: i18n.t('app.title') }} />
+    <Stack.Screen name="dealers/form" options={{ title: i18n.t('dealer.edit') }} />
     <Stack.Screen name="dealers/join" options={{ title: i18n.t('staff.join') }} />
     <Stack.Screen name="dealers/[id]" options={{ title: i18n.t('dealer.heading') }} />
   </Stack>;

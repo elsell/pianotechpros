@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button, FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { createDealerDirectory } from '@pianotechpros/client-core';
 import type { DealerProfile } from '@pianotechpros/api-client';
 import { useMobileSession } from '../src/session-provider';
@@ -19,12 +19,12 @@ function ShopList({ accountId }: { accountId: string }) {
   useEffect(() => {
     const unsubscribe = directory.subscribe(setState);
     directory.replaceSession(accountId, { list: (cursor) => request((api) => api.list(cursor)), get: (id) => request((api) => api.get(id)) });
-    void directory.refresh();
     return () => { unsubscribe(); directory.clear(); };
   }, [directory, accountId, request]);
+  useFocusEffect(useCallback(() => { void directory.refresh(); }, [directory]));
   return <FlatList contentInsetAdjustmentBehavior="automatic" data={state.items} keyExtractor={(item) => item.id} contentContainerStyle={{ padding: 20, gap: 1, flexGrow: 1 }}
     refreshControl={<RefreshControl refreshing={pull.refreshing} onRefresh={() => { void pull.refresh(); }} tintColor={theme.accent} />}
-    ListHeaderComponent={<View style={{ gap: 12, marginBottom: 16 }}><Text accessibilityRole="header" style={{ color: theme.text, fontSize: 28, fontWeight: '600', marginBottom: 16 }}>{i18n.t('dealer.heading')}</Text><Button title={i18n.t('staff.join')} color={theme.accent} onPress={() => router.push('/dealers/join')} /></View>}
+    ListHeaderComponent={<View style={{ gap: 12, marginBottom: 16 }}><Text accessibilityRole="header" style={{ color: theme.text, fontSize: 28, fontWeight: '600', marginBottom: 16 }}>{i18n.t('dealer.heading')}</Text><Button title={i18n.t('dealer.create')} color={theme.accent} onPress={() => router.push('/dealers/form')} /><Button title={i18n.t('staff.join')} color={theme.accent} onPress={() => router.push('/dealers/join')} /></View>}
     renderItem={({ item }) => <Pressable accessibilityRole="button" accessibilityLabel={item.name} onPress={() => router.push({ pathname: '/dealers/[id]', params: { id: item.id } })} style={({ pressed }) => ({ minHeight: 52, padding: 16, backgroundColor: theme.surface, opacity: pressed ? 0.65 : 1, borderBottomWidth: 1, borderColor: theme.border })}><Text style={{ color: theme.text, fontSize: 18 }}>{item.name}</Text>{item.tagline ? <Text style={{ color: theme.secondary, fontSize: 16, marginTop: 5 }}>{item.tagline}</Text> : null}</Pressable>}
     ListEmptyComponent={!state.listLoading && !state.listFailure && !state.nextCursor ? <Text style={{ color: theme.secondary, fontSize: 17 }}>{i18n.t('dealer.empty')}</Text> : null}
     ListFooterComponent={<View style={{ gap: 12, paddingVertical: 16 }}>{state.listLoading ? <Text accessibilityLiveRegion="polite" style={{ color: theme.secondary }}>{i18n.t('common.loading')}</Text> : null}{state.listFailure ? <><Text accessibilityRole="alert" style={{ color: theme.text }}>{i18n.t('dealer.loadFailed')}</Text><Button title={i18n.t('dealer.retry')} color={theme.accent} onPress={() => { void (state.listFailureOperation === 'more' ? directory.loadMore() : directory.refresh()); }} /></> : null}{state.nextCursor ? <Button title={i18n.t('dealer.more')} color={theme.accent} disabled={state.listLoading} onPress={() => { void directory.loadMore(); }} /> : null}</View>} />;

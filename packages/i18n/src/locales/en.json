@@ -128,5 +128,9 @@
   "staff.accepted": "Invitation accepted.",
   "staff.checkAccess": "Check shop access",
   "staff.accessPending": "Access is not available yet. If you just accepted, wait a moment and check again.",
-  "staff.previewHelp": "Check the shop and role before accepting."
+  "staff.previewHelp": "Check the shop and role before accepting.",
+  "dealer.discardTitle": "Discard changes?",
+  "dealer.discardHelp": "Your unsaved shop profile changes will be lost.",
+  "dealer.discard": "Discard changes",
+  "dealer.continueEditing": "Continue editing"
 }

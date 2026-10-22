@@ -128,5 +128,9 @@
   "staff.accepted": "Invitación aceptada.",
   "staff.checkAccess": "Comprobar acceso a la tienda",
   "staff.accessPending": "El acceso aún no está disponible. Si acabas de aceptar, espera un momento y vuelve a comprobarlo.",
-  "staff.previewHelp": "Comprueba la tienda y el rol antes de aceptar."
+  "staff.previewHelp": "Comprueba la tienda y el rol antes de aceptar.",
+  "dealer.discardTitle": "¿Descartar los cambios?",
+  "dealer.discardHelp": "Se perderán los cambios no guardados del perfil de la tienda.",
+  "dealer.discard": "Descartar cambios",
+  "dealer.continueEditing": "Seguir editando"
 }

@@ -88,3 +88,22 @@ Replace the join route with the profile only after that check succeeds. The
 keyboard must not hide actions, content must scroll with large text, and busy,
 failure and pending states must use localized accessible feedback. Runtime
 keyboard, back navigation and screen-reader evidence remain separate gates.
+
+## Native dealer profile forms
+
+Create and edit use dedicated stack screens with grouped contact, address,
+showroom and service-note fields. Use native text inputs with appropriate email,
+phone and URL keyboards, a native showroom switch, keyboard-aware scrolling and
+scalable text. All profile fields available on the web remain editable on mobile.
+Cancel/back requires explicit discard confirmation after changes. Disable swipe
+dismissal on these forms; during save or uncertain creation, back/cancel cannot
+discard the original idempotent intent. Sign-out/account teardown still clears
+private presentation. Uncertain creation retries its exact snapshot/key.
+
+Edits send the loaded revision. A conflict blocks saving until the user fetches
+and reviews current values and explicitly keeps their edits against that revision.
+Fetching current values never silently overwrites the draft. Late save/review
+results after disposal cannot restore state or navigate. Successful saves replace
+the form with the saved shop profile. Shared orchestration must have controlled
+fake coverage for conflicts, failures, uncertain creation and disposal; runtime
+keyboard, discard dialog, large text and navigation acceptance remain required.

@@ -117,9 +117,17 @@ discards late responses after dismissal; its regression suite covers pending
 access, lost responses, mismatched identities and leaving during access recovery.
 Both platform exports, `make check check-contracts`, mobile type/i18n/boundary
 checks and read-only review pass.
-Native creation, editing and staff administration remain unfinished, along with
-the inventory and publication product slices. Native runtime interaction evidence
-is still required for both dealer screens.
+Native creation/editing now expose all profile fields in grouped forms with
+appropriate keyboards, a showroom switch and discard confirmation. A shared
+controller preserves uncertain creation snapshots/keys, blocks save until explicit
+conflict review, and suppresses late save/review results after disposal. Tests
+cover stale/foreign revisions, concurrent commands and corrected validation errors.
+Save returns to a refreshed profile; list/profile focus refresh prevents stale
+navigation results. Both Metro exports, `make check check-contracts`, i18n and
+boundary gates pass; required read-only review found no blocker. Native staff
+administration, inventory and publication slices remain unfinished. Runtime
+keyboard, discard-dialog, navigation, large-text and accessibility acceptance is
+still required; these checks do not establish native interaction quality.
 
 Hosted run [39839184001](https://github.com/elsell/pianotechpros/actions/runs/39839184001)
 on `9afe4d9` passed its real-service acceptance job: browser Spanish/PKCE/session

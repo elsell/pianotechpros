@@ -27,7 +27,7 @@ def request(method, path, body=None, token=owner, expected=200, idempotency=key)
         status = response.status
         raw = response.read()
         payload = json.loads(raw) if raw else {}
-        if "/staff-invitations" in path:
+        if "/staff-invitations" in path or "/inventory" in path:
             assert response.headers.get("Cache-Control") == "no-store"
             assert response.headers.get("Referrer-Policy") == "no-referrer"
     assert status in (expected if isinstance(expected, tuple) else (expected,)), f"{method} {path}: expected {expected}, received {status} ({payload.get('code', '')})"
@@ -67,6 +67,25 @@ for _ in range(10):
     query = "/v1/audit-events?limit=100&cursor=" + urllib.parse.quote(cursor)
 assert {"resource.created", "authorization.relationship_applied", "resource.updated", "resource.viewed"} <= seen
 print("Dealer creation, owner publication, private reads, optimistic edits, retries, cross-user denial and audit acceptance passed")
+
+# Inventory uses the same confirmed dealer scope and real persistence/audit stack.
+inventory_path = path + "/inventory"
+piano = request("POST", inventory_path, expected=201)["data"]
+piano_path = inventory_path + "/" + piano["id"]
+assert request("POST", inventory_path, expected=201)["data"]["id"] == piano["id"]
+assert piano["status"] == "draft" and piano["revision"] == 1
+facts = {**piano["attributes"], "title": "Acceptance grand", "private_notes": "Private acceptance note", "asking_price": {"minor_units": 1234500, "currency": "USD"}, "manufactured": {"year": 1920, "month": 0, "day": 0}}
+piano_edit = {"expectedRevision": 1, "attributes": facts}
+request("GET", piano_path, token="", expected=401)
+request("GET", piano_path, token=outsider, expected=404)
+request("PUT", piano_path, piano_edit, token=outsider, expected=404)
+revised = request("PUT", piano_path, piano_edit)["data"]
+assert revised["revision"] == 2 and revised["status"] == "draft"
+assert request("GET", piano_path)["data"]["attributes"]["private_notes"] == facts["private_notes"]
+request("PUT", piano_path, piano_edit, expected=409)
+request("PUT", piano_path, {"expectedRevision": 2, "attributes": {**facts, "asking_price": {"minor_units": 1, "currency": "ZZZ"}}}, expected=400)
+assert request("POST", inventory_path, expected=201)["data"]["revision"] == 2
+print("Inventory draft retry, private read, edit, conflict, currency and cross-user acceptance passed")
 
 # Real opaque sessions, PostgreSQL and the SpiceDB outbox worker participate in
 # this invitation -> grant -> role edit -> removal -> reinvitation journey.

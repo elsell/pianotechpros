@@ -123,3 +123,19 @@ map to stable invalid-argument errors; stale revisions remain conflicts. Success
 operations emit typed probes only after repository completion. These commands do
 not register HTTP routes; generated composition and boundary tests are required
 before exposing them.
+
+## Private record HTTP contract
+
+Generated domain registration composes the inventory application with the existing
+transactional inventory/membership repository capabilities. Register only these
+implemented operations: POST `/v1/dealers/{dealerID}/inventory` creates an empty
+draft using `Idempotency-Key`; GET and PUT on the same path plus `/{id}` read and
+replace private attributes. PUT requires `expectedRevision` and an `attributes`
+object with explicit snake_case fields. Status/source/ownership are not writable.
+Responses use `{data: ...}` with identity, dealer_id, revision, status, attributes
+and timestamps. Typed money retains integer minor units and ISO currency text;
+partial dates retain unknown month/day without inventing precision. Nullable
+optional facts remain nullable. All responses disable caching and referrers.
+Validation errors must never echo private input. Existing stable error envelopes
+apply, including 404 for inaccessible records and 409 for stale revisions. No
+inventory DELETE, publication, or unimplemented list route is registered.

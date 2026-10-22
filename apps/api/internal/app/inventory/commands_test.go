@@ -68,7 +68,7 @@ func commandFixture() (*Commands, *accessFixture, *recordMemory) {
 	_, f := policyFixture()
 	m := &recordMemory{rows: map[string]domain.Record{}, intents: map[string]string{}}
 	counter := 0
-	c := NewCommands(CommandDependencies{Access: AccessDependencies{Auth: f, Memberships: f, Authorizer: f, Audits: f, Limiter: f, Clock: f}, Records: m, NewID: func() string { counter++; return fmt.Sprintf("piano-%d", counter) }})
+	c := NewCommands(CommandDependencies{SupportedCurrency: supportedCurrency, Access: AccessDependencies{Auth: f, Memberships: f, Authorizer: f, Audits: f, Limiter: f, Clock: f}, Records: m, NewID: func() string { counter++; return fmt.Sprintf("piano-%d", counter) }})
 	return c, f, m
 }
 func TestRecordCommandsCreateRetryReadEdit(t *testing.T) {
@@ -183,5 +183,23 @@ func TestRecordCommandInputsAndMissingDependencies(t *testing.T) {
 	empty := NewCommands(CommandDependencies{})
 	if _, err := empty.GetRecord(ctx, "opaque", "dealer", "piano"); !errors.Is(err, ports.ErrAuthorizationPolicyNotConfigured) {
 		t.Fatal("unconfigured service")
+	}
+}
+
+func TestInventoryConfiguredCurrencyPolicy(t *testing.T) {
+	for _, code := range []string{"USD", "CAD", "EUR", "GBP", "AUD", "NZD", "JPY", "CHF"} {
+		if !supportedCurrency(code) {
+			t.Fatalf("configured currency rejected: %s", code)
+		}
+	}
+	for _, code := range []string{"", "usd", "ZZZ", "US", "USDD"} {
+		if supportedCurrency(code) {
+			t.Fatalf("unsupported currency accepted: %s", code)
+		}
+	}
+	c, _, _ := commandFixture()
+	c.dependencies.SupportedCurrency = nil
+	if _, err := c.GetRecord(context.Background(), "opaque", "dealer", "piano"); !errors.Is(err, ports.ErrAuthorizationPolicyNotConfigured) {
+		t.Fatal("missing currency policy failed open")
 	}
 }

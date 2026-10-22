@@ -78,3 +78,13 @@ visibility. Persistence must atomically save the next revision, immutable histor
 audit and any required publication-status projection. Archiving removes public
 visibility; correcting archive never automatically republishes. Those transactional
 and snapshot semantics remain required before any lifecycle endpoint is exposed.
+
+## Initial supported currency policy
+
+The application composition explicitly supports USD, CAD, EUR, GBP, AUD, NZD,
+JPY and CHF. These identifiers describe each amount's minor units; no conversion
+or exchange rate is implied. The command boundary receives an injected currency
+policy and rejects unsupported asking-price or acquisition-cost currencies before
+persistence. A missing policy fails closed. Expanding this configured set requires
+updating this contract and the composition policy with verified currency metadata;
+locale selection does not change a stored amount's currency.

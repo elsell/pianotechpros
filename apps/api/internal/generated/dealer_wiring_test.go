@@ -32,6 +32,9 @@ func TestGeneratedDomainRoutes_dealer(t *testing.T) {
 		DomainRegistrations: generated.Registrations(generated.Dependencies{Auth: dealerAuthenticator{}}),
 	})
 	operations := []struct{ name, method, path, body string }{
+		{"inventory create", http.MethodPost, "/v1/dealers/id/inventory", ""},
+		{"inventory get", http.MethodGet, "/v1/dealers/id/inventory/piano", ""},
+		{"inventory edit", http.MethodPut, "/v1/dealers/id/inventory/piano", `{"expectedRevision":1,"attributes":{"stock_number":"PT-1"}}`},
 		{"create", http.MethodPost, "/v1/dealers", `{"name":"value","slug":"value","email":"value","phone":"value","website_url":"value","tagline":"value","description":"value","street_address_1":"value","street_address_2":"value","city":"value","region":"value","postal_code":"value","appointment_note":"value","delivery_note":"value","warranty_note":"value","service_note":"value","banner_alt_text":"value","accent_color":"value","showroom_published":true}`},
 		{"list", http.MethodGet, "/v1/dealers", ""},
 		{"get", http.MethodGet, "/v1/dealers/id", ""},

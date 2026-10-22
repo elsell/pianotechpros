@@ -10,10 +10,11 @@ import (
 )
 
 type CommandDependencies struct {
-	Access  AccessDependencies
-	Records RecordRepository
-	NewID   func() string
-	Probe   ports.Probe
+	SupportedCurrency func(string) bool
+	Access            AccessDependencies
+	Records           RecordRepository
+	NewID             func() string
+	Probe             ports.Probe
 }
 type Commands struct {
 	dependencies CommandDependencies
@@ -28,7 +29,7 @@ func (c *Commands) require(ctx context.Context, credential, dealerID string, op 
 	if err != nil {
 		return Access{}, err
 	}
-	if c.dependencies.Records == nil {
+	if c.dependencies.Records == nil || c.dependencies.SupportedCurrency == nil {
 		return Access{}, ports.ErrAuthorizationPolicyNotConfigured
 	}
 	return access, nil
@@ -100,6 +101,11 @@ func (c *Commands) EditRecord(ctx context.Context, credential, dealerID, id stri
 	}
 	if !validID(id) || expected < 1 || expected > 9007199254740991 {
 		return domain.Record{}, ports.ErrInvalidArgument
+	}
+	for _, money := range []*domain.Money{attributes.AskingPrice, attributes.AcquisitionCost} {
+		if money != nil && !c.dependencies.SupportedCurrency(money.Currency) {
+			return domain.Record{}, ports.ErrInvalidArgument
+		}
 	}
 	result, err := c.dependencies.Records.ReviseRecord(ctx, access.ActorID, dealerID, id, expected, attributes, domain.Manual, c.event(ctx, access, id, audit.ResourceUpdated))
 	return c.result(ctx, access, result, err, "inventory.updated")

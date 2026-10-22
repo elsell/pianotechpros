@@ -211,7 +211,16 @@ Stateful-fake tests cover idempotent recovery, revision conflicts, malformed inp
 missing dependencies, repository failures and collection-scoped auditing when
 permission disappears after preflight. Manual editing cannot inject a voice source.
 These commands still need generated HTTP composition and wire-boundary coverage
-before web/native integration; no inventory route is exposed by this change.
+before web/native integration.
+The first inventory HTTP slice now exposes dealer-scoped empty-draft creation,
+private get and revision-checked attribute editing through generator-produced
+registration. HTTP tests cover retry, exact money/date mapping, stale writes,
+invalid/provider-like credentials, cross-dealer and insufficient permissions,
+authorization failure, limiting, forbidden status/source fields and private error
+redaction. Composition restricts money to the explicit supported-currency policy.
+Generated contracts include these operations. The real-service acceptance script
+now includes the inventory journey; its hosted execution remains pending.
+Inventory listing, client integration and remaining product workflows remain open.
 
 
 `make check check-contracts` passes without a structural-gate exception; the

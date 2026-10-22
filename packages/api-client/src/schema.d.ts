@@ -71,6 +71,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/dealers/{dealerID}/inventory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["create-inventory-draft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dealers/{dealerID}/inventory/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get-inventory-record"];
+        put: operations["edit-inventory-record"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/dealers/{id}": {
         parameters: {
             query?: never;
@@ -327,6 +359,26 @@ export interface components {
              */
             type: string;
         };
+        Attributes: {
+            acquisition_cost?: components["schemas"]["Money"];
+            asking_price?: components["schemas"]["Money"];
+            condition?: string;
+            description?: string;
+            featured?: boolean;
+            finish?: string;
+            form?: string;
+            location?: string;
+            make?: string;
+            manufactured?: components["schemas"]["ManufacturingDate"];
+            model?: string;
+            player_system?: boolean;
+            price_visible?: boolean;
+            private_notes?: string;
+            serial?: string;
+            size?: string;
+            stock_number: string;
+            title?: string;
+        };
         AuditEventDTO: {
             action: string;
             actorUserId: string;
@@ -551,6 +603,35 @@ export interface components {
             readonly $schema?: string;
             data: components["schemas"]["StaffInvitationPreview"];
         };
+        Item: {
+            attributes: components["schemas"]["Attributes"];
+            /** Format: date-time */
+            created_at: string;
+            dealer_id: string;
+            id: string;
+            /** Format: int64 */
+            revision: number;
+            status: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        ItemOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/ItemOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["Item"];
+        };
+        ManufacturingDate: {
+            /** Format: int64 */
+            day: number;
+            /** Format: int64 */
+            month: number;
+            /** Format: int64 */
+            year: number;
+        };
         MeOutputBody: {
             /**
              * Format: uri
@@ -562,6 +643,11 @@ export interface components {
         };
         MetaStruct: {
             nextCursor?: string;
+        };
+        Money: {
+            currency: string;
+            /** Format: int64 */
+            minor_units: number;
         };
         PaginationMeta: {
             nextCursor?: string;
@@ -709,6 +795,17 @@ export interface components {
             expectedRevision: number;
             /** @enum {string} */
             role: "editor" | "viewer";
+        };
+        Update: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/Update.json
+             */
+            readonly $schema?: string;
+            attributes: components["schemas"]["Attributes"];
+            /** Format: int64 */
+            expectedRevision: number;
         };
         UserDTO: {
             displayName: string;
@@ -880,6 +977,112 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DealerItemOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "create-inventory-draft": {
+        parameters: {
+            query?: never;
+            header: {
+                Authorization?: string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                dealerID: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "get-inventory-record": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                dealerID: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "edit-inventory-record": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                dealerID: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Update"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemOutputBody"];
                 };
             };
             /** @description Error */

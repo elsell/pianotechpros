@@ -48,8 +48,14 @@ removals have authenticated, principal-limited HTTP commands with owner/SpiceDB
 checks, revision conflicts and explicit pending-grant responses. Stateful-fake
 application/HTTP tests and generated registration tests cover denial and failure
 boundaries; PostgreSQL tests cover ordered confirmation, rollback and concurrent
-runtime-role edits. Real HTTP/SpiceDB staff journeys, invitation persistence,
-listing and client journeys remain unfinished. DL-01 through DL-04 remain open. No security finding
+runtime-role edits. Migration 21 and staff invitation persistence now support digest-only storage,
+owner-scoped creation/revocation and atomic one-time acceptance by an already
+active account. Acceptance rechecks expiry after locks, reactivation requires a
+new pending revision, and runtime DELETE/TRUNCATE privileges are explicitly
+revoked for invitations and memberships. Real PostgreSQL race tests pass
+concurrent acceptors, expiry during a resource-lock wait, replay, disabled
+accounts and audit/outbox rollback. Real HTTP/SpiceDB staff journeys, invitation
+application endpoints, listing and client journeys remain unfinished. DL-01 through DL-04 remain open. No security finding
 is waived.
 
 ## Completed foundation: public scaffold

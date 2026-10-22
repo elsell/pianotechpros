@@ -139,3 +139,26 @@ Do not publish synchronously or return a false ready state. Unknown/cross-dealer
 subjects are concealed; stale edits return conflict and immutable-owner or invalid
 role edits return a stable bad-request code. Denials are audited. Atomic persistence
 rechecks remain required even after the application checks.
+
+### Invitation storage and transaction boundary
+
+Staff invitations live in their own table, separate from platform provisioning
+invitations. Persist only the fixed-size token digest, offered role, dealer and
+issuer IDs, creation/expiry and terminal consumption/revocation fields. Database
+constraints enforce the digest size, staff-only role, bounded lifetime and mutually
+exclusive terminal states. Runtime credentials can select, insert and update but
+cannot delete invitations.
+
+Creation/revocation and acceptance acquire the dealer authorization resource lock
+before dealer, membership and invitation locks, matching relationship workers.
+Creation and revocation require a confirmed active founding owner and active
+account in the transaction. Acceptance requires the same issuer state, an already
+active recipient account and an available matching invitation. The application
+must separately check issuer SpiceDB authority before preview or acceptance.
+The acceptance port receives the injected clock and reads it after acquiring
+locks; an invitation expiring while the request waits cannot be consumed using a
+stale request-start timestamp. Consumption, new/reactivated pending membership,
+touch outbox and acceptance audit share one transaction. The acceptance audit's
+time is the actual consumption time. A fresh invite cannot replace an active
+membership. Replayed, expired, revoked, wrong-dealer and unknown invitations share
+the invalid-invitation result. Issuer/recipient deactivation also fails closed.

@@ -36,3 +36,11 @@ type StaffRepository interface {
 	ChangeMembershipRole(context.Context, string, domain.ID, string, domain.Role, int64, string, string, audit.Event) (domain.Membership, error)
 	RevokeMembership(context.Context, string, domain.ID, string, int64, string, audit.Event) (domain.Membership, error)
 }
+
+// StaffInvitations is the capability for invitation transactions. Account
+// provisioning remains a separate platform capability and cannot be bypassed.
+type StaffInvitations interface {
+	CreateStaffInvitation(context.Context, string, domain.StaffInvitation, audit.Event) error
+	RevokeStaffInvitation(context.Context, string, domain.ID, string, audit.Event) error
+	AcceptStaffInvitation(context.Context, string, domain.ID, string, [32]byte, string, audit.Event, ports.Clock) (domain.Membership, error)
+}

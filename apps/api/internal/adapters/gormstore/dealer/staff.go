@@ -35,22 +35,7 @@ func (r *Repository) mutateMembership(ctx context.Context, actor string, dealerI
 	}
 	var result domain.Membership
 	err := r.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		// Match the worker resource -> membership lock order before any row lock.
-		var resourceLock struct{ ResourceType, ResourceID string }
-		if err := tx.Table("authorization_resource_lock_models").Where("resource_type='dealer' AND resource_id=?", dealerID).Clauses(clause.Locking{Strength: "UPDATE"}).Take(&resourceLock).Error; err != nil {
-			return err
-		}
-		var dealer model
-		if err := tx.Where("id=? AND owner_user_id=?", dealerID, actor).Clauses(clause.Locking{Strength: "UPDATE"}).First(&dealer).Error; err != nil {
-			return err
-		}
-		var owner membershipModel
-		if err := tx.Where("dealer_id=? AND user_id=? AND role='owner' AND active AND granted_revision=revision", dealerID, actor).Clauses(clause.Locking{Strength: "UPDATE"}).First(&owner).Error; err != nil {
-			return err
-		}
-		// Lock the account too: concurrent deactivation cannot pass this recheck.
-		var account struct{ ID string }
-		if err := tx.Table("user_models").Where("id=? AND status='active'", actor).Clauses(clause.Locking{Strength: "SHARE"}).Take(&account).Error; err != nil {
+		if err := lockStaffOwner(tx, actor, dealerID); err != nil {
 			return err
 		}
 		var current membershipModel
@@ -102,4 +87,27 @@ func (r *Repository) mutateMembership(ctx context.Context, actor string, dealerI
 		return domain.Membership{}, err
 	}
 	return result, nil
+}
+
+// lockStaffOwner serializes all staff mutations with relationship publication.
+func lockStaffOwner(tx *gorm.DB, actor string, dealerID domain.ID) error {
+	// Match the worker resource -> membership lock order before any row lock.
+	var resourceLock struct{ ResourceType, ResourceID string }
+	if err := tx.Table("authorization_resource_lock_models").Where("resource_type='dealer' AND resource_id=?", dealerID).Clauses(clause.Locking{Strength: "UPDATE"}).Take(&resourceLock).Error; err != nil {
+		return err
+	}
+	var dealer model
+	if err := tx.Where("id=? AND owner_user_id=?", dealerID, actor).Clauses(clause.Locking{Strength: "UPDATE"}).First(&dealer).Error; err != nil {
+		return err
+	}
+	var owner membershipModel
+	if err := tx.Where("dealer_id=? AND user_id=? AND role='owner' AND active AND granted_revision=revision", dealerID, actor).Clauses(clause.Locking{Strength: "UPDATE"}).First(&owner).Error; err != nil {
+		return err
+	}
+	// Lock the account too: concurrent deactivation cannot pass this recheck.
+	var account struct{ ID string }
+	if err := tx.Table("user_models").Where("id=? AND status='active'", actor).Clauses(clause.Locking{Strength: "SHARE"}).Take(&account).Error; err != nil {
+		return err
+	}
+	return nil
 }

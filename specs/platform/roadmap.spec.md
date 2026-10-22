@@ -103,6 +103,17 @@ browser fixture coverage includes denied administration, conflict refresh,
 pending grants, confirmed removal and invitation revocation. DL-01 through DL-04 remain open. No security
 finding is waived.
 
+Native dealer browsing now uses a shared session provider, account-scoped list
+and profile state, native stack navigation, pull-to-refresh, pagination and
+localized retry states. Profile sections adapt to light/dark appearance and
+system text sizing. Sign-out blocks private presentation before secure-storage
+deletion; a controlled-fake regression covers deletion failure and retry.
+Both Metro platform exports, `make check check-contracts`, and mobile
+type/i18n/boundary checks pass. Required read-only review found no blocking issue. These
+are export checks, not Gradle/Xcode builds or device interaction acceptance.
+Native creation, editing, staff administration and invitation consumption remain
+unfinished, along with the inventory and publication product slices.
+
 ## Completed foundation: public scaffold
 
 Fresh Go API, SvelteKit web and Expo iOS/Android foundation generated from Make

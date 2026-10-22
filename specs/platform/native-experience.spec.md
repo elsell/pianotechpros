@@ -49,3 +49,24 @@ Guidance reviewed for the scaffold on 2026-10-22:
 The owner's existing inventory workflow informs the acceptance contract. The
 Stuff Stash UI design skill informed the task-first review method; no Stuff Stash
 UI source or native modules are copied into this scaffold.
+
+## Dealer directory slice
+
+Use a native stack for shop list -> profile, with the platform Back action and
+preserved list scroll position. The list is a FlatList with a native refresh
+control, accessible shop rows and explicit pagination. Profiles use a scroll view
+with grouped contact/address/service information. Text scales without fixed-height
+rows; colors follow the device light/dark setting. Route parameters contain only
+the shop identifier, never credentials or invitation codes.
+
+Session state lives above navigation. Account changes remount private screen
+state; credential rotation preserves it. Temporary outages retain the current
+screen while the local credential is valid. Sign-out must immediately hide private
+screens while secure-storage removal runs, and storage failure must retain an
+explicit retry path. Every dealer operation captures a credential and an old-token
+401 must not clear a newer credential. Access denial never renders stale profile
+content. Native runtime navigation, large-text and screen-reader acceptance remain
+required separately from TypeScript checks or Metro exports.
+
+Layout and safe-area reference reviewed for this slice:
+https://developer.apple.com/design/human-interface-guidelines/layout

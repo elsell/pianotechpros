@@ -1,149 +1,42 @@
-import * as SecureStore from 'expo-secure-store';
-import Constants from 'expo-constants';
-import { getLocales } from 'expo-localization';
 import { useEffect, useState } from 'react';
-import { Button, SafeAreaView, Text } from 'react-native';
-import { createSessionApiClient, sessionExpiryAdvanced, sessionRefreshDelay, sessionRefreshLeadMs } from '@pianotechpros/api-client';
-import { classifySessionFailure, isSessionFailure, refreshSessionCredential, sessionCredentialFromResponse, sessionRetryDelay, validateSessionCredential, type SessionAccessState, type SessionFailure } from '@pianotechpros/client-core';
-import { type MessageKey } from '@pianotechpros/i18n';
-import { createDeviceTranslator } from '../src/i18n';
-import { loadMobileConfig } from '../src/config';
-import { activateExchangedSession } from '../src/session-establishment';
-import { restoreStoredSession } from '../src/session-restoration';
-import { useProviderSignIn } from '../src/provider-auth';
-import { createSessionLifecycle, type SessionLease } from '@pianotechpros/client-core';
+import { Button, FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { createDealerDirectory } from '@pianotechpros/client-core';
+import type { DealerProfile } from '@pianotechpros/api-client';
+import { useMobileSession } from '../src/session-provider';
+import { useDealerRequest } from '../src/use-dealer-request';
+import { useNativeTheme } from '../src/native-theme';
+import { usePullRefresh } from '../src/use-pull-refresh';
 
-const { apiURL, oidcClientId: clientId, oidcIssuer: issuer } = loadMobileConfig(Constants.expoConfig?.extra);
-const storageKey = 'application_session';
-const i18n = createDeviceTranslator(getLocales);
-
-type Session = { token: string; expiresAt: string };
-type Profile = { id: string; email: string; displayName: string };
-class LocalizedError extends Error { constructor(readonly key: MessageKey) { super(key); } }
-
-async function saveSession(session: Session | null) {
-  if (session) await SecureStore.setItemAsync(storageKey, JSON.stringify(session));
-  else await SecureStore.deleteItemAsync(storageKey);
+function ShopList({ accountId }: { accountId: string }) {
+  const { i18n } = useMobileSession();
+  const request = useDealerRequest();
+  const theme = useNativeTheme();
+  const router = useRouter();
+  const [directory] = useState(() => createDealerDirectory<DealerProfile, boolean>(() => true));
+  const [state, setState] = useState(directory.snapshot());
+  const pull = usePullRefresh(() => directory.refresh());
+  useEffect(() => {
+    const unsubscribe = directory.subscribe(setState);
+    directory.replaceSession(accountId, { list: (cursor) => request((api) => api.list(cursor)), get: (id) => request((api) => api.get(id)) });
+    void directory.refresh();
+    return () => { unsubscribe(); directory.clear(); };
+  }, [directory, accountId, request]);
+  return <FlatList contentInsetAdjustmentBehavior="automatic" data={state.items} keyExtractor={(item) => item.id} contentContainerStyle={{ padding: 20, gap: 1, flexGrow: 1 }}
+    refreshControl={<RefreshControl refreshing={pull.refreshing} onRefresh={() => { void pull.refresh(); }} tintColor={theme.accent} />}
+    ListHeaderComponent={<Text accessibilityRole="header" style={{ color: theme.text, fontSize: 28, fontWeight: '600', marginBottom: 16 }}>{i18n.t('dealer.heading')}</Text>}
+    renderItem={({ item }) => <Pressable accessibilityRole="button" accessibilityLabel={item.name} onPress={() => router.push({ pathname: '/dealers/[id]', params: { id: item.id } })} style={({ pressed }) => ({ minHeight: 52, padding: 16, backgroundColor: theme.surface, opacity: pressed ? 0.65 : 1, borderBottomWidth: 1, borderColor: theme.border })}><Text style={{ color: theme.text, fontSize: 18 }}>{item.name}</Text>{item.tagline ? <Text style={{ color: theme.secondary, fontSize: 16, marginTop: 5 }}>{item.tagline}</Text> : null}</Pressable>}
+    ListEmptyComponent={!state.listLoading && !state.listFailure && !state.nextCursor ? <Text style={{ color: theme.secondary, fontSize: 17 }}>{i18n.t('dealer.empty')}</Text> : null}
+    ListFooterComponent={<View style={{ gap: 12, paddingVertical: 16 }}>{state.listLoading ? <Text accessibilityLiveRegion="polite" style={{ color: theme.secondary }}>{i18n.t('common.loading')}</Text> : null}{state.listFailure ? <><Text accessibilityRole="alert" style={{ color: theme.text }}>{i18n.t('dealer.loadFailed')}</Text><Button title={i18n.t('dealer.retry')} color={theme.accent} onPress={() => { void (state.listFailureOperation === 'more' ? directory.loadMore() : directory.refresh()); }} /></> : null}{state.nextCursor ? <Button title={i18n.t('dealer.more')} color={theme.accent} disabled={state.listLoading} onPress={() => { void directory.loadMore(); }} /> : null}</View>} />;
 }
-function localizedFailure(cause: unknown, fallback: MessageKey): MessageKey { return cause instanceof LocalizedError ? cause.key : fallback; }
-
 export default function Home() {
-  const [lifecycle] = useState(() => createSessionLifecycle(saveSession));
-  const [session, setSession] = useState<Session | null>(null);
-  const [accessState, setAccessState] = useState<SessionAccessState>('authentication_required');
-  const [sessionRenewable, setSessionRenewable] = useState(true);
-  const [retryAttempt, setRetryAttempt] = useState(0);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [ready, setReady] = useState(false);
-  const [errorKey, setErrorKey] = useState<MessageKey | null>(null);
-  const providerSignIn = useProviderSignIn(issuer, clientId, 'pianotechpros');
-
-  async function refreshSession(lease: SessionLease, current: Session): Promise<Session> {
-    return refreshSessionCredential(
-      current,
-      async (value) => createSessionApiClient(apiURL, () => value.token).refresh(),
-      lease.persist,
-    );
-  }
-  async function activate(lease: SessionLease, next: Session, renewable = true) {
-    if (!lease.current()) return;
-    await lease.persist(next);
-    if (!lease.current()) return;
-    setSessionRenewable(renewable); setSession(next);
-    const nextProfile = await validateSessionCredential<Profile>(next, async (current) =>
-      createSessionApiClient(apiURL, () => current.token).profile(),
-    );
-    if (!lease.current()) return;
-    setProfile(nextProfile);
-    setAccessState('authenticated_online');
-    setRetryAttempt(0);
-  }
-  async function clearSession(message: MessageKey | null = null, state: SessionAccessState = 'authentication_required') {
-    const token = session?.token;
-    const cleared = lifecycle.clear();
-    setReady(false);
-    try { await cleared; }
-    catch { setErrorKey('errors.signOutFailed'); return; }
-    finally { setReady(true); }
-    setSession(null); setRetryAttempt(0); setProfile(null); setAccessState(state); setErrorKey(message);
-    if (token) try { await createSessionApiClient(apiURL, () => token).revoke(); } catch { /* local disposal is authoritative */ }
-  }
-  async function handleSessionFailure(lease: SessionLease, cause: unknown, current: Session) {
-    if (!lease.current()) return;
-    const failure: SessionFailure = isSessionFailure(cause) ? cause : { kind: 'network' };
-    const decision = classifySessionFailure(failure);
-    if (decision.discardCredential) {
-      await clearSession(decision.state === 'local_session_unreadable' ? 'errors.localSessionUnreadable' : 'errors.sessionExpired', decision.state);
-      return;
-    }
-    await lease.persist(current);
-    if (!lease.current()) return;
-    setSession(current); setAccessState('authenticated_offline');
-    if (!decision.retryable) { setSessionRenewable(false); setRetryAttempt(0); }
-    if (decision.retryable) setRetryAttempt((attempt) => attempt + 1);
-    setErrorKey(decision.retryable ? 'errors.temporarilyUnavailable' : 'errors.apiRejected');
-  }
-
-  useEffect(() => {
-    const lease = lifecycle.capture();
-    void restoreStoredSession({
-      read: () => SecureStore.getItemAsync(storageKey),
-      now: () => Date.now(),
-      refreshLeadMs: sessionRefreshLeadMs,
-      refresh: (current) => refreshSession(lease, current),
-      expiryAdvanced: sessionExpiryAdvanced,
-      activate: (current, renewable) => activate(lease, current, renewable),
-      handleFailure: (cause, current) => handleSessionFailure(lease, cause, current),
-      handleUnreadable: async () => { if (lease.current()) await clearSession('errors.localSessionUnreadable', 'local_session_unreadable'); },
-    }).finally(() => setReady(true));
-    return () => lifecycle.invalidate();
-  }, []);
-
-  useEffect(() => {
-    if (!providerSignIn.identityToken && !providerSignIn.failed) return;
-    const lease = lifecycle.capture();
-    (async () => {
-      try {
-        if (providerSignIn.failed || !providerSignIn.identityToken) throw new LocalizedError('errors.identityTokenMissing');
-        let apiResponse: Awaited<ReturnType<ReturnType<typeof createSessionApiClient>['exchange']>>;
-        try { apiResponse = await createSessionApiClient(apiURL, () => null).exchange(providerSignIn.identityToken); }
-        catch { throw { kind: 'network' } satisfies SessionFailure; }
-        const next = sessionCredentialFromResponse(apiResponse);
-        const activationFailure = await activateExchangedSession(next, (current) => activate(lease, current), lease.persist);
-        if (activationFailure) await handleSessionFailure(lease, activationFailure.failure, next);
-      } catch (cause) {
-        if (!lease.current()) return;
-        if (session) await handleSessionFailure(lease, cause, session);
-        else { setAccessState('authentication_required'); setErrorKey(localizedFailure(cause, 'errors.signInFailed')); }
-      }
-      finally { providerSignIn.acknowledge(); setReady(true); }
-    })();
-  }, [providerSignIn.identityToken, providerSignIn.failed]);
-
-  useEffect(() => {
-    if (!session) return;
-    const lease = lifecycle.capture();
-    const untilExpiry = Date.parse(session.expiresAt) - Date.now();
-    if (untilExpiry <= 0) { void clearSession('errors.sessionExpired'); return; }
-    const delay = accessState === 'authenticated_offline' && retryAttempt > 0 ? sessionRetryDelay(retryAttempt, session.expiresAt) : sessionRenewable ? sessionRefreshDelay(session.expiresAt) : untilExpiry;
-    const timer = setTimeout(() => {
-      if (!lease.current()) return;
-      if (!sessionRenewable && (accessState !== 'authenticated_offline' || retryAttempt === 0)) { void clearSession('errors.sessionExpired'); return; }
-      void (async () => {
-        let next: Session;
-        try { next = await refreshSession(lease, session); }
-        catch (cause) { await handleSessionFailure(lease, cause, session); return; }
-        try { await activate(lease, next, sessionExpiryAdvanced(session.expiresAt, next.expiresAt)); }
-        catch (cause) { await handleSessionFailure(lease, cause, next); }
-      })();
-    }, delay);
-    return () => clearTimeout(timer);
-  }, [session?.token, session?.expiresAt, sessionRenewable, accessState, retryAttempt]);
-
-  return <SafeAreaView style={{ padding: 32, gap: 16 }}>
-    <Text style={{ fontSize: 32 }}>{i18n.t('app.title')}</Text>
-    <Text>{!ready ? i18n.t('common.loading') : accessState === 'authenticated_offline' ? i18n.t('auth.offline') : profile ? i18n.t('auth.signedInAs', { name: profile.displayName || profile.email }) : i18n.t('auth.ready')}</Text>
-    {errorKey ? <Text accessibilityRole="alert">{i18n.t(errorKey)}</Text> : null}
-    <Button title={i18n.t(session ? 'auth.signOut' : 'auth.signIn')} disabled={!ready || (!session && !providerSignIn.ready)} onPress={() => session ? void clearSession() : void providerSignIn.begin()} />
-  </SafeAreaView>;
+  const auth = useMobileSession(); const theme = useNativeTheme(); const { i18n } = auth;
+  return <View style={{ flex: 1, backgroundColor: theme.background }}>
+    <View style={{ padding: 20, gap: 12 }}>
+      <Text style={{ color: theme.secondary, fontSize: 17 }}>{!auth.ready ? i18n.t('common.loading') : auth.accessState === 'authenticated_offline' ? i18n.t('auth.offline') : auth.profile ? i18n.t('auth.signedInAs', { name: auth.profile.displayName || auth.profile.email }) : i18n.t('auth.ready')}</Text>
+      {auth.errorKey ? <Text accessibilityRole="alert" style={{ color: theme.text }}>{i18n.t(auth.errorKey)}</Text> : null}
+      <Button title={i18n.t(auth.session ? 'auth.signOut' : 'auth.signIn')} color={theme.accent} disabled={!auth.ready || (!auth.session && !auth.signInReady)} onPress={() => { void (auth.session ? auth.signOut() : auth.signIn()); }} />
+    </View>
+    {auth.ready && auth.profile && auth.session ? <ShopList key={auth.profile.id} accountId={auth.profile.id} /> : null}
+  </View>;
 }

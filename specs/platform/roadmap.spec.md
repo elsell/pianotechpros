@@ -70,16 +70,16 @@ with nine documented exact exceptions, and both Metro exports locally. Local
 exports used a temporary watch-folder setting for memory-backed dependencies
 because of host disk pressure; that machine-specific setting is not committed.
 Hosted jobs now export platform bundles before compilation in a normal checkout.
-Hosted iOS compilation for this refresh is still pending.
+Hosted Android and unsigned iOS compilation for this refresh passed.
 
 ## Current hosted evidence
 
-Commit `52cdd34` is being checked in run
+Commit `52cdd34` was checked in run
 [39812943749](https://github.com/elsell/pianotechpros/actions/runs/39812943749).
 API/Compose acceptance, including its container builds, passed. Both hosted
 platform exports, Expo Doctor and native compatibility checks passed in ordinary
-checkouts. Android Gradle `assembleDebug` passed. The Android job is finishing
-post-build steps; unsigned iOS Xcode compilation remains in progress.
+checkouts. Both Android Gradle `assembleDebug` and unsigned iOS simulator Xcode
+compilation passed. These establish compilation, not native interaction acceptance.
 
 The verification job failed at `govulncheck`: **23 reachable vulnerabilities**
 with the CI-pinned Go 1.25.12. The earlier local count of 16 used Go 1.25.13;
@@ -102,4 +102,10 @@ web HTML but did not invoke a browser. The earlier API/Compose success must not
 be treated as browser interaction evidence. The harness now invokes real
 Playwright web and Scalar journeys: Spanish rendering, PKCE sign-in, profile
 restoration, sign-out, and authenticated profile/audit requests from Scalar.
-Hosted execution of these newly connected journeys remains pending.
+Run [39815345999](https://github.com/elsell/pianotechpros/actions/runs/39815345999)
+on `6a475dd` passed the web Spanish/PKCE/restoration/sign-out journey, but Scalar
+failed to observe its bearer credential. The no-example harness had omitted the
+template's popup-close and stable-credential readiness gate. That behavior is
+restored with its eight passing deadline/readiness tests; hosted Scalar
+verification remains pending. Native checks in this PR were path-skipped; the
+actual compilation evidence remains the main-branch run above.

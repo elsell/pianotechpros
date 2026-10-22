@@ -88,10 +88,14 @@ Try It requests to `/v1/me` and a protected resource endpoint. Protocol-only
 reconstruction is supporting evidence, not a substitute for this browser boundary.
 The harness permits bounded UI retries while Scalar renders the Try It request
 control and applies a successfully exchanged credential, but must fail if the
-control never appears or Scalar never attaches the bearer credential. The browser harness uses a bounded 45-second retry window, observes the bearer
-header on each outgoing request, and requires a successful authenticated response.
-The credential-settling helper has separate unit coverage; its repeated-observation
-behavior is not claimed as browser evidence unless the harness invokes it.
+control never appears or Scalar never attaches the bearer credential. The browser harness waits for the authorization popup to close and for the exact
+exchanged application credential to remain visible across repeated observations
+spanning 500 milliseconds. This readiness wait has a five-second absolute bound.
+Only then may it open Try It, with a separate bounded 45-second retry window,
+request-level bearer detection and successful authenticated responses. It must
+distinguish missing request controls from missing credentials when reporting
+failure. This restores the reviewed Make App harness behavior to the no-example
+scaffold; no credential is injected into the UI by the test.
 Every harness invocation has a unique Compose project and performs project and
 volume cleanup both before setup and on exit. Interrupted, stale, or concurrent
 runs must not share migration state or persistence fixtures.

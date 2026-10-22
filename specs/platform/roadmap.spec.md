@@ -238,6 +238,15 @@ transient recovery failures, access denial and late responses after disposal.
 Project/contract checks and required review pass. This is an in-memory workflow;
 durable scoped draft storage, autosave scheduling and mounted web/native capture
 screens remain necessary before claiming recoverable capture delivery.
+Editor checkpoints now export/restore baseline, draft and exact pending revision
+without serializing transient failures or replaying a request. A shared protected-
+storage journal validates account/dealer/record scope, limits UTF-8 size and age,
+serializes writes and makes discard a terminal barrier. Controlled storage tests
+cover foreign/corrupt/expired data, delayed reads/writes, oversized values and
+retryable deletion failures; restart tests preserve uncertain attempts and typing.
+Platform protection, account cleanup and write-ahead integration are not yet wired,
+so this is not evidence of device/browser durable recovery or autosave acceptance.
+
 
 
 

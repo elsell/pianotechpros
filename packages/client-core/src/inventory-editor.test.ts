@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createInventoryEditor } from './inventory-editor.js';
+import { createInventoryEditor, isInventoryEditorCheckpoint, type InventoryEditorCheckpoint } from './inventory-editor.js';
 const initial={id:'piano',dealer_id:'shop',revision:1,attributes:{title:'Original',price:{minor:100}}};
-function fixture(){
+function fixture(recovery?:InventoryEditorCheckpoint<typeof initial.attributes,typeof initial>){
  let current=structuredClone(initial);let failure:string|null=null;let commitThenFail=false;let release:(()=>void)|null=null;let calls=0;
- const c=createInventoryEditor({initial,copy:(a:typeof initial.attributes)=>structuredClone(a),equal:(a,b)=>JSON.stringify(a)===JSON.stringify(b),classify:(e:unknown)=>e==='denied'?'denied':e==='conflict'?'conflict':e==='validation'?'rejected':'uncertain',
+ const c=createInventoryEditor({initial,recovery,copy:(a:typeof initial.attributes)=>structuredClone(a),equal:(a,b)=>JSON.stringify(a)===JSON.stringify(b),classify:(e:unknown)=>e==='denied'?'denied':e==='conflict'?'conflict':e==='validation'?'rejected':'uncertain',
   get:async()=>{if(failure)throw failure;return structuredClone(current);},
   edit:async(a,revision)=>{calls++;if(release)await new Promise<void>(resolve=>{release=resolve;});if(failure)throw failure;if(revision!==current.revision)throw 'conflict';current={...current,revision:revision+1,attributes:structuredClone(a)};if(commitThenFail)throw 'network';return structuredClone(current);},
  });
@@ -41,4 +41,16 @@ test('choosing the fetched revision replaces the draft only after explicit revie
 });
 test('subscribers cannot mutate internal attributes and no-op save makes no request',async()=>{
  const f=fixture();const unsubscribe=f.c.subscribe(state=>{if(state.baseline)state.baseline.attributes.price.minor=999;if(state.draft)state.draft.price.minor=999;});assert.equal(f.c.snapshot().draft?.price.minor,100);await f.c.save();assert.equal(f.calls(),0);unsubscribe();f.c.dispose();f.c.change({title:'Late',price:{minor:200}});assert.equal(f.c.snapshot().draft,null);
+});
+
+test('restart retains local edits and original uncertain attempt without sending requests',async()=>{
+ const f=fixture();f.loseResponse();f.c.change({title:'Remote commit',price:{minor:200}});await f.c.save();f.c.change({title:'New typing',price:{minor:300}});
+ const saved=f.c.checkpoint();assert.ok(saved);const restarted=fixture(saved);assert.equal(restarted.calls(),0);assert.equal(restarted.c.snapshot().uncertain,true);restarted.setCurrent(f.getCurrent());await restarted.c.recover();assert.equal(restarted.c.snapshot().baseline?.revision,2);assert.equal(restarted.c.snapshot().draft?.title,'New typing');saved.draft.price.minor=999;assert.equal(restarted.c.snapshot().draft?.price.minor,300);
+});
+test('checkpoints exclude transient errors and reject foreign identity',()=>{
+ const f=fixture();f.c.change({title:'Local',price:{minor:200}});const saved=f.c.checkpoint();assert.ok(saved);assert.equal('failure' in saved,false);
+ const attrs=(v:unknown):v is typeof initial.attributes=>!!v&&typeof v==='object'&&'title'in v&&typeof v.title==='string'&&'price'in v&&!!v.price&&typeof v.price==='object'&&'minor'in v.price&&Number.isSafeInteger(v.price.minor);
+ const record=(v:unknown):v is typeof initial=>!!v&&typeof v==='object'&&'attributes'in v&&attrs(v.attributes);
+ assert.equal(isInventoryEditorCheckpoint(saved,{dealerID:'shop',recordID:'piano'},attrs,record),true);assert.equal(isInventoryEditorCheckpoint(saved,{dealerID:'other',recordID:'piano'},attrs,record),false);
+ const foreign={...saved,baseline:{...saved.baseline,id:'other'}};assert.throws(()=>fixture(foreign));f.c.dispose();assert.equal(f.c.checkpoint(),null);
 });

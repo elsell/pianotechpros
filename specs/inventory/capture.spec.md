@@ -95,3 +95,25 @@ fetched revision. Missing/denied access clears private state immediately. Transi
 read/write failures retain it. Disposal clears private state and ignores all late
 responses. Invalid record identity, dealer or regressing revision never becomes
 an accepted baseline. Validation rejection releases the attempted write for edits.
+
+## Scoped recovery checkpoints
+
+Recovery checkpoints are versioned and bound to immutable application user ID,
+dealer ID and record ID. They contain only saved baseline, local attributes,
+conflict state and an optional attempted write with its original expected revision.
+Do not serialize credentials, errors, probes, subscribers or live promises. A
+checkpoint taken during a request marks its attempt uncertain on restoration.
+Restoration never sends a request automatically; reconcile an uncertain attempt
+or explicitly retry it. Conflict choices must fetch a fresh revision after restart.
+Validate schema, exact scope, record identity/revision and all attribute shapes
+before restoration. Reject corrupted/foreign checkpoints without partial import.
+
+A serialized journal writes checkpoints through a protected-storage port in order.
+A removal barrier prevents earlier delayed writes from recreating discarded data;
+a terminal discard rejects later writes. Read/write failures propagate so the UI
+cannot claim durable recovery. Size is bounded to 1 MiB of UTF-8 JSON; stored
+checkpoints expire seven days after the last successful write, using an injected
+clock. Expired or corrupt data is removed and never returned. This policy does not
+authorize offline mutation queues or replace current server permission checks.
+Platform protected-storage adapters, account sign-out cleanup and write-ahead
+integration before remote saves remain required before enabling autosave.

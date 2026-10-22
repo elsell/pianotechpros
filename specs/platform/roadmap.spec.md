@@ -26,7 +26,14 @@ through pagination/audit; encrypted dealer cursors and collection-targeted list
 denials address it. Creation/update stateful-fake and HTTP tests cover retry
 recovery, atomic audit failures, stale revision conflict and denied access.
 A hosted real-service dealer journey is wired but not yet verified for this
-change. Membership administration and client journeys remain unfinished. DL-01 through DL-04 remain open. No security finding
+change. Staff membership/invitation behavior is specified in `../dealer/staff.spec.md`;
+domain transitions now enforce local role capabilities, immutable founding owner,
+revision-safe revocation/reactivation, one-time consumption and exact expiry.
+Review exposed stale-grant reuse on reinvitation; domain capabilities now require
+confirmation of the current membership revision, and the spec requires atomic
+outbox confirmation tied to the pending touch ID. This must be integrated with
+persistence and the existing founding-owner bootstrap before staff exposure.
+Staff persistence/application endpoints and client journeys remain unfinished. DL-01 through DL-04 remain open. No security finding
 is waived.
 
 ## Completed foundation: public scaffold

@@ -177,3 +177,4 @@ export * from './mobile-lifecycle';
 export * from './notification-convergence';
 
 export { createSessionLifecycle, type SessionLease } from './session-lifecycle';
+export { createDealerDirectory, type DealerDirectoryPort, type DealerDirectoryState } from './dealer-directory';

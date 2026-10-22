@@ -70,7 +70,13 @@ Invitation projections exclude token digests. Real PostgreSQL race tests and
 application/HTTP boundary tests pass; code review found no blocking issue. The
 real-service acceptance script now covers list pagination and terminal states,
 but those added assertions have not yet run against the full service stack.
-Client journeys remain unfinished. DL-01 through DL-04 remain open. No security
+The shared typed client facade now covers dealer profile and staff operations,
+preserving revisions, creation idempotency and sanitized machine errors. Local
+HTTP tests cover wire behavior, credential rotation and invitation secret handling.
+The framework-independent directory has controlled-fake tests for empty pages,
+retry, pagination coalescing and late-response isolation across account/selection
+changes. Web/native presentation integration and interaction journeys remain
+unfinished. DL-01 through DL-04 remain open. No security
 finding is waived.
 
 ## Completed foundation: public scaffold

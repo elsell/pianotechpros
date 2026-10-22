@@ -142,3 +142,40 @@ A later non-creation relationship event is left for the background worker. Only
 an active owner membership plus fully consistent manage-profile permission permits
 returning a ready profile. Replay returns require a successful read audit. Never
 return ready merely because an outbox row cannot be claimed or a row exists.
+
+## Shared client transport contract
+
+Web and native dealer interactions use a typed facade over the generated
+OpenAPI client. The facade supplies profile list/get/create/update and staff
+list/role/removal/invitation operations; presentation code does not construct
+paths, authorization headers or response envelopes. Creation callers supply and
+retain an idempotency key across uncertain retries. Updates carry the revision
+of the profile that was edited; the adapter never silently fetches a newer
+revision or retries a mutation. Pagination returns the opaque cursor unchanged,
+including when an authorized dealer page is empty.
+
+Failures expose only a stable machine code and HTTP status (zero for network
+failure), never raw server detail, echoed input, tokens or response bodies.
+Unexpected codes and malformed successful envelopes become a protocol failure.
+Transient failures do not clear sessions. Invitation secrets occur only in
+creation responses and preview/accept request bodies; they are never put in URLs.
+Each call obtains the current opaque application credential through the existing
+transport. Real local HTTP tests cover the generated wire contract, concurrency
+revision conflicts, idempotent retry, rotated credentials and failure redaction.
+
+## Shared dealer directory orchestration
+
+A framework-independent directory in `packages/client-core` owns membership-page
+loading and selected-profile reads. Platform presentation models subscribe to
+snapshots and choose their own navigation. Each account/session replacement
+clears all rows, cursors, selected profiles and failures before reading. Late
+responses from a previous scope or superseded selection cannot repopulate state,
+even when the same account signs in again. The API port supplied for a scope is
+credential-bound by the caller. Session invalidation clears the directory.
+
+Refresh replaces the list only after success; load-more appends distinct IDs and
+preserves the previous page on failure. Empty pages with cursors remain pageable.
+Overlapping load-more requests coalesce, while refresh invalidates their results.
+A failed selected-profile read never displays the previous dealer's details.
+Failure presentation uses an injected machine-error classifier; shared core
+contains no translated copy, framework state or persistent credential storage.

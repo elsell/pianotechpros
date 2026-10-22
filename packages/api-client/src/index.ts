@@ -1,16 +1,8 @@
-import createClient from 'openapi-fetch';
-import type { paths } from './schema';
-import { createAuthenticatedFetch } from './transport';
+import { createApiClient } from './client';
 import type { TokenProvider } from './transport';
+export { createApiClient } from './client';
 export type { TokenProvider } from './transport';
 export { sessionExpiryAdvanced, sessionRefreshDelay, sessionRefreshLeadMs } from './session';
-
-export function createApiClient(baseUrl: string, tokenProvider: TokenProvider) {
-  return createClient<paths>({
-    baseUrl,
-    fetch: createAuthenticatedFetch(tokenProvider),
-  });
-}
 
 export function createSessionApiClient(baseUrl: string, tokenProvider: TokenProvider) {
   const client = createApiClient(baseUrl, tokenProvider);
@@ -21,3 +13,5 @@ export function createSessionApiClient(baseUrl: string, tokenProvider: TokenProv
     revoke: () => client.DELETE('/v1/session'),
   };
 }
+
+export { createDealerApiClient, DealerClientError, type DealerProfile, type DealerProfileInput, type DealerStaffMember, type DealerStaffRole, type DealerInvitation, type DealerPage, type DealerErrorCode } from './dealer';

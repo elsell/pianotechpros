@@ -22,7 +22,7 @@ acceptance are first-class work, not a final styling pass.
 - Pattern scan of public source found no legacy infrastructure identifiers,
   recognizable provider tokens or private key material. This is not a security
   certification. Bundled development credentials are synthetic and local-only.
-- Full `make verify` is blocked by current dependency advisories: govulncheck
+- Initial full `make verify` was blocked by dependency advisories: govulncheck
   reports 16 reachable vulnerabilities in the inherited graph and standard
   library. npm audit reports 72 advisories, including dependencies with no
   published patched version. Security gates remain enabled and fail closed.
@@ -58,3 +58,16 @@ acceptance are first-class work, not a final styling pass.
 
 No product-completeness, production-readiness, physical-device QA or store-delivery
 claim is made by this scaffold milestone.
+
+## SDK compatibility follow-up
+
+The initial hosted browser/API acceptance passed on commit `0cfea9d` (run
+[39799502085](https://github.com/elsell/pianotechpros/actions/runs/39799502085)).
+Both native jobs stopped at the outdated Expo patch compatibility check.
+The SDK 55.0.32 refresh passes frozen installation with pnpm 11.0.7, all 19
+Doctor checks, native manifest compatibility, client types/tests, the age gate
+with nine documented exact exceptions, and both Metro exports locally. Local
+exports used a temporary watch-folder setting for memory-backed dependencies
+because of host disk pressure; that machine-specific setting is not committed.
+Hosted jobs now export platform bundles before compilation in a normal checkout.
+Hosted native compilation for this refresh is still pending.

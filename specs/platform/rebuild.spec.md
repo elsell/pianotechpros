@@ -58,3 +58,21 @@ credentials. Secure-storage mutations are serialized so deletion follows any
 already-started write; queued stale writes become no-ops. Sign-out does not wait
 for network requests before clearing local state. Controlled-fake tests cover
 late success/failure and an in-progress storage write at sign-out.
+
+## SDK 55 compatibility refresh
+
+The initial hosted Android preflight rejected stale template patches. Align the
+native package set with Expo 55.0.32's published bundled-native manifest, retaining
+React Native 0.83.10. Update inherited overrides that would force Expo internals
+below that SDK's declared minimums. Verify frozen installation, Expo Doctor,
+native manifest consistency, type/tests and both exports. This compatibility
+refresh does not claim to resolve the separately tracked security advisories.
+
+The 2026-10-22 compatibility refresh permits exact fourteen-day-age exceptions
+for Expo 55.0.32, CLI 55.0.37, config-plugins 55.0.12, auth-session 55.0.19,
+dev-client 55.0.41, dev-launcher 55.0.42, modules-autolinking 55.0.28,
+modules-core 55.0.27 and their xcode 4.0.0 tool dependency. These are required by
+the current SDK 55 compatibility manifest rather than an SDK-major migration.
+Keep exact pins/integrities and review with Doctor, native-manifest checks,
+type/tests, exports and hosted unsigned builds. These narrow age exceptions do
+not waive vulnerability findings or permit store/deployment publication.

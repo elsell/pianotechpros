@@ -159,6 +159,8 @@ jobs:
         if: steps.routing.outcome == 'success' && needs.changes.outputs.native == 'true'
       - run: pnpm --dir apps/mobile mobile:compat
         if: steps.routing.outcome == 'success' && needs.changes.outputs.native == 'true'
+      - run: pnpm --dir apps/mobile exec expo export --platform android
+        if: steps.routing.outcome == 'success' && needs.changes.outputs.native == 'true'
       - run: pnpm --dir apps/mobile mobile:prebuild
         if: steps.routing.outcome == 'success' && needs.changes.outputs.native == 'true'
       - run: cd apps/mobile/android && ./gradlew assembleDebug
@@ -199,6 +201,8 @@ jobs:
       - run: pnpm --dir apps/mobile mobile:doctor # runs pinned expo-doctor
         if: steps.routing.outcome == 'success' && needs.changes.outputs.native == 'true'
       - run: pnpm --dir apps/mobile mobile:compat
+        if: steps.routing.outcome == 'success' && needs.changes.outputs.native == 'true'
+      - run: pnpm --dir apps/mobile exec expo export --platform ios
         if: steps.routing.outcome == 'success' && needs.changes.outputs.native == 'true'
       - run: pnpm --dir apps/mobile mobile:build:ios # Bundler-locked pod install plus discovered-scheme xcodebuild without signing
         if: steps.routing.outcome == 'success' && needs.changes.outputs.native == 'true'

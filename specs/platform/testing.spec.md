@@ -272,3 +272,7 @@ public exports must resolve in both bundlers without nonexistent JavaScript
 siblings. Use bundler module resolution and extensionless relative source exports.
 Unit/type checks alone do not establish Metro compatibility; export both mobile
 platform bundles as a regression gate.
+
+Hosted native jobs export their platform bundle before compilation, independently
+of the aggregate security gate, so unsigned native evidence also verifies Metro
+resolution in the normal checkout. Export remains distinct from compilation.

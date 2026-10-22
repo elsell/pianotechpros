@@ -148,6 +148,23 @@ found no blocker. No inventory route, persistence, lifecycle transition, public
 projection or client workflow is enabled by this foundation; those parity
 requirements remain open.
 
+Inventory revision and lifecycle value commands now return a new record plus
+private append-only-history data. They preserve identity and draft isolation,
+reject stale revisions and invalid clocks, require explicit sale prices and
+correction reasons, and reject lifecycle changes from voice sources. Domain
+race tests cover all status pairs, zero sale prices, pointer isolation and
+revision exhaustion; `make check check-contracts` passes and required read-only
+review found no blocker. Atomic
+persistence/audit/history, publication-status updates and voice-proposal merging
+remain prerequisites before exposing these commands.
+
+Hosted run [39841513337](https://github.com/elsell/pianotechpros/actions/runs/39841513337)
+on `96ec85f` finished Android Gradle and unsigned iOS simulator Xcode jobs
+successfully, alongside real-service acceptance. Its aggregate run is marked
+cancelled and verify failed; the native job results themselves are success.
+This is compilation evidence for dealer browsing/invitation consumption at that
+commit, not for subsequent native forms/staff changes or device interactions.
+
 Hosted run [39839184001](https://github.com/elsell/pianotechpros/actions/runs/39839184001)
 on `9afe4d9` passed its real-service acceptance job: browser Spanish/PKCE/session
 restoration/sign-out, Scalar identity requests, dealer creation/read/edit/retries

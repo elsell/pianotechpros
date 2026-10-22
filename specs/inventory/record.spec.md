@@ -52,3 +52,29 @@ SpiceDB, scoped repositories, revision checks, coordinated rate limits and atomi
 audit/history before exposing routes. Add persistence/HTTP only after specifying
 and testing those policies. Lifecycle, photos, durable recovery, publication and
 client capture acceptance remain required by capture.spec.md and the parity matrix.
+
+## Revision commands and lifecycle history
+
+Ordinary attribute replacement requires the caller's exact revision and validates
+all fields, including a nonempty stock number. It cannot change record/dealer ID,
+creation time or lifecycle status. Each actual change increments the revision and
+returns a separate private history event naming changed fields, actor, source and
+injected timestamp. Reject empty changes. Sources are manual or voice; voice can
+only change attributes, never lifecycle. Revision exhaustion fails closed.
+
+Statuses are draft, available, reserved, in_service, sold and archived. Distinct
+status transitions are explicit manual commands; leaving sold/archived or returning
+to draft requires a nonblank correction reason. A sold command requires an
+explicit exact sale price; the client may prefill asking price but must confirm it.
+Sale price appears only in the private history event. A same-status sold correction
+requires a reason and records a new event. Other same-status commands are rejected.
+Never rewrite earlier events. Reasons are bounded to 1000 Unicode code points.
+
+Commands reject stale revisions, invalid actor/source/time and timestamps older
+than the current record. Returned records, history field lists and sale prices do
+not alias caller-owned values. Status changes never apply an attribute payload;
+they retain the already committed draft. They do not publish the draft or grant
+visibility. Persistence must atomically save the next revision, immutable history,
+audit and any required publication-status projection. Archiving removes public
+visibility; correcting archive never automatically republishes. Those transactional
+and snapshot semantics remain required before any lifecycle endpoint is exposed.

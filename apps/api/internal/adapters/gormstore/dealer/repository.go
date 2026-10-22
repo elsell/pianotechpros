@@ -107,12 +107,12 @@ func (r *Repository) Create(ctx context.Context, entity domain.Entity, change po
 		if err := tx.Create(fromEntity(entity)).Error; err != nil {
 			return err
 		}
-		membership := membershipModel{DealerID: string(entity.ID), UserID: entity.OwnerUserID, Role: "owner", Active: true, Revision: 1, CreatedAt: entity.CreatedAt, UpdatedAt: entity.CreatedAt}
-		if err := tx.Create(&membership).Error; err != nil {
-			return err
-		}
 		outbox := authorizationOutboxModel{ID: change.ID, ResourceType: change.ResourceType, ResourceID: change.ResourceID, Relation: change.Relation, SubjectType: change.SubjectType, SubjectID: change.SubjectID, OwnerUserID: change.OwnerUserID, ActorUserID: change.ActorUserID, Operation: change.Operation, LockedBy: change.LockedBy, CreatedAt: entity.CreatedAt}
 		if err := tx.Create(&outbox).Error; err != nil {
+			return err
+		}
+		membership := membershipModel{DealerID: string(entity.ID), UserID: entity.OwnerUserID, Role: "owner", Active: true, Revision: 1, PendingAuthorizationChangeID: &change.ID, PendingAuthorizationRevision: &entity.Revision, CreatedAt: entity.CreatedAt, UpdatedAt: entity.CreatedAt}
+		if err := tx.Create(&membership).Error; err != nil {
 			return err
 		}
 		if err := tx.Model(&outbox).Update("locked_until", gorm.Expr("CURRENT_TIMESTAMP + (? * INTERVAL '1 millisecond')", change.Lease.Milliseconds())).Error; err != nil {
@@ -165,13 +165,28 @@ func (r *Repository) Get(ctx context.Context, owner string, id domain.ID) (domai
 	return toEntity(row), nil
 }
 
+// GetCreationOwner is restricted to the founding owner and deliberately permits
+// pending grants. Only creation/retry orchestration may use this capability.
+func (r *Repository) GetCreationOwner(ctx context.Context, actor string, id domain.ID) (domain.Entity, error) {
+	var row model
+	err := r.DB.WithContext(ctx).Where("id = ? AND owner_user_id = ?", id, actor).
+		Where("EXISTS (SELECT 1 FROM dealer_memberships m WHERE m.dealer_id = dealer_models.id AND m.user_id = ? AND m.role = 'owner' AND m.active)", actor).First(&row).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return domain.Entity{}, ports.ErrNotFound
+	}
+	if err != nil {
+		return domain.Entity{}, err
+	}
+	return toEntity(row), nil
+}
+
 func (r *Repository) Update(ctx context.Context, actor string, entity domain.Entity, event audit.Event) error {
 	if actor == "" || event.ActorUserID != actor || !validProfile(entity) || entity.Revision < 1 || entity.UpdatedAt.IsZero() || !validEvent(event, audit.ResourceUpdated, entity) {
 		return ports.ErrInvalidArgument
 	}
 	err := r.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var current model
-		err := memberQuery(tx, actor).Where("id = ? AND owner_user_id = ?", entity.ID, actor).Where("EXISTS (SELECT 1 FROM dealer_memberships m WHERE m.dealer_id = dealer_models.id AND m.user_id = ? AND m.role = 'owner' AND m.active)", actor).Clauses(clause.Locking{Strength: "UPDATE"}).First(&current).Error
+		err := memberQuery(tx, actor).Where("id = ? AND owner_user_id = ?", entity.ID, actor).Where("EXISTS (SELECT 1 FROM dealer_memberships m WHERE m.dealer_id = dealer_models.id AND m.user_id = ? AND m.role = 'owner' AND m.active AND m.granted_revision = m.revision)", actor).Clauses(clause.Locking{Strength: "UPDATE"}).First(&current).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return ports.ErrNotFound
 		}
@@ -202,17 +217,20 @@ func (r *Repository) Delete(context.Context, string, domain.ID, ports.Authorizat
 }
 
 type membershipModel struct {
-	DealerID             string `gorm:"primaryKey"`
-	UserID               string `gorm:"primaryKey"`
-	Role                 string
-	Active               bool
-	Revision             int64
-	CreatedAt, UpdatedAt time.Time
+	DealerID                     string `gorm:"primaryKey"`
+	UserID                       string `gorm:"primaryKey"`
+	Role                         string
+	Active                       bool
+	Revision                     int64
+	GrantedRevision              int64
+	PendingAuthorizationChangeID *string
+	PendingAuthorizationRevision *int64
+	CreatedAt, UpdatedAt         time.Time
 }
 
 func (membershipModel) TableName() string { return "dealer_memberships" }
 func memberQuery(db *gorm.DB, actor string) *gorm.DB {
-	return db.Model(&model{}).Where("EXISTS (SELECT 1 FROM dealer_memberships m WHERE m.dealer_id = dealer_models.id AND m.user_id = ? AND m.active)", actor)
+	return db.Model(&model{}).Where("EXISTS (SELECT 1 FROM dealer_memberships m WHERE m.dealer_id = dealer_models.id AND m.user_id = ? AND m.active AND m.granted_revision = m.revision)", actor)
 }
 func validProfile(entity domain.Entity) bool {
 	normalized, err := domain.New(entity.ID, entity.OwnerUserID, entity.Attributes)

@@ -59,7 +59,8 @@ remain pending: even a stale SpiceDB grant cannot authorize them. Outbox complet
 atomically appends its audit, completes the event and confirms the membership only
 if the pending touch ID, dealer, subject and current role still match. An old
 completion cannot confirm a newer revision. Confirmation does not increment the
-membership revision; a duplicate confirmation is idempotent. Revocation denies
+membership revision or its last-edit timestamp; confirmation time belongs to its
+audit event. A duplicate confirmation is idempotent. Revocation denies
 immediately regardless of confirmation. Apply this protocol to the founding owner
 bootstrap as well, while allowing the creation command to inspect its own pending
 membership internally. Grant-dependent actions require active local role,

@@ -31,8 +31,11 @@ domain transitions now enforce local role capabilities, immutable founding owner
 revision-safe revocation/reactivation, one-time consumption and exact expiry.
 Review exposed stale-grant reuse on reinvitation; domain capabilities now require
 confirmation of the current membership revision, and the spec requires atomic
-outbox confirmation tied to the pending touch ID. This must be integrated with
-persistence and the existing founding-owner bootstrap before staff exposure.
+outbox confirmation tied to the pending touch ID. Migration 20 now persists confirmation and pending grant ID/revision; ordinary
+dealer reads/updates require confirmation, while founding-owner creation has a
+restricted pending read. Outbox completion confirms only the matching active
+revision in the same transaction as audit. Real PostgreSQL tests pass audit rollback,
+superseded/revoked grants, runtime credentials and fail-closed migration backfill.
 Staff persistence/application endpoints and client journeys remain unfinished. DL-01 through DL-04 remain open. No security finding
 is waived.
 

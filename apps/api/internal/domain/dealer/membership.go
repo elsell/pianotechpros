@@ -164,6 +164,5 @@ func (m Membership) ConfirmGrant(expected int64, now time.Time) (Membership, err
 		return m, nil
 	}
 	m.GrantedRevision = m.Revision
-	m.UpdatedAt = now.UTC()
 	return m, nil
 }

@@ -40,3 +40,20 @@ unit runs without a DSN explicitly skip PostgreSQL integration.
 Application services must use the shared correlation/clock-aware audit helpers,
 the coordinated principal limiter and specified authorization protocol before
 any authenticated read or successful mutation is returned to a client.
+
+## Confirmed grant persistence
+
+Migration 20 adds `granted_revision` and a nullable pending authorization-change
+ID with its associated revision to membership rows. Private get/list/update require active membership with
+`granted_revision = revision`. Creation records the exact initial owner touch as
+pending. A separate founding-owner-only repository read is available solely for
+creation/retry orchestration before publication; ordinary routes never use it.
+
+Outbox completion confirms a membership in the same transaction as completion
+and authorization audit, only for a dealer/user touch whose pending ID, revision and role
+match the current active membership. It clears that pending ID and sets the
+confirmed revision to the current revision. Superseded/deleted/other-resource
+changes cannot confirm it. Audit failure rolls back all three effects. Existing
+rows are confirmed only when their latest relevant relationship event completed
+successfully; unresolved or unverifiable rows remain denied. No migration assumes
+that a local role proves a remote grant.

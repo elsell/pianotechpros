@@ -48,7 +48,10 @@ func (s *Service) Create(ctx context.Context, authorization, key string, attribu
 		return domain.Entity{}, err
 	}
 	// A retry must not use a stale idempotency reservation to restore revoked access.
-	if _, err := s.activeOwner(ctx, actor, entity.ID); err != nil {
+	if _, err := s.Repository.GetCreationOwner(ctx, actor, entity.ID); err != nil {
+		if errors.Is(err, ports.ErrNotFound) {
+			err = s.deniedDecision(ctx, actor, entity.ID, ports.ErrNotFound)
+		}
 		return domain.Entity{}, err
 	}
 	if replayed {

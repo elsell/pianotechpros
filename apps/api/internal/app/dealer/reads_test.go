@@ -34,6 +34,16 @@ func (r *readStore) Get(_ context.Context, actor string, id domain.ID) (domain.E
 	}
 	return item, nil
 }
+func (r *readStore) GetCreationOwner(ctx context.Context, actor string, id domain.ID) (domain.Entity, error) {
+	item, err := r.Get(ctx, actor, id)
+	if err != nil {
+		return domain.Entity{}, err
+	}
+	if item.OwnerUserID != actor {
+		return domain.Entity{}, ports.ErrNotFound
+	}
+	return item, nil
+}
 func (r *readStore) List(ctx context.Context, actor string, p PageRequest) (Page, error) {
 	if r.err != nil {
 		return Page{}, r.err

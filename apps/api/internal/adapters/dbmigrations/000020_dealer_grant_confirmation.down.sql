@@ -1,0 +1,3 @@
+DROP INDEX dealer_membership_pending_grant_unique;
+ALTER TABLE dealer_memberships DROP CONSTRAINT dealer_membership_grant_revision, DROP CONSTRAINT dealer_membership_pending_revision,
+ DROP COLUMN pending_authorization_change_id, DROP COLUMN pending_authorization_revision, DROP COLUMN granted_revision;

@@ -394,6 +394,15 @@ func (s *Store) CompleteAuthorizationChangeWithAudit(ctx context.Context, id, wo
 		if result.RowsAffected != 1 {
 			return ports.ErrNotFound
 		}
+		// A remote touch only confirms the exact current pending membership
+		// grant. Superseded touches can complete without activating newer roles.
+		if row.ResourceType == "dealer" && row.SubjectType == "user" && row.Operation == ports.AuthorizationTouch &&
+			(row.Relation == "owner" || row.Relation == "editor" || row.Relation == "viewer") {
+			if err := tx.Table("dealer_memberships").Where("dealer_id = ? AND user_id = ? AND role = ? AND active AND pending_authorization_revision = revision AND pending_authorization_change_id = ?", row.ResourceID, row.SubjectID, row.Relation, row.ID).
+				Updates(map[string]any{"granted_revision": gorm.Expr("revision"), "pending_authorization_change_id": nil, "pending_authorization_revision": nil}).Error; err != nil {
+				return err
+			}
+		}
 		return appendAuditEvent(tx, event)
 	})
 }

@@ -136,7 +136,8 @@ func TestMembershipScopeRevisionAndAuditRollback(t *testing.T) {
 	if _, _, err := r.Create(ctx, e, c, k, a); err != nil {
 		t.Fatal(err)
 	}
-	if err := db.Create(&membershipModel{DealerID: string(e.ID), UserID: "staff", Role: "viewer", Active: true, Revision: 1, CreatedAt: testTime, UpdatedAt: testTime}).Error; err != nil {
+	completeGrant(t, db, c, a)
+	if err := db.Create(&membershipModel{DealerID: string(e.ID), UserID: "staff", Role: "viewer", Active: true, Revision: 1, GrantedRevision: 1, CreatedAt: testTime, UpdatedAt: testTime}).Error; err != nil {
 		t.Fatal(err)
 	}
 	if _, err := r.Get(ctx, "staff", e.ID); err != nil {
@@ -238,6 +239,7 @@ func TestRuntimeRoleCanPersistButCannotDeleteDealers(t *testing.T) {
 	if _, _, err := r.Create(ctx, e, c, k, a); err != nil {
 		t.Fatalf("runtime create: %v", err)
 	}
+	completeGrant(t, db, c, a)
 	e.Name = "Runtime edit"
 	a.ID += "-edit"
 	a.Action = audit.ResourceUpdated
@@ -293,6 +295,18 @@ func TestConcurrentSlugAndRevisionWriters(t *testing.T) {
 	}
 	if success != 1 || conflict != 1 {
 		t.Fatalf("slug race: success=%d conflict=%d", success, conflict)
+	}
+	for i := 0; i < 2; i++ {
+		id := domain.ID(fmt.Sprintf("%s-%d", e.ID, i))
+		if _, err := r.GetCreationOwner(ctx, e.OwnerUserID, id); err == nil {
+			change, event := c, a
+			change.ID = fmt.Sprintf("%s-%d", c.ID, i)
+			change.ResourceID = string(id)
+			event.TargetID = string(id)
+			completeGrant(t, db, change, event)
+		} else if !errors.Is(err, ports.ErrNotFound) {
+			t.Fatal(err)
+		}
 	}
 	page, err := r.List(ctx, e.OwnerUserID, application.PageRequest{Snapshot: testTime.Add(time.Hour), Limit: 10})
 	if err != nil || len(page.Items) != 1 {

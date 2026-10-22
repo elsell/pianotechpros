@@ -26,6 +26,13 @@ acceptance are first-class work, not a final styling pass.
   reports 16 reachable vulnerabilities in the inherited graph and standard
   library. npm audit reports 72 advisories, including dependencies with no
   published patched version. Security gates remain enabled and fail closed.
+- Web production build and both mobile Metro exports pass after correcting
+  inherited client-core exports for Metro resolution. Exports are not native
+  compilation or interaction evidence.
+- Initial source publication used an explicit one-command local hook bypass after
+  running checks manually, because the inherited security graph fails. Hooks and
+  hosted security gates remain enabled; this is not release approval.
+- Dependency remediation is tracked in https://github.com/elsell/pianotechpros/issues/2.
 - Initial bootstrap ran out of disk during contract generation; regeneration
   succeeded using a separate temporary build location. Docker/live acceptance
   cannot safely be run on this nearly full host. Hosted results must be recorded

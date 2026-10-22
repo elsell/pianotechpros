@@ -264,3 +264,11 @@ acceptance exercises bridge-network service discovery and the OIDC backchannel
 without weakening public issuer validation. Acceptance cleanup removes its
 project-scoped containers, volumes, and locally built images so repeated clean
 runs do not exhaust a development or CI host.
+
+## Shared TypeScript source resolution
+
+Client-core is consumed as TypeScript source by Svelte/Vite and Expo/Metro. Its
+public exports must resolve in both bundlers without nonexistent JavaScript
+siblings. Use bundler module resolution and extensionless relative source exports.
+Unit/type checks alone do not establish Metro compatibility; export both mobile
+platform bundles as a regression gate.

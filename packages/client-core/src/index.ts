@@ -183,3 +183,4 @@ export { createDealerStaff, type DealerStaffPort, type DealerStaffState, type St
 export { createDealerJoin, parseDealerInvitationCode, InvitationCodeError, type DealerInvitationCode, type DealerInvitationPreview, type DealerJoinState } from './dealer-join';
 export { dismissSession } from './session-dismissal';
 export { createDealerEditor, type DealerEditorState } from './dealer-editor';
+export { createInventoryEditor, type InventoryEditorRecord, type InventoryEditorState } from './inventory-editor';

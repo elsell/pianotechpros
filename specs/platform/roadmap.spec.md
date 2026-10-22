@@ -230,6 +230,15 @@ OpenAPI null alternatives now match API money/date JSON, verified by an HTTP
 clear-to-unknown regression. Local project/contract checks, client tests and Go
 HTTP race tests pass; review findings were fixed. Inventory listing, web/native
 editing screens and remaining product workflows remain open.
+The shared existing-record editor now preserves typing during in-flight saves,
+retries an uncertain write with its original attributes/revision, and resolves
+conflicts only through explicit fetched-version decisions. Controlled-fake tests
+cover lost responses, independent nested snapshots, validation corrections,
+transient recovery failures, access denial and late responses after disposal.
+Project/contract checks and required review pass. This is an in-memory workflow;
+durable scoped draft storage, autosave scheduling and mounted web/native capture
+screens remain necessary before claiming recoverable capture delivery.
+
 
 
 `make check check-contracts` passes without a structural-gate exception; the

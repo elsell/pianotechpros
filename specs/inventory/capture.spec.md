@@ -74,3 +74,24 @@ lifecycle transition produces authorized, append-only history with the mutation.
 - Cross-dealer reads/mutations and unauthorized publication fail closed.
 - Keyboard and screen readers complete capture and publication without drag,
   color, silhouettes, or voice being mandatory.
+
+## Shared revision editing controller
+
+An account/dealer-bound controller owns a deep-copied saved baseline and editable
+attributes for an existing private record. It serializes saves while allowing
+continued typing; a completed save must not erase edits made during that request.
+Snapshots and subscriptions cannot expose mutable controller-owned nested values.
+No automatic background retry or autosave is enabled by this controller alone.
+Durable scoped recovery and presentation remain separate required adapters before
+shipping the automatic-saving capture experience.
+
+An uncertain write retains the exact attempted attributes and expected revision.
+Retry sends that same attempt, not newly typed values. Recovery reads the current
+record: the exact next revision with matching attempted attributes acknowledges
+the save; the old revision leaves the attempt retryable; any other change requires
+explicit conflict review. A stale conflict never automatically rebases. Users may
+choose the fetched version or explicitly keep their local draft against that
+fetched revision. Missing/denied access clears private state immediately. Transient
+read/write failures retain it. Disposal clears private state and ignores all late
+responses. Invalid record identity, dealer or regressing revision never becomes
+an accepted baseline. Validation rejection releases the attempted write for edits.

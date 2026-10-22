@@ -181,6 +181,17 @@ review found no blocker. This helper registers no HTTP route and grants no
 standalone operation: actor-scoped PostgreSQL access, transactional authority
 rechecks/history/audit and generated service composition remain to implement.
 
+The dealer PostgreSQL adapter now implements inventory's actor/dealer-scoped
+membership preflight reader. Real isolated database tests prove pending-grant,
+confirmed-owner/editor, cross-dealer/user, revoked membership and disabled-account
+behavior, including a separate connection using runtime credentials. The initial
+test caught missing embedded membership mapping; an explicit exported GORM
+embedding fixes it. The full dealer PostgreSQL race suite and targeted final
+runtime-role test pass; required review found no blocker. This is a preflight
+adapter only, not inventory record persistence or transactional permission locking.
+`make check check-contracts` passes without a structural-gate exception; the
+disposable database and its volume were removed after verification.
+
 Hosted run [39841513337](https://github.com/elsell/pianotechpros/actions/runs/39841513337)
 on `96ec85f` finished Android Gradle and unsigned iOS simulator Xcode jobs
 successfully, alongside real-service acceptance. Its aggregate run is marked

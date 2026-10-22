@@ -54,3 +54,14 @@ only working-draft membership until retained snapshot references permit cleanup.
 Persistence, application commands and HTTP exposure are separate implementation
 steps. Add real PostgreSQL concurrency, runtime-privilege, authorization-recheck
 and audit-rollback evidence before claiming this contract is implemented.
+
+### Membership preflight adapter
+
+The dealer PostgreSQL adapter supplies the inventory policy's narrow membership
+reader. One joined, actor/dealer-scoped query loads only membership fields,
+founding-owner ID and active-user boolean. Pending/inactive membership metadata is
+returned internally so the policy can fail closed; it is never a public response.
+Missing actor/dealer membership returns not-found, with no cross-user fallback.
+This preflight does not lock or reserve permission for a later mutation: inventory
+transactional repositories must perform the documented authority recheck under
+locks. Runtime credentials need only existing SELECT privileges for this query.

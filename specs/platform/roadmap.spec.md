@@ -13,9 +13,13 @@ remain deferred by user instruction.
 Dealer implementation has started: the profile/access contract, typed fields,
 profile validation, generated repository/HTTP boundaries and contracts exist.
 Optional-field, Unicode and malformed-profile tests pass, as do `make check`
-and contract drift checks. All dealer endpoints still fail closed. Membership
-persistence, unique slugs, revisions, SpiceDB policy and client journeys are
-unfinished; DL-01 through DL-04 remain open. No security finding is waived.
+and contract drift checks. Membership persistence, unique slugs, actor-scoped
+reads, profile revisions and atomic write/audit behavior now have real PostgreSQL
+coverage, including concurrent slug/CAS writers and restricted runtime-role
+permissions. The race-enabled adapter suite passes. All dealer endpoints still
+fail closed: membership administration, SpiceDB application policy and client
+journeys are unfinished. DL-01 through DL-04 remain open. No security finding is
+waived.
 
 ## Completed foundation: public scaffold
 

@@ -7,6 +7,7 @@ import (
 	"github.com/elsell/pianotechpros/apps/api/internal/domain/audit"
 	domain "github.com/elsell/pianotechpros/apps/api/internal/domain/dealer"
 	"github.com/elsell/pianotechpros/apps/api/internal/ports"
+	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"time"
@@ -17,6 +18,7 @@ type Repository struct{ DB *gorm.DB }
 type model struct {
 	ID                string `gorm:"primaryKey"`
 	OwnerUserID       string
+	Revision          int64
 	Name              string
 	Slug              string
 	Email             string
@@ -24,8 +26,8 @@ type model struct {
 	WebsiteUrl        string
 	Tagline           string
 	Description       string
-	StreetAddress1    string
-	StreetAddress2    string
+	StreetAddress1    string `gorm:"column:street_address_1"`
+	StreetAddress2    string `gorm:"column:street_address_2"`
 	City              string
 	Region            string
 	PostalCode        string
@@ -74,9 +76,9 @@ func (auditModel) TableName() string { return "audit_event_models" }
 func New(db *gorm.DB) *Repository { return &Repository{DB: db} }
 
 func (r *Repository) Create(ctx context.Context, entity domain.Entity, change ports.AuthorizationChange, idempotency ports.Idempotency, event audit.Event) (domain.Entity, bool, error) {
-	if !validEvent(event, audit.ResourceCreated, entity) || event.ActorUserID != entity.OwnerUserID ||
-		entity.ID == "" || entity.CreatedAt.IsZero() || entity.UpdatedAt.IsZero() || idempotency.PrincipalID != entity.OwnerUserID || idempotency.Operation == "" || idempotency.Key == "" || len(idempotency.RequestHash) != 32 ||
-		change.ID == "" || change.Relation == "" || change.ResourceType != "resource" || change.ResourceID != "dealer/"+string(entity.ID) || change.SubjectType != "user" || change.SubjectID != entity.OwnerUserID || change.OwnerUserID != entity.OwnerUserID || change.ActorUserID != event.ActorUserID || change.Operation != ports.AuthorizationTouch || change.Lease <= 0 || change.LockedBy == "" {
+	if !validProfile(entity) || entity.Revision != 1 || !validEvent(event, audit.ResourceCreated, entity) || event.ActorUserID != entity.OwnerUserID ||
+		entity.ID == "" || entity.CreatedAt.IsZero() || entity.UpdatedAt.IsZero() || idempotency.PrincipalID != entity.OwnerUserID || idempotency.Operation != "dealer.create" || idempotency.Key == "" || len(idempotency.RequestHash) != 32 ||
+		change.ID == "" || change.Relation != "owner" || change.ResourceType != "dealer" || change.ResourceID != string(entity.ID) || change.SubjectType != "user" || change.SubjectID != entity.OwnerUserID || change.OwnerUserID != entity.OwnerUserID || change.ActorUserID != event.ActorUserID || change.Operation != ports.AuthorizationTouch || change.Lease <= 0 || change.LockedBy == "" {
 		return domain.Entity{}, false, ports.ErrInvalidArgument
 	}
 	result := domain.Entity{}
@@ -105,7 +107,11 @@ func (r *Repository) Create(ctx context.Context, entity domain.Entity, change po
 		if err := tx.Create(fromEntity(entity)).Error; err != nil {
 			return err
 		}
-		outbox := authorizationOutboxModel{ID: change.ID, ResourceType: change.ResourceType, ResourceID: change.ResourceID, Relation: change.Relation, SubjectType: change.SubjectType, SubjectID: change.SubjectID, OwnerUserID: change.OwnerUserID, ActorUserID: change.ActorUserID, Operation: change.Operation, LockedBy: change.LockedBy}
+		membership := membershipModel{DealerID: string(entity.ID), UserID: entity.OwnerUserID, Role: "owner", Active: true, Revision: 1, CreatedAt: entity.CreatedAt, UpdatedAt: entity.CreatedAt}
+		if err := tx.Create(&membership).Error; err != nil {
+			return err
+		}
+		outbox := authorizationOutboxModel{ID: change.ID, ResourceType: change.ResourceType, ResourceID: change.ResourceID, Relation: change.Relation, SubjectType: change.SubjectType, SubjectID: change.SubjectID, OwnerUserID: change.OwnerUserID, ActorUserID: change.ActorUserID, Operation: change.Operation, LockedBy: change.LockedBy, CreatedAt: entity.CreatedAt}
 		if err := tx.Create(&outbox).Error; err != nil {
 			return err
 		}
@@ -121,11 +127,14 @@ func (r *Repository) Create(ctx context.Context, entity domain.Entity, change po
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		err = ports.ErrNotFound
 	}
-	return result, replayed, err
+	return result, replayed, persistenceError(err)
 }
 
 func (r *Repository) List(ctx context.Context, owner string, page application.PageRequest) (application.Page, error) {
-	query := r.DB.WithContext(ctx).Where("owner_user_id = ? AND created_at <= ?", owner, page.Snapshot)
+	if owner == "" || page.Limit < 1 || page.Limit > 100 || page.Snapshot.IsZero() {
+		return application.Page{}, ports.ErrInvalidArgument
+	}
+	query := memberQuery(r.DB.WithContext(ctx), owner).Where("created_at <= ?", page.Snapshot)
 	if page.AfterID != "" {
 		query = query.Where("created_at > ? OR (created_at = ? AND id > ?)", page.AfterCreated, page.AfterCreated, page.AfterID)
 	}
@@ -146,7 +155,7 @@ func (r *Repository) List(ctx context.Context, owner string, page application.Pa
 
 func (r *Repository) Get(ctx context.Context, owner string, id domain.ID) (domain.Entity, error) {
 	var row model
-	err := r.DB.WithContext(ctx).Where("owner_user_id = ? AND id = ?", owner, id).First(&row).Error
+	err := memberQuery(r.DB.WithContext(ctx), owner).Where("id = ?", id).First(&row).Error
 	if err == gorm.ErrRecordNotFound {
 		return domain.Entity{}, ports.ErrNotFound
 	}
@@ -156,44 +165,65 @@ func (r *Repository) Get(ctx context.Context, owner string, id domain.ID) (domai
 	return toEntity(row), nil
 }
 
-func (r *Repository) Update(ctx context.Context, owner string, entity domain.Entity, event audit.Event) error {
-	if entity.OwnerUserID != owner || !validEvent(event, audit.ResourceUpdated, entity) {
+func (r *Repository) Update(ctx context.Context, actor string, entity domain.Entity, event audit.Event) error {
+	if actor == "" || event.ActorUserID != actor || !validProfile(entity) || entity.Revision < 1 || entity.UpdatedAt.IsZero() || !validEvent(event, audit.ResourceUpdated, entity) {
 		return ports.ErrInvalidArgument
 	}
-	return r.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		result := tx.Model(&model{}).Where("owner_user_id = ? AND id = ?", owner, entity.ID).Updates(map[string]any{"name": entity.Name, "slug": entity.Slug, "email": entity.Email, "phone": entity.Phone, "website_url": entity.WebsiteUrl, "tagline": entity.Tagline, "description": entity.Description, "street_address_1": entity.StreetAddress1, "street_address_2": entity.StreetAddress2, "city": entity.City, "region": entity.Region, "postal_code": entity.PostalCode, "appointment_note": entity.AppointmentNote, "delivery_note": entity.DeliveryNote, "warranty_note": entity.WarrantyNote, "service_note": entity.ServiceNote, "banner_alt_text": entity.BannerAltText, "accent_color": entity.AccentColor, "showroom_published": entity.ShowroomPublished, "updated_at": entity.UpdatedAt})
+	err := r.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var current model
+		err := memberQuery(tx, actor).Where("id = ? AND owner_user_id = ?", entity.ID, actor).Where("EXISTS (SELECT 1 FROM dealer_memberships m WHERE m.dealer_id = dealer_models.id AND m.user_id = ? AND m.role = 'owner' AND m.active)", actor).Clauses(clause.Locking{Strength: "UPDATE"}).First(&current).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ports.ErrNotFound
+		}
+		if err != nil {
+			return err
+		}
+		if current.OwnerUserID != entity.OwnerUserID {
+			return ports.ErrInvalidArgument
+		}
+		if current.Revision != entity.Revision {
+			return ports.ErrConflict
+		}
+		result := tx.Model(&model{}).Where("id = ? AND revision = ?", entity.ID, entity.Revision).Updates(map[string]any{"name": entity.Name, "slug": entity.Slug, "email": entity.Email, "phone": entity.Phone, "website_url": entity.WebsiteUrl, "tagline": entity.Tagline, "description": entity.Description, "street_address_1": entity.StreetAddress1, "street_address_2": entity.StreetAddress2, "city": entity.City, "region": entity.Region, "postal_code": entity.PostalCode, "appointment_note": entity.AppointmentNote, "delivery_note": entity.DeliveryNote, "warranty_note": entity.WarrantyNote, "service_note": entity.ServiceNote, "banner_alt_text": entity.BannerAltText, "accent_color": entity.AccentColor, "showroom_published": entity.ShowroomPublished, "updated_at": entity.UpdatedAt, "revision": entity.Revision + 1})
 		if result.Error != nil {
 			return result.Error
 		}
 		if result.RowsAffected != 1 {
-			return ports.ErrNotFound
+			return ports.ErrConflict
 		}
 		return tx.Create(fromAudit(event)).Error
 	})
+	return persistenceError(err)
 }
 
-func (r *Repository) Delete(ctx context.Context, owner string, id domain.ID, change ports.AuthorizationChange, event audit.Event) error {
-	entity := domain.Entity{ID: id, OwnerUserID: owner}
-	if !validEvent(event, audit.ResourceDeleted, entity) || change.ResourceType != "resource" || change.ResourceID != "dealer/"+string(id) || change.SubjectType != "user" || change.SubjectID != owner || change.OwnerUserID != owner || change.ActorUserID != event.ActorUserID || change.Operation != ports.AuthorizationDelete || change.Lease <= 0 || change.LockedBy == "" || change.ID == "" || change.Relation == "" {
-		return ports.ErrInvalidArgument
+// Dealers are retained. No ordinary deletion capability is exposed.
+func (r *Repository) Delete(context.Context, string, domain.ID, ports.AuthorizationChange, audit.Event) error {
+	return ports.ErrInvalidArgument
+}
+
+type membershipModel struct {
+	DealerID             string `gorm:"primaryKey"`
+	UserID               string `gorm:"primaryKey"`
+	Role                 string
+	Active               bool
+	Revision             int64
+	CreatedAt, UpdatedAt time.Time
+}
+
+func (membershipModel) TableName() string { return "dealer_memberships" }
+func memberQuery(db *gorm.DB, actor string) *gorm.DB {
+	return db.Model(&model{}).Where("EXISTS (SELECT 1 FROM dealer_memberships m WHERE m.dealer_id = dealer_models.id AND m.user_id = ? AND m.active)", actor)
+}
+func validProfile(entity domain.Entity) bool {
+	normalized, err := domain.New(entity.ID, entity.OwnerUserID, entity.Attributes)
+	return err == nil && normalized.Attributes == entity.Attributes
+}
+func persistenceError(err error) error {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == "23505" && pgErr.ConstraintName == "dealer_models_slug_unique" {
+		return ports.ErrConflict
 	}
-	return r.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		result := tx.Where("owner_user_id = ? AND id = ?", owner, id).Delete(&model{})
-		if result.Error != nil {
-			return result.Error
-		}
-		if result.RowsAffected != 1 {
-			return ports.ErrNotFound
-		}
-		outbox := authorizationOutboxModel{ID: change.ID, ResourceType: change.ResourceType, ResourceID: change.ResourceID, Relation: change.Relation, SubjectType: change.SubjectType, SubjectID: change.SubjectID, OwnerUserID: change.OwnerUserID, ActorUserID: change.ActorUserID, Operation: change.Operation, LockedBy: change.LockedBy}
-		if err := tx.Create(&outbox).Error; err != nil {
-			return err
-		}
-		if err := tx.Model(&outbox).Update("locked_until", gorm.Expr("CURRENT_TIMESTAMP + (? * INTERVAL '1 millisecond')", change.Lease.Milliseconds())).Error; err != nil {
-			return err
-		}
-		return tx.Create(fromAudit(event)).Error
-	})
+	return err
 }
 
 func validEvent(event audit.Event, action audit.Action, entity domain.Entity) bool {
@@ -201,11 +231,11 @@ func validEvent(event audit.Event, action audit.Action, entity domain.Entity) bo
 }
 
 func fromEntity(entity domain.Entity) *model {
-	return &model{ID: string(entity.ID), OwnerUserID: entity.OwnerUserID, Name: entity.Name, Slug: entity.Slug, Email: entity.Email, Phone: entity.Phone, WebsiteUrl: entity.WebsiteUrl, Tagline: entity.Tagline, Description: entity.Description, StreetAddress1: entity.StreetAddress1, StreetAddress2: entity.StreetAddress2, City: entity.City, Region: entity.Region, PostalCode: entity.PostalCode, AppointmentNote: entity.AppointmentNote, DeliveryNote: entity.DeliveryNote, WarrantyNote: entity.WarrantyNote, ServiceNote: entity.ServiceNote, BannerAltText: entity.BannerAltText, AccentColor: entity.AccentColor, ShowroomPublished: entity.ShowroomPublished, CreatedAt: entity.CreatedAt, UpdatedAt: entity.UpdatedAt}
+	return &model{ID: string(entity.ID), OwnerUserID: entity.OwnerUserID, Revision: entity.Revision, Name: entity.Name, Slug: entity.Slug, Email: entity.Email, Phone: entity.Phone, WebsiteUrl: entity.WebsiteUrl, Tagline: entity.Tagline, Description: entity.Description, StreetAddress1: entity.StreetAddress1, StreetAddress2: entity.StreetAddress2, City: entity.City, Region: entity.Region, PostalCode: entity.PostalCode, AppointmentNote: entity.AppointmentNote, DeliveryNote: entity.DeliveryNote, WarrantyNote: entity.WarrantyNote, ServiceNote: entity.ServiceNote, BannerAltText: entity.BannerAltText, AccentColor: entity.AccentColor, ShowroomPublished: entity.ShowroomPublished, CreatedAt: entity.CreatedAt, UpdatedAt: entity.UpdatedAt}
 }
 
 func toEntity(row model) domain.Entity {
-	return domain.Entity{ID: domain.ID(row.ID), OwnerUserID: row.OwnerUserID, Attributes: domain.Attributes{Name: row.Name, Slug: row.Slug, Email: row.Email, Phone: row.Phone, WebsiteUrl: row.WebsiteUrl, Tagline: row.Tagline, Description: row.Description, StreetAddress1: row.StreetAddress1, StreetAddress2: row.StreetAddress2, City: row.City, Region: row.Region, PostalCode: row.PostalCode, AppointmentNote: row.AppointmentNote, DeliveryNote: row.DeliveryNote, WarrantyNote: row.WarrantyNote, ServiceNote: row.ServiceNote, BannerAltText: row.BannerAltText, AccentColor: row.AccentColor, ShowroomPublished: row.ShowroomPublished}, CreatedAt: row.CreatedAt, UpdatedAt: row.UpdatedAt}
+	return domain.Entity{ID: domain.ID(row.ID), OwnerUserID: row.OwnerUserID, Revision: row.Revision, Attributes: domain.Attributes{Name: row.Name, Slug: row.Slug, Email: row.Email, Phone: row.Phone, WebsiteUrl: row.WebsiteUrl, Tagline: row.Tagline, Description: row.Description, StreetAddress1: row.StreetAddress1, StreetAddress2: row.StreetAddress2, City: row.City, Region: row.Region, PostalCode: row.PostalCode, AppointmentNote: row.AppointmentNote, DeliveryNote: row.DeliveryNote, WarrantyNote: row.WarrantyNote, ServiceNote: row.ServiceNote, BannerAltText: row.BannerAltText, AccentColor: row.AccentColor, ShowroomPublished: row.ShowroomPublished}, CreatedAt: row.CreatedAt, UpdatedAt: row.UpdatedAt}
 }
 
 func fromAudit(event audit.Event) *auditModel {

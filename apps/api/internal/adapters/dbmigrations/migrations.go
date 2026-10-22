@@ -14,4 +14,4 @@ var priorReleaseChecksums []byte
 const PriorReleaseVersion uint = 14
 
 // LatestVersion is the migration version required by API readiness.
-const LatestVersion uint = 18
+const LatestVersion uint = 19

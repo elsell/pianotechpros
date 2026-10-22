@@ -34,6 +34,7 @@ type Attributes struct {
 type Entity struct {
 	ID          ID
 	OwnerUserID string
+	Revision    int64
 	Attributes
 	CreatedAt, UpdatedAt time.Time
 }
@@ -79,5 +80,5 @@ func New(id ID, ownerUserID string, attributes Attributes) (Entity, error) {
 			return Entity{}, ErrInvalidFields
 		}
 	}
-	return Entity{ID: id, OwnerUserID: ownerUserID, Attributes: attributes}, nil
+	return Entity{ID: id, OwnerUserID: ownerUserID, Attributes: attributes, Revision: 1}, nil
 }

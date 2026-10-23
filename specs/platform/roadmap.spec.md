@@ -87,6 +87,14 @@ scope loss during persistence. Review caught and verified a fix for dispatch
 after activity loss. Full checks/contracts and the subsequent focused suite pass.
 Selected-media persistence and upload orchestration remain the next integration.
 
+Run [39882638075](https://github.com/elsell/pianotechpros/actions/runs/39882638075)
+on `815ba2a` exposed a Scalar acceptance selector collision: its broad Authorize
+button match also selected the new Authorized normalized JPEG response disclosure.
+The harness now selects the exact Authorize name. A real Playwright check with
+both controls and all eight retry/deadline tests pass; full checks/contracts pass.
+Hosted acceptance of this correction remains pending. The run's verification
+job still reports 23 reachable Go vulnerabilities; security gates remain blocking.
+
 Completed run [39878787463](https://github.com/elsell/pianotechpros/actions/runs/39878787463)
 on `115bd0b` passed live acceptance. Both native jobs stopped before compilation:
 Expo Router Doctor rejects an exact direct navigation declaration because its

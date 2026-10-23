@@ -284,3 +284,7 @@ platform bundles as a regression gate.
 Hosted native jobs export their platform bundle before compilation, independently
 of the aggregate security gate, so unsigned native evidence also verifies Metro
 resolution in the normal checkout. Export remains distinct from compilation.
+
+Scalar acceptance selects the exact Authorize button accessible name. Endpoint
+response descriptions such as Authorized normalized JPEG must not collide with
+the authentication control locator.

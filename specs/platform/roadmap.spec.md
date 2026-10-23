@@ -2,6 +2,23 @@
 
 ## Current milestone: feature-complete product
 
+Public profile, listing and photo persistence now implements a dedicated anonymous
+read port. Shared dealer/record locks coordinate with publication and profile
+writes; public content comes from the retained snapshot, without loading private
+working attributes. Photo bytes require current snapshot membership and integrity
+validation. Real PostgreSQL race tests prove retained photos survive draft removal,
+republish drops old photo access, hidden/foreign reads return no content, and reads
+waiting behind either kind of unpublish observe the committed hidden state. The
+full dealer-store PostgreSQL suite, repository/contract checks and required review
+pass. HTTP/source-limiter
+registration and public browsing remain required before these reads are exposed.
+
+The Android artifact run on 4c3b042 failed before compilation while sdkmanager
+downloaded pinned NDK 27.0.12077973 (invalid ZIP archive). Its backend acceptance
+passed; remaining hosted jobs were still active at inspection. GitHub refused a
+single-job rerun while the workflow remained active. Preserve the pinned toolchain
+and retry the failed native job once eligible; no APK or device acceptance yet.
+
 The showroom domain now projects only canonical, published dealer profiles and
 same-dealer visible inventory publications. Public fields are explicitly
 allowlisted, nested snapshot values are copied, and photo access requires current

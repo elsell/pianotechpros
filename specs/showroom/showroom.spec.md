@@ -32,6 +32,22 @@ keys. Responses and defensive copies must not let a caller mutate later reads.
 
 ## Public application boundary and presentation
 
+The first persistence operations read a profile by exact slug, a piano by that
+slug and record ID, and photo bytes by slug, record ID and photo ID. Invalid or
+oversized lookup identifiers fail before storage access. A public listing result
+includes its public dealer profile so both parts come from one visibility check.
+No actor ID is accepted by these deliberately anonymous ports.
+
+PostgreSQL locks the published dealer row for shared access, then the scoped
+record's identity/revision/status row, until the projection and any requested
+photo bytes are read. Publication commands and profile edits take conflicting
+locks, so a read waiting behind an unpublish observes the committed hidden state.
+This establishes a read linearization point, not revocation of bytes already
+delivered to a visitor. Never load private working attributes for public content;
+read and validate the immutable snapshot and current availability pointer instead.
+Check stored photo bytes against their digest and dimensions before returning
+them. Errors return zero values, including after a transaction completion failure.
+
 The forthcoming repository port must select publication visibility and showroom
 visibility together, with scoped identifiers and bounded queries. It must expose
 only public projections and must not call private user-scoped repository methods

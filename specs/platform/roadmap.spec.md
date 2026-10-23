@@ -199,6 +199,18 @@ record deletion, plus rollback on audit and history failures. Review findings fo
 translated constraint errors and migration readiness were fixed. `make check`
 and contract drift checks pass. This is storage infrastructure; inventory HTTP
 commands, photos and product journeys are still open.
+Inventory listing persistence now supports scoped literal search, explicit status
+and inactive filters, featured/creation/ID ordering and bounded continuation tuples.
+Runtime-role PostgreSQL tests pass pagination and creation ceilings, private-field
+search exclusion, literal wildcard characters, cross-user/dealer and revoked
+access, and no data returned on audit failure. Review found a missing/null Featured
+value could disagree with SQL ordering; a failing database regression now passes
+with strict stored-flag validation. The full dealer PostgreSQL race suite and
+`make check check-contracts` pass; final mapper changes also receive targeted Go
+and structural checks. Required follow-up review found no remaining blocker.
+The disposable database was removed. Opaque cursor application commands, HTTP
+listing and inventory browsing/editor screens remain required integration work.
+
 Attribute editing persistence now applies the domain revision command under the
 same authority locks, with atomic audit/private history. Real PostgreSQL race
 coverage passes competing CAS writers, stale and cross-user/dealer edits,

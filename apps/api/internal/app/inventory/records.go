@@ -13,3 +13,8 @@ type RecordRepository interface {
 	CreateDraft(context.Context, string, domain.Record, string, audit.Event) (domain.Record, bool, error)
 	GetRecord(context.Context, string, string, string, audit.Event) (domain.Record, error)
 }
+
+// ListingRepository returns only an actor-authorized, audited dealer page.
+type ListingRepository interface {
+	ListRecords(context.Context, string, string, domain.ListQuery, audit.Event) (domain.Page, error)
+}

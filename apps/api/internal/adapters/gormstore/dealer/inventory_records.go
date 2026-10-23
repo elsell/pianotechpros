@@ -74,6 +74,19 @@ func inventoryRead(tx *gorm.DB, dealerID, id string) (domain.Record, error) {
 	if err := tx.Where("dealer_id=? AND id=?", dealerID, id).First(&row).Error; err != nil {
 		return domain.Record{}, err
 	}
+	return inventoryFromRow(row)
+}
+func inventoryFromRow(row inventoryRecordModel) (domain.Record, error) {
+	// The paging tuple reads this exact JSON key. Missing/null values must not
+	// become Go false while PostgreSQL sorts them as NULL.
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(row.Attributes, &fields); err != nil {
+		return domain.Record{}, err
+	}
+	var featured *bool
+	if err := json.Unmarshal(fields["Featured"], &featured); err != nil || featured == nil {
+		return domain.Record{}, ports.ErrInvalidArgument
+	}
 	var attributes domain.Attributes
 	decoder := json.NewDecoder(bytes.NewReader(row.Attributes))
 	decoder.DisallowUnknownFields()
@@ -84,7 +97,7 @@ func inventoryRead(tx *gorm.DB, dealerID, id string) (domain.Record, error) {
 		return domain.Record{}, ports.ErrInvalidArgument
 	}
 	validated, err := domain.ValidateAttributes(attributes)
-	if err != nil || !reflect.DeepEqual(validated, attributes) || attributes.StockNumber != row.StockNumber || row.StockNumber == "" || row.Revision < 1 || row.Revision > 9007199254740991 || row.CreatedAt.IsZero() || row.UpdatedAt.Before(row.CreatedAt) {
+	if err != nil || !reflect.DeepEqual(validated, attributes) || attributes.Featured != *featured || attributes.StockNumber != row.StockNumber || row.StockNumber == "" || row.Revision < 1 || row.Revision > 9007199254740991 || row.CreatedAt.IsZero() || row.UpdatedAt.Before(row.CreatedAt) {
 		return domain.Record{}, ports.ErrInvalidArgument
 	}
 	switch row.Status {

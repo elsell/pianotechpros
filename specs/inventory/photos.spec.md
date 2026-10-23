@@ -226,3 +226,36 @@ commitment and all possible chunks are gone.
 Account sign-out uses the existing vault generation invalidation and full cleanup.
 The store snapshots input before asynchronous writes and never returns caller-
 mutable aliases. It does not bypass authorization to open a recovered capture.
+
+## Durable upload ledger
+
+A separate encrypted, scoped ledger retains selected-media reservations and
+upload outcomes. Its storage key is distinct from the text-draft journal. It
+never expires or deletes a reservation implicitly: cleanup must first remove its
+media, then explicitly forget a removal-state entry. The coordinator owns current
+authorization, exclusive scope ownership and the seven-day cleanup policy.
+A ledger instance serializes operations; all returned values are defensive copies.
+
+A reservation records an immutable selection ID, byte size, stable upload key
+and creation time before any selected bytes are written. At most 50 pending
+selections and 100 MiB total source bytes are retained per scope. Marking ready
+requires the media store to have completed its manifest. Before the first network
+attempt, persist the exact target record ID and safe expected revision, then mark
+attempted. Retrying an attempted entry preserves that target, revision and key.
+Acknowledgement records the server photo ID before local cleanup. An uncertain
+network outcome remains attempted across restart. A definitive conflict may be
+recorded as conflict; only an explicit rebase resets it to ready with a new key.
+Rebase preserves the assigned record ID and only permits a new revision; it cannot
+redirect a selection to a different record.
+Rejected image content remains rejected for inspection/removal, never automatic
+retry. The ledger contains machine state only, no filenames, image data or errors.
+
+Removal is explicit. Reserved, ready, rejected, conflict and acknowledged entries
+may enter removal state. An attempted entry cannot be locally cancelled as if its
+server outcome were known; it must first be reconciled by retrying the same
+attempt. Forgetting is allowed only from removal state after media cleanup.
+A failed or uncertain ledger write poisons that instance: subsequent operations
+must reopen from durable storage before using state. Never dispatch a request
+after a failed attempt checkpoint. Malformed or wrong-scope ledger data fails
+closed and is retained for diagnosis/explicit cleanup, rather than silently
+discarding potentially recoverable selection identities.

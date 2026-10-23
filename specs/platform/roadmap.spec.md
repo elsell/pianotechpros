@@ -107,6 +107,17 @@ pass; review has no remaining blockers. The upload coordinator must still supply
 durable reservations, exclusive scope ownership, expiry and platform digest
 adapters before camera/library integration is complete.
 
+The upload ledger now durably records scoped reservations, readiness, exact
+attempted record/revision/key, acknowledged server photo IDs and removal state.
+Uncertain attempts cannot be cancelled as if their outcome were known; explicit
+conflict rebasing retains the target record and assigns a new key. Failed writes
+invalidate the instance until reopen. Tests cover restart, before/after-write
+failure, concurrent reservations, capacity, defensive snapshots, malformed scope
+and cross-record rebasing. All 144 client-core tests, full checks and contract
+drift checks pass; read-only review has no blockers. The coordinator still must
+enforce authorization, leases, media readiness, dispatch ordering and cleanup
+before these pieces can be exposed in the web/native photo capture UI.
+
 Completed run [39878787463](https://github.com/elsell/pianotechpros/actions/runs/39878787463)
 on `115bd0b` passed live acceptance. Both native jobs stopped before compilation:
 Expo Router Doctor rejects an exact direct navigation declaration because its

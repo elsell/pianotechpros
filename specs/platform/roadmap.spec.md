@@ -2,6 +2,29 @@
 
 ## Current milestone: feature-complete product
 
+Go security remediation now pins gRPC v1.83.2, OpenTelemetry v1.45.0 and x/text
+v0.41.0 with their resolved transitive requirements (including x/net v0.58.0).
+The obsolete gRPC age exception is removed; no advisory suppression is added.
+Before/after callable scans using the same Go 1.25.13 executable fall from 16 to
+12 findings, removing GO-2026-6348, GO-2026-6443, GO-2026-6505 and GO-2026-6629.
+The remaining reachable findings are in the standard library. This is not a clean
+release scan; the older CI/build-image toolchain may report additional findings.
+The last npm scan still has 70 findings (1 critical, 47 high, 18 moderate, 4 low).
+
+Real collector tests caught an exporter compatibility change during the update:
+base endpoints were receiving requests at `/`. The adapter now constructs explicit
+trace/metric signal paths, preserves collector prefixes and rejects invalid bases
+without exposing the URL in diagnostics. Root/prefix/trailing-slash HTTP tests,
+application checks, contract checks and race tests pass. Module checksums verify;
+required review found no concrete blockers. The full fourteen-day dependency-age
+gate passes without a new exception.
+
+The Red Hat catalog lists Go 1.26.10 builder candidates, including immutable release
+tag `1.26.10-builder-1792719708`. Adoption still requires digest resolution,
+signature/SBOM/CVE review, a documented exact security age exception and migration
+verification. No builder/toolchain change is part of this dependency patch, and
+issue #2 remains release-blocking.
+
 Native photo inspection now opens full-screen with explicit Close/Details
 navigation, aspect-ratio fitting, native iOS scroll-view zoom, and bounded Android
 pinch/pan. Localized zoom-in/out/reset controls supplement gestures. Shared geometry

@@ -234,3 +234,9 @@ The database bootstrap disables GORM's unstructured SQL logger. Query parameters
 can contain invitation digests or session material and must never appear in error
 or slow-query output. Infrastructure failures still propagate through ports to
 configured typed probes and error handling; SQL text/parameters are not telemetry.
+
+The configured OTLP/HTTP endpoint is a collector base URL. The adapter explicitly
+appends `v1/traces` and `v1/metrics`, preserving any base-path prefix, rather than
+relying on exporter defaults. Reject nonabsolute/non-HTTP(S), credentialed, queried
+or fragmented endpoints before exporter creation. Plain HTTP requires the explicit
+insecure flag. Test real collector requests at root and prefixed base URLs.

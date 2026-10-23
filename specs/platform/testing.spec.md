@@ -77,7 +77,7 @@ The release gate runs Go vulnerability analysis and the package-manager audit
 against the resolved dependency graph. CI has least-privilege permissions,
 bounded runtime, and cancels superseded work. High or critical dependency
 findings at any severity fail delivery rather than being silently accepted.
-The API dependency graph pins `golang.org/x/net v0.55.0`, excluding the
+The API dependency graph pins `golang.org/x/net v0.58.0`, excluding the
 GO-2026-5026-affected v0.53.0 release from generated modules and images.
 Release image scans use the locally installed Grype 0.111.1 executable from a
 checksum-verified immutable release archive. Scanner bootstrap must not execute a
@@ -288,3 +288,20 @@ resolution in the normal checkout. Export remains distinct from compilation.
 Scalar acceptance selects the exact Authorize button accessible name. Endpoint
 response descriptions such as Authorized normalized JPEG must not collide with
 the authentication control locator.
+
+## Go dependency security remediation (2026-10-23)
+
+Pin gRPC v1.83.2 for GO-2026-6348 and GO-2026-6443, the OpenTelemetry v1.45.0
+module family for GO-2026-6505, and x/text v0.41.0 for GO-2026-6629. The combined graph also raises the resolved x/net baseline to v0.58.0 and its required
+protocol/logging/system modules; review those transitive changes with the same
+age/checksum gates. Keep matching
+OpenTelemetry API/SDK/exporter modules aligned. Verify proxy metadata, checksums,
+the fourteen-day gate, application/contract checks, race tests and a fresh callable
+vulnerability scan. These releases predate the age window; no new exception or
+advisory suppression is permitted. Remove the obsolete gRPC v1.82.1 age exception.
+
+This change does not clear the Go release gate: x/net v0.60.0 requires Go 1.26,
+and standard-library advisories require a separately reviewed toolchain and
+immutable build-image migration. Keep those findings release-blocking. Compare
+before/after scans with the same Go executable so a compiler change cannot be
+mistaken for dependency remediation. Package-audit findings remain independent.

@@ -252,13 +252,6 @@
     "compensatingVerification": "Exact transitive override, frozen-lock regeneration, generated security-policy test, clean package audit, workspace tests and builds, exact EAS CLI startup, and clean native prebuild."
   },
   {
-    "kind": "go",
-    "name": "google.golang.org/grpc",
-    "version": "v1.82.1",
-    "reason": "Security patch required to remove GO-2026-6061 from the generated API's callable HTTP/2 and xDS authorization graph before the standard fourteen-day observation window closes.",
-    "compensatingVerification": "Exact direct pin, generated Go tests and race tests, govulncheck, live API and SpiceDB acceptance, Docker builds, and hosted generation matrix."
-  },
-  {
     "kind": "ruby",
     "name": "xcodeproj",
     "version": "1.28.1",

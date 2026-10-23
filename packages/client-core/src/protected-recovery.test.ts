@@ -54,3 +54,36 @@ test('key tampering and malformed metadata fail closed rather than resetting rec
  f.secrets.set(secretName,'not valid');await assert.rejects(a.read('one'));await assert.rejects(f.create().open('alice'));assert.equal(f.rows.size,1);
  await v.clear();assert.equal(f.rows.size,0);
 });
+
+test('selected-media chunks are encrypted, bound to scope and invalidated on sign-out',async()=>{
+ const {createSelectedMediaStore}=await import('./selected-media.js');
+ const f=fixture();const vault=f.create();const storage=await vault.open('alice');
+ const scope={userID:'alice',dealerID:'shop',recordID:'@capture'};
+ const source=new Uint8Array(300000).fill(91);
+ const selected=createSelectedMediaStore({sha256:async bytes=>createHash('sha256').update(bytes).digest('hex'),scope,storage});
+ await selected.put('photo-selection',source);
+ assert.equal(f.rows.size,4);
+ assert.ok([...f.rows.keys()].every(key=>!key.includes('alice')&&!key.includes('photo-selection')));
+ assert.ok([...f.rows.values()].every(value=>!value.includes('"data"')&&!value.includes('5b'.repeat(20))));
+ const restored=createSelectedMediaStore({sha256:async bytes=>createHash('sha256').update(bytes).digest('hex'),scope,storage:await f.create().open('alice')});
+ assert.deepEqual(await restored.read('photo-selection'),source);
+ const other=createSelectedMediaStore({sha256:async bytes=>createHash('sha256').update(bytes).digest('hex'),scope:{...scope,userID:'bob'},storage:await vault.open('bob')});
+ assert.equal(await other.read('photo-selection'),null);
+ const entries=[...f.rows.entries()];f.rows.set(entries[0]![0],entries[1]![1]);
+ await assert.rejects(restored.read('photo-selection'),/^Error: selected_media_unavailable$/);
+ await vault.clear();assert.equal(f.rows.size,0);
+ await assert.rejects(selected.read('photo-selection'),/^Error: selected_media_unavailable$/);
+});
+test('sign-out during selected-media hashing suppresses final plaintext disclosure',async()=>{
+ const {createSelectedMediaStore}=await import('./selected-media.js');
+ const f=fixture();const vault=f.create();const storage=await vault.open('alice');
+ let blocked=false;let release!:()=>void;let started!:()=>void;const ready=new Promise<void>(resolve=>{started=resolve;});
+ const selected=createSelectedMediaStore({scope:{userID:'alice',dealerID:'shop',recordID:'@capture'},storage,sha256:async bytes=>{
+  const digest=createHash('sha256').update(bytes).digest('hex');
+  if(blocked){started();await new Promise<void>(resolve=>{release=resolve;});}
+  return digest;
+ }});
+ await selected.put('selection',new Uint8Array([1,2,3]));blocked=true;
+ const reading=selected.read('selection');const rejected=assert.rejects(reading,/selected_media_unavailable/);
+ await ready;await vault.clear();release();await rejected;
+});

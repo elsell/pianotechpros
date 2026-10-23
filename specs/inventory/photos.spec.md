@@ -195,3 +195,34 @@ bytes and JPEG signature before presentation. Fetch buffers the response on
 platforms without streaming; the size check is not a streaming memory guarantee.
 Optional cancellation propagates to fetch; aborted or failed network operations
 do not imply successful writes or permit discarding retry intent.
+
+## Protected selected-media storage
+
+Selected source bytes are stored through the existing account-bound encrypted
+recovery port, never as plaintext filesystem paths or browser storage. A scoped
+media store splits each immutable selection (1 byte through 20 MiB) into 256 KiB
+raw chunks encoded as hex, keeping each plaintext row below the existing 1 MiB
+limit. Chunk keys bind user, dealer, capture/record scope, selection ID and index.
+A small versioned manifest is written last; absence means no complete selection.
+Reads validate every chunk and return all bytes or a fixed storage error, never
+partial media. Metadata and ciphertext are not treated as authoritative image
+validation; the server still normalizes and validates actual image content.
+
+Before chunk writes, an injected SHA-256 port computes a whole-selection digest;
+a size/digest commitment is persisted first and binds even an unwritten suffix.
+Every retry validates that commitment, and completed reads verify the full digest.
+Selection IDs are immutable. Retrying an interrupted write with the same bytes
+may finish it; different bytes under that ID fail without replacing existing
+chunks. Callers persist a selection reservation before writing bytes, retain that
+reservation on uncertainty, and hold exclusive scope ownership across store
+instances/tabs. The store serializes its own operations but does not implement
+cross-tab leases. No unreferenced chunk can be intentionally created without a
+durable reservation. The upload coordinator owns expiry and reservation cleanup.
+
+Removal first hides the manifest, then attempts every bounded chunk slot even if
+one deletion fails. A failed removal reports a fixed error so the reservation is
+retained for retry; the commitment remains until all chunks are removed. Success means manifest,
+commitment and all possible chunks are gone.
+Account sign-out uses the existing vault generation invalidation and full cleanup.
+The store snapshots input before asynchronous writes and never returns caller-
+mutable aliases. It does not bypass authorization to open a recovered capture.

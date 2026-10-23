@@ -95,6 +95,18 @@ both controls and all eight retry/deadline tests pass; full checks/contracts pas
 Hosted acceptance of this correction remains pending. The run's verification
 job still reports 23 reachable Go vulnerabilities; security gates remain blocking.
 
+Selected-media storage now uses the account-bound encrypted recovery port with
+bounded immutable chunks, a durable whole-photo SHA-256 commitment and a manifest
+written last. Reads validate every chunk and the complete digest; interrupted
+same-ID writes can resume only with identical bytes. Cleanup retains the commitment
+when any chunk removal fails. Review found and verified a fix for changed
+unwritten suffixes on partial retries. Tests cover 20 MiB, interrupted writes,
+corruption, scope isolation, real AES-GCM ciphertext substitution, and sign-out
+during hashing. All 135 client-core tests, full checks and contract drift checks
+pass; review has no remaining blockers. The upload coordinator must still supply
+durable reservations, exclusive scope ownership, expiry and platform digest
+adapters before camera/library integration is complete.
+
 Completed run [39878787463](https://github.com/elsell/pianotechpros/actions/runs/39878787463)
 on `115bd0b` passed live acceptance. Both native jobs stopped before compilation:
 Expo Router Doctor rejects an exact direct navigation declaration because its

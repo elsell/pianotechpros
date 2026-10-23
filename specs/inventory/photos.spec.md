@@ -375,3 +375,41 @@ before deletion, retaining the journal if cleanup fails. Active capture text
 checkpoints cannot renew the photo's original expiry. Expiration never removes
 source bytes already owned by an imported record reservation; that record's
 coordinator is responsible for its cleanup.
+
+## Native selected-image preparation
+
+Native selection accepts one still image at a time through the system camera or
+photo picker, without forced cropping or microphone permission. HEIC and other
+system-decodable still images are normalized to JPEG before protected staging;
+source files are never sent directly. Preserve aspect ratio and bound the longest
+output edge to 4096 pixels. Reject nonpositive/noninteger dimensions, sources over
+60 million pixels or 12000 pixels on either axis, and source files over 50 MiB
+before starting native decoding. These admission checks bound ordinary device
+work; server decoding and metadata removal remain authoritative.
+
+The preparation use case owns no file system or framework. An injected native
+adapter validates a local picker asset, reports its actual file size, renders a
+JPEG, reads at most 20 MiB and releases only temporary files that adapter owns.
+Validate the rendered dimensions and JPEG signature before passing immutable bytes
+to the existing encrypted selection/upload workspace. Never put a path, filename,
+EXIF value or image bytes into diagnostic errors. Release native resources on
+success, invalid input, conversion failure and scope loss. Cleanup failure must
+not be reported as successfully completed preparation. A late result after
+account/screen invalidation must not reach staging; scope is checked before and
+after each asynchronous boundary. Cancellation retains the text draft.
+
+Android activity restoration is a separate selection boundary: persist an opaque
+selection intent bound to the account, dealer and capture/record before launching
+the picker. A restored system result may only be consumed by that exact intent;
+it must never attach to whichever editor happens to be visible. Do not claim
+native capture completion before this boundary and device interruption acceptance
+are implemented.
+
+The native image renderer's dedicated cache has one process-wide serialized
+owner. Snapshot its existing files immediately before SDK saving and remove only
+new SDK-shaped output files after consumption or failure, including a partial file
+whose URI was never returned. Preserve pre-existing and unrelated files. Attempt
+all owned cleanup even after one deletion fails, report that failure, and do not
+admit another preparation until cleanup settles. This covers live-process save
+failures; process-death recovery and cache reconciliation remain part of the
+native interruption acceptance boundary above.

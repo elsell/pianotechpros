@@ -1,7 +1,8 @@
 # Native experience specification
 
-Status: required design and acceptance standard for product slices. The scaffold
-currently provides platform authentication, not the inventory experience.
+Status: required design and acceptance standard for product slices. Dealer and
+inventory text workflows are implemented; native photo presentation and device
+interaction acceptance remain incomplete.
 
 Use React Native/Expo for shared application plumbing while preserving platform
 interaction vocabulary. iOS follows Apple's HIG; Android follows Android/Material
@@ -147,3 +148,18 @@ A version outside any declared range or a second native context fails the gate.
 Run doctor, compatibility, age, type/tests, clean prebuild and both platform Metro
 exports after the graph correction; hosted compilation and device interactions
 remain separate required evidence.
+
+## Native photo preparation boundary
+
+Use the installed SDK 55 system photo picker and camera, then its native image
+manipulator for bounded JPEG preparation. Exact picker, manipulator and filesystem
+pins must match the SDK manifest and installed versions. Photo selection must not
+request audio permission; the Android manifest explicitly blocks RECORD_AUDIO
+until the separately specified voice feature needs it. Camera and photo usage
+copy and platform permission localization must be installed before picker UI is
+enabled. Preparation and temporary-file tests are not native camera, HEIC,
+permission, process-restoration or photo-inspection acceptance evidence.
+
+SDK references reviewed for the preparation adapter:
+- https://docs.expo.dev/versions/v55.0.0/sdk/imagepicker/
+- https://docs.expo.dev/versions/v55.0.0/sdk/imagemanipulator/

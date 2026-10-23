@@ -2,6 +2,30 @@
 
 ## Current milestone: feature-complete product
 
+Native photo preparation now has a framework-free admission/lifetime boundary and
+an Expo adapter: bounded still-image conversion, bounded JPEG reads, scope-loss
+suppression and ownership-restricted temporary-file cleanup. Review found and
+fixed partial files left by failed Android saves using serialized render-cache
+ownership. Controlled-fake tests cover failures and concurrency. Picker screens,
+localized permission configuration, Android activity-result binding, process-death
+cache reconciliation, inspection gestures and actual HEIC/camera/device acceptance
+remain required; this preparation layer does not complete native photo capture.
+
+Preparation verification: 215 client-core tests and native session/cache tests
+pass, along with client types, structural/API-boundary checks, contract checks,
+the dependency-age gate, all 19 Expo Doctor checks and native compatibility.
+Clean prebuild and both platform JavaScript exports pass. The temporary local
+Metro watch folder used for memory-backed dependencies is not committed. These
+exports do not exercise the not-yet-connected picker UI. The last committed web
+photo slice (`3c75ada`) passed hosted acceptance, Android Gradle and unsigned iOS
+Xcode in run [39887355061](https://github.com/elsell/pianotechpros/actions/runs/39887355061);
+its verification job failed. Native compilation of the new photo modules still
+needs hosted evidence after publication. Fresh local security checks on 2026-10-23
+report 16 reachable Go vulnerabilities (Go 1.25.13) and 70 npm findings (1 critical,
+47 high, 18 moderate, 4 low). Issue #2 remains release-blocking; neither security
+thresholds nor dependency-age policy were weakened.
+
+
 The web editor now presents photo capture before text fields, with private image
 previews, cover/order commands, alternative text and removal confirmation. Shared
 orchestration protects new-capture media before creation; an atomic import receipt

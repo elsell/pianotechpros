@@ -230,3 +230,11 @@ result=check({'apps/web/src/lib/inventory/photo-media.ts':"fetch('/unreviewed');
 assert.notEqual(result.status,0,'media adapter does not acquire transport');
 result=check({'apps/web/src/lib/unreviewed-media.ts':"new Blob([]);"});
 assert.notEqual(result.status,0,'media capability remains isolated');
+for(const module of ['expo-image-picker','expo-image-manipulator','expo-file-system']){
+ result=check({'apps/mobile/src/inventory/photo-media.ts':`import * as media from '${module}'; export {media};`});
+ assert.equal(result.status,0,`reviewed native media adapter may use ${module}`);
+ result=check({'apps/mobile/src/unreviewed-media.ts':`import * as media from '${module}'; export {media};`});
+ assert.notEqual(result.status,0,`native ${module} capability remains isolated`);
+}
+result=check({'apps/mobile/src/inventory/photo-media.ts':"fetch('/unreviewed');"});
+assert.notEqual(result.status,0,'native media adapter does not acquire transport');

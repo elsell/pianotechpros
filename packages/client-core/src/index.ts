@@ -196,3 +196,4 @@ export {openPhotoUploadLedger,type PhotoUploadEntry,type PhotoUploadPhase} from 
 export {openPhotoUploadCoordinator,type PhotoUploadCoordinatorPort} from './photo-upload-coordinator';
 export {createInventoryPhotoWorkspace,type InventoryPhotoWorkspacePort,type InventoryPhotoCollection,type InventoryPhotoItem} from './inventory-photo-workspace';
 export {handoffCapturePhoto,discardCapturePhoto} from './capture-photo-handoff';
+export {prepareNativePhoto,type NativePhotoPreparationPort} from './native-photo-preparation';

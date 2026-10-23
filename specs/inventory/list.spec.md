@@ -45,3 +45,22 @@ malformed, oversized, altered, foreign-scope or changed-filter cursors before
 listing storage is called. Decoding never replaces fresh access checks. The
 application constructs the ceiling from its injected clock; clients cannot supply
 it. No continuation can authorize reads after membership or permission revocation.
+
+## Browsing presentation
+
+Web and native dealer profiles open an account/dealer-scoped inventory browser.
+Search submits deliberately and filters reset pagination. Available status choices
+are active (the default), all, and each lifecycle status. Show stock, display title,
+featured status and lifecycle status in readable rows. Empty matches, loading,
+failed refresh and failed pagination have distinct localized presentation. Refresh
+and explicit load-more remain accessible without gestures. Native additionally
+supports pull-to-refresh, system search keyboard submission, large text and dark
+mode; all labels and accessibility copy use the shared English/Spanish catalog.
+
+A shared controller owns filters and page sequencing. Changing filters clears old
+results immediately, and late responses cannot restore an older query. Concurrent
+load-more requests coalesce. Transient failures retain rows for the current filter
+and retry the failed operation. Explicit access rejection removes all rows and
+continuations. Disposal clears private state and suppresses late completion.
+Platform components remain responsible for navigation and native interaction design.
+Browsing alone does not complete capture, editing, photos or publication journeys.

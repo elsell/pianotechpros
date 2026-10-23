@@ -223,6 +223,21 @@ terminal pages, protocol failures and denied/network outcomes. Required read-onl
 review found no blockers. `make check check-contracts` and inventory application
 race tests pass. The full real-service script now includes this listing journey; hosted execution of those new checks remains pending.
 
+
+Web and native inventory browsing now compose the typed client with a shared,
+account/dealer-scoped controller. Search and status changes discard continuation
+state, stale requests cannot replace current results, pagination retries retain
+the cursor, transient outages retain rows, and permission loss clears them.
+The web uses a focused inventory view; native uses a list, pull-to-refresh,
+keyboard search and a dismissible status sheet. English and Spanish copy is
+complete. Controlled-fake sequencing tests and a real Chromium journey against
+an HTTP fixture pass search, filters, pagination, retry and denial, with a reviewed
+390px layout without overflow. Full checks/contracts, final type/i18n/transport
+gates and both Metro exports pass; read-only review found no blockers. These
+exports do not establish native compilation or device interaction acceptance.
+Editing/capture screens and durable recovery composition remain next; browsing
+alone does not satisfy the inventory parity row.
+
 Attribute editing persistence now applies the domain revision command under the
 same authority locks, with atomic audit/private history. Real PostgreSQL race
 coverage passes competing CAS writers, stale and cross-user/dealer edits,

@@ -20,7 +20,7 @@ const approvedExternalImports = new Set([
   '@sveltejs/kit', 'expo-auth-session', 'expo-constants', 'expo-crypto',
   'expo-localization', 'expo-router', 'expo-secure-store', 'expo-web-browser',
   'node:assert/strict', 'node:test', 'oidc-client-ts', 'react', 'react-native',
-  'svelte',
+  'svelte', 'react-native-safe-area-context',
 ]);
 for (const packagePath of [
   'packages/api-client/package.json',

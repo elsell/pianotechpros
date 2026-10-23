@@ -1,4 +1,5 @@
 <script lang="ts">
+  import InventoryBrowser from '../inventory/InventoryBrowser.svelte';
   import DealerJoin from './DealerJoin.svelte';
   import DealerStaff from './DealerStaff.svelte';
   import DealerProfileForm from './DealerProfileForm.svelte';
@@ -21,6 +22,7 @@
   let savedNotice = false;
   let active = true;
   let staffShop: string | null = null;
+  let inventoryShop: string | null = null;
   let joinOpen = false;
   const joinAPI = {
     preview: (input: DealerInvitationCode) => withCredential((api) => api.previewInvitation(input.dealerID, input.invitationID, input.token)),
@@ -65,17 +67,19 @@
   });
 </script>
 
-<section class="directory" aria-labelledby="shops-heading">
+<section class="directory" aria-labelledby={inventoryShop ? 'inventory-heading' : 'shops-heading'}>
+  {#if inventoryShop}{#key inventoryShop}<InventoryBrowser dealerID={inventoryShop} {credential} {apiURL} {i18n} {onSessionRejected} onBack={() => { const id = inventoryShop; inventoryShop = null; void directory.select(id); }} />{/key}
+  {:else}
   <header>
     <div><h2 id="shops-heading">{i18n.t('dealer.heading')}</h2><p>{i18n.t('dealer.intro')}</p></div>
-    <button disabled={Boolean(form) || Boolean(staffShop) || joinOpen} onclick={() => { savedNotice = false; joinOpen = true; }}>{i18n.t('staff.join')}</button>
-    <button disabled={Boolean(form) || Boolean(staffShop) || joinOpen} onclick={() => { savedNotice = false; form = { initial: null }; }}>{i18n.t('dealer.create')}</button>
-    <button class="secondary" disabled={state.listLoading || Boolean(form) || Boolean(staffShop) || joinOpen} onclick={() => directory.refresh()}>{i18n.t('dealer.refresh')}</button>
+    <button disabled={Boolean(form) || Boolean(staffShop) || Boolean(inventoryShop) || joinOpen} onclick={() => { savedNotice = false; joinOpen = true; }}>{i18n.t('staff.join')}</button>
+    <button disabled={Boolean(form) || Boolean(staffShop) || Boolean(inventoryShop) || joinOpen} onclick={() => { savedNotice = false; form = { initial: null }; }}>{i18n.t('dealer.create')}</button>
+    <button class="secondary" disabled={state.listLoading || Boolean(form) || Boolean(staffShop) || Boolean(inventoryShop) || joinOpen} onclick={() => directory.refresh()}>{i18n.t('dealer.refresh')}</button>
   </header>
   <div class="workspace">
     <nav aria-labelledby="shops-heading" aria-busy={state.listLoading}>
       {#each state.items as shop (shop.id)}
-        <button disabled={Boolean(form) || Boolean(staffShop) || joinOpen} class:selected={state.selectedId === shop.id} aria-pressed={state.selectedId === shop.id} onclick={() => directory.select(shop.id)}>{shop.name}</button>
+        <button disabled={Boolean(form) || Boolean(staffShop) || Boolean(inventoryShop) || joinOpen} class:selected={state.selectedId === shop.id} aria-pressed={state.selectedId === shop.id} onclick={() => directory.select(shop.id)}>{shop.name}</button>
       {/each}
       {#if state.listLoading}<p role="status">{i18n.t('common.loading')}</p>{/if}
       {#if state.listFailure}
@@ -93,6 +97,7 @@
       {:else if state.selected}
         {@const shop = state.selected}
         <h3>{shop.name}</h3>
+        <button onclick={() => { savedNotice = false; inventoryShop = shop.id; }}>{i18n.t('inventory.browse')}</button>
         <button onclick={() => { savedNotice = false; staffShop = shop.id; }}>{i18n.t('staff.manage')}</button>
         <button onclick={() => { savedNotice = false; form = { initial: shop }; }}>{i18n.t('dealer.edit')}</button>
         {#if shop.tagline}<p class="tagline">{shop.tagline}</p>{/if}
@@ -114,6 +119,7 @@
       {:else}<p class="placeholder">{i18n.t('dealer.select')}</p>{/if}
     </div>
   </div>
+  {/if}
 </section>
 
 <style>

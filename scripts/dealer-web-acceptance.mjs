@@ -11,6 +11,7 @@ const sessions = new Set(['browser-test-session']);
 const members = new Map([['test-owner', { userID: 'test-owner', role: 'owner', revision: 1, active: true, grantPending: false }], ['test-editor', { userID: 'test-editor', role: 'editor', revision: 1, active: true, grantPending: false }]]);
 const staffInvitations = new Map();
 let staffConflict = true;
+let inventoryMode = 'normal';
 let denyStaff = false;
 let invitationAccepted = false;
 let accessChecks = 0;
@@ -38,6 +39,16 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   let raw = ''; for await (const chunk of req) raw += chunk;
   const body = raw ? JSON.parse(raw) : {};
+  if (url.pathname === '/v1/dealers/created-shop/inventory') {
+    if (inventoryMode !== 'normal') return send(inventoryMode === 'denied' ? 404 : 503, { code: inventoryMode === 'denied' ? 'not_found' : 'unavailable' });
+    const records = [
+      { id: 'concert', title: 'Concert Grand', status: 'available', featured: true },
+      { id: 'baby', title: 'Baby Grand', status: 'draft', featured: false },
+      { id: 'upright', title: 'Studio Upright', status: 'sold', featured: false },
+    ].filter(item => (url.searchParams.get('status') ? item.status === url.searchParams.get('status') : url.searchParams.get('includeInactive') === 'true' || item.status !== 'sold') && item.title.toLowerCase().includes((url.searchParams.get('search') || '').toLowerCase()));
+    const offset = Number(url.searchParams.get('cursor') || 0);
+    return send(200, { data: records.slice(offset, offset + 1).map(item => ({ id: item.id, dealer_id: 'created-shop', revision: 1, status: item.status, attributes: { stock_number: item.id, title: item.title, featured: item.featured }, created_at: '2026-10-22T12:00:00Z', updated_at: '2026-10-22T12:00:00Z' })), meta: offset + 1 < records.length ? { nextCursor: String(offset + 1) } : {} });
+  }
   if (url.pathname === '/v1/dealers' && req.method === 'POST') {
     createRequests++;
     const key = req.headers['idempotency-key'];
@@ -145,6 +156,36 @@ try {
   await page.getByRole('button', { name: 'Guardar cambios', exact: true }).click();
   await page.getByRole('heading', { name: 'My edited shop', exact: true }).waitFor();
   assert.equal(shops.get('created-shop').revision, 3);
+  await page.getByRole('button', { name: 'Ver inventario', exact: true }).click();
+  await page.getByRole('heading', { name: 'Concert Grand', exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Cargar más pianos', exact: true }).click();
+  await page.getByRole('heading', { name: 'Baby Grand', exact: true }).waitFor();
+  await page.getByLabel('Estado', { exact: true }).selectOption('sold');
+  await page.getByRole('heading', { name: 'Studio Upright', exact: true }).waitFor();
+  assert.equal(await page.getByRole('heading', { name: 'Concert Grand', exact: true }).count(), 0);
+  await page.getByLabel('Buscar por número, título, marca o modelo', { exact: true }).fill('absent');
+  await page.getByRole('button', { name: 'Buscar inventario', exact: true }).click();
+  await page.getByText('Ningún piano coincide con estos filtros.', { exact: true }).waitFor();
+  await page.getByLabel('Buscar por número, título, marca o modelo', { exact: true }).fill('');
+  await page.getByLabel('Estado', { exact: true }).selectOption('active');
+  await page.getByRole('heading', { name: 'Concert Grand', exact: true }).waitFor();
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+  await page.screenshot({ path: '/tmp/piano-inventory-narrow.png', fullPage: true });
+  inventoryMode = 'outage';
+  await page.getByRole('button', { name: 'Actualizar inventario', exact: true }).click();
+  await page.getByText('No se pudo cargar el inventario. Inténtalo de nuevo.', { exact: true }).waitFor();
+  assert.equal(await page.getByRole('heading', { name: 'Concert Grand', exact: true }).count(), 1);
+  inventoryMode = 'normal';
+  await page.getByRole('button', { name: 'Intentar de nuevo', exact: true }).click();
+  await page.getByText('No se pudo cargar el inventario. Inténtalo de nuevo.', { exact: true }).waitFor({ state: 'detached' });
+  inventoryMode = 'denied';
+  await page.getByRole('button', { name: 'Actualizar inventario', exact: true }).click();
+  await page.getByText('Ya no tienes acceso a este inventario.', { exact: true }).waitFor();
+  assert.equal(await page.getByRole('heading', { name: 'Concert Grand', exact: true }).count(), 0);
+  await page.getByRole('button', { name: 'Volver a la tienda', exact: true }).click();
+  await page.setViewportSize({ width: 1280, height: 900 });
+
   await page.getByRole('button', { name: 'Administrar personal', exact: true }).click();
   await page.getByText('test-owner', { exact: true }).waitFor();
   assert.equal(await page.locator('article').filter({ hasText: 'test-owner' }).getByRole('button').count(), 0);
@@ -252,5 +293,5 @@ try {
   releaseRefresh();
   assert.equal(await page.evaluate(() => window.refreshResult), 'discarded');
   assert.equal(await page.evaluate(() => sessionStorage.getItem('pianotechpros_application_session')), null);
-  console.log('Dealer web invitation preview/acceptance/pending/replay, staff permissions/conflicts/removal/invitation revocation, creation retry, conflict review, form retention through session outages, Spanish pagination, keyboard selection, responsive layout and sign-out isolation passed');
+  console.log('Inventory browsing/filter/search/pagination/retry/denial and dealer web invitation preview/acceptance/pending/replay, staff permissions/conflicts/removal/invitation revocation, creation retry, conflict review, form retention through session outages, Spanish pagination, keyboard selection, responsive layout and sign-out isolation passed');
 } finally { releaseRefresh(); releaseDetail(); await browser.close(); server.close(); }

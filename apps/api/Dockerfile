@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
-FROM registry.access.redhat.com/hi/go:1.26.10-1792719708@sha256:c8a592e35cf512e3469c0c4cac4ac01445f6185b9366c6a586e5d210e118a9e7 AS build
+FROM registry.access.redhat.com/hi/go:1.27.3-fips-builder-1792719635@sha256:22533b2fd25d3c0a49edc4977ccaf2a3d5092133ca9242598a2d80185e8a284a AS build
 ENV GOTOOLCHAIN=local GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org
 WORKDIR /src
 COPY apps/api/go.mod apps/api/go.sum* ./

@@ -108,3 +108,54 @@ for(const reason of ['denied','network'] as const){
   await c.dispose();
  });
 }
+test('authorized reopening expires local media without remote mutation',async()=>{
+ const f=fixture();let time=1000;f.port.now=()=>time;let c=await openPhotoUploadCoordinator(f.port);
+ await c.select(new Uint8Array([1]));await c.dispose();time+=7*24*60*60*1000;
+ c=await openPhotoUploadCoordinator(f.port);assert.deepEqual(c.snapshot().entries,[]);
+ assert.equal(c.snapshot().expiredSelections,1);assert.equal(c.snapshot().uncertainExpirations,0);assert.equal(f.count(),0);assert.equal(f.rows.size,1);await c.dispose();
+});
+test('uncertain upload expiry removes only local media and reports unknown server outcome',async()=>{
+ const f=fixture();let time=1000;f.port.now=()=>time;let c=await openPhotoUploadCoordinator(f.port);
+ const id=await c.select(new Uint8Array([1]));f.lose(true);await assert.rejects(c.upload(id));await c.dispose();
+ time+=7*24*60*60*1000;c=await openPhotoUploadCoordinator(f.port);
+ assert.equal(c.snapshot().uncertainExpirations,1);assert.equal(f.count(),1);assert.equal(f.results.size,1);assert.equal(f.rows.size,1);await c.dispose();
+});
+test('expiry cleanup failure retains its marker and scope can reopen for retry',async()=>{
+ const f=fixture();let time=1000;f.port.now=()=>time;let c=await openPhotoUploadCoordinator(f.port);await c.select(new Uint8Array([1]));await c.dispose();
+ time+=7*24*60*60*1000;f.failCleanup(true);await assert.rejects(openPhotoUploadCoordinator(f.port));assert.equal(f.held(),false);
+ const metadata=[...f.rows.entries()].find(([k])=>k.includes('inventory-photo-uploads'))![1];assert.equal(JSON.parse(metadata).entries[0].expired,'local');
+ f.failCleanup(false);c=await openPhotoUploadCoordinator(f.port);assert.equal(c.snapshot().expiredSelections,1);assert.equal(f.rows.size,1);await c.dispose();
+});
+test('deadline crossing during target lookup suppresses upload dispatch',async()=>{
+ const f=fixture();let time=1000;f.port.now=()=>time;const c=await openPhotoUploadCoordinator(f.port);const id=await c.select(new Uint8Array([1]));
+ f.port.target=async()=>{time+=7*24*60*60*1000;return {recordID:'piano',revision:1};};
+ await assert.rejects(c.upload(id));assert.equal(f.count(),0);assert.deepEqual(c.snapshot().entries,[]);assert.equal(c.snapshot().expiredSelections,1);await c.dispose();
+});
+test('a selection survives until the exact deadline and refresh then expires it',async()=>{
+ const f=fixture();let time=1000;f.port.now=()=>time;const c=await openPhotoUploadCoordinator(f.port);await c.select(new Uint8Array([1]));
+ time+=7*24*60*60*1000-1;await c.refresh();assert.equal(c.snapshot().entries.length,1);
+ time++;await c.refresh();assert.deepEqual(c.snapshot().entries,[]);assert.equal(c.snapshot().expiredSelections,1);
+ await c.refresh();assert.equal(c.snapshot().expiredSelections,1);assert.equal(f.count(),0);await c.dispose();
+});
+for(const clock of [NaN,-1,9007199254740992,999]){
+ test(`invalid recovery clock ${clock} fails closed without deletion`,async()=>{
+  const f=fixture();let time=1000;f.port.now=()=>time;const c=await openPhotoUploadCoordinator(f.port);await c.select(new Uint8Array([1]));await c.dispose();
+  const before=[...f.rows];time=clock;await assert.rejects(openPhotoUploadCoordinator(f.port));
+  assert.deepEqual([...f.rows],before);assert.equal(f.count(),0);assert.equal(f.held(),false);
+ });
+}
+test('deadline crossing during final authorization prevents dispatch of checkpointed intent',async()=>{
+ const f=fixture();let time=1000;f.port.now=()=>time;const c=await openPhotoUploadCoordinator(f.port);const id=await c.select(new Uint8Array([1]));
+ let calls=0;f.port.authorize=async()=>{if(++calls===2)time+=7*24*60*60*1000;};
+ await assert.rejects(c.upload(id));assert.equal(f.count(),0);assert.equal(c.snapshot().uncertainExpirations,1);assert.deepEqual(c.snapshot().entries,[]);await c.dispose();
+});
+test('expiry notices are hidden after disposal or access denial',async()=>{
+ const f=fixture();let time=1000;f.port.now=()=>time;const c=await openPhotoUploadCoordinator(f.port);await c.select(new Uint8Array([1]));
+ time+=7*24*60*60*1000;await c.refresh();assert.equal(c.snapshot().expiredSelections,1);
+ f.deny();await assert.rejects(c.refresh());assert.equal(c.snapshot().expiredSelections,0);await c.dispose();assert.equal(c.snapshot().uncertainExpirations,0);
+});
+test('activity loss across the final expiry await prevents dispatch',async()=>{
+ const f=fixture();const c=await openPhotoUploadCoordinator(f.port);const id=await c.select(new Uint8Array([1]));
+ let reads=0;f.port.now=()=>{if(++reads===4)queueMicrotask(()=>f.inactive());return 1000;};
+ await assert.rejects(c.upload(id));assert.equal(reads,4);assert.equal(f.count(),0);await c.dispose();
+});

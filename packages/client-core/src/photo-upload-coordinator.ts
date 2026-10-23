@@ -1,5 +1,5 @@
 import type {InventoryRecoveryScope,ProtectedInventoryDraftStorage} from './inventory-recovery';
-import {openPhotoUploadLedger,type PhotoUploadEntry} from './photo-upload-ledger';
+import {openPhotoUploadLedger,photoUploadExpired,type PhotoUploadEntry} from './photo-upload-ledger';
 import {createSelectedMediaStore} from './selected-media';
 export interface PhotoUploadCoordinatorPort {
  scope:InventoryRecoveryScope;active():boolean;now():number;key():string;
@@ -13,16 +13,17 @@ const failed=()=>new Error('photo_upload_failed');
 const inactive=()=>new Error('photo_upload_inactive');
 export async function openPhotoUploadCoordinator(port:PhotoUploadCoordinatorPort){
  const scope={...port.scope};let disposed=false;let denied=false;let busy=false;let failure=false;let authorizationFailed=false;
+ const expiredIDs=new Set<string>();const uncertainIDs=new Set<string>();
  let entries:PhotoUploadEntry[]=[];let tail:Promise<unknown>=Promise.resolve();let disposal:Promise<void>|null=null;
  let release:(()=>void)|undefined;let storage:ProtectedInventoryDraftStorage;
  let ledger:Awaited<ReturnType<typeof openPhotoUploadLedger>>;
  let media:ReturnType<typeof createSelectedMediaStore>;
  function active(){if(disposed||!port.active())throw inactive();}
  async function authorize(){active();try{await port.authorize();}catch(error){authorizationFailed=true;denied=port.classify(error)==='denied';entries=[];throw failed();}active();denied=false;authorizationFailed=false;}
- function snapshot(){return {entries:disposed||denied||!port.active()?[]:entries.map(e=>({...e})),busy:!disposed&&busy,denied,failure};}
+ function snapshot(){return {entries:disposed||denied||!port.active()?[]:entries.map(e=>({...e})),expiredSelections:disposed||denied||!port.active()?0:expiredIDs.size,uncertainExpirations:disposed||denied||!port.active()?0:uncertainIDs.size,busy:!disposed&&busy,denied,failure};}
  const listeners=new Set<(state:ReturnType<typeof snapshot>)=>void>();
  function notify(){if(!disposed)for(const listener of listeners){try{listener(snapshot());}catch{/* Observers cannot interrupt persistence. */}}}
- async function reopen(){ledger=await openPhotoUploadLedger({scope,storage,now:port.now});active();entries=ledger.snapshot();notify();}
+ async function reopen(){ledger=await openPhotoUploadLedger({scope,storage,now:port.now});active();await prune();active();entries=ledger.snapshot();notify();}
  async function checkpoint(work:Promise<void>){await work;active();entries=ledger.snapshot();notify();}
  try{
   await authorize();release=await port.lease();active();storage=await port.storage();active();
@@ -42,6 +43,20 @@ export async function openPhotoUploadCoordinator(port:PhotoUploadCoordinatorPort
  }
  function entry(id:string){const found=ledger.snapshot().find(e=>e.id===id);if(!found)throw failed();return found;}
  async function cleanup(id:string){await checkpoint(ledger.remove(id));await media.remove(id);active();await checkpoint(ledger.forget(id));}
+ async function prune(){
+  const now=port.now();if(!Number.isSafeInteger(now)||now<0)throw failed();
+  const pending=ledger.snapshot();
+  // Validate the entire clock view before deleting any selection.
+  const expired=pending.filter(e=>photoUploadExpired(e,now));
+  for(const e of expired){
+   active();await checkpoint(ledger.expire(e.id));const marked=entry(e.id);
+   expiredIDs.add(e.id);if(marked.expired==='uncertain')uncertainIDs.add(e.id);
+   await media.remove(e.id);active();await checkpoint(ledger.forget(e.id));
+  }
+ }
+ async function requireUnexpired(id:string){
+  if(photoUploadExpired(entry(id),port.now())){await prune();throw failed();}
+ }
  function copy(source:Uint8Array){if(!(source instanceof Uint8Array)||source.byteLength<1||source.byteLength>20*1024*1024)throw failed();return new Uint8Array(source);}
  return Object.freeze({
   snapshot,
@@ -61,16 +76,16 @@ export async function openPhotoUploadCoordinator(port:PhotoUploadCoordinatorPort
      const result={recordID:e.recordID,photoID:e.photoID};await cleanup(id);return result;
     }
     if(!['reserved','ready','attempted'].includes(e.state))throw failed();
-    const bytes=await media.read(id);active();if(!bytes||bytes.length!==e.size)throw failed();
+    const bytes=await media.read(id);active();if(!bytes||bytes.length!==e.size)throw failed();await requireUnexpired(id);active();
     if(e.state==='reserved'){await checkpoint(ledger.ready(id));e=entry(id);}
     if(e.state==='ready'){
      let target:{recordID:string;revision:number};
      try{target=await port.target(e.recordID??(scope.recordID==='@capture'?undefined:scope.recordID));}
      catch(error){if(port.classify(error)==='denied'){denied=true;entries=[];}throw failed();}
-     active();
+     active();await requireUnexpired(id);active();
      await checkpoint(ledger.attempt(id,target.recordID,target.revision));e=entry(id);
     }
-    await authorize();active();
+    await authorize();active();await requireUnexpired(id);active();
     let result:{recordID:string;photoID:string};
     try{result=await port.upload({recordID:e.recordID!,revision:e.expectedRevision!,key:e.key,bytes});}
     catch(error){

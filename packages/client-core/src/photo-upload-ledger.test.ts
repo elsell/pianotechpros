@@ -70,3 +70,13 @@ test('record-bound ledger rejects attempts aimed at another record',async()=>{
  await assert.rejects(ledger.attempt('a','other',1));await assert.rejects(ledger.attempt('a','piano',9007199254740992));
  assert.equal(ledger.snapshot()[0]?.state,'ready');await ledger.attempt('a','piano',1);
 });
+test('expiry is fixed to reservation time and distinguishes uncertain uploads',async()=>{
+ const f=fixture();const ledger=await f.open();await ledger.reserve('a',1,'stable-upload-key-01');
+ await ledger.ready('a');await ledger.attempt('a','piano',1);
+ f.time(1000+7*24*60*60*1000-1);await assert.rejects(ledger.expire('a'));
+ f.time(1000+7*24*60*60*1000);await ledger.expire('a');
+ assert.equal(ledger.snapshot()[0]?.state,'removing');assert.equal(ledger.snapshot()[0]?.expired,'uncertain');
+ assert.equal((await f.open()).snapshot()[0]?.expired,'uncertain');
+ await ledger.expire('a');assert.equal(ledger.snapshot()[0]?.expired,'uncertain');
+ await ledger.forget('a');assert.deepEqual(ledger.snapshot(),[]);
+});

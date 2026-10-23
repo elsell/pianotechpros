@@ -2,7 +2,12 @@ import type {InventoryRecoveryScope,ProtectedInventoryDraftStorage} from './inve
 export type PhotoUploadPhase='reserved'|'ready'|'attempted'|'conflict'|'rejected'|'acknowledged'|'removing';
 export interface PhotoUploadEntry {
  id:string;size:number;key:string;createdAt:number;state:PhotoUploadPhase;
- recordID?:string;expectedRevision?:number;photoID?:string;
+ recordID?:string;expectedRevision?:number;photoID?:string;expired?:'local'|'uncertain';
+}
+export const photoUploadRetentionMilliseconds=7*24*60*60*1000;
+export function photoUploadExpired(entry:PhotoUploadEntry,now:number){
+ if(!Number.isSafeInteger(now)||now<0||now<entry.createdAt)throw new Error('invalid_photo_upload_clock');
+ return now-entry.createdAt>=photoUploadRetentionMilliseconds;
 }
 const unavailable=()=>new Error('photo_upload_storage_unavailable');
 const invalid=()=>new Error('invalid_photo_upload_transition');
@@ -15,8 +20,10 @@ function validEntries(value:unknown,scope:InventoryRecoveryScope):value is Photo
  if(!Array.isArray(value)||value.length>50)return false;
  const ids=new Set<string>();const keys=new Set<string>();let size=0;
  for(const e of value){
-  if(!object(e)||Object.keys(e).some(k=>!['id','size','key','createdAt','state','recordID','expectedRevision','photoID'].includes(k))||!identity(e.id)||ids.has(e.id)||!retryKey(e.key)||keys.has(e.key)||!safe(e.size)||e.size<1||e.size>20*1024*1024||!safe(e.createdAt)||!phases.has(e.state))return false;
+  if(!object(e)||Object.keys(e).some(k=>!['id','size','key','createdAt','state','recordID','expectedRevision','photoID','expired'].includes(k))||!identity(e.id)||ids.has(e.id)||!retryKey(e.key)||keys.has(e.key)||!safe(e.size)||e.size<1||e.size>20*1024*1024||!safe(e.createdAt)||!phases.has(e.state))return false;
   ids.add(e.id);keys.add(e.key);size+=e.size;
+  if(e.expired!==undefined&&(e.state!=='removing'||!['local','uncertain'].includes(e.expired as string)))return false;
+  if(e.expired==='uncertain'&&(e.recordID===undefined||e.expectedRevision===undefined||e.photoID!==undefined))return false;
   const target=e.recordID!==undefined;
   if(target&&(!identity(e.recordID)||scope.recordID!=='@capture'&&e.recordID!==scope.recordID))return false;
   if(e.expectedRevision!==undefined&&(!target||!safe(e.expectedRevision)||e.expectedRevision<1))return false;
@@ -75,6 +82,10 @@ export async function openPhotoUploadLedger(port:{scope:InventoryRecoveryScope;s
    if(e.key===key)throw invalid();e.key=key;e.state='ready';delete e.expectedRevision;
   });},
   remove(id:string){return transition(id,['reserved','ready','conflict','rejected','acknowledged','removing'],e=>{e.state='removing';});},
+  expire(id:string){return update(draft=>{
+   const e=draft.find(e=>e.id===id);if(!e||!photoUploadExpired(e,port.now()))throw invalid();
+   e.expired??=e.state==='attempted'?'uncertain':'local';e.state='removing';
+  });},
   forget(id:string){return update(draft=>{const index=draft.findIndex(e=>e.id===id);if(index<0||draft[index]!.state!=='removing')throw invalid();draft.splice(index,1);});},
  });
 }

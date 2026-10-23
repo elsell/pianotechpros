@@ -136,6 +136,16 @@ on `f3d10bb` passed hosted acceptance, verifying the exact-name Scalar locator
 correction in the complete browser/API harness. Native jobs are still pending
 completion; verification remains failed. This is not release approval.
 
+Selected-photo retention now expires local media seven days after reservation,
+without extending the deadline on retry/rebase or issuing server mutations.
+Durable expiry markers survive failed cleanup; uncertain upload outcomes remain
+explicit. Authorized open and operations prune expired media, while invalid clocks
+fail closed before deletion. Deadline checks during upload preparation also
+recheck activity immediately before dispatch; review found and verified that
+asynchronous boundary correction. All 176 client-core tests, full checks and
+contract drift checks pass; review has no remaining blockers. Web/native capture
+integration, including coordination with unsaved text/revisions, remains next.
+
 Completed run [39878787463](https://github.com/elsell/pianotechpros/actions/runs/39878787463)
 on `115bd0b` passed live acceptance. Both native jobs stopped before compilation:
 Expo Router Doctor rejects an exact direct navigation declaration because its

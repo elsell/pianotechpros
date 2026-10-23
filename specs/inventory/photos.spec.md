@@ -283,6 +283,27 @@ Activity loss or disposal hides snapshots, prevents subsequent dispatch, and
 suppresses late result disclosure. It need not undo a request already sent;
 the durable attempted entry handles its uncertain outcome. Error messages are
 fixed machine codes, without server/platform details. Lease, authorization and
-session identity remain injected platform responsibilities. Retention cleanup
-is still required before client UI integration; these dispatch primitives do not
-claim a completed expiry workflow.
+session identity remain injected platform responsibilities. The selected-media retention policy below applies to recovery and dispatch;
+platform capture integration remains a separate delivery requirement.
+
+## Selected-media retention
+
+Local selections expire seven days after their original reservation. Selection
+completion, upload retries and conflict rebase never extend that deadline. On
+authorized open and before each explicit operation, the coordinator checks the
+injected clock and removes expired local media under its exclusive lease.
+Invalid or backward-before-creation clocks fail closed without dispatch/deletion.
+
+Expiry first persists removal state with an expiry marker, then removes every
+media chunk/commitment, then forgets the reservation. A failed cleanup retains the
+marker for retry after restart. Expiring an attempted upload marks its server
+outcome uncertain: this is local retention, never a remote cancellation or delete.
+No upload, target lookup or server mutation is issued to expire local bytes.
+The coordinator exposes per-instance counts of expired selections and uncertain
+outcomes for localized notices; these counts are not a persistent audit history.
+
+An upload also rechecks the deadline immediately before dispatch, including after
+media hashing, target lookup and final authorization. Expiry during a request
+already sent cannot undo that request; normal acknowledgement/recovery applies.
+Permission rejection prevents recovery disclosure and further network mutation;
+sign-out retains its separate full-vault cleanup behavior.

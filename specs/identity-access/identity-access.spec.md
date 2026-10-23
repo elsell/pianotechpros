@@ -70,6 +70,16 @@ credential afterward. Browser sessions use session-scoped storage rather than
 persistent local storage; native sessions use platform secure storage. Clients
 clear rejected or expired sessions, call `/v1/me` after exchange, and surface
 failures without rendering a stale authenticated state.
+Native authentication callbacks are transport events, not product routes. The
+native router rewrites the exact `pianotechpros://callback` (or normalized
+`/callback`) target to the root screen for both warm and cold entry, dropping
+its query and fragment from navigation. It never renders authorization codes,
+provider errors or state, follows callback-supplied destinations, exchanges a
+code, or establishes a session. The existing AuthSession listener retains sole
+ownership of state/PKCE validation and exchange; an unsolicited or cold callback
+without a pending request grants no access. Other product deep links retain
+their routing behavior. Android acceptance must exercise the browser round trip,
+the resulting authenticated profile, and unsolicited callback rejection.
 Native credential restoration and refresh use the shared client session state
 machine. An application credential is removed only when it is expired, explicitly
 rejected with 401, revoked, or cannot be read as a valid local session record.

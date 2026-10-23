@@ -27,11 +27,11 @@ export function createNativePhotoPicker(port:NativePickerPort) {
  const storageKey=JSON.stringify(['native-photo-picker',1,scope.userID]);
  const active=()=>{if(!port.active())throw new PickerError('native_picker_inactive');};
  function now(){const value=port.now();if(!Number.isSafeInteger(value)||value<0||value>Number.MAX_SAFE_INTEGER-ttl)throw failed();return value;}
- function parse(text:string):Intent {
+ function parse(text:string,matchTarget=true):Intent {
   if(text.length>8192)throw failed();const v:unknown=JSON.parse(text);
   if(!object(v)||Object.keys(v).length!==7||v.version!==1||!validScope(v.scope)||!identity(v.id)||v.id.length<16||!['camera','library'].includes(String(v.source))||!Number.isSafeInteger(v.createdAt)||typeof v.createdAt!=='number'||v.createdAt<0||v.createdAt>now()||!['waiting','selected','processing'].includes(String(v.phase))||(v.phase==='waiting'?v.asset!==null:!validAsset(v.asset)))throw failed();
   if(v.scope.userID!==scope.userID)throw failed();
-  if(v.scope.dealerID!==scope.dealerID||v.scope.targetID!==scope.targetID)throw new PickerError('native_picker_other_target');
+  if(matchTarget&&(v.scope.dealerID!==scope.dealerID||v.scope.targetID!==scope.targetID))throw new PickerError('native_picker_other_target');
   return v as unknown as Intent;
  }
  function state(intent:Intent|null):NativePickerState {
@@ -47,7 +47,7 @@ export function createNativePhotoPicker(port:NativePickerPort) {
  }
  async function owns(id:string){active();const value=await port.owner.read();active();return value===id;}
  async function clearOwner(id:string){if(await owns(id)){await port.owner.write(null);active();}}
- async function load(storage:ProtectedInventoryDraftStorage){active();const text=await storage.read(storageKey);active();return text===null?null:parse(text);}
+ async function load(storage:ProtectedInventoryDraftStorage,matchTarget=true){active();const text=await storage.read(storageKey);active();return text===null?null:parse(text,matchTarget);}
  async function save(storage:ProtectedInventoryDraftStorage,intent:Intent){active();await storage.write(storageKey,JSON.stringify(intent));active();}
  async function clear(storage:ProtectedInventoryDraftStorage){active();await storage.remove(storageKey);active();}
  async function clean(result:NativePickerResult|null){
@@ -66,6 +66,12 @@ export function createNativePhotoPicker(port:NativePickerPort) {
   const next:Intent={...intent,phase:'selected',asset:{...result.asset}};
   try{await save(storage,next);await clearOwner(intent.id);}catch(error){await clean(result);throw error;}
   return state(next);
+ }
+ async function discard(storage:ProtectedInventoryDraftStorage,matchTarget:boolean){
+  const intent=await load(storage,matchTarget);if(!intent)return;
+  if(intent.asset){await port.discard({...intent.asset});active();}
+  else if(await owns(intent.id)){const result=await port.pending();await clean(result);active();}
+  await clearOwner(intent.id);await clear(storage);
  }
  return {
   select(source:'camera'|'library'):Promise<NativePickerState>{return run(async storage=>{
@@ -86,11 +92,7 @@ export function createNativePhotoPicker(port:NativePickerPort) {
    await save(storage,{...intent,phase:'processing'});active();if(now()>=intent.createdAt+ttl)throw failed();
    await port.accept({...intent.asset});active();await clear(storage);
   });},
-  discard():Promise<void>{return run(async storage=>{
-   const intent=await load(storage);if(!intent)return;
-   if(intent.asset){await port.discard({...intent.asset});active();}
-   else if(await owns(intent.id)){const result=await port.pending();await clean(result);active();}
-   await clearOwner(intent.id);await clear(storage);
-  });},
+  discard():Promise<void>{return run(storage=>discard(storage,true));},
+  discardPending():Promise<void>{return run(storage=>discard(storage,false));},
  };
 }

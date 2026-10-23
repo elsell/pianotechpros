@@ -190,7 +190,7 @@ export { createInventoryBrowser, inventoryBrowseStatuses, type InventoryBrowseSt
 export {createInventoryWorkspace, type InventoryWorkspaceState} from './inventory-workspace';
 export {inventoryTextFields, inventoryForms, inventoryConditions, inventoryCurrencies, isInventoryForm, inventoryFormFromAttributes, inventoryFormErrors, inventoryAttributesFromForm, type InventoryForm, type InventoryFormField, type InventoryTextField, type InventoryWireAttributes} from './inventory-form';
 export {openInventoryFormWorkspace, type InventoryFormWorkspace, type InventoryFormRecord} from './inventory-form-workspace';
-export {openInventoryCapture, createInventoryCaptureLease} from './inventory-capture';
+export {openInventoryCapture, createInventoryCaptureLease, type InventoryCaptureWorkspace} from './inventory-capture';
 export {createSelectedMediaStore} from './selected-media';
 export {openPhotoUploadLedger,type PhotoUploadEntry,type PhotoUploadPhase} from './photo-upload-ledger';
 export {openPhotoUploadCoordinator,type PhotoUploadCoordinatorPort} from './photo-upload-coordinator';
@@ -198,3 +198,6 @@ export {createInventoryPhotoWorkspace,type InventoryPhotoWorkspacePort,type Inve
 export {handoffCapturePhoto,discardCapturePhoto} from './capture-photo-handoff';
 export {prepareNativePhoto,type NativePhotoPreparationPort} from './native-photo-preparation';
 export {createNativePhotoPicker,type NativePickerPort,type NativePickerScope,type NativePickerAsset,type NativePickerResult,type NativePickerState} from './native-photo-picker';
+
+export {photoPreviewURI} from './photo-preview';
+export {createNativePickerSession} from './native-picker-session';

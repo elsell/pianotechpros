@@ -283,5 +283,7 @@
   "inventory.photos.pickerOtherTarget": "Otro borrador tiene una selección de foto sin terminar. Vuelve a ese borrador para completarla.",
   "inventory.photos.pickerDiscard": "Descartar selección sin terminar",
   "inventory.photos.pickerResume": "Comprobar selección interrumpida",
-  "inventory.photos.nativeHint": "Toma una foto o elige una de tu biblioteca. Será privada hasta que publiques."
+  "inventory.photos.nativeHint": "Toma una foto o elige una de tu biblioteca. Será privada hasta que publiques.",
+  "inventory.photos.pickerAdd": "Añadir la foto seleccionada",
+  "inventory.photos.pickerDiscardHint": "Eliminar la selección local pendiente del selector. Se conservan las fotos ya añadidas a un borrador o pendientes de carga."
 }

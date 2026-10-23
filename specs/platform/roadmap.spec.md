@@ -2,14 +2,35 @@
 
 ## Current milestone: feature-complete product
 
+The native editor now connects camera/library selection to protected capture and
+photo uploads. Its photo-first panel includes explicit interrupted-selection
+recovery, private in-memory previews, six-photo pages, description editing,
+cover/order commands, confirmed removal and pending-upload retry/discard controls.
+A selected result requires an explicit Add action; recovery never auto-uploads.
+Account-local cursor discard handles a capture that became a record without
+removing staged/uploaded bytes. Transport remains behind generated clients.
+
+Review caught an offline initialization trap: a failed restore was mistaken for a
+pending selection and locked Back/Save. The shared picker-session controller now
+releases temporary ownership on failed inspection, exposes retry and holds only a
+proven pending intent. It waits for in-flight work before disposal. Behavioral
+coverage includes cancellation creating no record and explicit selection creating
+one record/upload through the actual capture, picker and photo-workspace ports.
+All 248 client-core tests, `make check check-contracts`, i18n/transport checks and
+both platform JavaScript exports pass. Required review found no remaining blockers
+in this delta. Exports are not native builds or device acceptance. Zoom/pan,
+sign-out/process-death raw-cache reconciliation, actual Android interruption,
+camera/HEIC, accessibility and physical-device UX remain required. Security
+findings and the rest of product parity remain release blockers.
+
 New captures now expose a durably protected picker identity without making an
 untouched draft dirty or creating an empty record. A picker hold pauses scheduled
 creation and resumes eligible text autosave on release; accepted photo creation
 remains explicit. Qualified target identities accept a full underlying identifier,
 while account/dealer limits and exact scope fields remain enforced. Controlled
 behavior tests cover restart, failed storage, activity loss, duplicate acquisition,
-scheduled creation and release. Native presentation must still wire these holds
-into picker lifetime and navigation; this is not a completed camera workflow.
+scheduled creation and release. Native presentation now wires these holds into picker lifetime and navigation;
+this foundation alone is not evidence of a completed camera workflow.
 Verification: all 237 client-core tests and `make check check-contracts` pass;
 required read-only review found no concrete blockers in this change.
 
@@ -21,8 +42,7 @@ launch nonce now binds Android's global result across restarts and superseding
 launches. Camera denial remains distinct from cancellation. The native adapters
 request camera permission at use and use the system library picker. Shared
 English/Spanish permission copy is verified in actual generated iOS strings and
-Android manifest output; microphone access remains excluded. The picker editor UI,
-sign-out/process-death cache reconciliation,
+Android manifest output; microphone access remains excluded. Sign-out/process-death cache reconciliation,
 photo inspection gestures and real device acceptance are still required.
 
 Picker verification: 230 client-core tests, mobile/configuration tests, full
@@ -36,17 +56,16 @@ Native photo preparation now has a framework-free admission/lifetime boundary an
 an Expo adapter: bounded still-image conversion, bounded JPEG reads, scope-loss
 suppression and ownership-restricted temporary-file cleanup. Review found and
 fixed partial files left by failed Android saves using serialized render-cache
-ownership. Controlled-fake tests cover failures and concurrency. Picker screens,
-localized permission configuration, Android activity-result binding, process-death
-cache reconciliation, inspection gestures and actual HEIC/camera/device acceptance
-remain required; this preparation layer does not complete native photo capture.
+ownership. Controlled-fake tests cover failures and concurrency. Picker screens, localized permission configuration and Android activity-result
+binding are connected above. Process-death cache reconciliation, inspection
+gestures and actual HEIC/camera/device acceptance remain required; this preparation layer does not complete native photo capture.
 
 Preparation verification: 215 client-core tests and native session/cache tests
 pass, along with client types, structural/API-boundary checks, contract checks,
 the dependency-age gate, all 19 Expo Doctor checks and native compatibility.
 Clean prebuild and both platform JavaScript exports pass. The temporary local
 Metro watch folder used for memory-backed dependencies is not committed. These
-exports do not exercise the not-yet-connected picker UI. The last committed web
+preparation-stage exports predate the editor integration above. The last committed web
 photo slice (`3c75ada`) passed hosted acceptance, Android Gradle and unsigned iOS
 Xcode in run [39887355061](https://github.com/elsell/pianotechpros/actions/runs/39887355061);
 its verification job failed. The preparation commit `8334d96` passed hosted Android native compilation and
@@ -66,9 +85,8 @@ conflict rebase, interrupted cleanup, expiry and denial preserve recovery pointe
 photo-first creation loss/reopen/retry, lost upload acknowledgement without a
 duplicate, partial text preservation, photo conflict review, preview, descriptions,
 removal and narrow layout. These are browser interaction evidence, not real-backend
-photo acceptance or native camera/device acceptance. Native photo presentation,
-HEIC export, cancellation/progress refinement and full backend product journeys
-remain required. Review findings on creation loss, cleanup retry, imported rebase,
+photo acceptance or native camera/device acceptance. Native photo presentation is now connected above; HEIC/device acceptance,
+cancellation/progress refinement and full backend product journeys remain required. Review findings on creation loss, cleanup retry, imported rebase,
 expiry and denied-create cleanup were fixed and verified.
 
 Text workspaces now serialize saves, recovery, authenticated refresh and media

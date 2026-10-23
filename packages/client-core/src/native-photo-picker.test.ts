@@ -124,3 +124,21 @@ test('scope bounds and exact fields are validated at construction and restoratio
   await assert.rejects(f.open().restore(),{message:'native_picker_unavailable'});assert.equal(f.calls.includes('pending'),false);assert.equal(f.calls.includes('accept'),false);
  }
 });
+
+test('explicit account-local discard clears a migrated target without accepting its photo',async()=>{
+ const f=fixture();await f.open().select('camera');f.port.scope={...f.port.scope,dealerID:'another-dealer',targetID:'record/new'};f.calls.length=0;
+ await assert.rejects(f.open().restore(),{message:'native_picker_other_target'});
+ await f.open().discardPending();assert.equal(f.rows.size,0);assert.equal(f.calls.includes('discard'),true);assert.equal(f.calls.includes('accept'),false);assert.equal(f.calls.includes('pending'),false);
+});
+test('account-local discard rejects foreign accounts and retains failed cleanup for retry',async()=>{
+ const f=fixture();await f.open().select('camera');const key=[...f.rows.keys()][0];const original=f.rows.get(key)!;const foreign=JSON.parse(original);foreign.scope.userID='foreign';f.rows.set(key,JSON.stringify(foreign));
+ await assert.rejects(f.open().discardPending());assert.equal(f.calls.includes('discard'),false);assert.equal(f.rows.size,1);
+ f.rows.set(key,original);f.port.scope.targetID='record/new';f.port.discard=async()=>{throw Error('private path');};
+ await assert.rejects(f.open().discardPending(),{message:'native_picker_unavailable'});assert.equal(f.rows.size,1);
+ f.port.discard=async()=>{};await f.open().discardPending();assert.equal(f.rows.size,0);
+});
+test('account-local discard cannot drain a superseding global launch and checks authorization first',async()=>{
+ const f=fixture();f.port.launch=async()=>{throw Error('interrupted');};await assert.rejects(f.open().select('camera'));await f.port.owner.write('newer-launch-0001');f.port.scope.targetID='record/new';f.calls.length=0;
+ await f.open().discardPending();assert.equal(f.calls.includes('pending'),false);assert.equal(await f.port.owner.read(),'newer-launch-0001');
+ const denied=fixture();await denied.open().select('library');denied.calls.length=0;denied.deny();await assert.rejects(denied.open().discardPending());assert.deepEqual(denied.calls,['authorize']);assert.equal(denied.rows.size,1);
+});

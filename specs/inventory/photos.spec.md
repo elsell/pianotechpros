@@ -459,3 +459,39 @@ uncertain without reading or discarding another launch's result. Clear the slot
 only if it still belongs to the completing/discarded intent. Failure to persist
 this global ownership blocks launch. The process lease serializes these operations;
 the durable nonce preserves the ownership boundary across process restarts.
+
+## Native editor recovery controls
+
+The native editor places camera/library actions and the gallery before text.
+Opening or restoring the picker acquires the capture target hold. Keep the same
+binding until the pending selection is consumed or explicitly discarded; disable
+ordinary Save and navigation during a held selection or photo mutation. Restoring
+never uploads. An explicit add action consumes a selected result through native
+preparation and the protected photo workspace. Camera cancellation releases the
+hold without creating a record. Errors keep recovery and expose localized feedback.
+
+A new capture can become a record before a processing acknowledgement is durable.
+Its old picker cursor must not permanently block the account. After explicit user
+confirmation, allow clearing an unfinished picker cursor belonging to the same
+account even if its target/dealer differs. This only cleans the adapter-owned local
+source and cursor; never read/upload its content, disclose its scope, mutate a
+remote record, or remove protected upload bytes. Require current authorization
+before protected storage, validate the entire stored scope, and retain the cursor
+on cleanup failure. Never clear another account's cursor or another launch's
+global pending result. Target-mismatched restore/consume remain forbidden.
+
+Native private previews use authenticated generated-client byte requests and
+bounded in-memory JPEG data URIs; never embed tokens or remote asset URLs in image
+sources and never persist preview data. Release component references on unmount,
+page change and scope loss. Render at most six gallery previews per page. The
+preview sheet exposes description editing, cover/order commands and confirmed
+removal through the shared workspace. Gesture/device acceptance remains a separate
+gate; rendering a preview does not prove inspection zoom/pan acceptance.
+
+Failure to inspect picker recovery is not evidence of an unfinished selection.
+If initial authorization/storage/restore fails, release the temporary capture hold,
+keep navigation available and show an explicit recovery retry. Only a positively
+restored or selected pending intent holds the editor. Serialize picker-session
+commands and retain ownership through an in-flight operation on disposal; do not
+release a hold while native preparation can still be running. Failed consume
+rechecks the cursor rather than silently repeating acceptance.

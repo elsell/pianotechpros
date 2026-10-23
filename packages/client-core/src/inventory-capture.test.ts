@@ -153,3 +153,26 @@ test('releasing a picker target resumes eligible text autosave',async()=>{
  const binding=await capture.pickerTarget();assert.ok(binding);await f.tick();assert.equal(f.counts().creates,0);
  binding.release();await f.tick();assert.equal(f.counts().creates,1);assert.equal(f.record()?.attributes.title,'Resume after camera');capture.dispose();
 });
+
+test('native selection cancellation stays lazy; accepted photo creates and uploads exactly once',async()=>{
+ const {createHash}=await import('node:crypto');
+ const {createNativePhotoPicker}=await import('./native-photo-picker');
+ const {createNativePickerSession}=await import('./native-picker-session');
+ const {createInventoryPhotoWorkspace}=await import('./inventory-photo-workspace');
+ const {handoffCapturePhoto,discardCapturePhoto}=await import('./capture-photo-handoff');
+ const {createInventoryCaptureLease}=await import('./inventory-capture');
+ const f=fixture();const lease=createInventoryCaptureLease();const sha256=async(bytes:Uint8Array)=>createHash('sha256').update(bytes).digest('hex');
+ const handoff=(recordID:string,selection:Parameters<typeof handoffCapturePhoto>[0]['selection'])=>({userID:'user',dealerID:'shop',recordID,selection,active:()=>true,authorize:async()=>{},lease:()=>lease('user',recordID),storage:f.port.storage,sha256,now:f.port.now});
+ const capture=await openInventoryCapture({...f.port,media:{sha256,handoff:(id,selection)=>handoffCapturePhoto(handoff(id,selection)),discard:(id,selection)=>discardCapturePhoto(handoff(id,selection))}});assert.ok(capture);
+ let uploads=0;const items:{id:string;altText:string}[]=[];
+ const list=async()=>({record:f.record()!,photos:[...items]});
+ const photos=createInventoryPhotoWorkspace({userID:'user',dealerID:'shop',active:()=>true,recordID:()=>capture.recordID(),ensureRecord:()=>capture.ensureRecord(),capture:{stage:bytes=>capture.stagePhoto(bytes),pending:()=>capture.pendingPhoto(),discard:()=>capture.discardPhoto()},withMediaMutation:work=>capture.withMediaMutation(work),now:f.port.now,key:f.port.key,lease:id=>lease('user',id),storage:f.port.storage,sha256,classify:f.port.classify,
+  list,upload:async(_id,bytes,_key,revision)=>{assert.deepEqual([...bytes],[255,216,255,217]);assert.equal(revision,f.record()!.revision);uploads++;items.push({id:'photo-one',altText:''});await f.port.edit('piano',f.record()!.attributes,revision);return {...await list(),photoID:'photo-one'};},reorder:async()=>{throw Error('unused');},describe:async()=>{throw Error('unused');},remove:async()=>{throw Error('unused');},
+ });
+ let cancel=true;let owner:string|null=null;
+ const session=createNativePickerSession({active:()=>true,bind:async()=>{const binding=await capture.pickerTarget();assert.ok(binding);return {release:binding.release,picker:createNativePhotoPicker({scope:{userID:'user',dealerID:'shop',targetID:binding.id},active:()=>true,now:f.port.now,key:f.port.key,authorize:async()=>{},lease:async()=>()=>{},storage:f.port.storage,owner:{read:async()=>owner,write:async value=>{owner=value;}},pending:async()=>null,launch:async()=>cancel?{kind:'cancelled'}:{kind:'selected',asset:{uri:'file:///cache/source.jpg',width:2,height:2}},discard:async()=>{},accept:async()=>photos.add(new Uint8Array([255,216,255,217]))})};}});
+ await session.restore();await session.select('camera');assert.equal(f.counts().creates,0);assert.equal(capture.snapshot().dirty,false);assert.equal(session.snapshot().held,false);
+ cancel=false;await session.select('library');assert.equal(session.snapshot().held,true);assert.equal(f.counts().creates,0);assert.equal(uploads,0);
+ await session.consume();assert.equal(f.counts().creates,1);assert.equal(uploads,1);assert.equal(session.snapshot().held,false);assert.equal(photos.snapshot().entries.length,0);assert.equal(photos.snapshot().photos[0]?.id,'photo-one');
+ await session.restore();assert.equal(uploads,1);assert.equal(capture.snapshot().dirty,false);await session.dispose();await photos.dispose();capture.dispose();
+});

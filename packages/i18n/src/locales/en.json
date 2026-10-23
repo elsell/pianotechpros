@@ -283,5 +283,7 @@
   "inventory.photos.pickerOtherTarget": "Another draft has an unfinished photo selection. Return to that draft to finish it.",
   "inventory.photos.pickerDiscard": "Discard unfinished selection",
   "inventory.photos.pickerResume": "Check interrupted selection",
-  "inventory.photos.nativeHint": "Take a photo or choose one from your library. It stays private until you publish."
+  "inventory.photos.nativeHint": "Take a photo or choose one from your library. It stays private until you publish.",
+  "inventory.photos.pickerAdd": "Add selected photo",
+  "inventory.photos.pickerDiscardHint": "Remove the unfinished local picker selection. Photos already added to a draft or pending upload are kept."
 }

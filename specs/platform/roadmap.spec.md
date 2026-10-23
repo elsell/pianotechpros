@@ -2,6 +2,17 @@
 
 ## Current milestone: feature-complete product
 
+Shared publication review now composes with the editor's serialized mutation
+boundary and durable recovery journal. Review copies command amounts and record
+state; confirmation consumes the review once, reloads the revision, and refuses
+intervening remote or autosaved edits. Lost responses retain an unknown outcome
+without retry or inferred success on refresh. Account/record invalidation,
+disposal and synchronous observer invalidation suppress late state and dispatch.
+The 268 client-core tests include real editor/journal integration and controlled
+command/read failures. Required review found and verified the observer invalidation
+fix. Full repository checks and contract drift checks pass. Web/native publication
+presentation and device acceptance remain unfinished.
+
 The generated publication client now validates scoped records, immutable public
 snapshot fields, revision ordering and command effects. It copies sale amounts
 before asynchronous credential retrieval, forwards cancellation, and exposes

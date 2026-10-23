@@ -65,6 +65,14 @@ the current named exports. Compensating verification includes frozen-lock
 regeneration, legacy and modern Minimatch probes, the generated security-policy
 test, a clean package audit, workspace tests and builds, Expo Doctor, clean
 prebuild, and hosted native compilation.
+Pin shell-quote 1.11.0 throughout the workspace to remediate
+GHSA-pqg4-j6r4-53mv (CVE-2026-102422). The registry release timestamp is
+2026-09-29T02:34:24.391Z, outside the fourteen-day window on 2026-10-23.
+Regression coverage must resolve the actual React Native devtools dependency
+and reject every line terminator after a comment token without executing any
+shell payload. Ordinary quoted arguments and comment behavior must remain
+usable. Keep the complete package audit enabled; resolving this advisory does
+not waive other findings or establish release readiness.
 Migration acceptance applies the prior released migration set first, then runs
 the current migrator and verifies preserved baseline data and new schema objects.
 Every prior-release up and down migration is frozen by a checked-in SHA-256

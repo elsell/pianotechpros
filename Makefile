@@ -29,6 +29,7 @@ check:
 	bash scripts/test-hosted-android-toolchain.sh
 	node --test scripts/check-app-env.test.mjs scripts/validate-mobile-release-env.test.mjs
 	node --test scripts/release-notes.test.mjs scripts/navigation-compatibility.test.mjs
+	node --test scripts/shell-quote-security.test.mjs
 	node scripts/check-app-env.mjs
 	./scripts/plan-release_test.sh
 	./scripts/test-start-postgres-for-acceptance.sh

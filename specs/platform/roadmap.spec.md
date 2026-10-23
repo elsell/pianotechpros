@@ -2,6 +2,14 @@
 
 ## Current milestone: feature-complete product
 
+The shell-quote override now pins 1.11.0, resolving the critical command-injection
+advisory GHSA-pqg4-j6r4-53mv. Regression tests through the actual React Native
+devtools dependency fail on 1.9.0 and pass on the new pin, covering all four line
+terminators after comments without executing shell input. Frozen installation,
+Expo compatibility, repository/contract checks, dependency-age validation and
+required review pass. The refreshed npm audit has zero critical findings and
+69 remaining findings (47 high, 18 moderate, 4 low); release remains blocked.
+
 Android acceptance reached the photo-first new-piano editor, cancelled the system
 photo picker without losing the draft, entered a title with the keyboard, and
 observed autosave. Restart then reproduced the native crash at the same binary

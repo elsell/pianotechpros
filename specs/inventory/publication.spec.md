@@ -88,3 +88,31 @@ revoked local authority cannot mutate or expose publication state.
 
 Migration rollback fails closed while retained publication snapshots exist; it
 must not discard publication history or the assets it protects.
+
+## Authenticated HTTP commands
+
+The existing inventory registration exposes GET `/{id}/publication`, POST
+`/{id}/publish`, POST `/{id}/unpublish` and POST `/{id}/lifecycle` beneath the
+scoped dealer inventory path. Reads require `view`; publish/unpublish require
+`publish_inventory`; lifecycle commands require `manage_inventory`. Both local
+membership and SpiceDB must allow the exact operation, and the principal audit
+limiter runs before persistence. The repository rechecks the corresponding local
+capability under its lock. All routes require opaque application sessions, conceal
+foreign/inaccessible IDs and return no-store/no-referrer responses.
+
+Every command requires a safe positive expectedRevision. Lifecycle accepts only
+status, optional exact salePrice and correction reason; it rejects unknown fields,
+voice/source flags and unrelated attributes. Sale currencies use the existing
+explicit supported-currency policy. Publish accepts no photo readiness or asset
+payload: only stored scoped evidence is authoritative. GET and successful commands
+return the private record plus nullable publication state (visibility, applied
+revision and explicit public snapshot). Hidden snapshots remain available only
+through this authenticated view; this is not a public delivery endpoint.
+
+Readiness failure is HTTP 422 with code `inventory_not_ready` and a `missing`
+array containing only stable form/condition/title/photo identifiers. Clients own
+localized presentation. Other input failures use the existing machine codes;
+stale revisions return 409. Errors never echo private attributes, sale prices,
+correction reasons, credentials or dependency diagnostics. Generated OpenAPI and
+TypeScript contracts must include all routes, nullable values and the readiness
+code. Existing generated registry composition stays generator-owned.

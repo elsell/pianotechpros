@@ -131,13 +131,13 @@ func (r *Repository) GetPublication(ctx context.Context, actor, dealerID, id str
 
 type publicationCommand func(*gorm.DB, domain.Record, *domain.Publication) (domain.Record, *domain.Publication, domain.History, error)
 
-func (r *Repository) changePublication(ctx context.Context, actor, dealerID, id string, event audit.Event, command publicationCommand) (app.PublicationState, error) {
+func (r *Repository) changePublication(ctx context.Context, actor, dealerID, id string, event audit.Event, capability dealer.Capability, command publicationCommand) (app.PublicationState, error) {
 	if dealerID == "" || !inventoryEventValid(event, actor, id, audit.ResourceUpdated) {
 		return app.PublicationState{}, ports.ErrInvalidArgument
 	}
 	var result app.PublicationState
 	err := r.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		owner, err := lockInventoryAuthority(tx, actor, dealerID, dealer.ManageInventory)
+		owner, err := lockInventoryAuthority(tx, actor, dealerID, capability)
 		if err != nil {
 			return err
 		}
@@ -227,7 +227,7 @@ func (r *Repository) changePublication(ctx context.Context, actor, dealerID, id 
 	return result, nil
 }
 func (r *Repository) PublishRecord(ctx context.Context, actor, dealerID, id string, expected int64, event audit.Event) (app.PublicationState, error) {
-	return r.changePublication(ctx, actor, dealerID, id, event, func(tx *gorm.DB, record domain.Record, _ *domain.Publication) (domain.Record, *domain.Publication, domain.History, error) {
+	return r.changePublication(ctx, actor, dealerID, id, event, dealer.PublishInventory, func(tx *gorm.DB, record domain.Record, _ *domain.Publication) (domain.Record, *domain.Publication, domain.History, error) {
 		photos, err := photoCollection(tx, record)
 		if err != nil {
 			return domain.Record{}, nil, domain.History{}, err
@@ -237,7 +237,7 @@ func (r *Repository) PublishRecord(ctx context.Context, actor, dealerID, id stri
 	})
 }
 func (r *Repository) UnpublishRecord(ctx context.Context, actor, dealerID, id string, expected int64, event audit.Event) (app.PublicationState, error) {
-	return r.changePublication(ctx, actor, dealerID, id, event, func(_ *gorm.DB, record domain.Record, prior *domain.Publication) (domain.Record, *domain.Publication, domain.History, error) {
+	return r.changePublication(ctx, actor, dealerID, id, event, dealer.PublishInventory, func(_ *gorm.DB, record domain.Record, prior *domain.Publication) (domain.Record, *domain.Publication, domain.History, error) {
 		if expected != record.Revision {
 			return domain.Record{}, nil, domain.History{}, domain.ErrConflict
 		}
@@ -249,7 +249,7 @@ func (r *Repository) UnpublishRecord(ctx context.Context, actor, dealerID, id st
 	})
 }
 func (r *Repository) TransitionRecord(ctx context.Context, actor, dealerID, id string, expected int64, status domain.Status, price *domain.Money, reason string, event audit.Event) (app.PublicationState, error) {
-	return r.changePublication(ctx, actor, dealerID, id, event, func(_ *gorm.DB, record domain.Record, prior *domain.Publication) (domain.Record, *domain.Publication, domain.History, error) {
+	return r.changePublication(ctx, actor, dealerID, id, event, dealer.ManageInventory, func(_ *gorm.DB, record domain.Record, prior *domain.Publication) (domain.Record, *domain.Publication, domain.History, error) {
 		next, history, err := record.Transition(status, price, reason, expected, actor, domain.Manual, event.OccurredAt)
 		if err != nil {
 			return domain.Record{}, nil, domain.History{}, err

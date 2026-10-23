@@ -2,6 +2,30 @@
 
 ## Current milestone: feature-complete product
 
+Authenticated publication read, publish, unpublish and lifecycle HTTP commands
+now use explicit request-local view/publish/manage permissions, opaque sessions,
+SpiceDB, active membership and the audit limiter. Composition uses the existing
+domain registration without editing generated code. Readiness is a stable
+`inventory_not_ready` error with whitelisted missing-field identifiers; clients
+receive an explicitly allowlisted snapshot and nullable publication state.
+Generated OpenAPI/TypeScript contracts include all four routes.
+
+Command and HTTP journeys cover publication, sale, unpublish and correction;
+adversarial cases cover invalid sessions, foreign scope, viewer/revoked access,
+permission/dependency failure, rate limits, audit failure and missing capabilities.
+Application/contract checks, API race tests and the real PostgreSQL publication
+suite pass; required review found no concrete blockers. The disposable-stack
+script now includes real PNG upload and the
+complete snapshot-preserving sale/republish journey; execution of that new journey
+is pending hosted CI. Web/native publication controls, public delivery and the
+remaining parity work are still required.
+
+Hosted run 40000690616 on Go-migration commit 73c1990 passed disposable-stack
+acceptance and unsigned Android/iOS builds. Its callable Go scan is clean; the
+aggregate verification gate fails on 70 npm findings (1 critical, 47 high,
+18 moderate, 4 low). This supplies the previously missing Go image build/runtime
+evidence without clearing npm or the seven recorded image-catalog findings.
+
 The publication repository now persists explicit publish/unpublish and lifecycle
 commands atomically with record revisions, private history and audit. Immutable
 snapshots retain relational media references, while a separate pointer applies
@@ -17,20 +41,17 @@ accounts, failed read audits, snapshot-write rollback, private edits/photo remov
 republishing and runtime/database-owner permission attacks. Required review found
 no concrete blockers. Application and contract checks pass; a production-source
 probe confirms the direct-SQL gate still rejects non-exempt files. Empty-schema
-rollback/reapply passes, while retained-data rollback fails closed. No service
-authorization wiring or HTTP route is enabled
-yet: request policy, API contracts, public showroom delivery and web/native
-publication/sale workflows are the next required integration work.
+rollback/reapply passes, while retained-data rollback fails closed. That persistence
+checkpoint preceded the HTTP integration described above; public
+showroom delivery and web/native publication/sale workflows remain required.
 
 Publication now has an explicit persistence state with defensive copying and
 fail-closed restoration of canonical public fields, ordered photo references,
 visibility and safe revisions. Round-trip tests retain hidden snapshots and
 lifecycle overlays and reject malformed storage. Publication creation and overlay
 commands reject invalid identities/unsafe revisions before emitting durable state.
-This is the prerequisite for the transactional publication repository; database
-writes, authenticated command routes, public delivery and client publication/sale
-workflows remain unfinished. No publication endpoint is exposed by this change. Application/contract checks,
-domain race tests and required review pass.
+This state boundary supports the repository and HTTP integration described above.
+Its application/contract checks, domain race tests and required review pass.
 
 Go security remediation now pins gRPC v1.83.2, OpenTelemetry v1.45.0 and x/text
 v0.41.0 with their resolved transitive requirements (including x/net v0.58.0).
@@ -63,9 +84,8 @@ larger builder variant reported eighteen. Neither the image findings nor npm
 findings are waived. Application/contract checks, race tests, module verification and the dependency-age
 gate pass. All five API executables build as static binaries with CGO disabled.
 The initial race run exhausted task temporary storage; clearing only regenerable
-task cache and reducing parallelism resolved it. Local container-build acceptance
-is pending because root disk capacity is insufficient for the new image; hosted
-CI must supply that evidence. Required review found no concrete blockers in this
+task cache and reducing parallelism resolved it. Local container-build acceptance was unavailable due to root disk capacity;
+hosted run 40000690616 subsequently supplied build/runtime evidence. Required review found no concrete blockers in this
 migration; issue #2 remains release-blocking.
 
 Native photo inspection now opens full-screen with explicit Close/Details

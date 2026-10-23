@@ -43,3 +43,56 @@ func TestPhotoRegistrationPublishesContractAndFailsClosedWithoutCapabilities(t *
 		}
 	}
 }
+
+func TestPublicationRegistrationIsDeclaredAndFailsClosed(t *testing.T) {
+	h, api := httpserver.New(app.App{}, nil, httpserver.Options{DomainRegistrations: generated.Registrations(generated.Dependencies{})})
+	base := "/v1/dealers/{dealerID}/inventory/{id}"
+	for _, suffix := range []string{"/publication", "/publish", "/unpublish", "/lifecycle"} {
+		endpoint := api.OpenAPI().Paths[base+suffix]
+		if endpoint == nil {
+			t.Fatal("publication route absent", suffix)
+		}
+		method, body := "POST", `{"expectedRevision":1}`
+		if suffix == "/publication" {
+			method = "GET"
+			body = ""
+			if endpoint.Get == nil {
+				t.Fatal("missing GET")
+			}
+		} else if endpoint.Post == nil {
+			t.Fatal("missing POST")
+		}
+		if suffix == "/lifecycle" {
+			body = `{"expectedRevision":1,"status":"archived"}`
+		}
+		req := httptest.NewRequest(method, "/v1/dealers/shop/inventory/piano"+suffix, strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		res := httptest.NewRecorder()
+		h.ServeHTTP(res, req)
+		if res.Code != 503 || !strings.Contains(res.Body.String(), "authorization_policy_not_configured") {
+			t.Fatalf("unconfigured publication route: %d %s", res.Code, res.Body.String())
+		}
+	}
+	schemas := api.OpenAPI().Components.Schemas.Map()
+	for _, field := range []struct{ schema, key string }{{"PublicationState", "publication"}, {"PublicListing", "price"}, {"PublicListing", "manufactured"}, {"LifecycleCommand", "salePrice"}} {
+		property := schemas[field.schema].Properties[field.key]
+		nullable := false
+		for _, option := range property.AnyOf {
+			if option.Type == "null" {
+				nullable = true
+			}
+		}
+		if !nullable {
+			t.Fatal("contract lost nullable value", field)
+		}
+	}
+	found := false
+	for _, code := range schemas["APIError"].Properties["code"].Enum {
+		if code == "inventory_not_ready" {
+			found = true
+		}
+	}
+	if !found || schemas["APIError"].Properties["missing"] == nil {
+		t.Fatal("readiness contract missing")
+	}
+}

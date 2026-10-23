@@ -56,3 +56,10 @@ func RestorePublication(state PublicationState) (Publication, error) {
 	}
 	return Publication{snapshot: cloneListing(s), visible: state.Visible, appliedRevision: state.AppliedRevision}, nil
 }
+
+// PublicationRecord combines the private working record and retained publication.
+// It is not a public delivery projection.
+type PublicationRecord struct {
+	Record      Record
+	Publication *Publication
+}

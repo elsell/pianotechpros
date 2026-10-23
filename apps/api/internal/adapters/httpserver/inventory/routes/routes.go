@@ -11,6 +11,7 @@ import (
 )
 
 type Service interface {
+	PublicationService
 	ListRecords(context.Context, string, string, string, domain.Status, bool, string, int) ([]domain.Record, string, error)
 	CreateDraft(context.Context, string, string, string) (domain.Record, error)
 	GetRecord(context.Context, string, string, string) (domain.Record, error)
@@ -65,6 +66,7 @@ func output(record domain.Record, err error) (*ItemOutput, error) {
 	return out, nil
 }
 func Register(api huma.API, service Service) {
+	RegisterPublication(api, service)
 	path := "/v1/dealers/{dealerID}/inventory"
 	operation := func(id, method, path string) huma.Operation {
 		return huma.Operation{OperationID: id, Method: method, Path: path, Metadata: map[string]any{"sensitive-input": true}, Security: []map[string][]string{{"oidc": {}}}, Middlewares: huma.Middlewares{func(ctx huma.Context, next func(huma.Context)) {

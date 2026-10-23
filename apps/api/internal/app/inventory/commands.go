@@ -10,6 +10,7 @@ import (
 )
 
 type CommandDependencies struct {
+	Publications      PublicationRepository
 	Photos            PhotoRepository
 	PhotoProcessor    ports.PhotoProcessor
 	Lists             ListingRepository

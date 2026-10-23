@@ -8,10 +8,7 @@ import (
 
 // PublicationState is private application state. Public delivery must independently
 // check publication and showroom visibility and expose only the public listing.
-type PublicationState struct {
-	Record      domain.Record
-	Publication *domain.Publication
-}
+type PublicationState = domain.PublicationRecord
 
 // PublicationRepository requires request-local session/SpiceDB/rate-limit policy
 // first and rechecks local authority inside each audited transaction.

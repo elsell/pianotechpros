@@ -2,6 +2,8 @@
 """Exercise dealer HTTP journeys against disposable Compose services."""
 import json
 import os
+import struct
+import zlib
 import time
 import urllib.error
 import urllib.parse
@@ -14,11 +16,11 @@ outsider = os.environ["DEALER_ACCEPTANCE_OTHER_SESSION"]
 key = str(uuid.uuid4())
 
 
-def request(method, path, body=None, token=owner, expected=200, idempotency=key):
-    headers = {"Content-Type": "application/json", "Idempotency-Key": idempotency}
+def request(method, path, body=None, token=owner, expected=200, idempotency=key, content_type="application/json"):
+    headers = {"Content-Type": content_type, "Idempotency-Key": idempotency}
     if token:
         headers["Authorization"] = "Bearer " + token
-    req = urllib.request.Request(BASE + path, data=None if body is None else json.dumps(body).encode(), headers=headers, method=method)
+    req = urllib.request.Request(BASE + path, data=None if body is None else body if isinstance(body, bytes) else json.dumps(body).encode(), headers=headers, method=method)
     try:
         response = urllib.request.urlopen(req, timeout=20)
     except urllib.error.HTTPError as error:
@@ -104,6 +106,49 @@ assert request("GET", inventory_path + "?search=Private%20acceptance%20note")["d
 print("Inventory listing, featured pagination, creation ceiling, search, filters and denied access passed")
 
 
+# Publish only storage-derived photo evidence; preserve the public snapshot on sale.
+publication = piano_path + "/publication"
+assert request("GET", publication)["data"]["publication"] is None
+request("GET", publication, token=outsider, expected=404)
+request("POST", piano_path + "/publish", {"expectedRevision": 3}, token="", expected=401)
+request("POST", piano_path + "/publish", {"expectedRevision": 3}, token=outsider, expected=404)
+not_ready = request("POST", piano_path + "/publish", {"expectedRevision": 3}, expected=422)
+assert not_ready["code"] == "inventory_not_ready" and set(not_ready["missing"]) == {"form", "condition", "photo"}
+ready_facts = {**request("GET", piano_path)["data"]["attributes"], "form": "grand", "condition": "used", "price_visible": True}
+ready_record = request("PUT", piano_path, {"expectedRevision": 3, "attributes": ready_facts})["data"]
+
+
+def png_chunk(kind, data):
+    return struct.pack("!I", len(data)) + kind + data + struct.pack("!I", zlib.crc32(kind + data))
+
+
+photo = (b"\x89PNG\r\n\x1a\n" + png_chunk(b"IHDR", struct.pack("!2I5B", 8, 8, 8, 2, 0, 0, 0))
+         + png_chunk(b"IDAT", zlib.compress((b"\x00" + b"\x88\x66\x44" * 8) * 8)) + png_chunk(b"IEND", b""))
+upload = request("POST", piano_path + "/photos?expectedRevision=" + str(ready_record["revision"]), photo,
+                 expected=201, idempotency=str(uuid.uuid4()), content_type="application/octet-stream")["data"]
+published = request("POST", piano_path + "/publish", {"expectedRevision": upload["record"]["revision"]})["data"]
+snapshot = published["publication"]["snapshot"]
+assert published["publication"]["visible"] and len(snapshot["photos"]) == 1
+assert snapshot["title"] == "Acceptance grand" and snapshot["price"]["minor_units"] == 1234500
+for forbidden in ("private_notes", "acquisition_cost", "serial", "salePrice", "location"):
+    assert forbidden not in snapshot
+private_edit = request("PUT", piano_path, {"expectedRevision": published["record"]["revision"],
+                       "attributes": {**ready_facts, "title": "Unpublished replacement", "asking_price": {"minor_units": 2000000, "currency": "USD"}}})["data"]
+sold = request("POST", piano_path + "/lifecycle", {"expectedRevision": private_edit["revision"], "status": "sold",
+               "salePrice": {"minor_units": 1000000, "currency": "USD"}})["data"]
+assert sold["record"]["status"] == "sold" and sold["publication"]["visible"]
+assert sold["publication"]["snapshot"] == {**snapshot, "status": "sold"}
+request("POST", piano_path + "/lifecycle", {"expectedRevision": private_edit["revision"], "status": "archived"}, expected=409)
+hidden = request("POST", piano_path + "/unpublish", {"expectedRevision": sold["record"]["revision"]})["data"]
+corrected = request("POST", piano_path + "/lifecycle", {"expectedRevision": hidden["record"]["revision"],
+                    "status": "available", "reason": "Acceptance sale correction"})["data"]
+assert not corrected["publication"]["visible"]
+republished = request("POST", piano_path + "/publish", {"expectedRevision": corrected["record"]["revision"]})["data"]
+assert republished["publication"]["visible"] and republished["publication"]["snapshot"]["title"] == "Unpublished replacement"
+assert republished["publication"]["snapshot"]["price"]["minor_units"] == 2000000
+print("Inventory photo upload, readiness, publish, snapshot-preserving sale, unpublish, correction and explicit republish acceptance passed")
+
+
 # Real opaque sessions, PostgreSQL and the SpiceDB outbox worker participate in
 # this invitation -> grant -> role edit -> removal -> reinvitation journey.
 other_id = request("GET", "/v1/me", token=outsider)["data"]["id"]
@@ -140,6 +185,11 @@ assert changed["revision"] == 2 and changed["grantPending"]
 request("PUT", staff + "/role", {"role": "viewer", "expectedRevision": 1}, expected=409)
 await_private_access()
 request("PUT", path, {**update, "expectedRevision": 2}, token=outsider, expected=404)
+request("GET", publication, token=outsider)
+for command, body in (("publish", {"expectedRevision": republished["record"]["revision"]}),
+                      ("unpublish", {"expectedRevision": republished["record"]["revision"]}),
+                      ("lifecycle", {"expectedRevision": republished["record"]["revision"], "status": "archived"})):
+    request("POST", piano_path + "/" + command, body, token=outsider, expected=404)
 removed = request("POST", staff + "/revoke", {"expectedRevision": 2})["data"]
 assert removed["revision"] == 3 and not removed["active"]
 request("GET", path, token=outsider, expected=404)

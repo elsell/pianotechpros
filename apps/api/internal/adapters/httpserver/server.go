@@ -92,12 +92,13 @@ type ResourceListOutput struct {
 type NoContentOutput struct{ Status int }
 
 type APIError struct {
-	Type   string              `json:"type,omitempty" format:"uri" default:"about:blank"`
-	Title  string              `json:"title,omitempty"`
-	Status int                 `json:"status,omitempty"`
-	Code   string              `json:"code" doc:"Stable machine-readable error code" enum:"invalid_photo,photo_limit_exceeded,invalid_invitation,bad_request,unauthenticated,invalid_credential,forbidden,not_found,conflict,idempotency_conflict,validation_failed,rate_limited,authorization_pending,authorization_dead_lettered,authorization_policy_not_configured,unavailable,internal_error,request_failed,oidc_discovery_unavailable"`
-	Detail string              `json:"detail,omitempty"`
-	Errors []*huma.ErrorDetail `json:"errors,omitempty"`
+	Missing []string            `json:"missing,omitempty" doc:"Stable publication readiness field identifiers"`
+	Type    string              `json:"type,omitempty" format:"uri" default:"about:blank"`
+	Title   string              `json:"title,omitempty"`
+	Status  int                 `json:"status,omitempty"`
+	Code    string              `json:"code" doc:"Stable machine-readable error code" enum:"inventory_not_ready,invalid_photo,photo_limit_exceeded,invalid_invitation,bad_request,unauthenticated,invalid_credential,forbidden,not_found,conflict,idempotency_conflict,validation_failed,rate_limited,authorization_pending,authorization_dead_lettered,authorization_policy_not_configured,unavailable,internal_error,request_failed,oidc_discovery_unavailable"`
+	Detail  string              `json:"detail,omitempty"`
+	Errors  []*huma.ErrorDetail `json:"errors,omitempty"`
 }
 
 func (e *APIError) Error() string  { return e.Detail }

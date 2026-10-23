@@ -103,6 +103,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/dealers/{dealerID}/inventory/{id}/lifecycle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["transition-inventory-record"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/dealers/{dealerID}/inventory/{id}/photos": {
         parameters: {
             query?: never;
@@ -161,6 +177,54 @@ export interface paths {
         get: operations["read-inventory-photo"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dealers/{dealerID}/inventory/{id}/publication": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get-inventory-publication"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dealers/{dealerID}/inventory/{id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["publish-inventory-record"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dealers/{dealerID}/inventory/{id}/unpublish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["unpublish-inventory-record"];
         delete?: never;
         options?: never;
         head?: never;
@@ -411,9 +475,11 @@ export interface components {
              * @description Stable machine-readable error code
              * @enum {string}
              */
-            code: "invalid_photo" | "photo_limit_exceeded" | "invalid_invitation" | "bad_request" | "unauthenticated" | "invalid_credential" | "forbidden" | "not_found" | "conflict" | "idempotency_conflict" | "validation_failed" | "rate_limited" | "authorization_pending" | "authorization_dead_lettered" | "authorization_policy_not_configured" | "unavailable" | "internal_error" | "request_failed" | "oidc_discovery_unavailable";
+            code: "inventory_not_ready" | "invalid_photo" | "photo_limit_exceeded" | "invalid_invitation" | "bad_request" | "unauthenticated" | "invalid_credential" | "forbidden" | "not_found" | "conflict" | "idempotency_conflict" | "validation_failed" | "rate_limited" | "authorization_pending" | "authorization_dead_lettered" | "authorization_policy_not_configured" | "unavailable" | "internal_error" | "request_failed" | "oidc_discovery_unavailable";
             detail?: string;
             errors?: components["schemas"]["ErrorDetail"][] | null;
+            /** @description Stable publication readiness field identifiers */
+            missing?: string[] | null;
             /** Format: int64 */
             status?: number;
             title?: string;
@@ -691,6 +757,20 @@ export interface components {
             readonly $schema?: string;
             data: components["schemas"]["Item"];
         };
+        LifecycleCommand: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/LifecycleCommand.json
+             */
+            readonly $schema?: string;
+            /** Format: int64 */
+            expectedRevision: number;
+            reason?: string;
+            salePrice?: components["schemas"]["Money"] | null;
+            /** @enum {string} */
+            status: "draft" | "available" | "reserved" | "in_service" | "sold" | "archived";
+        };
         ListOutputBody: {
             /**
              * Format: uri
@@ -781,6 +861,60 @@ export interface components {
             readonly $schema?: string;
             data: components["schemas"]["PhotoState"];
             meta: components["schemas"]["PhotoUploadMeta"];
+        };
+        PublicListing: {
+            condition: string;
+            dealer_id: string;
+            description: string;
+            featured: boolean;
+            finish: string;
+            form: string;
+            id: string;
+            make: string;
+            manufactured: components["schemas"]["ManufacturingDate"] | null;
+            model: string;
+            photos: components["schemas"]["PublicPhoto"][];
+            player_system: boolean;
+            price: components["schemas"]["Money"] | null;
+            /** Format: int64 */
+            publication_revision: number;
+            size: string;
+            status: string;
+            stock_number: string;
+            title: string;
+        };
+        PublicPhoto: {
+            alt_text: string;
+            id: string;
+        };
+        Publication: {
+            /** Format: int64 */
+            applied_revision: number;
+            snapshot: components["schemas"]["PublicListing"];
+            visible: boolean;
+        };
+        PublicationOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/PublicationOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["PublicationState"];
+        };
+        PublicationState: {
+            publication: components["schemas"]["Publication"] | null;
+            record: components["schemas"]["Item"];
+        };
+        RevisionCommand: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/RevisionCommand.json
+             */
+            readonly $schema?: string;
+            /** Format: int64 */
+            expectedRevision: number;
         };
         SessionExchangeInputBody: {
             /**
@@ -1265,6 +1399,107 @@ export interface operations {
             };
         };
     };
+    "transition-inventory-record": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                dealerID: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LifecycleCommand"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicationOutputBody"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
     "list-inventory-photos": {
         parameters: {
             query?: never;
@@ -1481,6 +1716,305 @@ export interface operations {
             };
             /** @description Error */
             default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "get-inventory-publication": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                dealerID: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicationOutputBody"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "publish-inventory-record": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                dealerID: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RevisionCommand"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicationOutputBody"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "unpublish-inventory-record": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                dealerID: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RevisionCommand"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicationOutputBody"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

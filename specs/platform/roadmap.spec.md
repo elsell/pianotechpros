@@ -30,9 +30,19 @@ storage readiness transaction or client capture integration is claimed yet.
 
 Completed run [39878787463](https://github.com/elsell/pianotechpros/actions/runs/39878787463)
 on `115bd0b` passed live acceptance. Both native jobs stopped before compilation:
-Expo Doctor rejects the direct navigation 7.2.6 pin against its expected 7.1 line.
-Resolve the compatible dependency graph and rerun native gates; do not suppress
-the doctor check. Verification still fails at the known Go security findings.
+Expo Router Doctor rejects an exact direct navigation declaration because its
+range-containment check requires Router's entire range to fit inside the app's
+range. Investigation also found stack 7.3.16 violated Router's ^7.14.5 requirement.
+The corrected family pins native 7.1.34, tabs 7.15.5, elements 2.9.10 and stack
+7.14.5. The app declares Router's ^7.1.33 metadata range while an exact workspace
+override and frozen lock retain the reviewed version. A new compatibility gate
+checks original installed dependency/peer ranges, shared module identity and the
+exact override. Doctor passes 19/19, compatibility and dependency age pass, and
+full checks/contracts pass. Both Metro exports and clean native prebuild pass; these are not native builds.
+Read-only review found no remaining blockers in this correction. Current scans
+still report 16 reachable Go findings locally and 71 npm findings (1 critical,
+48 high, 18 moderate, 4 low); security release gates remain unchanged and failing.
+Hosted native compilation and interaction evidence remain outstanding.
 
 Dealer implementation has started: the profile/access contract, typed fields,
 profile validation, generated repository/HTTP boundaries and contracts exist.

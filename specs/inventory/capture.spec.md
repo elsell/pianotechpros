@@ -217,8 +217,8 @@ new-record capture, lifecycle or publication acceptance until those journeys exi
 
 Native navigation uses React Navigation's `usePreventRemove` with a narrowly
 scoped local-durability guard, preserving system back behavior when recovery is
-ready. The existing transitive `@react-navigation/native` 7.2.6 is promoted to an
-exact direct dependency for its public hook; no new version is introduced. Its
+ready. The direct `@react-navigation/native` dependency supplies its public hook; the
+compatible pinned family is specified in `../platform/native-experience.spec.md`. Its
 navigation-only import is approved by the client transport gate. Browser tab close
 uses a before-unload guard while local persistence is incomplete; this cannot
 promise an OS process kill will wait for asynchronous work. Do not present pending

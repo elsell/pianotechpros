@@ -124,3 +124,26 @@ revocation, explicit access rejection or screen teardown. Transient refresh
 failure retains it for recovery. No automatic retry of invitation creation.
 Acceptance still requires the separate join workflow. Device confirmation,
 selection/copy, keyboard, screen-reader and large-text checks remain mandatory.
+
+## Navigation compatibility correction
+
+Expo Router 55 compares declared ranges in its doctor check: its required range
+must be a subset of the app declaration, so any exact direct pin is rejected.
+Declare `^7.1.33` in the mobile manifest solely for that metadata check; an exact
+workspace override and frozen lockfile continue to pin native 7.1.34. The gate
+requires the override to be exact and the installed version to equal it.
+Pin bottom-tabs 7.15.5,
+elements 2.9.10 and native-stack 7.14.5 as one compatible graph. Retain core 7.18.0
+and routers 7.5.5 only while satisfying the installed packages' declared ranges.
+These releases predate the fourteen-day age gate. The direct native dependency
+supplies route/removal hooks; all navigators must resolve the same native module
+instance to preserve context identity. Do not suppress Expo Doctor or add an
+install exclusion for navigation.
+
+The native compatibility gate must inspect original installed manifests, not just
+lockfile peer ranges rewritten by pnpm overrides. Check navigation-family dependency
+and peer ranges, Expo Router requirements, and shared native module resolution.
+A version outside any declared range or a second native context fails the gate.
+Run doctor, compatibility, age, type/tests, clean prebuild and both platform Metro
+exports after the graph correction; hosted compilation and device interactions
+remain separate required evidence.

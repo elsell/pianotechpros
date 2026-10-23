@@ -208,8 +208,20 @@ value could disagree with SQL ordering; a failing database regression now passes
 with strict stored-flag validation. The full dealer PostgreSQL race suite and
 `make check check-contracts` pass; final mapper changes also receive targeted Go
 and structural checks. Required follow-up review found no remaining blocker.
-The disposable database was removed. Opaque cursor application commands, HTTP
-listing and inventory browsing/editor screens remain required integration work.
+The disposable database was removed. Inventory browsing/editor screens remain
+required integration work.
+The listing API now composes fresh policy and transactional page reads, exposing
+search/status/inactive filters with an opaque actor/dealer/filter-bound encrypted
+cursor. Page size can change without altering the creation ceiling or ordering
+tuple. Controlled application and real HTTP tests cover altered/foreign cursors,
+revoked permissions, missing dependencies, denied repository reads, validation
+redaction and terminal array envelopes. Generated OpenAPI/TypeScript contracts
+include listing, and the typed client validates every returned record, dealer
+scope, duplicate IDs, bounds and continuation shape before returning any page.
+Real local HTTP fixture tests pass exact query encoding, credential rotation,
+terminal pages, protocol failures and denied/network outcomes. Required read-only
+review found no blockers. `make check check-contracts` and inventory application
+race tests pass. The full real-service script now includes this listing journey; hosted execution of those new checks remains pending.
 
 Attribute editing persistence now applies the domain revision command under the
 same authority locks, with atomic audit/private history. Real PostgreSQL race

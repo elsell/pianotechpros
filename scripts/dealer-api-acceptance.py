@@ -86,6 +86,23 @@ request("PUT", piano_path, piano_edit, expected=409)
 request("PUT", piano_path, {"expectedRevision": 2, "attributes": {**facts, "asking_price": {"minor_units": 1, "currency": "ZZZ"}}}, expected=400)
 assert request("POST", inventory_path, expected=201)["data"]["revision"] == 2
 print("Inventory draft retry, private read, edit, conflict, currency and cross-user acceptance passed")
+second_piano = request("POST", inventory_path, expected=201, idempotency=str(uuid.uuid4()))["data"]
+request("PUT", piano_path, {"expectedRevision": 2, "attributes": {**facts, "featured": True}})
+request("GET", inventory_path, token="", expected=401)
+request("GET", inventory_path, token=outsider, expected=404)
+first_page = request("GET", inventory_path + "?limit=1")
+assert [item["id"] for item in first_page["data"]] == [piano["id"]]
+continuation = first_page["meta"]["nextCursor"]
+request("POST", inventory_path, expected=201, idempotency=str(uuid.uuid4()))
+last_page = request("GET", inventory_path + "?limit=100&cursor=" + urllib.parse.quote(continuation))
+assert [item["id"] for item in last_page["data"]] == [second_piano["id"]]
+assert not last_page["meta"].get("nextCursor")
+request("GET", inventory_path + "?includeInactive=true&cursor=" + urllib.parse.quote(continuation), expected=400)
+assert request("GET", inventory_path + "?status=sold")["data"] == []
+assert [item["id"] for item in request("GET", inventory_path + "?search=acceptance%20grand")["data"]] == [piano["id"]]
+assert request("GET", inventory_path + "?search=Private%20acceptance%20note")["data"] == []
+print("Inventory listing, featured pagination, creation ceiling, search, filters and denied access passed")
+
 
 # Real opaque sessions, PostgreSQL and the SpiceDB outbox worker participate in
 # this invitation -> grant -> role edit -> removal -> reinvitation journey.

@@ -78,7 +78,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["list-inventory-records"];
         put?: never;
         post: operations["create-inventory-draft"];
         delete?: never;
@@ -536,6 +536,9 @@ export interface components {
             /** @description The value at the given location */
             value?: unknown;
         };
+        InventoryListMeta: {
+            nextCursor?: string;
+        };
         InvitationCreateInputBody: {
             /**
              * Format: uri
@@ -623,6 +626,16 @@ export interface components {
              */
             readonly $schema?: string;
             data: components["schemas"]["Item"];
+        };
+        ListOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/ListOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["Item"][];
+            meta: components["schemas"]["InventoryListMeta"];
         };
         ManufacturingDate: {
             /** Format: int64 */
@@ -977,6 +990,45 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DealerItemOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "list-inventory-records": {
+        parameters: {
+            query?: {
+                search?: string;
+                status?: "draft" | "available" | "reserved" | "in_service" | "sold" | "archived";
+                includeInactive?: boolean;
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                dealerID: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListOutputBody"];
                 };
             };
             /** @description Error */

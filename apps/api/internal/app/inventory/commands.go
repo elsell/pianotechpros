@@ -10,6 +10,8 @@ import (
 )
 
 type CommandDependencies struct {
+	Lists             ListingRepository
+	CursorSigningKey  []byte
 	SupportedCurrency func(string) bool
 	Access            AccessDependencies
 	Records           RecordRepository

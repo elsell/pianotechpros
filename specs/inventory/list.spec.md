@@ -27,3 +27,21 @@ records plus a has-more flag. It validates stored attributes using the same mapp
 as individual reads. A malformed row fails the entire page. An empty page still
 records the authorized list audit. No private values or search text enter audits.
 Public showroom browsing is a separate projection and permission boundary.
+
+## API and continuation binding
+
+`GET /v1/dealers/{dealerID}/inventory` accepts `search`, `status`,
+`includeInactive`, `limit` (1–100, default 30) and `cursor`. It returns the shared
+`data` array and `meta.nextCursor` envelope; the terminal cursor is omitted.
+Responses are no-store with no-referrer policy. Validation errors never echo
+search text, cursor contents or credentials.
+
+Application composition requires a listing port and at least 32 bytes of cursor
+key material. Continuations are AES-256-GCM sealed using a context-derived key,
+fresh cryptographic nonces and a versioned inventory-specific context. They bind
+the actor, dealer, trimmed search, status, include-inactive flag, creation ceiling
+and complete ordering tuple. Page size may change between requests. Reject
+malformed, oversized, altered, foreign-scope or changed-filter cursors before
+listing storage is called. Decoding never replaces fresh access checks. The
+application constructs the ceiling from its injected clock; clients cannot supply
+it. No continuation can authorize reads after membership or permission revocation.

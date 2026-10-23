@@ -56,3 +56,29 @@ for(const scenario of ['wrong-dealer','wrong-id','unsafe-revision','unsafe-money
   await assert.rejects(api.get('shop','piano'),(e:unknown)=>e instanceof InventoryClientError&&!JSON.stringify(e).includes('PRIVATE-SENTINEL')&&!e.message.includes('PRIVATE-SENTINEL')&&(!['401','404','429','503'].includes(scenario)||e.status===Number(scenario)));
  });
 }
+
+test('inventory listing sends exact filters and current credentials and normalizes terminal pages',async(t)=>{
+ let token='first';const received:{url:URL;token:string|undefined}[]=[];
+ const server=createServer((req,res)=>{received.push({url:new URL(req.url!,'http://fixture'),token:req.headers.authorization});res.setHeader('Content-Type','application/json');res.end(JSON.stringify({data:received.length===1?[record]:[],meta:received.length===1?{nextCursor:'opaque-next'}:{}}));});
+ server.listen(0,'127.0.0.1');await once(server,'listening');t.after(()=>server.close());const address=server.address();assert.ok(address&&typeof address!=='string');
+ const api=createInventoryApiClient(`http://127.0.0.1:${address.port}`,()=>token);
+ const first=await api.list('shop',{search:'100%_ & Grand',status:'sold',includeInactive:true,limit:1});assert.equal(first.items[0]?.id,'piano');assert.equal(first.nextCursor,'opaque-next');
+ assert.equal(received[0]?.url.pathname,'/v1/dealers/shop/inventory');assert.equal(received[0]?.url.searchParams.get('search'),'100%_ & Grand');assert.equal(received[0]?.url.searchParams.get('status'),'sold');assert.equal(received[0]?.url.searchParams.get('includeInactive'),'true');
+ token='second';const last=await api.list('shop',{cursor:first.nextCursor});assert.deepEqual(last,{items:[],nextCursor:undefined});assert.equal(received[1]?.token,'Bearer second');
+});
+for(const scenario of ['wrong-dealer','duplicate','over-limit','bad-cursor','missing-meta','empty-continuation','repeated-cursor','bad-record','denied','network'] as const){
+ test(`inventory list rejects ${scenario} without returning a partial page`,async(t)=>{
+  const server=createServer((_req,res)=>{
+   if(scenario==='network'){res.destroy();return;}
+   res.setHeader('Content-Type','application/json');if(scenario==='denied'){res.statusCode=404;res.end(JSON.stringify({code:'not_found',detail:'PRIVATE-SENTINEL'}));return;}
+   const entry=structuredClone(record);const body:{data:unknown[];meta?:unknown}={data:[entry],meta:{}};
+   if(scenario==='wrong-dealer')entry.dealer_id='other';if(scenario==='duplicate')body.data=[entry,entry];if(scenario==='over-limit')body.data=[entry,{...entry,id:'second'}];
+   if(scenario==='bad-cursor')body.meta={nextCursor:42};if(scenario==='missing-meta')delete body.meta;
+   if(scenario==='empty-continuation'){body.data=[];body.meta={nextCursor:'next'};}if(scenario==='repeated-cursor')body.meta={nextCursor:'same'};
+   if(scenario==='bad-record')entry.revision=9007199254740992;
+   res.end(JSON.stringify(body));
+  });server.listen(0,'127.0.0.1');await once(server,'listening');t.after(()=>server.close());const address=server.address();assert.ok(address&&typeof address!=='string');
+  const api=createInventoryApiClient(`http://127.0.0.1:${address.port}`,()=> 'session');
+  await assert.rejects(api.list('shop',{limit:scenario==='over-limit'?1:100,cursor:'same'}),(e:unknown)=>e instanceof InventoryClientError&&!e.message.includes('PRIVATE-SENTINEL')&&e.code===(scenario==='denied'?'not_found':scenario==='network'?'network':'protocol_error'));
+ });
+}

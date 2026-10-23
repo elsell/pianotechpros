@@ -1,6 +1,8 @@
 import { createApiClient } from './client';
 import type { TokenProvider } from './transport';
-import type { components } from './schema';
+import type { components, operations } from './schema';
+export type InventoryListOptions = NonNullable<operations['list-inventory-records']['parameters']['query']>;
+export type InventoryPage = {items:InventoryRecord[];nextCursor?:string};
 
 type Schema = components['schemas'];
 export type InventoryRecord = Schema['Item'];
@@ -46,9 +48,26 @@ async function item(request:()=>Promise<Result>,dealerID:string,id?:string):Prom
  if(!validRecord(result.data?.data,dealerID,id))throw new InventoryClientError('protocol_error',result.response.status);
  return result.data!.data;
 }
+type PageResult={response:Response;data?:{data:InventoryRecord[];meta:{nextCursor?:string}};error?:unknown};
+async function page(request:()=>Promise<PageResult>,dealerID:string,options:InventoryListOptions):Promise<InventoryPage>{
+ let result:PageResult;
+ try{result=await request();}catch(error){throw new InventoryClientError(error instanceof SyntaxError?'protocol_error':'network',0);}
+ if(!result.response.ok){const candidate=object(result.error)?result.error.code:undefined;throw new InventoryClientError(typeof candidate==='string'&&knownCodes.has(candidate)?candidate as Schema['APIError']['code']:'protocol_error',result.response.status);}
+ const body=result.data;const limit=options.limit??30;
+ if(!body||!Array.isArray(body.data)||body.data.length>limit||body.data.length>100||!object(body.meta))throw new InventoryClientError('protocol_error',result.response.status);
+ const cursor=body.meta.nextCursor;
+ if(cursor!==undefined&&(typeof cursor!=='string'||cursor.length>4096||cursor&&(!body.data.length||cursor===options.cursor)))throw new InventoryClientError('protocol_error',result.response.status);
+ const ids=new Set<string>();
+ for(const record of body.data){if(!validRecord(record,dealerID)||ids.has(record.id))throw new InventoryClientError('protocol_error',result.response.status);ids.add(record.id);}
+ return {items:body.data,nextCursor:cursor||undefined};
+}
 export function createInventoryApiClient(baseURL:string,tokenProvider:TokenProvider){
  const client=createApiClient(baseURL,tokenProvider);
  return {
+  list:(dealerID:string,options:InventoryListOptions={})=>{
+   const snapshot={...options};
+   return page(()=>client.GET('/v1/dealers/{dealerID}/inventory',{params:{path:{dealerID},query:snapshot}}),dealerID,snapshot);
+  },
   createDraft:(dealerID:string,idempotencyKey:string)=>item(()=>client.POST('/v1/dealers/{dealerID}/inventory',{params:{path:{dealerID},header:{'Idempotency-Key':idempotencyKey}}}),dealerID),
   get:(dealerID:string,id:string)=>item(()=>client.GET('/v1/dealers/{dealerID}/inventory/{id}',{params:{path:{dealerID,id}}}),dealerID,id),
   edit:(dealerID:string,id:string,attributes:InventoryAttributes,expectedRevision:number)=>{

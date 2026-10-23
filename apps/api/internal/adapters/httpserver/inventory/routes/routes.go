@@ -11,6 +11,7 @@ import (
 )
 
 type Service interface {
+	ListRecords(context.Context, string, string, string, domain.Status, bool, string, int) ([]domain.Record, string, error)
 	CreateDraft(context.Context, string, string, string) (domain.Record, error)
 	GetRecord(context.Context, string, string, string) (domain.Record, error)
 	EditRecord(context.Context, string, string, string, int64, domain.Attributes) (domain.Record, error)
@@ -19,6 +20,24 @@ type CreateInput struct {
 	Authorization  string `header:"Authorization"`
 	DealerID       string `path:"dealerID"`
 	IdempotencyKey string `header:"Idempotency-Key" required:"true" minLength:"16" maxLength:"128"`
+}
+type ListInput struct {
+	Authorization   string        `header:"Authorization"`
+	DealerID        string        `path:"dealerID"`
+	Search          string        `query:"search" maxLength:"120"`
+	Status          domain.Status `query:"status" enum:"draft,available,reserved,in_service,sold,archived"`
+	IncludeInactive bool          `query:"includeInactive"`
+	Cursor          string        `query:"cursor" maxLength:"4096"`
+	Limit           int           `query:"limit" default:"30" minimum:"1" maximum:"100"`
+}
+type InventoryListMeta struct {
+	NextCursor string `json:"nextCursor,omitempty"`
+}
+type ListOutput struct {
+	Body struct {
+		Data []dto.Item        `json:"data" nullable:"false"`
+		Meta InventoryListMeta `json:"meta"`
+	}
 }
 type GetInput struct {
 	Authorization string `header:"Authorization"`
@@ -54,6 +73,20 @@ func Register(api huma.API, service Service) {
 			next(ctx)
 		}}}
 	}
+
+	huma.Register(api, operation("list-inventory-records", http.MethodGet, path), func(ctx context.Context, in *ListInput) (*ListOutput, error) {
+		records, next, err := service.ListRecords(ctx, in.Authorization, in.DealerID, in.Search, in.Status, in.IncludeInactive, in.Cursor, in.Limit)
+		if err != nil {
+			return nil, shared.MapError(err, true)
+		}
+		out := &ListOutput{}
+		out.Body.Data = make([]dto.Item, 0, len(records))
+		out.Body.Meta.NextCursor = next
+		for _, record := range records {
+			out.Body.Data = append(out.Body.Data, mapper.Item(record))
+		}
+		return out, nil
+	})
 	create := operation("create-inventory-draft", http.MethodPost, path)
 	create.DefaultStatus = http.StatusCreated
 	huma.Register(api, create, func(ctx context.Context, in *CreateInput) (*ItemOutput, error) {

@@ -27,12 +27,13 @@ type Dependencies struct {
 // Repository combines the generated persistence boundary with scoped membership.
 type Repository interface {
 	RecordRepository
+	ListingRepository
 	MembershipReader
 }
 type Service struct{ *Commands }
 
 func New(d Dependencies) *Service {
-	return &Service{Commands: NewCommands(CommandDependencies{Access: AccessDependencies{Auth: d.Auth, Memberships: d.Repository, Authorizer: d.Authorizer, Audits: d.Audits, Limiter: d.AuditRateLimiter, Clock: d.Clock}, Records: d.Repository, SupportedCurrency: supportedCurrency, NewID: d.NewID, Probe: d.Probe})}
+	return &Service{Commands: NewCommands(CommandDependencies{Access: AccessDependencies{Auth: d.Auth, Memberships: d.Repository, Authorizer: d.Authorizer, Audits: d.Audits, Limiter: d.AuditRateLimiter, Clock: d.Clock}, Records: d.Repository, Lists: d.Repository, CursorSigningKey: append([]byte(nil), d.CursorSigningKey...), SupportedCurrency: supportedCurrency, NewID: d.NewID, Probe: d.Probe})}
 
 }
 

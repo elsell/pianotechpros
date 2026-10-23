@@ -265,3 +265,16 @@ A confirmed empty capture has no saved record; its UI must not report server-sav
 status. Navigation waits for local durability, including pending creation intent,
 but does not wait for a network request whose exact intent is already protected.
 Photo capture remains required separately and must reuse this creation boundary.
+
+## Photo-triggered record creation
+
+A selected photo can request a record through the capture workspace's explicit
+ensureRecord operation without inventing a text change. Opening New alone remains
+lazy. The operation uses the existing durable creation intent and exclusive lease;
+concurrent ensure/save operations share the same creation attempt. It returns a
+record ID only after the record journal handoff is durable and the capture journal
+is removed. Storage, authorization, disposal or uncertain-creation failures return
+no usable ID. Retrying uses the original key, including after restart. Invalid
+partial text remains recoverable and does not prevent obtaining a private record.
+This capability does not itself store a photo: the upload coordinator must first
+protect selected media and preserve its own retry intent.

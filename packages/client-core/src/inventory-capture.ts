@@ -1,6 +1,7 @@
 import {createInventoryRecoveryJournal,type ProtectedInventoryDraftStorage} from './inventory-recovery';
 import {openInventoryFormWorkspace,type InventoryFormWorkspace,type InventoryFormRecord} from './inventory-form-workspace';
 import {inventoryFormFromAttributes,inventoryFormErrors,isInventoryForm,type InventoryForm,type InventoryWireAttributes} from './inventory-form';
+export type InventoryCaptureWorkspace = InventoryFormWorkspace & {ensureRecord():Promise<string|null>};
 type RecordData={id:string;dealer_id:string;revision:number;attributes:InventoryWireAttributes};
 type Intent={version:1;key:string;attempted:boolean;form:InventoryForm;record:InventoryFormRecord|null};
 export async function openInventoryCapture(port:{
@@ -8,7 +9,7 @@ export async function openInventoryCapture(port:{
  authorize():Promise<void>;lease():Promise<()=>void>;storage():Promise<ProtectedInventoryDraftStorage>;
  create(key:string):Promise<RecordData>;get(id:string):Promise<RecordData>;edit(id:string,attributes:InventoryWireAttributes,revision:number):Promise<RecordData>;
  classify(error:unknown):'denied'|'conflict'|'rejected'|'uncertain';schedule(run:()=>void):()=>void;onCreated(id:string):void;
-}):Promise<InventoryFormWorkspace|null>{
+}):Promise<InventoryCaptureWorkspace|null>{
  await port.authorize();if(!port.active())return null;
  const release=await port.lease();let released=false;
  function unlock(){if(!released){released=true;release();}}
@@ -57,29 +58,36 @@ export async function openInventoryCapture(port:{
    await finishMigration();
   }
   async function runSave(){
-   if(disposed||denied||!dirty&&!editor)return;
+   if(disposed||denied||!port.active()||!dirty&&!editor)return;
    unschedule();busy=true;failure=null;restored=false;notify();
    try{
     if(!editor){
-     if(!intent.record){intent={...intent,attempted:true};persist();if(!await flushIntent()||disposed)return;
-      const result=await port.create(intent.key);if(disposed)return;
+     if(!intent.record){intent={...intent,attempted:true};persist();if(!await flushIntent()||disposed||!port.active())return;
+      const result=await port.create(intent.key);if(disposed||!port.active())return;
       if(result.dealer_id!==port.dealerID||!result.id||!Number.isSafeInteger(result.revision)||result.revision<1)throw Error('inventory_capture_protocol');
       intent={...intent,record:{id:result.id,dealer_id:result.dealer_id,revision:result.revision,attributes:inventoryFormFromAttributes(result.attributes,intent.form.decimal)}};
      }
-     persist();if(!await flushIntent()||disposed)return;await attachRecord(true);
+     persist();if(!await flushIntent()||disposed||!port.active())return;await attachRecord(true);
     }else if(!migrated)await finishMigration();
-    if(editor&&migrated&&!disposed)await editor.save();
+    if(editor&&migrated&&!disposed&&port.active())await editor.save();
    }catch(error){
     if(!disposed){if(port.classify(error)==='denied'){denied=true;dirty=false;intent={...intent,form:inventoryFormFromAttributes({stock_number:''},port.decimal),record:null};++writeVersion;try{await (pendingRemoval=journal.discard());recovery='ready';}catch{recovery='failed';}unlock();}
      else failure=new Error('inventory_capture_failed');}
    }finally{busy=false;notify();}
   }
   function save(){if(saving)return saving;saving=runSave().finally(()=>{saving=null;});return saving;}
-  const result:InventoryFormWorkspace=Object.freeze({
+  const result:InventoryCaptureWorkspace=Object.freeze({
    snapshot,
    subscribe(listener){if(!disposed)listeners.add(listener);listener(snapshot());return()=>{listeners.delete(listener);};},
    change(form){if(disposed||denied)return;if(editor){editor.change(form);return;}intent={...intent,form:{...form}};dirty=true;failure=null;persist();},
    save,
+   async ensureRecord(){
+    if(disposed||denied||!port.active())return null;
+    if(!editor&&!dirty){dirty=true;persist();}
+    await save();
+    if(disposed||denied||!port.active()||!editor||!migrated||editor.snapshot().denied)return null;
+    return editor.recordID();
+   },
    async recover(){if(editor){await editor.recover();}else await save();},
    keepEdits(){editor?.keepEdits();},useLatest(){editor?.useLatest();},
    async flush(){if(editor)return migrated&&await editor.flush();return flushIntent();},

@@ -53,3 +53,58 @@ test('permission loss on create clears private capture and removes its journal',
 test('disposal while the creation intent is writing suppresses dispatch and retains ownership until durable',async()=>{
  const f=fixture();const c=await openInventoryCapture(f.port);assert.ok(c);let release!:()=>void;f.holdCapture(()=>new Promise<void>(resolve=>{release=resolve;}));c.change({...c.snapshot().draft!,title:'Interrupted typing'});for(let i=0;i<30&&!release;i++)await Promise.resolve();assert.ok(release);c.dispose();for(let i=0;i<30;i++)await Promise.resolve();assert.equal(f.locked(),true);assert.equal(f.counts().creates,0);f.holdCapture(null);release();for(let i=0;i<30&&f.locked();i++)await Promise.resolve();const next=await openInventoryCapture(f.port);assert.ok(next);assert.equal(next.snapshot().draft?.title,'Interrupted typing');assert.equal(f.counts().creates,0);next.dispose();
 });
+
+test('photo intent ensures one durable record without a synthetic text edit',async()=>{
+ const f=fixture();const c=await openInventoryCapture(f.port);assert.ok(c);
+ assert.equal(f.counts().creates,0);assert.equal(f.data.size,0);
+ const ids=await Promise.all([c.ensureRecord(),c.ensureRecord()]);
+ assert.deepEqual(ids,['piano','piano']);assert.equal(f.counts().creates,1);
+ assert.equal(f.counts().updates,0);assert.equal(c.recordID(),'piano');
+ assert.equal(c.snapshot().draft?.stock_number,'PT-1');assert.equal(c.snapshot().recovery,'ready');
+ assert.equal([...f.data.keys()].some(k=>k.includes('@capture')),false);
+ assert.equal(await c.ensureRecord(),'piano');assert.equal(f.counts().creates,1);c.dispose();
+ assert.equal(await c.ensureRecord(),null);
+});
+test('photo-triggered create protects its key before dispatch and withholds failed handoffs',async()=>{
+ const f=fixture();const c=await openInventoryCapture(f.port);assert.ok(c);
+ f.disk(true);assert.equal(await c.ensureRecord(),null);assert.equal(f.counts().creates,0);
+ f.disk(false);f.recordDisk(true);assert.equal(await c.ensureRecord(),null);assert.equal(f.counts().creates,1);
+ f.recordDisk(false);assert.equal(await c.ensureRecord(),'piano');assert.equal(f.counts().creates,1);c.dispose();
+});
+test('uncertain photo-triggered creation resumes the same intent after restart',async()=>{
+ const f=fixture();f.lose(true);const c=await openInventoryCapture(f.port);assert.ok(c);
+ assert.equal(await c.ensureRecord(),null);assert.equal(c.snapshot().uncertain,true);c.dispose();
+ for(let i=0;i<40&&f.locked();i++)await Promise.resolve();
+ const next=await openInventoryCapture(f.port);assert.ok(next);await f.tick();assert.equal(f.counts().creates,1);
+ f.lose(false);assert.equal(await next.ensureRecord(),'piano');assert.equal(new Set(f.keys).size,1);next.dispose();
+});
+test('photo-triggered creation preserves invalid partial text and fails closed on denial',async()=>{
+ const f=fixture();const c=await openInventoryCapture(f.port);assert.ok(c);
+ c.change({...c.snapshot().draft!,asking_amount:'12,'});
+ assert.equal(await c.ensureRecord(),'piano');assert.equal(c.snapshot().draft?.asking_amount,'12,');assert.equal(f.counts().updates,0);c.dispose();
+ const denied=fixture();const other=await openInventoryCapture(denied.port);assert.ok(other);denied.deny();
+ assert.equal(await other.ensureRecord(),null);assert.equal(other.snapshot().denied,true);assert.equal(denied.data.size,0);other.dispose();
+});
+test('ensureRecord waits for durable handoff and disposal suppresses its result',async()=>{
+ const f=fixture();let release!:()=>void;f.holdRemoval(()=>new Promise<void>(resolve=>{release=resolve;}));
+ const c=await openInventoryCapture(f.port);assert.ok(c);let settled=false;
+ const ensuring=c.ensureRecord().then(id=>{settled=true;return id;});
+ for(let i=0;i<100&&!release;i++)await Promise.resolve();
+ assert.ok(release);assert.equal(settled,false);assert.equal(c.snapshot().recovery,'writing');
+ c.dispose();release();assert.equal(await ensuring,null);
+});
+test('inactive capture cannot ensure a record or expose an existing one',async()=>{
+ const f=fixture();let active=true;f.port.active=()=>active;
+ const c=await openInventoryCapture(f.port);assert.ok(c);active=false;
+ assert.equal(await c.ensureRecord(),null);assert.equal(f.counts().creates,0);
+ active=true;assert.equal(await c.ensureRecord(),'piano');active=false;
+ assert.equal(await c.ensureRecord(),null);c.dispose();
+});
+test('scope loss during durable intent write suppresses creation without discarding recovery',async()=>{
+ const f=fixture();let active=true;f.port.active=()=>active;
+ const c=await openInventoryCapture(f.port);assert.ok(c);let release!:()=>void;
+ const gate=new Promise<void>(resolve=>{release=resolve;});f.holdCapture(()=>gate);
+ const ensuring=c.ensureRecord();for(let i=0;i<30;i++)await Promise.resolve();
+ active=false;f.holdCapture(null);release();
+ assert.equal(await ensuring,null);assert.equal(f.counts().creates,0);assert.equal(f.data.size,1);c.dispose();
+});

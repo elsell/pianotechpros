@@ -79,6 +79,14 @@ review found no blockers. Fetch buffers image downloads before the size check.
 Durable upload orchestration and web/native camera/library presentation remain
 required before photo capture is complete.
 
+Capture now exposes explicit photo-triggered record creation without a text edit.
+It retains lazy New behavior and shares the durable creation key, exclusive lease
+and record-journal handoff with text capture. The 122-test client-core suite covers
+concurrent requests, local failures, uncertain restart, partial text, disposal and
+scope loss during persistence. Review caught and verified a fix for dispatch
+after activity loss. Full checks/contracts and the subsequent focused suite pass.
+Selected-media persistence and upload orchestration remain the next integration.
+
 Completed run [39878787463](https://github.com/elsell/pianotechpros/actions/runs/39878787463)
 on `115bd0b` passed live acceptance. Both native jobs stopped before compilation:
 Expo Router Doctor rejects an exact direct navigation declaration because its

@@ -21,6 +21,19 @@ aliasing. This is not upload delivery: transactional collection persistence,
 authorized media storage/processing, upload transport and web/native capture
 journeys remain the next work.
 
+The image-processing port now has a concrete JPEG/static-PNG adapter with byte,
+dimension and pixel preflight limits, bounded concurrency, orientation correction,
+white transparency compositing and fresh metadata-free JPEG encoding. Real codec
+tests cover malformed inputs, EXIF/PNG metadata, all eight transforms, fixed errors, cancellation and limits. Race tests, 1,097,882 metadata-parser fuzz
+cases, `make check check-contracts` and read-only review pass. No upload route,
+storage readiness transaction or client capture integration is claimed yet.
+
+Completed run [39878787463](https://github.com/elsell/pianotechpros/actions/runs/39878787463)
+on `115bd0b` passed live acceptance. Both native jobs stopped before compilation:
+Expo Doctor rejects the direct navigation 7.2.6 pin against its expected 7.1 line.
+Resolve the compatible dependency graph and rerun native gates; do not suppress
+the doctor check. Verification still fails at the known Go security findings.
+
 Dealer implementation has started: the profile/access contract, typed fields,
 profile validation, generated repository/HTTP boundaries and contracts exist.
 Optional-field, Unicode and malformed-profile tests pass, as do `make check`

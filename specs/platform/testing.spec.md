@@ -344,3 +344,16 @@ https://security.access.redhat.com/data/63405576.txt and https://go.dev/dl/.
 
 The application environment inventory recognizes GOPROXY, GOSUMDB and
 GOTOOLCHAIN as explicit Go-owned settings; unknown unprefixed names still fail.
+
+
+## Publication database enforcement tests
+
+The exact file
+`apps/api/internal/adapters/gormstore/dealer/inventory_publication_test.go`
+has a reviewed structural exception for direct SQL in isolated PostgreSQL tests.
+It attempts forbidden pointer updates, deletion and truncation as runtime and
+migration-owner roles, and installs/removes one record-scoped failure constraint
+to prove rollback after record/audit/history writes. Table names are fixed test
+literals and the generated fixture identity is SQL-quoted. This exception is
+limited to the test file; direct SQL remains prohibited in production Go code.
+The tests never use the legacy or production database.

@@ -2,6 +2,26 @@
 
 ## Current milestone: feature-complete product
 
+The publication repository now persists explicit publish/unpublish and lifecycle
+commands atomically with record revisions, private history and audit. Immutable
+snapshots retain relational media references, while a separate pointer applies
+visibility and availability. Sales and private photo removals preserve the old
+public snapshot; correcting an unpublished sale does not reveal it. Revision
+24 enforces retained snapshot/reference immutability (including owner truncate
+guards), complete media references and audited pointer progression. Rollback
+refuses to discard existing publication snapshots.
+
+An isolated PostgreSQL 18.4 database verifies the complete dealer adapter suite
+under the race detector. Focused tests cover concurrent/stale commands, revoked
+accounts, failed read audits, snapshot-write rollback, private edits/photo removal,
+republishing and runtime/database-owner permission attacks. Required review found
+no concrete blockers. Application and contract checks pass; a production-source
+probe confirms the direct-SQL gate still rejects non-exempt files. Empty-schema
+rollback/reapply passes, while retained-data rollback fails closed. No service
+authorization wiring or HTTP route is enabled
+yet: request policy, API contracts, public showroom delivery and web/native
+publication/sale workflows are the next required integration work.
+
 Publication now has an explicit persistence state with defensive copying and
 fail-closed restoration of canonical public fields, ordered photo references,
 visibility and safe revisions. Round-trip tests retain hidden snapshots and

@@ -57,3 +57,34 @@ identity and applied revision match the scoped current inventory record. State
 restoration is neither authorization nor evidence that media exists; publication
 creation still requires the scoped media repository. This boundary alone exposes
 no publication endpoint.
+
+## Transactional persistence
+
+Publish, unpublish and lifecycle transitions lock dealer authority and the scoped
+record, recheck active membership/account state, and commit the new record
+revision, private history and successful audit in one transaction. Publication
+reads use the same scoped authority and audited read transaction. Application
+policy must separately enforce session authentication, SpiceDB and rate limits
+before calling these ports; this persistence slice alone enables no routes.
+
+Immutable publication snapshots are keyed by record and publication revision.
+Each retained snapshot has immutable relational photo references to the same
+record/dealer's assets, independent of editable draft references. A separate
+current pointer holds the publication revision, applied lifecycle revision,
+visibility and availability overlay. Foreign keys bind snapshot and applied
+revisions to retained history. Runtime credentials cannot update/delete/truncate
+snapshots or retained photo references, and database triggers protect immutability.
+The current pointer may change only within the audited command transaction.
+
+Publishing obtains ordered ready-photo evidence from storage under the record
+lock. Unpublish preserves the snapshot and references. A sale/correction updates
+only the availability overlay, preserving public content and hidden status.
+Private edits do not touch publication. History for these commands includes the
+private domain event (including sale price/reason), next record and publication
+state; none is sent to public clients. Audit payloads contain no sale price,
+reason, attributes or image data. Failed audit/history/snapshot writes roll back
+all record and publication changes. Foreign identifiers, stale revisions and
+revoked local authority cannot mutate or expose publication state.
+
+Migration rollback fails closed while retained publication snapshots exist; it
+must not discard publication history or the assets it protects.

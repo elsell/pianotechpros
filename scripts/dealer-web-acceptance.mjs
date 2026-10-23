@@ -4,6 +4,7 @@ import { once } from 'node:events';
 import { chromium } from 'playwright';
 
 const webURL = process.env.DEALER_WEB_URL || 'http://127.0.0.1:5179';
+const publications=new Map();let publicationCommands=0;let losePublication=false;let advanceAfterPublication=true;
 let imageBytes=Buffer.alloc(0);let photoUploads=0;let losePhoto=false;const recordPhotos=new Map();const photoIntents=new Map();
 const shops = new Map(['atelier', 'studio'].map((id) => [id, { id, name: id === 'atelier' ? 'Atelier Pianos' : 'Studio Pianos', email: `${id}@example.com`, slug: id, revision: 1, accent_color: '#123456', showroom_published: false }]));
 let refreshMode = 'failure';
@@ -44,6 +45,24 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   const chunks=[];for await(const chunk of req)chunks.push(chunk);const rawBytes=Buffer.concat(chunks);const raw=rawBytes.toString();
   const body=rawBytes.length&&req.headers['content-type']?.includes('application/json')?JSON.parse(rawBytes.toString()):{};
+  const publicationRoute=/^\/v1\/dealers\/created-shop\/inventory\/([^/]+)\/(publication|publish|unpublish|lifecycle)$/.exec(url.pathname);
+  if(publicationRoute){
+    const [,id,action]=publicationRoute;let record=id==='concert'?editorRecord:capturedRecords.get(id);if(!record)return send(404,{code:'not_found'});
+    const data=()=>({record,publication:publications.get(id)??null});
+    if(req.method==='GET')return send(200,{data:data()});
+    if(body.expectedRevision!==record.revision)return send(409,{code:'conflict'});
+    const a=record.attributes;const photos=recordPhotos.get(id)??[];
+    if(action==='publish'){
+      const missing=[];if(!a.form)missing.push('form');if(!a.condition)missing.push('condition');if(!a.title&&!a.make)missing.push('title');if(!photos.length)missing.push('photo');if(missing.length)return send(422,{code:'inventory_not_ready',missing});
+    }
+    publicationCommands++;record={...record,revision:record.revision+1,status:action==='publish'&&record.status==='draft'?'available':action==='lifecycle'?body.status:record.status};
+    let publication=publications.get(id);
+    if(action==='publish')publication={visible:true,applied_revision:record.revision,snapshot:{id,dealer_id:record.dealer_id,publication_revision:record.revision,status:record.status,stock_number:a.stock_number,title:a.title||[a.make,a.model].filter(Boolean).join(' '),featured:!!a.featured,form:a.form,player_system:!!a.player_system,condition:a.condition,make:a.make??'',model:a.model??'',manufactured:a.manufactured??null,size:a.size??'',finish:a.finish??'',description:a.description??'',price:a.price_visible?a.asking_price??null:null,photos:photos.map(p=>({id:p.id,alt_text:p.altText}))}};
+    else if(publication)publication={...publication,applied_revision:record.revision,visible:action==='unpublish'||['draft','in_service','archived'].includes(record.status)?false:publication.visible,snapshot:{...publication.snapshot,status:record.status}};
+    if(id==='concert')editorRecord=record;else capturedRecords.set(id,record);if(publication)publications.set(id,publication);
+    if(losePublication){losePublication=false;return send(503,{code:'unavailable'});}send(200,{data:data()});
+    if(action==='publish'&&advanceAfterPublication){advanceAfterPublication=false;const newer={...record,revision:record.revision+1};if(id==='concert')editorRecord=newer;else capturedRecords.set(id,newer);}return;
+  }
   const photoRoute=/^\/v1\/dealers\/created-shop\/inventory\/([^/]+)\/photos(?:\/(.*))?$/.exec(url.pathname);
   if(photoRoute){
     const [,id,suffix]=photoRoute;const record=id==='concert'?editorRecord:capturedRecords.get(id);
@@ -156,6 +175,7 @@ const server = createServer(async (req, res) => {
 });
 server.listen(8089, '127.0.0.1'); await once(server, 'listening');
 const browser = await chromium.launch({ headless: true });
+let evidencePage;
 try {
   const context = await browser.newContext({ locale: 'es-ES' });
   await context.addInitScript(() => window.sessionStorage.setItem('pianotechpros_application_session', JSON.stringify({ token: 'browser-test-session', expiresAt: new Date(Date.now() + 3600000).toISOString() })));
@@ -163,7 +183,7 @@ try {
     const create=URL.createObjectURL.bind(URL),revoke=URL.revokeObjectURL.bind(URL);window.photoURLs=new Set();
     URL.createObjectURL=value=>{const url=create(value);window.photoURLs.add(url);return url;};URL.revokeObjectURL=url=>{window.photoURLs.delete(url);revoke(url);};
   });
-  const page = await context.newPage();
+  const page = await context.newPage();evidencePage=page;
   page.setDefaultTimeout(15000);
   await page.clock.install();
   const initialResponse=await page.goto(webURL);assert.match(initialResponse.headers()['content-security-policy'],/img-src 'self' blob:/);
@@ -379,6 +399,30 @@ try {
   assert.equal(await page.getByLabel('Precio de venta',{exact:true}).inputValue(),'12,');
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   await page.screenshot({path:'/tmp/piano-photos-narrow.png',fullPage:true});
+  await page.getByRole('heading',{name:'Publicación y disponibilidad',exact:true}).waitFor();
+  assert.equal(await page.getByRole('button',{name:'Revisar publicación',exact:true}).isDisabled(),true);
+  await page.getByLabel('Precio de venta',{exact:true}).fill('1200,50');
+  await page.getByLabel('Tipo de piano',{exact:true}).selectOption('grand');await page.getByLabel('Estado del piano',{exact:true}).selectOption('used');
+  await page.locator('summary').filter({hasText:'Datos internos'}).click();await page.getByLabel('Notas privadas',{exact:true}).fill('PRIVATE-PUBLICATION-REVIEW');
+  await page.getByRole('button',{name:'Guardar ahora',exact:true}).click();await page.getByText('Guardado',{exact:true}).waitFor();
+  const previewRecord=capturedRecords.get('captured-1');capturedRecords.set('captured-1',{...previewRecord,revision:previewRecord.revision+1});recordPhotos.set('captured-1',[...recordPhotos.get('captured-1'),...Array.from({length:6},(_,i)=>({id:`review-photo-${i}`,altText:`Review ${i}`}))]);
+  await page.getByRole('button',{name:'Revisar publicación',exact:true}).click();
+  let review=page.getByRole('dialog',{name:'Revisar antes de confirmar',exact:true});await review.waitFor().catch(async error=>{await page.screenshot({path:'/tmp/piano-publication-failure.png',fullPage:true});console.error(await page.locator('body').innerText());throw error;});
+  assert.equal(publicationCommands,0);assert.equal(await review.evaluate(element=>element.scrollTop),0);assert.equal(await review.getByRole('heading',{name:'Revisar antes de confirmar',exact:true}).evaluate(element=>element===document.activeElement),true);await review.getByRole('img').nth(5).waitFor();assert.equal(await review.getByRole('img').count(),6);await review.getByRole('button',{name:'Fotos siguientes',exact:true}).click();await review.getByRole('img').waitFor();assert.equal(await review.getByRole('img').count(),1);await review.getByRole('button',{name:'Fotos anteriores',exact:true}).click();await review.getByRole('img').nth(5).waitFor();assert.equal(await review.getByText('PRIVATE-PUBLICATION-REVIEW',{exact:true}).count(),0);await review.screenshot({path:'/tmp/piano-publication-review.png'});
+  await review.getByRole('button',{name:'Cancelar',exact:true}).click();assert.equal(publicationCommands,0);
+  await page.getByRole('button',{name:'Revisar publicación',exact:true}).click();await review.waitFor();await page.keyboard.press('Escape');await review.waitFor({state:'hidden'});assert.equal(publicationCommands,0);
+  await page.getByRole('button',{name:'Revisar publicación',exact:true}).click();
+  await review.waitFor();
+  const beforeConflict=capturedRecords.get('captured-1');capturedRecords.set('captured-1',{...beforeConflict,revision:beforeConflict.revision+1});
+  await review.getByRole('button',{name:'Confirmar cambio',exact:true}).click();await page.getByText('El registro cambió después de revisarlo. Revisa la última versión antes de confirmar de nuevo.',{exact:true}).waitFor();assert.equal(publicationCommands,0);
+  await page.getByRole('button',{name:'Revisar publicación',exact:true}).click();await review.getByRole('button',{name:'Confirmar cambio',exact:true}).click();await page.getByText('Cambio confirmado.',{exact:true}).waitFor();assert.equal(publications.get('captured-1').visible,true);
+  const publishedTitle=publications.get('captured-1').snapshot.title;
+  await page.getByLabel('Título visible',{exact:true}).fill('Private later title');await page.locator('summary').filter({hasText:'Nueva disponibilidad'}).click();await page.getByLabel('Nueva disponibilidad',{exact:true}).selectOption('sold');await page.getByLabel('Importe final de la venta',{exact:true}).fill('1100,25');
+  await page.getByRole('button',{name:'Revisar cambio de disponibilidad',exact:true}).click();await review.getByRole('button',{name:'Confirmar cambio',exact:true}).click();await page.getByText('Cambio confirmado.',{exact:true}).waitFor();assert.equal(publications.get('captured-1').snapshot.title,publishedTitle);assert.equal(publications.get('captured-1').snapshot.status,'sold');
+  losePublication=true;await page.getByRole('button',{name:'Revisar retirada',exact:true}).click();await review.getByRole('button',{name:'Confirmar cambio',exact:true}).click();await page.getByText('El resultado es incierto. Actualiza el estado antes de decidir qué hacer. Esta operación no se reintentará automáticamente.',{exact:true}).waitFor();
+  const commandCount=publicationCommands;await page.getByRole('button',{name:'Actualizar estado de publicación',exact:true}).click();await page.getByText('La publicación guardada está oculta',{exact:true}).waitFor();assert.equal(publicationCommands,commandCount);
+  await page.screenshot({path:'/tmp/piano-publication-narrow.png',fullPage:true});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+
   await page.getByRole('button', { name: 'Volver al inventario', exact: true }).click();
   await page.getByLabel('Buscar por número, título, marca o modelo', { exact: true }).fill('');
   await page.getByRole('button', { name: 'Buscar inventario', exact: true }).click();
@@ -507,5 +551,5 @@ try {
   releaseRefresh();
   assert.equal(await page.evaluate(() => window.refreshResult), 'discarded');
   assert.equal(await page.evaluate(() => sessionStorage.getItem('pianotechpros_application_session')), null);
-  console.log('Photo-first lost-create recovery, protected upload retry, private image preview, photo ordering conflict, description and removal confirmation; lazy New capture/idempotent retry/recovery/cross-tab exclusion and inventory editing/autosave/partial-input recovery/lost-response reconciliation/conflict/denial, browsing/filter/search/pagination/retry/denial and dealer web invitation preview/acceptance/pending/replay, staff permissions/conflicts/removal/invitation revocation, creation retry, conflict review, form retention through session outages, Spanish pagination, keyboard selection, responsive layout and sign-out isolation passed');
-} finally { releaseRefresh(); releaseDetail(); await browser.close(); server.close(); }
+  console.log('Publication review/cancellation/Escape/private-field exclusion/restored-draft protection/stale revisions/acknowledgement with concurrent revision/sale snapshot preservation/uncertain unpublish refresh; Photo-first lost-create recovery, protected upload retry, private image preview, photo ordering conflict, description and removal confirmation; lazy New capture/idempotent retry/recovery/cross-tab exclusion and inventory editing/autosave/partial-input recovery/lost-response reconciliation/conflict/denial, browsing/filter/search/pagination/retry/denial and dealer web invitation preview/acceptance/pending/replay, staff permissions/conflicts/removal/invitation revocation, creation retry, conflict review, form retention through session outages, Spanish pagination, keyboard selection, responsive layout and sign-out isolation passed');
+} catch(error){if(evidencePage){await evidencePage.screenshot({path:'/tmp/piano-publication-failure.png',fullPage:true});console.error(await evidencePage.locator('body').innerText());}throw error;} finally { releaseRefresh(); releaseDetail(); await browser.close(); server.close(); }

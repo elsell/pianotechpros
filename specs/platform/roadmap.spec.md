@@ -2,6 +2,27 @@
 
 ## Current milestone: feature-complete product
 
+The web editor now exposes localized publication, sale, availability correction
+and unpublish review. Public review shows saved allowlisted details and ordered
+photos in bounded six-image pages; private sale amounts/reasons have a separate
+confirmation. Restored/invalid/conflicted/uncertain drafts must be saved or resolved
+before publish review. Cancel/Escape never dispatch; initial focus starts at the
+review heading; stale revisions require renewed review. Command acknowledgements
+are independent of later photo reads, and uncertain results refresh without retry.
+The shared translator formats exact integer minor units, including maximum-safe
+amounts and zero-decimal currencies, without floating-point cent loss.
+
+Controlled-service browser journeys pass for publication, cancellation/Escape,
+private-note exclusion, initial focus, 6/1/6 photo pagination, restored-draft
+protection, stale review, successful acknowledgement despite concurrent revision,
+sale preserving prior public details, and lost unpublish response followed by
+explicit refresh. Narrow-layout overflow checks and screenshot inspection pass.
+Full repository and generated-contract checks pass. Required review found and
+verified acknowledgement and recovery-state corrections.
+These are browser/controlled-service results, not real-stack or native acceptance.
+Native publication presentation, showroom/inquiries, voice and remaining parity
+work are still required.
+
 Shared publication review now composes with the editor's serialized mutation
 boundary and durable recovery journal. Review copies command amounts and record
 state; confirmation consumes the review once, reloads the revision, and refuses
@@ -38,7 +59,7 @@ Application/contract checks, API race tests and the real PostgreSQL publication
 suite pass; required review found no concrete blockers. The disposable-stack
 script now includes real PNG upload and the
 complete snapshot-preserving sale/republish journey; execution of that new journey
-is pending hosted CI. Web/native publication controls, public delivery and the
+is pending hosted CI. Native publication controls, public delivery and the
 remaining parity work are still required.
 
 Hosted run 40000690616 on Go-migration commit 73c1990 passed disposable-stack
@@ -64,7 +85,7 @@ no concrete blockers. Application and contract checks pass; a production-source
 probe confirms the direct-SQL gate still rejects non-exempt files. Empty-schema
 rollback/reapply passes, while retained-data rollback fails closed. That persistence
 checkpoint preceded the HTTP integration described above; public
-showroom delivery and web/native publication/sale workflows remain required.
+showroom delivery and native publication/sale workflows remain required.
 
 Publication now has an explicit persistence state with defensive copying and
 fail-closed restoration of canonical public fields, ordered photo references,

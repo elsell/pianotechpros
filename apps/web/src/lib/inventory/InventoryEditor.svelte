@@ -1,5 +1,6 @@
 <script lang="ts">
  import {onMount,tick} from 'svelte';
+ import InventoryPublication from './InventoryPublication.svelte';
  import InventoryPhotos from './InventoryPhotos.svelte';
  import {createInventoryApiClient, InventoryClientError} from '@pianotechpros/api-client';
  import {openInventoryCapture, openInventoryFormWorkspace, handoffCapturePhoto, discardCapturePhoto, inventoryTextFields, inventoryForms, inventoryConditions, inventoryCurrencies, inventoryFormErrors, type InventoryForm, type InventoryFormField, type InventoryFormWorkspace, type SessionCredential} from '@pianotechpros/client-core';
@@ -8,7 +9,7 @@
  import {browserPhotoDigest} from './photo-media';
  import {openBrowserInventoryRecovery} from './recovery-storage';
  export let accountId:string;export let dealerID:string;export let recordID:string;export let credential:SessionCredential;export let apiURL:string;export let i18n:Translator;export let onBack:()=>void;export let onSessionRejected:()=>void;
- let photosBusy=false;let internal=false;let formElement:HTMLFormElement;
+ let publicationBusy=false;let photosBusy=false;let internal=false;let formElement:HTMLFormElement;
  let active=true;let loading=true;let failed=false;let captureBusy=false;let denied=false;let heading:HTMLHeadingElement;let workspace:InventoryFormWorkspace|null=null;let unsubscribe=()=>{};
  let state:ReturnType<InventoryFormWorkspace['snapshot']>|null=null;
  async function focusError(field:InventoryFormField){internal=true;await tick();const element=formElement.elements.namedItem(field);if(element&&'focus' in element)(element as HTMLElement).focus();}
@@ -31,11 +32,11 @@
  }
  function change(key:InventoryFormField,value:string|boolean){if(state?.draft)workspace?.change({...state.draft,[key]:value});}
  function display(form:InventoryForm,key:InventoryFormField){const value=form[key];if(typeof value==='boolean')return i18n.t(value?'inventory.edit.yes':'inventory.edit.no');if(!value)return i18n.t('inventory.edit.unknown');if(key==='form'||key==='condition')return i18n.t(`inventory.${key}.${value}` as MessageKey);return value;}
- async function back(){if(photosBusy)return;if(!workspace||await workspace.flush()||state?.denied)onBack();}
+ async function back(){if(photosBusy||publicationBusy)return;if(!workspace||await workspace.flush()||state?.denied)onBack();}
  onMount(()=>{heading.focus();const unprotect=protectPendingNavigation(()=>!!state&&!state.denied&&state.recovery!=='ready');void load();return()=>{active=false;unprotect();unsubscribe();workspace?.dispose();};});
 </script>
 <section aria-labelledby="inventory-heading">
- <button type="button" disabled={photosBusy} onclick={back}>{i18n.t('inventory.edit.backList')}</button>
+ <button type="button" disabled={photosBusy||publicationBusy} onclick={back}>{i18n.t('inventory.edit.backList')}</button>
  <h2 id="inventory-heading" tabindex="-1" bind:this={heading}>{i18n.t(recordID==='new'&&!state?.baseline?'inventory.edit.new':'inventory.edit.editor')}</h2>
  {#if loading}<p role="status">{i18n.t('common.loading')}</p>{/if}
  {#if failed}<p role="alert">{i18n.t(denied?'inventory.denied':captureBusy?'inventory.edit.captureBusy':'inventory.edit.loadFailed')}</p><button disabled={loading} onclick={load}>{i18n.t('inventory.retry')}</button>{/if}
@@ -73,6 +74,7 @@
    </section>{/if}
    <footer><button type="submit" disabled={state.busy||state.conflict}>{i18n.t('inventory.edit.save')}</button></footer>
   </form>
+  {#if workspace&&state.baseline}{#key workspace.recordID()}<InventoryPublication {workspace} {accountId} {dealerID} recordID={workspace.recordID()} {apiURL} {credential} {i18n} {onSessionRejected} otherBusy={photosBusy} publishReady={!state.restored&&!state.invalid&&!state.conflict&&!state.uncertain} onBusy={value=>publicationBusy=value} />{/key}{/if}
  {/if}
 </section>
 <style>

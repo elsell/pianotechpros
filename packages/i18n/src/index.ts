@@ -23,6 +23,7 @@ export interface Translator {
   readonly locale: SupportedLocale;
   t(key: MessageKey, options?: TOptions): string;
   number(value: number, options?: Intl.NumberFormatOptions): string;
+  money(minorUnits: number, currency: string): string;
   date(value: Date | number, options?: Intl.DateTimeFormatOptions): string;
 }
 
@@ -50,6 +51,14 @@ export function createTranslator(candidates: readonly (string | null | undefined
     locale,
     t: (key, options) => instance.t(key, options),
     number: (value, options) => new Intl.NumberFormat(locale, options).format(value),
+    money: (minorUnits, currency) => {
+      if (!Number.isSafeInteger(minorUnits) || minorUnits < 0 || !/^[A-Z]{3}$/.test(currency)) throw new Error('invalid_money');
+      const formatter = new Intl.NumberFormat(locale, {style: 'currency', currency});
+      const digits = formatter.resolvedOptions().maximumFractionDigits ?? 2;
+      const base = 10n ** BigInt(digits), units = BigInt(minorUnits);
+      const fraction = (units % base).toString().padStart(digits, '0');
+      return formatter.formatToParts(units / base).map(part => part.type === 'fraction' ? fraction : part.value).join('');
+    },
     date: (value, options) => new Intl.DateTimeFormat(locale, options).format(value)
   };
 }

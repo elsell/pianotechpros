@@ -56,3 +56,5 @@ export function inventoryAttributesFromForm(f:InventoryForm):InventoryWireAttrib
  const text=Object.fromEntries(Object.keys(inventoryTextFields).map(k=>[k,f[k as InventoryTextField].trim()])) as Record<InventoryTextField,string>;
  return {...text,form:f.form as InventoryWireAttributes['form'],condition:f.condition as InventoryWireAttributes['condition'],featured:f.featured,player_system:f.player_system,price_visible:f.price_visible,manufactured:f.year.trim()?{year:Number(f.year),month:Number(f.month),day:Number(f.day)}:null,asking_price:money(f.asking_amount,f.asking_currency,f.decimal),acquisition_cost:money(f.cost_amount,f.cost_currency,f.decimal)};
 }
+
+export {money as inventoryMoneyFromInput};

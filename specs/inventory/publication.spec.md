@@ -138,3 +138,39 @@ never trigger automatic command retry or claim success; an explicit refresh read
 current state. Account/record changes and disposal hide private state and suppress
 late responses. Platform presentations remain responsible for accessible native
 confirmation interactions and localized copy.
+
+## Web publication interaction
+
+The editor offers a separate publication section once a private record exists.
+It shows current availability and whether a retained snapshot is visible, hidden,
+or absent. Publish and republish open an accessible modal review of the saved
+public attributes and ordered current photos; internal notes, serial, location,
+acquisition cost and sale price are excluded from that public preview. The modal
+explains that later private edits do not change the snapshot. Current photos and
+record state must agree on revision before a review is offered.
+
+Sale entry uses exact decimal-to-minor-unit parsing, supported currency selection,
+and a required sale amount. Other status changes never carry a sale amount.
+Corrections from sold or archived, and moves to draft, require a bounded reason.
+All lifecycle changes use explicit review and confirmation; the review distinguishes
+private sale information from the public availability overlay. Unpublish explains
+that the existing snapshot is retained but hidden. Cancellation and Escape close
+a review without dispatch. Busy operations protect navigation and prevent a second
+submission. Conflicts require renewed review; uncertain results offer refresh,
+never automatic retry. Readiness errors identify only localized missing fields.
+Localized success is shown only after the command and editor refresh complete.
+
+Monetary review formatting preserves exact minor units through the largest safe
+integer; locale currency presentation must not round through floating-point major
+units. A validated successful mutation response is not reclassified as a rejected
+command because an optional subsequent photo refresh observes a newer revision.
+
+Publish review is unavailable while the editor has restored, invalid, conflicted
+or uncertain private changes. Explain that the draft must first be explicitly
+saved or resolved; do not publish older saved attributes while recovered edits
+are presented as the working draft. Other lifecycle commands may preserve an
+unfinished draft through the existing serialized mutation boundary.
+
+The public photo review shows ordered pages of at most six authorized image
+previews at once. Changing page disposes prior previews; never decode the entire
+50-photo collection simultaneously. Each new review starts at the first page.

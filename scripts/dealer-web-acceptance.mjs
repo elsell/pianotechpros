@@ -12,6 +12,9 @@ const members = new Map([['test-owner', { userID: 'test-owner', role: 'owner', r
 const staffInvitations = new Map();
 let staffConflict = true;
 let inventoryMode = 'normal';
+let editorMode = 'normal';
+let editorWrites = 0;
+let editorRecord = { id: 'concert', dealer_id: 'created-shop', revision: 1, status: 'available', attributes: { stock_number: 'concert', title: 'Concert Grand', featured: true }, created_at: '2026-10-22T12:00:00Z', updated_at: '2026-10-22T12:00:00Z' };
 let denyStaff = false;
 let invitationAccepted = false;
 let accessChecks = 0;
@@ -39,6 +42,17 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   let raw = ''; for await (const chunk of req) raw += chunk;
   const body = raw ? JSON.parse(raw) : {};
+  if (url.pathname === '/v1/dealers/created-shop/inventory/concert') {
+    if (editorMode === 'denied') return send(404, { code: 'not_found' });
+    if (req.method === 'PUT') {
+      editorWrites++;
+      if (body.expectedRevision !== editorRecord.revision) return send(409, { code: 'conflict' });
+      editorRecord = { ...editorRecord, revision: editorRecord.revision + 1, attributes: body.attributes };
+      // Model a gateway losing the upstream acknowledgement after a commit.
+      if (editorMode === 'lose') { editorMode = 'normal'; return send(503, { code: 'unavailable' }); }
+    }
+    return send(200, { data: editorRecord });
+  }
   if (url.pathname === '/v1/dealers/created-shop/inventory') {
     if (inventoryMode !== 'normal') return send(inventoryMode === 'denied' ? 404 : 503, { code: inventoryMode === 'denied' ? 'not_found' : 'unavailable' });
     const records = [
@@ -179,6 +193,73 @@ try {
   inventoryMode = 'normal';
   await page.getByRole('button', { name: 'Intentar de nuevo', exact: true }).click();
   await page.getByText('No se pudo cargar el inventario. Inténtalo de nuevo.', { exact: true }).waitFor({ state: 'detached' });
+  await page.getByRole('button', { name: 'Concert Grand', exact: true }).click();
+  await page.getByLabel('Marca', { exact: true }).waitFor();
+  await page.getByLabel('Marca', { exact: true }).fill('Yamaha');
+  await page.getByLabel('Precio de venta', { exact: true }).fill('12,34');
+  await page.getByLabel('Año', { exact: true }).fill('1920');
+  await page.getByLabel('Mes', { exact: true }).fill('2');
+  await page.getByLabel('Día', { exact: true }).fill('29');
+  await page.getByText('Guardado', { exact: true }).waitFor();
+  assert.equal(editorRecord.attributes.asking_price.minor_units, 1234);
+  assert.deepEqual(editorRecord.attributes.manufactured, { year: 1920, month: 2, day: 29 });
+  await page.getByLabel('Precio de venta', { exact: true }).fill('12,');
+  await page.getByText('Revisa los campos indicados. Lo escrito se conserva en este dispositivo.', { exact: true }).waitFor();
+  const writesBeforeRecovery = editorWrites;
+  await page.getByRole('button', { name: 'Volver al inventario', exact: true }).click();
+  await page.getByRole('button', { name: 'Concert Grand', exact: true }).click();
+  await page.getByText('Los cambios recuperados están listos para revisar. El guardado está en pausa hasta que continúes.', { exact: true }).waitFor();
+  assert.equal(await page.getByLabel('Precio de venta', { exact: true }).inputValue(), '12,');
+  assert.equal(editorWrites, writesBeforeRecovery);
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+  await page.screenshot({ path: '/tmp/piano-editor-narrow.png', fullPage: true });
+  editorMode = 'lose';
+  await page.getByLabel('Precio de venta', { exact: true }).fill('12,50');
+  await page.getByRole('button', { name: 'Guardar ahora', exact: true }).click();
+  await page.getByText('No se pudo confirmar el último guardado. Comprueba su estado antes de continuar.', { exact: true }).waitFor();
+  const afterLost = editorWrites;
+  await page.getByRole('button', { name: 'Consultar versión actual', exact: true }).click();
+  await page.getByText('Guardado', { exact: true }).waitFor();
+  assert.equal(editorWrites, afterLost);
+  assert.equal(editorRecord.attributes.asking_price.minor_units, 1250);
+  editorRecord = { ...editorRecord, revision: editorRecord.revision + 1, attributes: { ...editorRecord.attributes, make: 'Other editor' } };
+  await page.getByLabel('Marca', { exact: true }).fill('My choice');
+  await page.getByText('Este piano cambió en otro lugar. Revisa ambas versiones antes de elegir.', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Consultar versión actual', exact: true }).click();
+  await page.getByText('Other editor', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Conservar mis cambios', exact: true }).click();
+  await page.getByText('Guardado', { exact: true }).waitFor();
+  assert.equal(editorRecord.attributes.make, 'My choice');
+  const beforeStorageFailure = editorWrites;
+  await page.evaluate(() => {
+    const original = IDBObjectStore.prototype.put;
+    window.restoreRecoveryWrites = () => { IDBObjectStore.prototype.put = original; };
+    IDBObjectStore.prototype.put = function (...args) { if (this.name === 'drafts') throw new Error('controlled storage outage'); return original.apply(this, args); };
+  });
+  await page.getByLabel('Modelo', { exact: true }).fill('Protected retry');
+  await page.getByText('No se pudieron proteger los cambios en este dispositivo. Reintenta antes de salir.', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Volver al inventario', exact: true }).click();
+  assert.equal(await page.getByLabel('Modelo', { exact: true }).inputValue(), 'Protected retry');
+  assert.equal(editorWrites, beforeStorageFailure);
+  assert.equal(await page.evaluate(() => { const event = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(event); return event.defaultPrevented; }), true);
+  await page.evaluate(() => { window.restoreRecoveryWrites(); delete window.restoreRecoveryWrites; });
+  await page.getByRole('button', { name: 'Guardar ahora', exact: true }).click();
+  await page.getByText('Guardado', { exact: true }).waitFor();
+  assert.equal(editorRecord.attributes.model, 'Protected retry');
+  await page.getByText('Datos internos', { exact: true }).click();
+  await page.getByLabel('Número de inventario', { exact: true }).fill('');
+  await page.getByText('Datos internos', { exact: true }).click();
+  await page.getByRole('link', { name: 'Número de inventario: Revisa este valor.', exact: true }).click();
+  assert.equal(await page.getByLabel('Número de inventario', { exact: true }).evaluate(element => element === document.activeElement), true);
+  await page.getByLabel('Número de inventario', { exact: true }).fill('concert');
+  await page.getByText('Guardado', { exact: true }).waitFor();
+  editorMode = 'denied';
+  await page.getByLabel('Marca', { exact: true }).fill('Denied change');
+  await page.getByText('Ya no tienes acceso a este inventario.', { exact: true }).waitFor();
+  assert.equal(await page.getByLabel('Marca', { exact: true }).count(), 0);
+  await page.getByRole('button', { name: 'Volver al inventario', exact: true }).click();
+  await page.getByRole('heading', { name: 'Concert Grand', exact: true }).waitFor();
   inventoryMode = 'denied';
   await page.getByRole('button', { name: 'Actualizar inventario', exact: true }).click();
   await page.getByText('Ya no tienes acceso a este inventario.', { exact: true }).waitFor();
@@ -293,5 +374,5 @@ try {
   releaseRefresh();
   assert.equal(await page.evaluate(() => window.refreshResult), 'discarded');
   assert.equal(await page.evaluate(() => sessionStorage.getItem('pianotechpros_application_session')), null);
-  console.log('Inventory browsing/filter/search/pagination/retry/denial and dealer web invitation preview/acceptance/pending/replay, staff permissions/conflicts/removal/invitation revocation, creation retry, conflict review, form retention through session outages, Spanish pagination, keyboard selection, responsive layout and sign-out isolation passed');
+  console.log('Inventory editing/autosave/partial-input recovery/lost-response reconciliation/conflict/denial, browsing/filter/search/pagination/retry/denial and dealer web invitation preview/acceptance/pending/replay, staff permissions/conflicts/removal/invitation revocation, creation retry, conflict review, form retention through session outages, Spanish pagination, keyboard selection, responsive layout and sign-out isolation passed');
 } finally { releaseRefresh(); releaseDetail(); await browser.close(); server.close(); }

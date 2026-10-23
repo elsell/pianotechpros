@@ -238,6 +238,26 @@ exports do not establish native compilation or device interaction acceptance.
 Editing/capture screens and durable recovery composition remain next; browsing
 alone does not satisfy the inventory parity row.
 
+
+Existing-record editing is now mounted on web and native with all ordinary
+attributes, raw form recovery and debounced remote saves after durable local
+persistence. Exact minor-unit conversion accepts locale decimal entry without
+rounding; partial dates preserve precision. Fresh access is required before
+recovery is opened. Uncertain writes retain their exact attempt, conflicts require
+fetched-version review, and denial clears the editor and discards its journal.
+Clean checkpoints defer to fresh server data instead of manufacturing a conflict.
+Browser acceptance against a controlled HTTP fixture passes autosave, incomplete
+price entry through navigation/reopening, committed-but-unacknowledged save
+reconciliation, conflict review, permission loss, injected IndexedDB failure,
+blocked navigation/unload and recovery retry. Error links reveal and focus internal
+fields. The reviewed 390px editor has no horizontal overflow. Core inventory tests,
+full checks/contracts, i18n/transport gates and the dependency-age gate pass.
+Both platform Metro exports pass; native device interaction is still unverified.
+The direct navigation-hook dependency pins the already-present 7.2.6 version.
+Review found a Metro import-suffix issue, fixed before successful exports; follow-up
+review found no blockers. New-record capture, photos, voice, publication/lifecycle
+and the remaining parity rows are still required. The full goal remains active.
+
 Attribute editing persistence now applies the domain revision command under the
 same authority locks, with atomic audit/private history. Real PostgreSQL race
 coverage passes competing CAS writers, stale and cross-user/dealer edits,

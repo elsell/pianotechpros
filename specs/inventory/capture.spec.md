@@ -184,3 +184,49 @@ recovery storage; either failure retains the existing sign-out retry path. Netwo
 outages alone must not erase recovery. Tests cover real authenticated encryption,
 restart, account isolation, failed cleanup, tampering and delayed writes. Native
 build and device interruption evidence remain separate acceptance requirements.
+
+## Mounted existing-record editor
+
+Web and native existing-record editors fetch current authorized data before
+opening scoped recovery. A failed or denied fetch never reveals a locally cached
+record. Raw form text, including incomplete money and date entry, is checkpointed
+so an interruption does not turn partial input into a different value. Money uses
+the selected locale's decimal separator without grouping; currency is explicit,
+JPY has zero fractional digits, and other configured currencies have two. Never
+round excess precision or change currency because the UI locale changed. Persist
+the form's decimal convention with recovery. Partial dates retain separate year,
+month and day text; invalid combinations block remote saving, not local recovery.
+
+Every form change queues a protected checkpoint immediately. UI distinguishes
+local persistence in progress/failure from remote saving/saved state. Remote
+saving is debounced after local persistence, uses the write-ahead barrier, and
+pauses after failures, uncertain outcomes or conflicts. Restore never triggers a
+mutation automatically: offer explicit resume/reconciliation. A newer server
+revision requires a fetched-version comparison and deliberate choice. Ordinary
+navigation awaits the current recovery write; a failed write retains the screen
+with retry feedback. Teardown cancels timers and suppresses late callbacks without
+deleting recoverable drafts. Permission loss clears mounted values and discards
+the scoped recovery journal. Sign-out retains its installation-wide cleanup.
+
+Initial existing-record presentation groups identity, description/asking price,
+and secondary internal details, with all editable attributes represented. Native
+uses keyboard-aware scrolling, standard text fields, switches and explicit choice
+sheets; web uses labelled fields and secondary disclosure. Conflict review shows
+field-level current/local values. This integration does not satisfy photo, voice,
+new-record capture, lifecycle or publication acceptance until those journeys exist.
+
+Native navigation uses React Navigation's `usePreventRemove` with a narrowly
+scoped local-durability guard, preserving system back behavior when recovery is
+ready. The existing transitive `@react-navigation/native` 7.2.6 is promoted to an
+exact direct dependency for its public hook; no new version is introduced. Its
+navigation-only import is approved by the client transport gate. Browser tab close
+uses a before-unload guard while local persistence is incomplete; this cannot
+promise an OS process kill will wait for asynchronous work. Do not present pending
+local writes as protected. Platform interaction checks must exercise these guards.
+
+Presentation references: [Apple text fields](https://developer.apple.com/design/human-interface-guidelines/text-fields)
+and [entering data](https://developer.apple.com/design/human-interface-guidelines/entering-data)
+inform labelled input, appropriate keyboards and selection controls;
+[React Navigation removal protection](https://reactnavigation.org/docs/use-prevent-remove/)
+defines the native navigation guard. These references guide implementation and do
+not replace large-text, screen-reader, keyboard and gesture device acceptance.

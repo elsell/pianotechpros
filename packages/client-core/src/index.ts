@@ -187,3 +187,6 @@ export { createInventoryEditor, isInventoryEditorCheckpoint, type InventoryEdito
 export { createInventoryRecoveryJournal, type InventoryRecoveryScope, type ProtectedInventoryDraftStorage } from './inventory-recovery';
 export { createProtectedRecovery, type RecoveryCrypto } from './protected-recovery';
 export { createInventoryBrowser, inventoryBrowseStatuses, type InventoryBrowseStatus, type InventoryBrowseFilters, type InventoryBrowserState } from './inventory-browser';
+export {createInventoryWorkspace, type InventoryWorkspaceState} from './inventory-workspace';
+export {inventoryTextFields, inventoryForms, inventoryConditions, inventoryCurrencies, isInventoryForm, inventoryFormFromAttributes, inventoryFormErrors, inventoryAttributesFromForm, type InventoryForm, type InventoryFormField, type InventoryTextField, type InventoryWireAttributes} from './inventory-form';
+export {openInventoryFormWorkspace, type InventoryFormWorkspace, type InventoryFormRecord} from './inventory-form-workspace';

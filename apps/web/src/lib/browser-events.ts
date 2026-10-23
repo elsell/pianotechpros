@@ -14,3 +14,10 @@ export function browserEvents(channelName: string) {
   },
  };
 }
+
+/** A tab close cannot wait for async storage; warn only while protection is incomplete. */
+export function protectPendingNavigation(pending:()=>boolean){
+ const beforeUnload=(event:BeforeUnloadEvent)=>{if(pending()){event.preventDefault();event.returnValue='';}};
+ window.addEventListener('beforeunload',beforeUnload);
+ return()=>window.removeEventListener('beforeunload',beforeUnload);
+}

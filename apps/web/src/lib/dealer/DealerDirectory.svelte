@@ -68,7 +68,7 @@
 </script>
 
 <section class="directory" aria-labelledby={inventoryShop ? 'inventory-heading' : 'shops-heading'}>
-  {#if inventoryShop}{#key inventoryShop}<InventoryBrowser dealerID={inventoryShop} {credential} {apiURL} {i18n} {onSessionRejected} onBack={() => { const id = inventoryShop; inventoryShop = null; void directory.select(id); }} />{/key}
+  {#if inventoryShop}{#key inventoryShop}<InventoryBrowser {accountId} dealerID={inventoryShop} {credential} {apiURL} {i18n} {onSessionRejected} onBack={() => { const id = inventoryShop; inventoryShop = null; void directory.select(id); }} />{/key}
   {:else}
   <header>
     <div><h2 id="shops-heading">{i18n.t('dealer.heading')}</h2><p>{i18n.t('dealer.intro')}</p></div>

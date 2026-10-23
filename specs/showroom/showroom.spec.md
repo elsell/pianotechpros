@@ -65,7 +65,40 @@ counts. Price filtering must never reveal hidden prices or compare unlike
 currencies. These HTTP, persistence and client behaviors remain required; domain
 projection tests alone do not establish delivery or product completion.
 
-## Read API contract
+## Public collection semantics
+
+Collection reads are scoped to one currently published showroom and return only
+visible available/reserved/sold publication snapshots. The default availability
+filter includes available and reserved pianos; `all` also includes sold, and each
+of those three statuses can be selected explicitly. Draft, in-service and archived
+records are never public collection entries. Form filtering uses the five known
+piano forms. Search is a trimmed case-insensitive literal substring of published
+stock number, title, make or model, limited to 120 Unicode code points with no
+control characters. Percent, underscore and backslash are literal search text.
+
+Price bounds are inclusive integer minor units from zero through the shared safe
+integer maximum. Bounds require one uppercase three-letter currency; a currency
+filter can also be used alone. Hidden or absent prices never satisfy a currency
+or price filter, and different currencies are never compared. Min must not exceed
+max. Normalize/copy filter values before storage so callers cannot mutate bounds
+while a query is in progress.
+
+Pages contain at most 100 pianos. Ordering is published featured first, then record
+ID ascending. Repository continuation tuples contain the last featured flag and
+ID, and queries fetch at most limit+1 candidates. Each returned candidate is
+validated through the retained-publication mapper while the showroom visibility
+lock is held. The public profile and page share that transaction. No private
+working attributes participate in filtering, ordering or projection. Empty pages
+still verify showroom visibility; errors return no profile or partial records.
+
+Continuation tokens at the application boundary must be integrity protected and
+bound to the exact showroom and normalized filters; they cannot confer visibility.
+Pagination is a live traversal, not snapshot isolation: publish, unpublish and
+featured edits can move records between pages. Refresh starts a new traversal.
+Do not invent a stable total count from page size. Signed continuation transport,
+collection routes and client filtering remain required beyond the repository.
+
+## Individual read API contract
 
 `GET /v1/showrooms/{slug}` returns `data` containing the public dealer profile.
 `GET /v1/showrooms/{slug}/pianos/{id}` returns `data.profile` and `data.piano` from

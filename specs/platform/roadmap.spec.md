@@ -2,6 +2,21 @@
 
 ## Current milestone: feature-complete product
 
+Android device acceptance found and fixed an authentication callback routing bug:
+Expo Router displayed an unmatched route and callback parameters after browser
+sign-in. Native-intent rewriting now sends only the exact callback target to the
+root without interpreting authentication data; AuthSession retains state/PKCE
+ownership. The API 36 emulator passed a real isolated Dex login, authenticated
+shop/inventory navigation, sign-out and unsolicited warm callback rejection.
+Mobile tests, TypeScript, full repository/contract gates and required review pass.
+Cold callback rewriting has unit coverage but standalone device acceptance is
+still pending: the development APK opens its launcher on cold callback entry.
+An intermittent Fabric MountingCoordinator SIGSEGV was observed before sign-in;
+subsequent launches worked, which does not establish a fix. Native UX still needs
+refinement: the inventory screen gives search/status/refresh buttons too much
+visual weight, and long generated stock identifiers dominate draft rows. These
+observations are not native interaction acceptance or feature completion.
+
 Buyer-facing showroom and piano pages now render published content on the server,
 with localized filters, a responsive card grid, price-on-request, a keyboard
 gallery, business notes and encoded contact links. A dedicated anonymous generated
@@ -16,8 +31,8 @@ inquiries remain required before showroom parity is complete.
 The retried Android native job completed successfully. Its development APK was
 downloaded, checksum-verified after transfer and installed on the booted API 36
 emulator. iOS native build and backend acceptance also passed for branch head
-4c3b042; the artifact is labelled with PR merge revision 0d7b6e8. Metro attachment
-and native interaction journeys remain pending. Dependency security findings
+4c3b042; the artifact is labelled with PR merge revision 0d7b6e8. Metro attachment and the initial authentication/inventory journey now pass as
+detailed above; remaining native interaction journeys are pending. Dependency security findings
 still block aggregate verification and release readiness.
 
 Public inventory browsing now has an anonymous collection API and generated

@@ -108,3 +108,14 @@ test('scope loss during durable intent write suppresses creation without discard
  active=false;f.holdCapture(null);release();
  assert.equal(await ensuring,null);assert.equal(f.counts().creates,0);assert.equal(f.data.size,1);c.dispose();
 });
+
+test('inactive capture ignores late input without persisting it',async()=>{
+ const f=fixture();let active=true;f.port.active=()=>active;const c=await openInventoryCapture(f.port);assert.ok(c);
+ const form={...c.snapshot().draft!,title:'Late input'};active=false;c.change(form);await c.flush();
+ assert.equal(f.data.size,0);active=true;assert.equal(c.snapshot().draft?.title,'');c.dispose();
+});
+test('inactive new capture hides private text while preserving recovery',async()=>{
+ const f=fixture();let active=true;f.port.active=()=>active;const c=await openInventoryCapture(f.port);assert.ok(c);
+ c.change({...c.snapshot().draft!,private_notes:'Private draft'});await c.flush();const stored=[...f.data];active=false;
+ assert.equal(c.snapshot().draft,null);assert.deepEqual([...f.data],stored);active=true;assert.equal(c.snapshot().draft?.private_notes,'Private draft');c.dispose();
+});

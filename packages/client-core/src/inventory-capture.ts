@@ -28,7 +28,7 @@ export async function openInventoryCapture(port:{
   const listeners=new Set<(s:ReturnType<InventoryFormWorkspace['snapshot']>)=>void>();
   function snapshot():ReturnType<InventoryFormWorkspace['snapshot']>{
    if(editor){const s=editor.snapshot();return {...s,busy:s.busy||busy,recovery:!migrated?(migrationFailed?'failed':'writing'):s.recovery};}
-   return {baseline:null,draft:disposed||denied?null:{...intent.form},latest:null,dirty,busy,uncertain:intent.attempted&&!intent.record,conflict:false,denied,failure,recovery,restored,invalid:!disposed&&!denied&&inventoryFormErrors(intent.form).some(field=>field!=='stock_number')};
+   return {baseline:null,draft:disposed||denied||!port.active()?null:{...intent.form},latest:null,dirty,busy,uncertain:intent.attempted&&!intent.record,conflict:false,denied,failure,recovery,restored,invalid:!disposed&&!denied&&port.active()&&inventoryFormErrors(intent.form).some(field=>field!=='stock_number')};
   }
   function notify(){if(!disposed)for(const listener of listeners)listener(snapshot());}
   function unschedule(){cancel?.();cancel=null;}
@@ -79,7 +79,7 @@ export async function openInventoryCapture(port:{
   const result:InventoryCaptureWorkspace=Object.freeze({
    snapshot,
    subscribe(listener){if(!disposed)listeners.add(listener);listener(snapshot());return()=>{listeners.delete(listener);};},
-   change(form){if(disposed||denied)return;if(editor){editor.change(form);return;}intent={...intent,form:{...form}};dirty=true;failure=null;persist();},
+   change(form){if(disposed||denied||!port.active())return;if(editor){editor.change(form);return;}intent={...intent,form:{...form}};dirty=true;failure=null;persist();},
    save,
    async ensureRecord(){
     if(disposed||denied||!port.active())return null;
@@ -88,12 +88,18 @@ export async function openInventoryCapture(port:{
     if(disposed||denied||!port.active()||!editor||!migrated||editor.snapshot().denied)return null;
     return editor.recordID();
    },
+   async refresh(){if(editor)await editor.refresh();},
+   async withMediaMutation<T>(work:(baseline:InventoryFormRecord)=>Promise<T>):Promise<T>{
+    if(disposed||denied||!port.active()||!editor||!migrated)throw new Error('inventory_media_unavailable');
+    return editor.withMediaMutation(work);
+   },
+   async drain(){await saving;await editor?.drain();},
    async recover(){if(editor){await editor.recover();}else await save();},
    keepEdits(){editor?.keepEdits();},useLatest(){editor?.useLatest();},
    async flush(){if(editor)return migrated&&await editor.flush();return flushIntent();},
    async protect(){if(editor)return await editor.protect()&&migrated;if(dirty)persist();return flushIntent();},
    recordID:()=>editor?.recordID()??intent.record?.id??'',
-   dispose(){if(disposed)return;disposed=true;unschedule();unsubscribe();const editorDrained=editor?.flush();editor?.dispose();listeners.clear();intent={...intent,form:inventoryFormFromAttributes({stock_number:''},port.decimal),record:null};void Promise.allSettled([pendingWrite,pendingRemoval,editorDrained]).then(unlock);},
+   dispose(){if(disposed)return;disposed=true;unschedule();unsubscribe();const editorDrained=editor?Promise.allSettled([editor.flush(),editor.drain()]):undefined;editor?.dispose();listeners.clear();intent={...intent,form:inventoryFormFromAttributes({stock_number:''},port.decimal),record:null};void Promise.allSettled([pendingWrite,pendingRemoval,editorDrained]).then(unlock);},
   });
   // A persisted handoff pointer is read-only recovery, never a repeated create.
   if(intent.record){try{await attachRecord(false);}catch(error){result.dispose();throw error;}}

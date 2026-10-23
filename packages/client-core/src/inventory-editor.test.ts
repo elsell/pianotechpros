@@ -92,3 +92,29 @@ test('scoped journal restores a lost-response attempt after editor restart',asyn
  const first=createInventoryEditor(port);first.change({title:'Persisted intent',price:{minor:200}});await first.save();first.dispose();const recovery=await journal.load();assert.ok(recovery);
  const second=createInventoryEditor({...port,recovery});assert.equal(requests,1);assert.equal(second.snapshot().uncertain,true);await second.recover();assert.equal(second.snapshot().baseline?.revision,2);assert.equal(second.snapshot().uncertain,false);assert.equal(requests,1);
 });
+test('revision-only refresh preserves unsaved text while advancing its baseline',async()=>{
+ const f=fixture();f.c.change({title:'Partial local',price:{minor:200}});
+ f.setCurrent({...initial,revision:3});await f.c.refresh();
+ assert.equal(f.c.snapshot().baseline?.revision,3);assert.equal(f.c.snapshot().draft?.title,'Partial local');assert.equal(f.c.snapshot().conflict,false);
+ await f.c.save();assert.equal(f.getCurrent().revision,4);assert.equal(f.getCurrent().attributes.title,'Partial local');
+});
+test('refresh adopts clean remote text but preserves conflicting local edits',async()=>{
+ const clean=fixture();clean.setCurrent({...initial,revision:2,attributes:{title:'Remote',price:{minor:400}}});await clean.c.refresh();
+ assert.equal(clean.c.snapshot().draft?.title,'Remote');assert.equal(clean.c.snapshot().dirty,false);
+ const dirty=fixture();dirty.c.change({title:'Local',price:{minor:200}});dirty.setCurrent({...initial,revision:2,attributes:{title:'Remote',price:{minor:400}}});await dirty.c.refresh();
+ assert.equal(dirty.c.snapshot().draft?.title,'Local');assert.equal(dirty.c.snapshot().latest?.attributes.title,'Remote');assert.equal(dirty.c.snapshot().conflict,true);
+});
+test('refresh never erases an uncertain text attempt or accepts a foreign record',async()=>{
+ const f=fixture();f.c.change({title:'Attempt',price:{minor:200}});f.setFailure('network');await f.c.save();const pending=f.c.checkpoint()?.pending;
+ f.setFailure(null);f.setCurrent({...initial,revision:2});await f.c.refresh();assert.deepEqual(f.c.checkpoint()?.pending,pending);assert.equal(f.c.snapshot().uncertain,true);
+ const g=fixture();g.setCurrent({...initial,id:'other',revision:2});await g.c.refresh();assert.equal(g.c.snapshot().baseline?.id,'piano');assert.ok(g.c.snapshot().failure);
+});
+test('restored unsent text accepts a newer revision only when remote attributes are unchanged',()=>{
+ const saved={version:1 as const,baseline:initial,draft:{title:'Partial',price:{minor:200}},pending:null,conflict:false};
+ const c=createInventoryEditor({initial:{...initial,revision:3},recovery:saved,copy:(a:typeof initial.attributes)=>structuredClone(a),equal:(a,b)=>JSON.stringify(a)===JSON.stringify(b),classify:()=> 'uncertain' as const,get:async()=>initial,edit:async()=>initial});
+ assert.equal(c.snapshot().baseline?.revision,3);assert.equal(c.snapshot().draft?.title,'Partial');assert.equal(c.snapshot().conflict,false);
+});
+test('refresh rejects changed attributes without a revision advance',async()=>{
+ const f=fixture();f.setCurrent({...initial,attributes:{title:'Impossible',price:{minor:200}}});await f.c.refresh();
+ assert.equal(f.c.snapshot().draft?.title,'Original');assert.ok(f.c.snapshot().failure);
+});

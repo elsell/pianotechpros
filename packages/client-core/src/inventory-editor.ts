@@ -17,8 +17,9 @@ export function createInventoryEditor<A,R extends InventoryEditorRecord<A>>(port
  if(port.recovery){
   const saved=port.recovery;
   if(saved.version!==1||saved.baseline.id!==identity.id||saved.baseline.dealer_id!==identity.dealer||!Number.isSafeInteger(saved.baseline.revision)||saved.baseline.revision<1||typeof saved.conflict!=='boolean'||saved.pending&&saved.pending.revision!==saved.baseline.revision)throw new Error('invalid_inventory_checkpoint');
+  const revisionOnly=!saved.pending&&!saved.conflict&&port.initial.revision>=saved.baseline.revision&&port.equal(port.initial.attributes,saved.baseline.attributes);
   pending=saved.pending?{attributes:port.copy(saved.pending.attributes),revision:saved.pending.revision}:null;
-  state={...state,baseline:copyRecord(saved.baseline),draft:port.copy(saved.draft),uncertain:pending!==null,conflict:saved.conflict||(!pending&&port.initial.revision>saved.baseline.revision),dirty:!port.equal(saved.baseline.attributes,saved.draft)};
+  state={...state,baseline:copyRecord(revisionOnly?port.initial:saved.baseline),draft:port.copy(saved.draft),uncertain:pending!==null,conflict:saved.conflict||(!revisionOnly&&!pending&&port.initial.revision>saved.baseline.revision),dirty:!port.equal(saved.baseline.attributes,saved.draft)};
  }
  const listeners=new Set<(s:InventoryEditorState<A,R>)=>void>();
  function snapshot():InventoryEditorState<A,R>{return {...state,baseline:state.baseline&&copyRecord(state.baseline),draft:state.draft===null?null:port.copy(state.draft),latest:state.latest&&copyRecord(state.latest)};}
@@ -55,6 +56,17 @@ export function createInventoryEditor<A,R extends InventoryEditorRecord<A>>(port
     if(sent)failure(error,true);
     else {if(!previouslyPending)pending=null;publish({failure:new Error('inventory_recovery_unavailable')});}
    }}finally{publish({busy:false});}
+  },
+  async refresh(){
+   if(disposed||state.denied||state.busy||state.conflict||pending||!state.baseline)return;
+   publish({busy:true,failure:null});
+   try{
+    const result=await port.get();if(disposed||state.denied)return;
+    if(!valid(result,state.baseline!.revision)||result.revision===state.baseline!.revision&&!port.equal(result.attributes,state.baseline!.attributes))throw new Error('invalid_inventory_revision');
+    if(port.equal(result.attributes,state.baseline!.attributes)){accept(result);}
+    else if(!state.dirty){publish({draft:port.copy(result.attributes)});accept(result);}
+    else{publish({latest:copyRecord(result),conflict:true});}
+   }catch(error){if(!disposed)failure(error,false);}finally{publish({busy:false});}
   },
   async recover(){
    if(disposed||state.denied||state.busy||!state.baseline||(!state.conflict&&!state.uncertain))return;

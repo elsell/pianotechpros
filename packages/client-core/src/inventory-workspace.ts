@@ -2,7 +2,7 @@ import {createInventoryEditor, type InventoryEditorRecord, type InventoryEditorC
 export type InventoryWorkspaceState<A,R> = InventoryEditorState<A,R> & {recovery:'writing'|'ready'|'failed';restored:boolean;invalid:boolean};
 /** Durable existing-record composition. Scheduling and storage are injected platform ports. */
 export function createInventoryWorkspace<A,R extends InventoryEditorRecord<A>>(port:{
- initial:R;recovery?:InventoryEditorCheckpoint<A,R>;copy(a:A):A;equal(a:A,b:A):boolean;valid(a:A):boolean;
+ active?():boolean;initial:R;recovery?:InventoryEditorCheckpoint<A,R>;copy(a:A):A;equal(a:A,b:A):boolean;valid(a:A):boolean;
  edit(a:A,revision:number):Promise<R>;get():Promise<R>;
  classify(error:unknown):'denied'|'conflict'|'rejected'|'uncertain';
  journal:{save(value:InventoryEditorCheckpoint<A,R>):Promise<void>;discard():Promise<void>};
@@ -11,13 +11,19 @@ export function createInventoryWorkspace<A,R extends InventoryEditorRecord<A>>(p
  let disposed=false;let restored=!!port.recovery;let recovery:'writing'|'ready'|'failed'='writing';
  let signature='';let sequence=0;let persisted:Promise<void>=Promise.resolve();let cancel:(()=>void)|null=null;
  const listeners=new Set<(s:InventoryWorkspaceState<A,R>)=>void>();
- const editor=createInventoryEditor({...port,persistAttempt:port.journal.save});
- function snapshot():InventoryWorkspaceState<A,R>{const state=editor.snapshot();return {...state,recovery,restored,invalid:state.draft!==null&&!port.valid(state.draft)};}
+ let locked=0;let operations:Promise<unknown>=Promise.resolve();
+ const alive=()=>!disposed&&(port.active?.()??true);
+ const requireAlive=()=>{if(!alive())throw new Error('inventory_workspace_inactive');};
+ const editor=createInventoryEditor({...port,persistAttempt:port.journal.save,
+  get:async()=>{requireAlive();const value=await port.get();requireAlive();return value;},
+  edit:async(a,revision)=>{requireAlive();const value=await port.edit(a,revision);requireAlive();return value;},
+ });
+ function snapshot():InventoryWorkspaceState<A,R>{const state=editor.snapshot();if(!alive())return {...state,baseline:null,draft:null,latest:null,dirty:false,busy:false,recovery,restored,invalid:false};return {...state,busy:state.busy||locked>0,recovery,restored,invalid:state.draft!==null&&!port.valid(state.draft)};}
  function notify(){if(!disposed)for(const listener of listeners)listener(snapshot());}
  function unschedule(){cancel?.();cancel=null;}
  function schedule(){
-  unschedule();if(disposed)return;
-  const s=snapshot();if(s.dirty&&!s.busy&&!s.uncertain&&!s.conflict&&!s.denied&&!s.failure&&!s.invalid&&!s.restored&&s.recovery==='ready')cancel=port.schedule(()=>{cancel=null;void editor.save();});
+  unschedule();if(!alive()||locked)return;
+  const s=snapshot();if(s.dirty&&!s.busy&&!s.uncertain&&!s.conflict&&!s.denied&&!s.failure&&!s.invalid&&!s.restored&&s.recovery==='ready')cancel=port.schedule(()=>{cancel=null;void enqueue(async()=>{if(alive()){await editor.save();await flush();}}).catch(()=>{});});
  }
  function persist(checkpoint:InventoryEditorCheckpoint<A,R>){
   const version=++sequence;recovery='writing';
@@ -37,23 +43,50 @@ export function createInventoryWorkspace<A,R extends InventoryEditorRecord<A>>(p
   for(;;){const pending=persisted;await pending;if(pending===persisted)break;}
   return !disposed&&recovery==='ready';
  }
+ function enqueue<T>(work:()=>Promise<T>):Promise<T>{
+  locked++;unschedule();notify();
+  const operation=operations.then(work);
+  const result=operation.finally(()=>{locked--;notify();schedule();});
+  operations=result.catch(()=>{});return result;
+ }
+ async function save(){
+  if(!alive())return;
+  const checkpoint=editor.checkpoint();if(!checkpoint)return;
+  restored=false;persist(checkpoint);notify();if(!await flush()||!alive())return;
+  if(!snapshot().invalid)await editor.save();await flush();
+ }
+ async function protect(){
+  const checkpoint=editor.checkpoint();if(!checkpoint||!alive())return false;
+  persist(checkpoint);notify();return flush();
+ }
+ function mediaReady(){
+  const s=editor.snapshot();
+  if(!alive()||!s.baseline||s.denied||s.uncertain||s.conflict||s.failure||recovery!=='ready')throw new Error('inventory_media_unavailable');
+  return s.baseline;
+ }
  return Object.freeze({
   snapshot,
   subscribe(listener:(s:InventoryWorkspaceState<A,R>)=>void){if(!disposed)listeners.add(listener);listener(snapshot());return()=>{listeners.delete(listener);};},
-  change(input:A){if(disposed)return;editor.change(input);},
-  async save(){
-   unschedule();if(disposed)return;
-   const checkpoint=editor.checkpoint();if(!checkpoint)return;
-   // Explicit retry also repairs a failed local checkpoint before a remote attempt.
-   restored=false;persist(checkpoint);notify();if(!await flush())return;
-   unschedule();
-   const s=snapshot();if(!s.invalid)await editor.save();
-   await flush();
+  change(input:A){if(!alive())return;editor.change(input);},
+  save(){return enqueue(save);},
+  recover(){return enqueue(async()=>{if(alive()){await editor.recover();await flush();}});},
+  refresh(){return enqueue(async()=>{if(alive()){await editor.refresh();await flush();}});},
+  withMediaMutation<T>(work:(baseline:R)=>Promise<T>):Promise<T>{
+   return enqueue(async()=>{
+    if(!await protect())throw new Error('inventory_media_unavailable');
+    mediaReady();
+    if(!restored&&!snapshot().invalid)await save();
+    mediaReady();await editor.refresh();await flush();const baseline=mediaReady();
+    let result:T;
+    try{result=await work(baseline);}
+    finally{if(alive()){await editor.refresh();await flush();}}
+    requireAlive();return result;
+   });
   },
-  async recover(){if(disposed)return;await editor.recover();await flush();},
-  keepEdits(){if(disposed)return;restored=false;editor.keepEdits();},
-  useLatest(){if(disposed)return;restored=false;editor.useLatest();},
-  async protect(){const checkpoint=editor.checkpoint();if(!checkpoint||disposed)return false;persist(checkpoint);notify();return flush();},
+  drain(){return operations.then(()=>{});},
+  keepEdits(){if(!alive())return;restored=false;editor.keepEdits();},
+  useLatest(){if(!alive())return;restored=false;editor.useLatest();},
+  protect,
   flush,
   dispose(){if(disposed)return;disposed=true;cancel?.();cancel=null;unsubscribe();editor.dispose();signature='';listeners.clear();},
  });

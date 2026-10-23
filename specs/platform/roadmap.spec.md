@@ -2,6 +2,15 @@
 
 ## Current milestone: feature-complete product
 
+Text workspaces now serialize saves, recovery, authenticated refresh and media
+mutations. Revision-only photo changes preserve partial local text; concurrent
+remote text requires conflict review. Media work protects recovery first, blocks
+autosave while allowing typing, and refreshes after success or failure. Inactive
+scopes hide drafts and ignore late input; disposal drains work before releasing
+capture ownership. The 190 client-core tests and full checks/contracts pass. Review caught and verified a
+fix for private text visibility in inactive new captures. Platform photo screens
+and full product journeys remain required.
+
 The user clarified that scaffold completion does not satisfy the request.
 `product-parity.spec.md` records the audited legacy baseline and the completion
 matrix. All product rows remain open. Sequence work through dealer authorization,

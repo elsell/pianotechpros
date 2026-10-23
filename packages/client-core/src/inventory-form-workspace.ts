@@ -24,7 +24,7 @@ export async function openInventoryFormWorkspace(port:{
  const saved=loaded&&(loaded.pending||loaded.conflict||!equal(loaded.baseline.attributes,loaded.draft))?loaded:null;
  const decimal=saved?.draft.decimal??port.decimal;
  const map=(r:WireRecord):InventoryFormRecord=>({id:r.id,dealer_id:r.dealer_id,revision:r.revision,attributes:inventoryFormFromAttributes(r.attributes,decimal)});
- const workspace=createInventoryWorkspace({initial:map(current),recovery:saved??undefined,journal,copy:a=>({...a}),equal,valid:a=>!inventoryFormErrors(a).length,
+ const workspace=createInventoryWorkspace({active:port.active,initial:map(current),recovery:saved??undefined,journal,copy:a=>({...a}),equal,valid:a=>!inventoryFormErrors(a).length,
   classify:port.classify,schedule:port.schedule,get:async()=>map(await port.get()),edit:async(a,revision)=>map(await port.edit(inventoryAttributesFromForm(a),revision)),
  });
  return Object.freeze({...workspace,recordID:()=>current.id});

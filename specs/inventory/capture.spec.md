@@ -278,3 +278,27 @@ no usable ID. Retrying uses the original key, including after restart. Invalid
 partial text remains recoverable and does not prevent obtaining a private record.
 This capability does not itself store a photo: the upload coordinator must first
 protect selected media and preserve its own retry intent.
+
+## Coordinating media and text revisions
+
+An authenticated refresh may advance the text editor's baseline when only the
+record revision changed and its editable attributes still match the old baseline.
+Preserve all local input, including invalid partial values. If the local draft is
+clean, adopt freshly fetched attributes; if both local and remote text changed,
+retain the draft and require conflict review. Refresh never resolves an uncertain
+text mutation or an existing conflict implicitly, and rejects foreign/stale data.
+
+The workspace serializes text saves, recovery/refresh and media mutations.
+A media operation protects local input first, saves valid current edits only when
+they are not restored work awaiting consent, refreshes authorization/current
+revision, and invokes the media callback only with an unambiguous, durable
+baseline. Invalid partial text remains local and does not block photos.
+Autosave cannot run during the media callback, but typing and durable checkpoints
+continue. After either callback success or failure, refresh and persist the text
+baseline before resuming autosave. Storage failure, uncertainty, conflict,
+disposal or inactive scope prevents a new media callback. A queue-drain operation
+allows owners to retain leases until already-started work finishes.
+
+Inactive scopes ignore text and conflict-resolution input as well as hiding their
+snapshots. Create a new record before entering a media callback; callbacks must
+not recursively invoke queued workspace operations, which wait for that callback.

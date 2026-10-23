@@ -7,20 +7,13 @@ import (
 	"github.com/elsell/pianotechpros/apps/api/internal/ports"
 )
 
-type PhotoState struct {
-	Record domain.Record
-	Photos []domain.PhotoEvidence
-}
+type PhotoState = domain.PhotoState
 type PhotoUpload struct {
 	ID, Key          string
 	ExpectedRevision int64
 	Image            ports.ProcessedPhoto
 }
-type PhotoUploadResult struct {
-	State   PhotoState
-	PhotoID string
-	Replay  bool
-}
+type PhotoUploadResult = domain.PhotoUploadResult
 
 // PhotoRepository rechecks local authority and atomically commits photo data,
 // record/history and audit. Callers enforce SpiceDB and principal limiting first.

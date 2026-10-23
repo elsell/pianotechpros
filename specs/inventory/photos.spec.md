@@ -142,3 +142,34 @@ the storage reservation distinguishes a replay from a new stale write.
 
 Photo commands are separate from HTTP serialization. No camera/library, upload
 route or production composition is implied by the application service alone.
+
+## HTTP media contract and composition
+
+Private routes are under `/v1/dealers/{dealerID}/inventory/{id}/photos`:
+GET returns `{data:{record,photos}}`; POST accepts raw image bytes with
+`Idempotency-Key` and required `expectedRevision` query parameter and returns that
+state plus `{meta:{photoID,replay}}`. PUT `/order` accepts expectedRevision and the
+complete `ids` list. PATCH `/{photoID}` accepts expectedRevision and altText.
+DELETE `/{photoID}` takes expectedRevision as a query parameter. GET
+`/{photoID}/image` returns the normalized JPEG bytes after current authorization.
+All state responses include the current private record for revision reconciliation.
+Photo DTOs expose only ID and alternative text, never storage or hash metadata.
+
+The upload route passes a bounded stream to the application; framework decoding
+must not consume source bytes before application authorization. OpenAPI declares
+binary `application/octet-stream` input. The image processor validates actual
+content regardless of the supplied MIME. The transport independently enforces
+20 MiB on streaming reads, including chunked bodies; the server's existing read
+and write deadlines remain in force. Invalid image content maps to 400 with
+`invalid_photo`, excessive bytes/pixels to 413 with `photo_limit_exceeded`.
+Framework JSON/parameter errors use the existing redacted machine-code envelope.
+Private media/state/error responses have no-store, no-referrer and nosniff headers.
+No public image URL, source filename, EXIF or credential enters a response.
+
+A project-owned bootstrap registration composes the photo routes alongside the
+unchanged generator-owned domain registry. It injects the same authentication,
+SpiceDB, limiter, clock, audit and database capabilities and one shared processor
+instance. Both server and OpenAPI entrypoints use this registration. Domain policy
+remains in the inventory application; bootstrap owns no authorization decisions.
+
+Configured browser origins must be able to preflight authenticated PATCH photo-description requests; unknown origins remain denied.

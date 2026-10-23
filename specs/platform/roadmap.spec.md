@@ -57,6 +57,17 @@ invalid input and replay after newer revisions or photo removal. Read-only revie
 found no blockers; full checks and contract drift checks pass. HTTP body limits/error mapping, runtime composition and client
 capture are the next required integration work.
 
+Private photo HTTP routes now compose with the generated record routes through
+project-owned bootstrap wiring and one shared processor. Binary upload streams
+remain unread until authorization, with bounded request bodies; authorized image
+responses are raw JPEG and private responses prohibit caching. Transport tests
+exercise upload/replay/read/alt/order/remove, authorization, invalid/oversized
+images and normalized JPEG delivery. Review corrected PATCH CORS preflight;
+full composition tests protect against OpenAPI schema-name collisions and
+undeclared media error codes. Full checks and generated-contract drift checks
+pass; read-only review found no remaining blockers. Client capture integration
+remains outstanding.
+
 Completed run [39878787463](https://github.com/elsell/pianotechpros/actions/runs/39878787463)
 on `115bd0b` passed live acceptance. Both native jobs stopped before compilation:
 Expo Router Doctor rejects an exact direct navigation declaration because its
@@ -71,7 +82,11 @@ full checks/contracts pass. Both Metro exports and clean native prebuild pass; t
 Read-only review found no remaining blockers in this correction. Current scans
 still report 16 reachable Go findings locally and 71 npm findings (1 critical,
 48 high, 18 moderate, 4 low); security release gates remain unchanged and failing.
-Hosted native compilation and interaction evidence remain outstanding.
+Run [39880832729](https://github.com/elsell/pianotechpros/actions/runs/39880832729)
+on `6846ef0` passed Android Gradle compilation, unsigned iOS simulator Xcode
+compilation and live acceptance. Native interaction evidence remains outstanding.
+The verification job still fails on the 23 reachable Go findings with CI's
+Go 1.25.12; this is not a passing release gate.
 
 Dealer implementation has started: the profile/access contract, typed fields,
 profile validation, generated repository/HTTP boundaries and contracts exist.

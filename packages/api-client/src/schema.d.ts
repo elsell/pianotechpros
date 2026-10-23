@@ -103,6 +103,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/dealers/{dealerID}/inventory/{id}/photos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list-inventory-photos"];
+        put?: never;
+        post: operations["upload-inventory-photo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dealers/{dealerID}/inventory/{id}/photos/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["reorder-inventory-photos"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dealers/{dealerID}/inventory/{id}/photos/{photoID}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["remove-inventory-photo"];
+        options?: never;
+        head?: never;
+        patch: operations["describe-inventory-photo"];
+        trace?: never;
+    };
+    "/v1/dealers/{dealerID}/inventory/{id}/photos/{photoID}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["read-inventory-photo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/dealers/{id}": {
         parameters: {
             query?: never;
@@ -347,7 +411,7 @@ export interface components {
              * @description Stable machine-readable error code
              * @enum {string}
              */
-            code: "invalid_invitation" | "bad_request" | "unauthenticated" | "invalid_credential" | "forbidden" | "not_found" | "conflict" | "idempotency_conflict" | "validation_failed" | "rate_limited" | "authorization_pending" | "authorization_dead_lettered" | "authorization_policy_not_configured" | "unavailable" | "internal_error" | "request_failed" | "oidc_discovery_unavailable";
+            code: "invalid_photo" | "photo_limit_exceeded" | "invalid_invitation" | "bad_request" | "unauthenticated" | "invalid_credential" | "forbidden" | "not_found" | "conflict" | "idempotency_conflict" | "validation_failed" | "rate_limited" | "authorization_pending" | "authorization_dead_lettered" | "authorization_policy_not_configured" | "unavailable" | "internal_error" | "request_failed" | "oidc_discovery_unavailable";
             detail?: string;
             errors?: components["schemas"]["ErrorDetail"][] | null;
             /** Format: int64 */
@@ -664,6 +728,59 @@ export interface components {
         };
         PaginationMeta: {
             nextCursor?: string;
+        };
+        Photo: {
+            altText: string;
+            id: string;
+        };
+        PhotoDescription: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/PhotoDescription.json
+             */
+            readonly $schema?: string;
+            altText: string;
+            /** Format: int64 */
+            expectedRevision: number;
+        };
+        PhotoOrder: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/PhotoOrder.json
+             */
+            readonly $schema?: string;
+            /** Format: int64 */
+            expectedRevision: number;
+            ids: string[] | null;
+        };
+        PhotoState: {
+            photos: components["schemas"]["Photo"][];
+            record: components["schemas"]["Item"];
+        };
+        PhotoStateOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/PhotoStateOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["PhotoState"];
+        };
+        PhotoUploadMeta: {
+            photoID: string;
+            replay: boolean;
+        };
+        PhotoUploadOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/PhotoUploadOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["PhotoState"];
+            meta: components["schemas"]["PhotoUploadMeta"];
         };
         SessionExchangeInputBody: {
             /**
@@ -1135,6 +1252,231 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ItemOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "list-inventory-photos": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                dealerID: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoStateOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "upload-inventory-photo": {
+        parameters: {
+            query: {
+                expectedRevision: number;
+            };
+            header: {
+                Authorization?: string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                dealerID: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoUploadOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "reorder-inventory-photos": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                dealerID: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhotoOrder"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoStateOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "remove-inventory-photo": {
+        parameters: {
+            query: {
+                expectedRevision: number;
+            };
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                dealerID: string;
+                id: string;
+                photoID: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoStateOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "describe-inventory-photo": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                dealerID: string;
+                id: string;
+                photoID: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhotoDescription"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoStateOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "read-inventory-photo": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                dealerID: string;
+                id: string;
+                photoID: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Authorized normalized JPEG */
+            200: {
+                headers: {
+                    "Content-Type"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/jpeg": string;
                 };
             };
             /** @description Error */

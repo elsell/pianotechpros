@@ -46,6 +46,9 @@ func (p *Processor) Process(ctx context.Context, source io.Reader) (ports.Proces
 		if ctx.Err() != nil {
 			return empty, ctx.Err()
 		}
+		if errors.Is(err, ports.ErrPhotoLimit) {
+			return empty, ports.ErrPhotoLimit
+		}
 		return empty, ports.ErrInvalidPhoto
 	}
 	if len(raw) > maxBytes {

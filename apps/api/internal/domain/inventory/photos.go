@@ -162,3 +162,14 @@ func (r Record) ReorderPhotos(c PhotoCollection, ids []string, expected int64, a
 	c.photos = ordered
 	return r.changedPhotos(c, actor, at)
 }
+
+// PhotoState is the private record and its ordered ready photo references.
+type PhotoState struct {
+	Record Record
+	Photos []PhotoEvidence
+}
+type PhotoUploadResult struct {
+	State   PhotoState
+	PhotoID string
+	Replay  bool
+}

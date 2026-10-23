@@ -307,3 +307,71 @@ media hashing, target lookup and final authorization. Expiry during a request
 already sent cannot undo that request; normal acknowledgement/recovery applies.
 Permission rejection prevents recovery disclosure and further network mutation;
 sign-out retains its separate full-vault cleanup behavior.
+
+## Shared photo workspace and initial web presentation
+
+The photo workspace composes the selected-media coordinator with the text
+workspace's media mutation queue. New remains lazy: before server creation,
+persist a selection reservation in the capture intent and protect its bytes under
+the immutable capture-key scope. Serialize selection admission with creation.
+Once the record exists, import that reservation into its upload ledger before
+removing the capture intent. The record ledger references the original protected
+media scope; no second image copy or temporary unowned object is needed. Import
+preserves selection ID, retry key, size and original retention timestamp. A bounded
+immutable import receipt is committed atomically with the reservation, retained
+after upload/discard cleanup, and makes retry after lost handoff acknowledgement
+idempotent even if the record already consumed the upload. Mismatched imports fail
+closed. Current record authorization and its photo lease precede import. Source
+bytes are validated before first import; an exact existing receipt needs no source
+read, since acknowledged cleanup may already have removed the source. Only the
+record-scoped coordinator may upload, expire or clean up an imported selection.
+The capture journal's durable record pointer remains until import acknowledgement;
+reopening that capture retries handoff without recreating the record. Opening the
+record may safely use its imported reservation as soon as the atomic ledger write
+commits. Before local protection completes, the UI reports work in progress, not a
+saved photo. Opening or refreshing
+recovery never dispatches an upload. An explicit selection uploads after durable
+protection; retry reuses its saved intent. Conflict retries require explicit
+rebase. Uncertain attempts cannot be silently removed.
+
+Photo workspace operations are serialized. Scope changes and disposal hide
+photos and recovery immediately, suppress further dispatch, and retain the media
+lease until already-started work drains. A new selection copies bytes before any
+asynchronous work. No filenames, local paths or credentials enter workspace state.
+
+Reference edits (order, cover, description and detach) run inside the text media
+queue. Fetch the current authorized collection and compare its complete IDs,
+order and alternative text with the collection the user acted on before applying
+the command. Intervening text-only revision changes are allowed; changed photo
+collections require review and explicit repetition against the refreshed display.
+Network uncertainty is displayed and followed by a read, never an automatic
+mutation retry. Authorization loss hides all private state. Do not report success
+for a failed mutation merely because the subsequent read succeeded.
+
+The web editor places photos before text fields. Camera and library use native
+browser file selection, accept JPEG/static PNG within 20 MiB, and preserve the
+text draft on unsupported formats, denied access, cancellation or failure. The
+server remains the image-content authority. The first photo is visibly the cover;
+keyboard-accessible move/cover commands, alternative text, confirmation before
+removal and a dismissible preview are required. Private image bytes become scoped
+object URLs only in a browser adapter and are revoked on replacement/unmount.
+Progress, recovery actions, expired-selection notices and errors use the shared
+locale catalog. Native presentation will use platform photo selection and sheets;
+web completion does not establish native interaction acceptance.
+
+Private web renditions require `img-src 'self' blob:` in CSP; no remote image
+origins or data URLs are allowed. Other CSP transport/script/object restrictions
+remain unchanged. File selection and object URL construction stay in the narrow
+browser media adapter; it receives no credentials and acquires no transport.
+Interrupted local discard cleanup is a distinct state from acknowledged upload;
+its retry repeats local cleanup without dispatching an upload.
+
+Import receipts preserve the original retry key as provenance, independently of
+an entry's current retry key after explicit conflict rebase. Loading compares
+immutable source identity, size and timestamp; it must not reject legitimate
+rebased attempts. Pre-record media uses the same fixed seven-day retention as
+record uploads. Expired capture journals invoke validated-payload media cleanup
+before deletion, retaining the journal if cleanup fails. Active capture text
+checkpoints cannot renew the photo's original expiry. Expiration never removes
+source bytes already owned by an imported record reservation; that record's
+coordinator is responsible for its cleanup.

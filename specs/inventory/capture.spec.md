@@ -302,3 +302,30 @@ allows owners to retain leases until already-started work finishes.
 Inactive scopes ignore text and conflict-resolution input as well as hiding their
 snapshots. Create a new record before entering a media callback; callbacks must
 not recursively invoke queued workspace operations, which wait for that callback.
+
+
+A new capture may stage one selected photo before creating its record. Persist
+its immutable reservation in the capture intent before writing selected bytes.
+Stage operations serialize with creation/handoff and suppress autosave until
+protection finishes; typing still checkpoints. Re-selection cannot replace an
+existing immutable selection. Explicit discard cleans its local bytes before
+removing the reservation. Creation uncertainty preserves both text and photo.
+During handoff, authorize/lease the resulting record and atomically import the
+photo reservation with a persistent receipt before deleting the capture journal.
+The record ledger owns the original encrypted source scope after import, including
+cleanup and expiry. Missing media capability on restore must fail closed and keep
+the capture pointer; it must never silently drop staged media.
+
+Creation denial clears visible state but removes staged source bytes before
+removing their capture reservation. Failed cleanup retains the encrypted pointer.
+When a record pointer exists and import ownership cannot be established under
+current authorization, retain the hidden reservation rather than deleting bytes
+that may already belong to its record ledger. Later authorized recovery or full
+account sign-out cleanup resolves it.
+
+A staged photo may be explicitly discarded after record creation but before a
+successful handoff. Under current record authorization and its media lease,
+inspect the import receipt: clean the capture source if not imported, otherwise
+use the record ledger's normal removal transitions. Never discard an uncertain
+attempt. Then clear the capture reservation and finish the text handoff. Cancelling
+a photo-only selection before creation must not itself create an empty record.

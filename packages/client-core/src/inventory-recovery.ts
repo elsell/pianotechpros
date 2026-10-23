@@ -11,7 +11,7 @@ function bounded(text:string):boolean{
  let bytes=0;for(const character of text){const code=character.codePointAt(0)!;bytes+=code<128?1:code<2048?2:code<65536?3:4;if(bytes>maxBytes)return false;}return true;
 }
 function object(value:unknown):value is Record<string,unknown>{return !!value&&typeof value==='object'&&!Array.isArray(value);}
-export function createInventoryRecoveryJournal<T>(port:{scope:InventoryRecoveryScope;storage:ProtectedInventoryDraftStorage;now():number;validate(value:unknown):value is T}){
+export function createInventoryRecoveryJournal<T>(port:{scope:InventoryRecoveryScope;storage:ProtectedInventoryDraftStorage;now():number;validate(value:unknown):value is T;expire?(value:T):Promise<void>}){
  const scope=Object.freeze({userID:port.scope.userID,dealerID:port.scope.dealerID,recordID:port.scope.recordID});
  if(Object.values(scope).some(value=>typeof value!=='string'||!value||value.length>128))throw new Error('invalid_inventory_recovery_scope');
  const key=JSON.stringify(['inventory-recovery',1,scope.userID,scope.dealerID,scope.recordID]);
@@ -29,13 +29,14 @@ export function createInventoryRecoveryJournal<T>(port:{scope:InventoryRecoveryS
    return queue(async()=>{
     if(closed)return null;
     const text=await port.storage.read(key);if(closed||text===null)return null;
-    const time=now();let payload:T|null=null;
+    const time=now();let payload:T|null=null;let expired:T|null=null;
     try{
      if(bounded(text)){
       const envelope:unknown=JSON.parse(text);
-      if(object(envelope)&&envelope.version===1&&object(envelope.scope)&&envelope.scope.userID===scope.userID&&envelope.scope.dealerID===scope.dealerID&&envelope.scope.recordID===scope.recordID&&Number.isSafeInteger(envelope.writtenAt)&&Number.isSafeInteger(envelope.expiresAt)&&typeof envelope.writtenAt==='number'&&envelope.writtenAt>=0&&envelope.writtenAt<=time&&envelope.expiresAt===envelope.writtenAt+ttl&&time<envelope.expiresAt&&port.validate(envelope.payload))payload=envelope.payload;
+      if(object(envelope)&&envelope.version===1&&object(envelope.scope)&&envelope.scope.userID===scope.userID&&envelope.scope.dealerID===scope.dealerID&&envelope.scope.recordID===scope.recordID&&Number.isSafeInteger(envelope.writtenAt)&&Number.isSafeInteger(envelope.expiresAt)&&typeof envelope.writtenAt==='number'&&envelope.writtenAt>=0&&envelope.writtenAt<=time&&envelope.expiresAt===envelope.writtenAt+ttl&&port.validate(envelope.payload)){if(time<envelope.expiresAt)payload=envelope.payload;else expired=envelope.payload;}
      }
     }catch{payload=null;}
+    if(expired!==null&&port.expire)await port.expire(expired);
     if(payload===null)await port.storage.remove(key);
     return closed?null:payload;
    });

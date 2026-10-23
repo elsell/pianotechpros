@@ -1,8 +1,9 @@
 import type {InventoryRecoveryScope,ProtectedInventoryDraftStorage} from './inventory-recovery';
 export type PhotoUploadPhase='reserved'|'ready'|'attempted'|'conflict'|'rejected'|'acknowledged'|'removing';
+export interface PhotoSelectionImport {id:string;size:number;key:string;createdAt:number;sourceScope:string}
 export interface PhotoUploadEntry {
  id:string;size:number;key:string;createdAt:number;state:PhotoUploadPhase;
- recordID?:string;expectedRevision?:number;photoID?:string;expired?:'local'|'uncertain';
+ sourceScope?:string;recordID?:string;expectedRevision?:number;photoID?:string;expired?:'local'|'uncertain';
 }
 export const photoUploadRetentionMilliseconds=7*24*60*60*1000;
 export function photoUploadExpired(entry:PhotoUploadEntry,now:number){
@@ -20,7 +21,8 @@ function validEntries(value:unknown,scope:InventoryRecoveryScope):value is Photo
  if(!Array.isArray(value)||value.length>50)return false;
  const ids=new Set<string>();const keys=new Set<string>();let size=0;
  for(const e of value){
-  if(!object(e)||Object.keys(e).some(k=>!['id','size','key','createdAt','state','recordID','expectedRevision','photoID','expired'].includes(k))||!identity(e.id)||ids.has(e.id)||!retryKey(e.key)||keys.has(e.key)||!safe(e.size)||e.size<1||e.size>20*1024*1024||!safe(e.createdAt)||!phases.has(e.state))return false;
+  if(!object(e)||Object.keys(e).some(k=>!['id','size','key','createdAt','state','recordID','expectedRevision','photoID','expired','sourceScope'].includes(k))||!identity(e.id)||ids.has(e.id)||!retryKey(e.key)||keys.has(e.key)||!safe(e.size)||e.size<1||e.size>20*1024*1024||!safe(e.createdAt)||!phases.has(e.state))return false;
+  if(e.sourceScope!==undefined&&(!identity(e.sourceScope)||e.sourceScope===scope.recordID))return false;
   ids.add(e.id);keys.add(e.key);size+=e.size;
   if(e.expired!==undefined&&(e.state!=='removing'||!['local','uncertain'].includes(e.expired as string)))return false;
   if(e.expired==='uncertain'&&(e.recordID===undefined||e.expectedRevision===undefined||e.photoID!==undefined))return false;
@@ -35,29 +37,37 @@ function validEntries(value:unknown,scope:InventoryRecoveryScope):value is Photo
  }
  return size<=100*1024*1024;
 }
+function validImports(value:unknown,scope:InventoryRecoveryScope):value is PhotoSelectionImport[]{
+ if(!Array.isArray(value)||value.length>50)return false;
+ return value.every(e=>object(e)&&Object.keys(e).every(k=>['id','size','key','createdAt','sourceScope'].includes(k))&&identity(e.sourceScope))&&validEntries(value.map(e=>({...e,state:'ready'})),scope);
+}
+function sameImport(a:PhotoSelectionImport,b:PhotoSelectionImport){return a.id===b.id&&a.size===b.size&&a.key===b.key&&a.createdAt===b.createdAt&&a.sourceScope===b.sourceScope;}
 /** Requires current authorization and exclusive scope ownership from its caller. */
 export async function openPhotoUploadLedger(port:{scope:InventoryRecoveryScope;storage:ProtectedInventoryDraftStorage;now():number}){
  const scope=Object.freeze({userID:port.scope.userID,dealerID:port.scope.dealerID,recordID:port.scope.recordID});
  if(Object.values(scope).some(v=>!identity(v)))throw unavailable();
  const address=JSON.stringify(['inventory-photo-uploads',1,scope.userID,scope.dealerID,scope.recordID]);
- let entries:PhotoUploadEntry[]=[];
+ let entries:PhotoUploadEntry[]=[];let imports:PhotoSelectionImport[]=[];
  try{
   const raw=await port.storage.read(address);
   if(raw!==null){
    if(raw.length>65536)throw unavailable();
    const value:unknown=JSON.parse(raw);
    if(!object(value)||value.version!==1||!object(value.scope)||value.scope.userID!==scope.userID||value.scope.dealerID!==scope.dealerID||value.scope.recordID!==scope.recordID||!validEntries(value.entries,scope))throw unavailable();
+   if(!validImports(value.imports??[],scope))throw unavailable();
+   imports=(value.imports??[]) as PhotoSelectionImport[];
    entries=value.entries.map(e=>({...e}));
+   if(entries.some(e=>e.sourceScope&&!imports.some(receipt=>sameImport(receipt,{...e,key:receipt.key} as PhotoSelectionImport))))throw unavailable();
   }
  }catch{throw unavailable();}
  let poisoned=false;let tail:Promise<unknown>=Promise.resolve();
  function usable(){if(poisoned)throw unavailable();}
- function update(change:(draft:PhotoUploadEntry[])=>void):Promise<void>{
+ function update(change:(draft:PhotoUploadEntry[],receipts:PhotoSelectionImport[])=>void):Promise<void>{
   const work=tail.then(async()=>{
-   usable();const next=entries.map(e=>({...e}));change(next);if(!validEntries(next,scope))throw invalid();
-   try{await port.storage.write(address,JSON.stringify({version:1,scope,entries:next}));}
+   usable();const next=entries.map(e=>({...e}));const receipts=imports.map(e=>({...e}));change(next,receipts);if(!validEntries(next,scope)||!validImports(receipts,scope))throw invalid();
+   try{await port.storage.write(address,JSON.stringify({version:1,scope,entries:next,...(receipts.length?{imports:receipts}:{})}));}
    catch{poisoned=true;throw unavailable();}
-   entries=next;
+   entries=next;imports=receipts;
   });
   tail=work.catch(()=>{});return work;
  }
@@ -66,6 +76,13 @@ export async function openPhotoUploadLedger(port:{scope:InventoryRecoveryScope;s
  }
  return Object.freeze({
   snapshot(){usable();return entries.map(e=>({...e}));},
+  hasImport(value:PhotoSelectionImport){usable();if(!validImports([value],scope))throw invalid();const existing=imports.find(e=>e.id===value.id);if(existing&&!sameImport(existing,value))throw invalid();return !!existing;},
+  importReady(value:PhotoSelectionImport){const copied={...value};return update((draft,receipts)=>{
+   if(scope.recordID==='@capture'||!validImports([copied],scope))throw invalid();
+   const existing=receipts.find(e=>e.id===copied.id);if(existing){if(!sameImport(existing,copied))throw invalid();return;}
+   if(photoUploadExpired({...copied,state:'ready'},port.now()))throw invalid();
+   receipts.push(copied);draft.push({...copied,state:'ready'});
+  });},
   reserve(id:string,size:number,key:string){return update(draft=>{const createdAt=port.now();if(!safe(createdAt))throw invalid();draft.push({id,size,key,createdAt,state:'reserved'});});},
   ready(id:string){return transition(id,['reserved'],e=>{e.state='ready';});},
   attempt(id:string,recordID:string,expectedRevision:number){return transition(id,['ready','attempted'],e=>{

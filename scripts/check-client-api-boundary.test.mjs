@@ -224,3 +224,9 @@ for (const source of ["fetch('/private');", "new WebSocket('wss://example.invali
 }
 result = check({ 'apps/mobile/src/unreviewed-storage.ts': "import { openDatabaseAsync } from 'expo-sqlite'; openDatabaseAsync('recovery.db');" });
 assert.notEqual(result.status, 0, 'native SQLite access is scoped to the storage adapter');
+result=check({'apps/web/src/lib/inventory/photo-media.ts':"const bytes=new Uint8Array([1]);const blob=new Blob([bytes]);URL.createObjectURL(blob);crypto.subtle.digest('SHA-256',bytes);"});
+assert.equal(result.status,0,'reviewed media adapter may construct bounded local byte/blob values');
+result=check({'apps/web/src/lib/inventory/photo-media.ts':"fetch('/unreviewed');"});
+assert.notEqual(result.status,0,'media adapter does not acquire transport');
+result=check({'apps/web/src/lib/unreviewed-media.ts':"new Blob([]);"});
+assert.notEqual(result.status,0,'media capability remains isolated');

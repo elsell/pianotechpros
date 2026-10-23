@@ -1,12 +1,14 @@
 <script lang="ts">
  import {onMount,tick} from 'svelte';
+ import InventoryPhotos from './InventoryPhotos.svelte';
  import {createInventoryApiClient, InventoryClientError} from '@pianotechpros/api-client';
- import {openInventoryCapture, openInventoryFormWorkspace, inventoryTextFields, inventoryForms, inventoryConditions, inventoryCurrencies, inventoryFormErrors, type InventoryForm, type InventoryFormField, type InventoryFormWorkspace, type SessionCredential} from '@pianotechpros/client-core';
+ import {openInventoryCapture, openInventoryFormWorkspace, handoffCapturePhoto, discardCapturePhoto, inventoryTextFields, inventoryForms, inventoryConditions, inventoryCurrencies, inventoryFormErrors, type InventoryForm, type InventoryFormField, type InventoryFormWorkspace, type SessionCredential} from '@pianotechpros/client-core';
  import type {Translator,MessageKey} from '@pianotechpros/i18n';
- import {claimBrowserInventoryCapture,protectPendingNavigation} from '../browser-events';
+ import {claimBrowserInventoryCapture,claimBrowserInventoryPhotos,protectPendingNavigation} from '../browser-events';
+ import {browserPhotoDigest} from './photo-media';
  import {openBrowserInventoryRecovery} from './recovery-storage';
  export let accountId:string;export let dealerID:string;export let recordID:string;export let credential:SessionCredential;export let apiURL:string;export let i18n:Translator;export let onBack:()=>void;export let onSessionRejected:()=>void;
- let internal=false;let formElement:HTMLFormElement;
+ let photosBusy=false;let internal=false;let formElement:HTMLFormElement;
  let active=true;let loading=true;let failed=false;let captureBusy=false;let denied=false;let heading:HTMLHeadingElement;let workspace:InventoryFormWorkspace|null=null;let unsubscribe=()=>{};
  let state:ReturnType<InventoryFormWorkspace['snapshot']>|null=null;
  async function focusError(field:InventoryFormField){internal=true;await tick();const element=formElement.elements.namedItem(field);if(element&&'focus' in element)(element as HTMLElement).focus();}
@@ -21,7 +23,7 @@
   loading=true;failed=false;denied=false;captureBusy=false;
   try{
    const base={decimal:i18n.locale==='es'?',' as const:'.' as const,active:()=>active,now:Date.now,storage:()=>openBrowserInventoryRecovery(accountId),classify:(error:unknown)=>error instanceof InventoryClientError&&[401,403,404].includes(error.status)?'denied' as const:error instanceof InventoryClientError&&error.code==='conflict'?'conflict' as const:error instanceof InventoryClientError&&[400,422].includes(error.status)?'rejected' as const:'uncertain' as const,schedule:(run:()=>void)=>{const timer=setTimeout(run,800);return()=>clearTimeout(timer);}};
-   const result=recordID==='new'?await openInventoryCapture({...base,userID:accountId,dealerID,key:()=>crypto.randomUUID(),authorize:async()=>{await request(api=>api.list(dealerID,{limit:1}));},lease:()=>claimBrowserInventoryCapture(accountId,dealerID),create:key=>request(api=>api.createDraft(dealerID,key)),get:id=>request(api=>api.get(dealerID,id)),edit:(id,attributes,revision)=>request(api=>api.edit(dealerID,id,attributes,revision)),onCreated:()=>{}})
+   const result=recordID==='new'?await openInventoryCapture({...base,media:{sha256:browserPhotoDigest,handoff:(id,selection)=>handoffCapturePhoto({userID:accountId,dealerID,recordID:id,selection,active:()=>active,authorize:async()=>{await request(api=>api.get(dealerID,id));},lease:()=>claimBrowserInventoryPhotos(accountId,dealerID,id),storage:base.storage,sha256:browserPhotoDigest,now:Date.now}),discard:(id,selection)=>discardCapturePhoto({userID:accountId,dealerID,recordID:id,selection,active:()=>active,authorize:async()=>{await request(api=>api.get(dealerID,id));},lease:()=>claimBrowserInventoryPhotos(accountId,dealerID,id),storage:base.storage,sha256:browserPhotoDigest,now:Date.now})},userID:accountId,dealerID,key:()=>crypto.randomUUID(),authorize:async()=>{await request(api=>api.list(dealerID,{limit:1}));},lease:()=>claimBrowserInventoryCapture(accountId,dealerID),create:key=>request(api=>api.createDraft(dealerID,key)),get:id=>request(api=>api.get(dealerID,id)),edit:(id,attributes,revision)=>request(api=>api.edit(dealerID,id,attributes,revision)),onCreated:()=>{}})
     :await openInventoryFormWorkspace({...base,scope:{userID:accountId,dealerID,recordID},get:()=>request(api=>api.get(dealerID,recordID)),edit:(attributes,revision)=>request(api=>api.edit(dealerID,recordID,attributes,revision))});
    if(!active){result?.dispose();return;}workspace=result;if(result)unsubscribe=result.subscribe(next=>{state=next;});
   }catch(error){if(active){failed=true;captureBusy=error instanceof Error&&error.message==='inventory_capture_busy';denied=error instanceof InventoryClientError&&[401,403,404].includes(error.status);}}
@@ -29,11 +31,11 @@
  }
  function change(key:InventoryFormField,value:string|boolean){if(state?.draft)workspace?.change({...state.draft,[key]:value});}
  function display(form:InventoryForm,key:InventoryFormField){const value=form[key];if(typeof value==='boolean')return i18n.t(value?'inventory.edit.yes':'inventory.edit.no');if(!value)return i18n.t('inventory.edit.unknown');if(key==='form'||key==='condition')return i18n.t(`inventory.${key}.${value}` as MessageKey);return value;}
- async function back(){if(!workspace||await workspace.flush()||state?.denied)onBack();}
+ async function back(){if(photosBusy)return;if(!workspace||await workspace.flush()||state?.denied)onBack();}
  onMount(()=>{heading.focus();const unprotect=protectPendingNavigation(()=>!!state&&!state.denied&&state.recovery!=='ready');void load();return()=>{active=false;unprotect();unsubscribe();workspace?.dispose();};});
 </script>
 <section aria-labelledby="inventory-heading">
- <button type="button" onclick={back}>{i18n.t('inventory.edit.backList')}</button>
+ <button type="button" disabled={photosBusy} onclick={back}>{i18n.t('inventory.edit.backList')}</button>
  <h2 id="inventory-heading" tabindex="-1" bind:this={heading}>{i18n.t(recordID==='new'&&!state?.baseline?'inventory.edit.new':'inventory.edit.editor')}</h2>
  {#if loading}<p role="status">{i18n.t('common.loading')}</p>{/if}
  {#if failed}<p role="alert">{i18n.t(denied?'inventory.denied':captureBusy?'inventory.edit.captureBusy':'inventory.edit.loadFailed')}</p><button disabled={loading} onclick={load}>{i18n.t('inventory.retry')}</button>{/if}
@@ -42,6 +44,7 @@
   {@const draft=state.draft}
   <p class="hint">{i18n.t('inventory.edit.privateDraft')}</p>
   <div class="save-state" role="status">{i18n.t(state.recovery==='failed'?'inventory.edit.storageFailed':state.recovery==='writing'?'inventory.edit.localSaving':state.busy?'inventory.edit.saving':state.restored?'inventory.edit.restored':state.conflict?'inventory.edit.conflict':state.uncertain?'inventory.edit.uncertain':state.failure?'inventory.edit.saveFailed':state.invalid?'inventory.edit.invalid':state.dirty?'inventory.edit.unsaved':!state.baseline?'inventory.edit.newReady':'inventory.edit.saved')}</div>
+  {#if workspace}<InventoryPhotos onBusy={value=>photosBusy=value} {workspace} {accountId} {dealerID} {apiURL} {credential} {i18n} {onSessionRejected} />{/if}
   <form bind:this={formElement} onsubmit={(event)=>{event.preventDefault();void workspace?.save();}}>
    <fieldset><legend>{i18n.t('inventory.edit.identity')}</legend>
     {#each fields as key}<label for={key}>{label(key)}</label><input id={key} value={draft[key]} maxlength={inventoryTextFields[key]*2} aria-invalid={errors.includes(key)} oninput={event=>change(key,event.currentTarget.value)} />{/each}

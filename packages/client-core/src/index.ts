@@ -194,3 +194,5 @@ export {openInventoryCapture, createInventoryCaptureLease} from './inventory-cap
 export {createSelectedMediaStore} from './selected-media';
 export {openPhotoUploadLedger,type PhotoUploadEntry,type PhotoUploadPhase} from './photo-upload-ledger';
 export {openPhotoUploadCoordinator,type PhotoUploadCoordinatorPort} from './photo-upload-coordinator';
+export {createInventoryPhotoWorkspace,type InventoryPhotoWorkspacePort,type InventoryPhotoCollection,type InventoryPhotoItem} from './inventory-photo-workspace';
+export {handoffCapturePhoto,discardCapturePhoto} from './capture-photo-handoff';

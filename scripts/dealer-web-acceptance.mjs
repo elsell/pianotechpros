@@ -4,6 +4,7 @@ import { once } from 'node:events';
 import { chromium } from 'playwright';
 
 const webURL = process.env.DEALER_WEB_URL || 'http://127.0.0.1:5179';
+let imageBytes=Buffer.alloc(0);let photoUploads=0;let losePhoto=false;const recordPhotos=new Map();const photoIntents=new Map();
 const shops = new Map(['atelier', 'studio'].map((id) => [id, { id, name: id === 'atelier' ? 'Atelier Pianos' : 'Studio Pianos', email: `${id}@example.com`, slug: id, revision: 1, accent_color: '#123456', showroom_published: false }]));
 let refreshMode = 'failure';
 let rotations = 0;
@@ -35,14 +36,34 @@ const held = new Promise((resolve) => { releaseDetail = resolve; });
 const server = createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', webURL);
   res.setHeader('Access-Control-Allow-Headers', 'authorization,content-type,idempotency-key');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
   if (req.method === 'OPTIONS') { res.writeHead(204).end(); return; }
   res.setHeader('Content-Type', 'application/json');
   const send = (status, value) => { res.statusCode = status; res.end(JSON.stringify(value)); };
   if (!sessions.has(req.headers.authorization?.replace(/^Bearer /, ''))) return send(401, { code: 'unauthenticated' });
   const url = new URL(req.url, 'http://localhost');
-  let raw = ''; for await (const chunk of req) raw += chunk;
-  const body = raw ? JSON.parse(raw) : {};
+  const chunks=[];for await(const chunk of req)chunks.push(chunk);const rawBytes=Buffer.concat(chunks);const raw=rawBytes.toString();
+  const body=rawBytes.length&&req.headers['content-type']?.includes('application/json')?JSON.parse(rawBytes.toString()):{};
+  const photoRoute=/^\/v1\/dealers\/created-shop\/inventory\/([^/]+)\/photos(?:\/(.*))?$/.exec(url.pathname);
+  if(photoRoute){
+    const [,id,suffix]=photoRoute;const record=id==='concert'?editorRecord:capturedRecords.get(id);
+    if(!record||id==='concert'&&editorMode==='denied')return send(404,{code:'not_found'});
+    let photos=recordPhotos.get(id)??[];const data=()=>({record:id==='concert'?editorRecord:capturedRecords.get(id),photos});
+    if(req.method==='GET'){if(suffix?.endsWith('/image')){if(!photos.some(p=>p.id===suffix.split('/')[0]))return send(404,{code:'not_found'});res.setHeader('Content-Type','image/jpeg');res.setHeader('Cache-Control','private, no-store');return res.end(imageBytes);}return send(200,{data:data()});}
+    const expected=Number(url.searchParams.get('expectedRevision')??body.expectedRevision);const key=id+':'+req.headers['idempotency-key'];const replay=photoIntents.get(key);
+    if(req.method==='POST')photoUploads++;
+    if(req.method==='POST'&&replay)return send(200,{data:data(),meta:{photoID:replay,replay:true}});
+    if(expected!==record.revision)return send(409,{code:'conflict'});
+    let photoID;
+    if(req.method==='POST'){assert.deepEqual(rawBytes,imageBytes);photoID=`photo-${photoIntents.size+1}`;photoIntents.set(key,photoID);photos=[...photos,{id:photoID,altText:''}];}
+    else if(req.method==='PUT'&&suffix==='order'){assert.deepEqual([...body.ids].sort(),photos.map(p=>p.id).sort());photos=body.ids.map(id=>photos.find(p=>p.id===id));}
+    else if(req.method==='PATCH')photos=photos.map(p=>p.id===suffix?{...p,altText:body.altText}:p);
+    else if(req.method==='DELETE')photos=photos.filter(p=>p.id!==suffix);
+    else return send(400,{code:'invalid_photo'});
+    const updated={...record,revision:record.revision+1};if(id==='concert')editorRecord=updated;else capturedRecords.set(id,updated);recordPhotos.set(id,photos);
+    if(req.method==='POST'&&losePhoto){losePhoto=false;return send(503,{code:'unavailable'});}
+    return send(200,{data:data(),...(photoID?{meta:{photoID,replay:false}}:{})});
+  }
   if (url.pathname.startsWith('/v1/dealers/created-shop/inventory/captured-')) {
     const id = url.pathname.split('/').at(-1);const record = capturedRecords.get(id);
     if (!record) return send(404, { code: 'not_found' });
@@ -138,10 +159,14 @@ const browser = await chromium.launch({ headless: true });
 try {
   const context = await browser.newContext({ locale: 'es-ES' });
   await context.addInitScript(() => window.sessionStorage.setItem('pianotechpros_application_session', JSON.stringify({ token: 'browser-test-session', expiresAt: new Date(Date.now() + 3600000).toISOString() })));
+  await context.addInitScript(()=>{
+    const create=URL.createObjectURL.bind(URL),revoke=URL.revokeObjectURL.bind(URL);window.photoURLs=new Set();
+    URL.createObjectURL=value=>{const url=create(value);window.photoURLs.add(url);return url;};URL.revokeObjectURL=url=>{window.photoURLs.delete(url);revoke(url);};
+  });
   const page = await context.newPage();
   page.setDefaultTimeout(15000);
   await page.clock.install();
-  await page.goto(webURL);
+  const initialResponse=await page.goto(webURL);assert.match(initialResponse.headers()['content-security-policy'],/img-src 'self' blob:/);
   await page.getByRole('heading', { name: 'Tus tiendas', exact: true }).waitFor();
   await page.getByRole('button', { name: 'Cargar más tiendas', exact: true }).waitFor();
   await page.getByRole('button', { name: 'Actualizar tiendas', exact: true }).click();
@@ -281,7 +306,7 @@ try {
   await page.getByRole('button', { name: 'Volver al inventario', exact: true }).click();
   await page.getByRole('heading', { name: 'Concert Grand', exact: true }).waitFor();
   await page.getByRole('button', { name: 'Nuevo piano', exact: true }).click();
-  await page.getByText('Añade datos para iniciar un borrador privado. El número de inventario se asigna automáticamente.', { exact: true }).waitFor();
+  await page.getByText('Añade una foto o datos para iniciar un borrador privado. El número de inventario se asigna automáticamente.', { exact: true }).waitFor();
   assert.equal(captureCreates, 0);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
   await page.screenshot({ path: '/tmp/piano-new-narrow.png', fullPage: true });
@@ -308,7 +333,7 @@ try {
   assert.equal(capturedRecords.get('captured-1').attributes.make, 'Kawai');
   assert.equal(capturedRecords.get('captured-1').attributes.stock_number, 'PT-captured-1');
   await secondTab.getByRole('button', { name: 'Intentar de nuevo', exact: true }).click();
-  await secondTab.getByText('Añade datos para iniciar un borrador privado. El número de inventario se asigna automáticamente.', { exact: true }).waitFor();
+  await secondTab.getByText('Añade una foto o datos para iniciar un borrador privado. El número de inventario se asigna automáticamente.', { exact: true }).waitFor();
   assert.equal(await secondTab.getByLabel('Título visible', { exact: true }).inputValue(), '');
   await secondTab.close();
   await page.getByRole('button', { name: 'Volver al inventario', exact: true }).click();
@@ -317,10 +342,57 @@ try {
   await page.getByRole('button', { name: 'New capture', exact: true }).click();
   await page.getByText('Guardado', { exact: true }).waitFor();
   assert.equal(await page.getByLabel('Marca', { exact: true }).inputValue(), 'Kawai');
+  imageBytes=Buffer.from(await page.evaluate(()=>{const canvas=document.createElement('canvas');canvas.width=80;canvas.height=60;const ctx=canvas.getContext('2d');ctx.fillStyle='#285b43';ctx.fillRect(0,0,80,60);return canvas.toDataURL('image/jpeg').split(',')[1];}),'base64');
+  const chosen={name:'private-source.jpg',mimeType:'image/jpeg',buffer:imageBytes};
+  await page.getByLabel('Precio de venta',{exact:true}).fill('12,');
+  await page.getByLabel('Elegir una foto',{exact:true}).setInputFiles(chosen);
+  await page.getByRole('button',{name:'Ver foto 1',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Actualizar fotos',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Ver foto 1',exact:true}).click();
+  await page.getByLabel('Describe esta foto',{exact:true}).fill('Teclado del piano');
+  await page.getByRole('button',{name:'Guardar descripción',exact:true}).click();
+  await page.getByRole('dialog').getByRole('img',{name:'Teclado del piano',exact:true}).waitFor();
+  await page.waitForFunction(()=>document.querySelector('dialog[open] img')?.naturalWidth===80);
+  assert.equal(await page.locator('dialog[open] img').evaluate(image=>image.src.startsWith('blob:')),true);
+  await page.getByRole('button',{name:'Cerrar vista previa',exact:true}).click();
+  assert.equal(await page.getByLabel('Precio de venta',{exact:true}).inputValue(),'12,');
+  losePhoto=true;await page.getByLabel('Elegir una foto',{exact:true}).setInputFiles(chosen);
+  await page.getByText('La carga puede haberse completado. Reintenta para confirmarla sin duplicarla; no vuelvas a elegir la foto.',{exact:true}).waitFor();
+  assert.equal(photoUploads,2);
+  await page.getByRole('button',{name:'Volver al inventario',exact:true}).click();
+  await page.getByRole('button',{name:'New capture',exact:true}).click();
+  await page.getByRole('button',{name:'Reintentar carga',exact:true}).waitFor();assert.equal(photoUploads,2);
+  await page.getByRole('button',{name:'Reintentar carga',exact:true}).click();
+  await page.getByRole('heading',{name:'Cargas pendientes',exact:true}).waitFor({state:'detached'});
+  assert.equal(photoUploads,3);assert.equal(recordPhotos.get('captured-1').length,2);
+  const currentRecord=capturedRecords.get('captured-1');recordPhotos.set('captured-1',[...recordPhotos.get('captured-1')].reverse());capturedRecords.set('captured-1',{...currentRecord,revision:currentRecord.revision+1});
+  await page.getByRole('button',{name:'Usar como portada',exact:true}).nth(1).click();
+  await page.getByText('Las fotos cambiaron en otro lugar. Revisa la galería actualizada antes de repetir el cambio.',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Usar como portada',exact:true}).nth(1).click();
+  await page.getByText('Las fotos cambiaron en otro lugar. Revisa la galería actualizada antes de repetir el cambio.',{exact:true}).waitFor({state:'detached'});
+  await page.getByRole('button',{name:'Quitar foto',exact:true}).nth(1).click();
+  await page.getByRole('dialog').getByRole('button',{name:'Cancelar',exact:true}).click();assert.equal(recordPhotos.get('captured-1').length,2);
+  await page.getByRole('button',{name:'Quitar foto',exact:true}).nth(1).click();await page.getByRole('dialog').getByRole('button',{name:'Quitar foto',exact:true}).click();
+  await page.getByRole('button',{name:'Ver foto 2',exact:true}).waitFor({state:'detached'});
+  await page.getByLabel('Elegir una foto',{exact:true}).setInputFiles({name:'unsupported.heic',mimeType:'image/heic',buffer:Buffer.from('not-a-supported-image')});
+  await page.getByText('Elige una foto JPEG o PNG. Tu borrador sigue guardado.',{exact:true}).waitFor();
+  assert.equal(await page.getByLabel('Precio de venta',{exact:true}).inputValue(),'12,');
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  await page.screenshot({path:'/tmp/piano-photos-narrow.png',fullPage:true});
   await page.getByRole('button', { name: 'Volver al inventario', exact: true }).click();
   await page.getByLabel('Buscar por número, título, marca o modelo', { exact: true }).fill('');
   await page.getByRole('button', { name: 'Buscar inventario', exact: true }).click();
   await page.getByRole('heading', { name: 'Concert Grand', exact: true }).waitFor();
+  loseCapture=true;const beforePhotoCapture=captureCreates;
+  await page.getByRole('button',{name:'Nuevo piano',exact:true}).click();
+  await page.getByLabel('Elegir una foto',{exact:true}).setInputFiles(chosen);
+  await page.getByRole('button',{name:'Reintentar carga',exact:true}).waitFor();assert.equal(captureCreates,beforePhotoCapture+1);
+  await page.getByRole('button',{name:'Volver al inventario',exact:true}).click();await page.getByRole('button',{name:'Nuevo piano',exact:true}).click();
+  await page.getByRole('button',{name:'Reintentar carga',exact:true}).waitFor();assert.equal(captureCreates,beforePhotoCapture+1);
+  await page.getByRole('button',{name:'Reintentar carga',exact:true}).click();await page.getByRole('button',{name:'Ver foto 1',exact:true}).waitFor();
+  assert.equal(captureCreates,beforePhotoCapture+2);assert.equal(capturedRecords.size,2);assert.equal(recordPhotos.get('captured-2').length,1);
+  await page.getByRole('button',{name:'Volver al inventario',exact:true}).click();
+  await page.waitForFunction(()=>window.photoURLs.size===0);
   inventoryMode = 'denied';
   await page.getByRole('button', { name: 'Actualizar inventario', exact: true }).click();
   await page.getByText('Ya no tienes acceso a este inventario.', { exact: true }).waitFor();
@@ -435,5 +507,5 @@ try {
   releaseRefresh();
   assert.equal(await page.evaluate(() => window.refreshResult), 'discarded');
   assert.equal(await page.evaluate(() => sessionStorage.getItem('pianotechpros_application_session')), null);
-  console.log('Lazy New capture/idempotent retry/recovery/cross-tab exclusion and inventory editing/autosave/partial-input recovery/lost-response reconciliation/conflict/denial, browsing/filter/search/pagination/retry/denial and dealer web invitation preview/acceptance/pending/replay, staff permissions/conflicts/removal/invitation revocation, creation retry, conflict review, form retention through session outages, Spanish pagination, keyboard selection, responsive layout and sign-out isolation passed');
+  console.log('Photo-first lost-create recovery, protected upload retry, private image preview, photo ordering conflict, description and removal confirmation; lazy New capture/idempotent retry/recovery/cross-tab exclusion and inventory editing/autosave/partial-input recovery/lost-response reconciliation/conflict/denial, browsing/filter/search/pagination/retry/denial and dealer web invitation preview/acceptance/pending/replay, staff permissions/conflicts/removal/invitation revocation, creation retry, conflict review, form retention through session outages, Spanish pagination, keyboard selection, responsive layout and sign-out isolation passed');
 } finally { releaseRefresh(); releaseDetail(); await browser.close(); server.close(); }

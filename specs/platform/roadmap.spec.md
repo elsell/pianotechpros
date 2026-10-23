@@ -2,6 +2,20 @@
 
 ## Current milestone: feature-complete product
 
+The web editor now presents photo capture before text fields, with private image
+previews, cover/order commands, alternative text and removal confirmation. Shared
+orchestration protects new-capture media before creation; an atomic import receipt
+hands source ownership to the record ledger without copying bytes. Exact retries,
+conflict rebase, interrupted cleanup, expiry and denial preserve recovery pointers.
+209 client-core tests, full checks/contracts and browser encrypted-storage acceptance pass. Controlled-HTTP Playwright journeys cover Spanish
+photo-first creation loss/reopen/retry, lost upload acknowledgement without a
+duplicate, partial text preservation, photo conflict review, preview, descriptions,
+removal and narrow layout. These are browser interaction evidence, not real-backend
+photo acceptance or native camera/device acceptance. Native photo presentation,
+HEIC export, cancellation/progress refinement and full backend product journeys
+remain required. Review findings on creation loss, cleanup retry, imported rebase,
+expiry and denied-create cleanup were fixed and verified.
+
 Text workspaces now serialize saves, recovery, authenticated refresh and media
 mutations. Revision-only photo changes preserve partial local text; concurrent
 remote text requires conflict review. Media work protects recovery first, blocks

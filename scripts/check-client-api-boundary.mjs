@@ -43,7 +43,7 @@ const safeGlobals = new Set([
 ]);
 const storageGlobals = new Set(['indexedDB', 'localStorage', 'TextEncoder', 'TextDecoder', 'Uint8Array']);
 function safeGlobal(relative, name) {
-  return safeGlobals.has(name) || relative === 'apps/web/src/lib/inventory/recovery-storage.ts' && storageGlobals.has(name) || relative === 'apps/mobile/src/inventory/recovery-storage.ts' && ['TextEncoder', 'TextDecoder'].includes(name);
+  return safeGlobals.has(name) || relative === 'apps/web/src/lib/inventory/photo-media.ts' && ['Uint8Array', 'Blob'].includes(name) || relative === 'apps/web/src/lib/inventory/recovery-storage.ts' && storageGlobals.has(name) || relative === 'apps/mobile/src/inventory/recovery-storage.ts' && ['TextEncoder', 'TextDecoder'].includes(name);
 }
 const safeWindowMembers = new Set(['location', 'sessionStorage']);
 const browserGlobalReferences = new Set([

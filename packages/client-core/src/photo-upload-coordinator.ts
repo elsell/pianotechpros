@@ -42,7 +42,8 @@ export async function openPhotoUploadCoordinator(port:PhotoUploadCoordinatorPort
   tail=result.catch(()=>{});return result;
  }
  function entry(id:string){const found=ledger.snapshot().find(e=>e.id===id);if(!found)throw failed();return found;}
- async function cleanup(id:string){await checkpoint(ledger.remove(id));await media.remove(id);active();await checkpoint(ledger.forget(id));}
+ function selected(e:PhotoUploadEntry){return e.sourceScope?createSelectedMediaStore({scope:{...scope,recordID:e.sourceScope},storage,sha256:port.sha256}):media;}
+ async function cleanup(id:string){const source=selected(entry(id));await checkpoint(ledger.remove(id));await source.remove(id);active();await checkpoint(ledger.forget(id));}
  async function prune(){
   const now=port.now();if(!Number.isSafeInteger(now)||now<0)throw failed();
   const pending=ledger.snapshot();
@@ -51,7 +52,7 @@ export async function openPhotoUploadCoordinator(port:PhotoUploadCoordinatorPort
   for(const e of expired){
    active();await checkpoint(ledger.expire(e.id));const marked=entry(e.id);
    expiredIDs.add(e.id);if(marked.expired==='uncertain')uncertainIDs.add(e.id);
-   await media.remove(e.id);active();await checkpoint(ledger.forget(e.id));
+   await selected(e).remove(e.id);active();await checkpoint(ledger.forget(e.id));
   }
  }
  async function requireUnexpired(id:string){
@@ -76,7 +77,7 @@ export async function openPhotoUploadCoordinator(port:PhotoUploadCoordinatorPort
      const result={recordID:e.recordID,photoID:e.photoID};await cleanup(id);return result;
     }
     if(!['reserved','ready','attempted'].includes(e.state))throw failed();
-    const bytes=await media.read(id);active();if(!bytes||bytes.length!==e.size)throw failed();await requireUnexpired(id);active();
+    const bytes=await selected(e).read(id);active();if(!bytes||bytes.length!==e.size)throw failed();await requireUnexpired(id);active();
     if(e.state==='reserved'){await checkpoint(ledger.ready(id));e=entry(id);}
     if(e.state==='ready'){
      let target:{recordID:string;revision:number};

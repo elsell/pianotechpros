@@ -80,3 +80,16 @@ test('expiry is fixed to reservation time and distinguishes uncertain uploads',a
  await ledger.expire('a');assert.equal(ledger.snapshot()[0]?.expired,'uncertain');
  await ledger.forget('a');assert.deepEqual(ledger.snapshot(),[]);
 });
+test('capture import is atomic, timestamp preserving and idempotent after consumption',async()=>{
+ const f=fixture();const recordScope={...scope,recordID:'piano'};const open=()=>openPhotoUploadLedger({scope:recordScope,storage:f.storage,now:()=>2000});let ledger=await open();
+ const imported={id:'selected',size:3,key:'capture-upload-key-01',createdAt:1000,sourceScope:'capture-origin'};
+ await ledger.importReady(imported);assert.deepEqual(ledger.snapshot()[0],{...imported,state:'ready'});await ledger.remove('selected');await ledger.forget('selected');
+ ledger=await open();assert.equal(ledger.hasImport(imported),true);await ledger.importReady(imported);assert.deepEqual(ledger.snapshot(),[]);
+ await assert.rejects(ledger.importReady({...imported,key:'different-upload-key'}));assert.throws(()=>ledger.hasImport({...imported,size:4}));
+});
+test('import provenance survives a changed retry key after a conflict',async()=>{
+ const f=fixture();const recordScope={...scope,recordID:'piano'};const open=()=>openPhotoUploadLedger({scope:recordScope,storage:f.storage,now:()=>2000});let ledger=await open();
+ const imported={id:'selected',size:3,key:'capture-upload-key-01',createdAt:1000,sourceScope:'capture-origin'};
+ await ledger.importReady(imported);await ledger.attempt('selected','piano',1);await ledger.conflict('selected');await ledger.rebase('selected','replacement-upload-key');
+ ledger=await open();assert.equal(ledger.hasImport(imported),true);assert.equal(ledger.snapshot()[0]?.key,'replacement-upload-key');await ledger.attempt('selected','piano',2);await ledger.acknowledge('selected','photo');
+});

@@ -24,9 +24,17 @@ export function protectPendingNavigation(pending:()=>boolean){
 
 /** Held until durable New-capture handoff; ifAvailable never waits behind another tab. */
 export function claimBrowserInventoryCapture(userID:string,dealerID:string):Promise<()=>void>{
+ return claimBrowserLease(`pianotechpros.capture:${JSON.stringify([userID,dealerID])}`);
+}
+
+/** Photo ledgers remain exclusively owned until their queued mutations drain. */
+export function claimBrowserInventoryPhotos(userID:string,dealerID:string,recordID:string):Promise<()=>void>{
+ return claimBrowserLease(`pianotechpros.photos:${JSON.stringify([userID,dealerID,recordID])}`);
+}
+function claimBrowserLease(name:string):Promise<()=>void>{
  return new Promise((resolve,reject)=>{
   if(!navigator.locks){reject(new Error('inventory_capture_unavailable'));return;}
-  void navigator.locks.request(`pianotechpros.capture:${JSON.stringify([userID,dealerID])}`,{ifAvailable:true},async lock=>{
+  void navigator.locks.request(name,{ifAvailable:true},async lock=>{
    if(!lock){reject(new Error('inventory_capture_busy'));return;}
    await new Promise<void>(release=>resolve(release));
   }).catch(()=>reject(new Error('inventory_capture_unavailable')));

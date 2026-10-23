@@ -90,6 +90,9 @@ validated through the retained-publication mapper while the showroom visibility
 lock is held. The public profile and page share that transaction. No private
 working attributes participate in filtering, ordering or projection. Empty pages
 still verify showroom visibility; errors return no profile or partial records.
+Persisted snapshots must contain an explicit non-null boolean `Featured`: missing
+or null values and case-variant keys fail restoration rather than allowing SQL
+ordering and decoded continuation tuples to disagree.
 
 Continuation tokens at the application boundary must be integrity protected and
 bound to the exact showroom and normalized filters; they cannot confer visibility.

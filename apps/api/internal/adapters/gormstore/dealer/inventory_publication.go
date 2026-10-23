@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"strings"
 
 	app "github.com/elsell/pianotechpros/apps/api/internal/app/inventory"
 	"github.com/elsell/pianotechpros/apps/api/internal/domain/audit"
@@ -61,6 +62,21 @@ func readPublication(tx *gorm.DB, record domain.Record) (*domain.Publication, er
 		return nil, err
 	}
 	var listing domain.PublicListing
+	// SQL collection ordering and the decoded continuation flag must agree.
+	// A missing/null bool otherwise decodes to false but sorts as SQL NULL.
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(snapshot.Snapshot, &fields); err != nil {
+		return nil, ports.ErrInvalidArgument
+	}
+	var featured *bool
+	if err := json.Unmarshal(fields["Featured"], &featured); err != nil || featured == nil {
+		return nil, ports.ErrInvalidArgument
+	}
+	for key := range fields {
+		if key != "Featured" && strings.EqualFold(key, "Featured") {
+			return nil, ports.ErrInvalidArgument
+		}
+	}
 	decoder := json.NewDecoder(bytes.NewReader(snapshot.Snapshot))
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&listing); err != nil {
@@ -69,7 +85,7 @@ func readPublication(tx *gorm.DB, record domain.Record) (*domain.Publication, er
 	if err := decoder.Decode(new(any)); err != io.EOF {
 		return nil, ports.ErrInvalidArgument
 	}
-	if listing.ID != record.ID || listing.DealerID != record.DealerID || listing.PublicationRevision != snapshot.Revision {
+	if listing.Featured != *featured || listing.ID != record.ID || listing.DealerID != record.DealerID || listing.PublicationRevision != snapshot.Revision {
 		return nil, ports.ErrInvalidArgument
 	}
 	// The immutable snapshot itself must describe a legitimate visible publication.

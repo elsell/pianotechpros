@@ -2,6 +2,17 @@
 
 ## Current milestone: feature-complete product
 
+Public collection persistence now supports literal search, form, availability,
+currency and inclusive price filters against retained publication snapshots.
+Featured-first keyset pagination is bounded and shares the showroom visibility
+lock with projection. Real PostgreSQL race tests cover hidden prices, private
+edits, foreign/draft/unpublished records, pagination, dependency failures and
+concurrent unpublish. Snapshot restoration rejects missing/null/case-variant
+Featured keys so SQL ordering cannot disagree with continuation values. The full
+dealer-store PostgreSQL suite passed; final affected publication/collection race
+tests, repository/contract checks and required review passed. Collection API,
+integrity-protected cursors and buyer presentation remain the next delivery work.
+
 Public showroom profile, piano and JPEG routes are now registered through a
 project-owned bootstrap extension and Huma-generated contracts. Every route
 requires server-owned evidence of the coordinated source limit, so missing
@@ -30,11 +41,12 @@ full dealer-store PostgreSQL suite, repository/contract checks and required revi
 pass. HTTP/source-limiter
 registration and public browsing remain required before these reads are exposed.
 
-The Android artifact run on 4c3b042 failed before compilation while sdkmanager
-downloaded pinned NDK 27.0.12077973 (invalid ZIP archive). Its backend acceptance
-passed; remaining hosted jobs were still active at inspection. GitHub refused a
-single-job rerun while the workflow remained active. Preserve the pinned toolchain
-and retry the failed native job once eligible; no APK or device acceptance yet.
+The native run on 4c3b042 completed with successful iOS build and backend acceptance.
+Android failed before compilation while sdkmanager downloaded pinned NDK
+27.0.12077973 (invalid ZIP archive). The exact failed Android job was resubmitted
+once the workflow completed, retaining the pinned toolchain. Its retry is pending;
+no APK installation or device interaction acceptance yet. Aggregate verification
+still fails on dependency security findings.
 
 The showroom domain now projects only canonical, published dealer profiles and
 same-dealer visible inventory publications. Public fields are explicitly

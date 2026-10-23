@@ -190,3 +190,4 @@ export { createInventoryBrowser, inventoryBrowseStatuses, type InventoryBrowseSt
 export {createInventoryWorkspace, type InventoryWorkspaceState} from './inventory-workspace';
 export {inventoryTextFields, inventoryForms, inventoryConditions, inventoryCurrencies, isInventoryForm, inventoryFormFromAttributes, inventoryFormErrors, inventoryAttributesFromForm, type InventoryForm, type InventoryFormField, type InventoryTextField, type InventoryWireAttributes} from './inventory-form';
 export {openInventoryFormWorkspace, type InventoryFormWorkspace, type InventoryFormRecord} from './inventory-form-workspace';
+export {openInventoryCapture, createInventoryCaptureLease} from './inventory-capture';

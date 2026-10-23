@@ -1,4 +1,4 @@
 fd9ceb4dbaa46a8fbf42ee431d1e62a42989afa81bc1db4361dc7a959ad7d58f  apps/mobile/src/provider-auth.ts
 565f8623615a57b203855d3751ed848c8377f26958c8bfef539a2f936191d180  apps/mobile/src/provider-auth-state.ts
 3a75a957824da5aed1487cf1ab0a5646017e52fb240432edc4ec173535c2d61f  apps/web/src/lib/provider-auth.ts
-c2b136e0407b35baae2939ea19937ba169f445499e5c88e46810d7510ebd387e  apps/web/src/lib/browser-events.ts
+1ed8293fd5fe607229a249d850bb5a723ce4554b5d15796aabacbf640f2c1886  apps/web/src/lib/browser-events.ts

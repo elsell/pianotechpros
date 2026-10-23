@@ -27,7 +27,8 @@ must preserve sharing and public-listing navigation.
 ## Parity matrix
 
 All product rows are currently **incomplete** in the rebuild. Dealer profile and
-staff slices have API/client implementations and partial acceptance evidence;
+staff slices, inventory browsing/editing and lazy draft creation have API/client
+implementations and partial acceptance evidence;
 the roadmap records their verified scope. Authentication has working
 foundation/browser evidence but still needs device interaction QA.
 

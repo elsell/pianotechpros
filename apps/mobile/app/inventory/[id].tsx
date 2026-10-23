@@ -1,32 +1,37 @@
 import {useEffect,useRef,useState} from 'react';
 import {Button,InputAccessoryView,Keyboard,KeyboardAvoidingView,Modal,Platform,Pressable,ScrollView,Switch,Text,TextInput,View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {usePreventRemove} from '@react-navigation/native';
-import {Redirect,Stack,useLocalSearchParams,useNavigation} from 'expo-router';
+import {usePreventRemove,useRoute} from '@react-navigation/native';
+import {Redirect,Stack,useLocalSearchParams,useNavigation,useRouter} from 'expo-router';
 import {InventoryClientError} from '@pianotechpros/api-client';
-import {openInventoryFormWorkspace,inventoryTextFields,inventoryForms,inventoryConditions,inventoryCurrencies,inventoryFormErrors,type InventoryForm,type InventoryFormField,type InventoryFormWorkspace,type InventoryTextField} from '@pianotechpros/client-core';
+import {openInventoryCapture,openInventoryFormWorkspace,inventoryTextFields,inventoryForms,inventoryConditions,inventoryCurrencies,inventoryFormErrors,type InventoryForm,type InventoryFormField,type InventoryFormWorkspace,type InventoryTextField} from '@pianotechpros/client-core';
 import type {MessageKey} from '@pianotechpros/i18n';
 import {useMobileSession} from '../../src/session-provider';
 import {useInventoryRequest} from '../../src/use-inventory-request';
 import {useNativeTheme} from '../../src/native-theme';
+import {randomUUID} from 'expo-crypto';
+import {claimMobileInventoryCapture} from '../../src/inventory/capture-lease';
 import {openMobileInventoryRecovery} from '../../src/inventory/recovery-storage';
 type Choice='form'|'condition'|'asking_currency'|'cost_currency';
-function Editor({userID,dealerID,recordID}:{userID:string;dealerID:string;recordID:string}){
+function Editor({userID,dealerID,recordID:routeRecordID}:{userID:string;dealerID:string;recordID:string}){
+ const [recordID]=useState(routeRecordID);const router=useRouter();
  const {i18n}=useMobileSession();const theme=useNativeTheme();const request=useInventoryRequest();const navigation=useNavigation();
  const workspace=useRef<InventoryFormWorkspace|null>(null);
  const [state,setState]=useState<ReturnType<InventoryFormWorkspace['snapshot']>|null>(null);
- const [loading,setLoading]=useState(true);const [failed,setFailed]=useState(false);const [denied,setDenied]=useState(false);const [attempt,setAttempt]=useState(0);const [internal,setInternal]=useState(false);const [choice,setChoice]=useState<Choice|null>(null);
+ const [loading,setLoading]=useState(true);const [failed,setFailed]=useState(false);const [denied,setDenied]=useState(false);const [captureBusy,setCaptureBusy]=useState(false);const [attempt,setAttempt]=useState(0);const [internal,setInternal]=useState(false);const [choice,setChoice]=useState<Choice|null>(null);
  useEffect(()=>{
   let active=true;let current:InventoryFormWorkspace|null=null;let unsubscribe=()=>{};
-  setLoading(true);setFailed(false);setDenied(false);
+  setLoading(true);setFailed(false);setDenied(false);setCaptureBusy(false);
   void (async()=>{try{
-   current=await openInventoryFormWorkspace({scope:{userID,dealerID,recordID},decimal:i18n.locale==='es'?',':'.',active:()=>active,now:Date.now,storage:()=>openMobileInventoryRecovery(userID),get:()=>request(api=>api.get(dealerID,recordID)),edit:(attributes,revision)=>request(api=>api.edit(dealerID,recordID,attributes,revision)),classify:error=>error instanceof InventoryClientError&&[401,403,404].includes(error.status)?'denied':error instanceof InventoryClientError&&error.code==='conflict'?'conflict':error instanceof InventoryClientError&&[400,422].includes(error.status)?'rejected':'uncertain',schedule:run=>{const timer=setTimeout(run,800);return()=>clearTimeout(timer);}});
+   const base={decimal:i18n.locale==='es'?',' as const:'.' as const,active:()=>active,now:Date.now,storage:()=>openMobileInventoryRecovery(userID),classify:(error:unknown)=>error instanceof InventoryClientError&&[401,403,404].includes(error.status)?'denied' as const:error instanceof InventoryClientError&&error.code==='conflict'?'conflict' as const:error instanceof InventoryClientError&&[400,422].includes(error.status)?'rejected' as const:'uncertain' as const,schedule:(run:()=>void)=>{const timer=setTimeout(run,800);return()=>clearTimeout(timer);}};
+   current=recordID==='new'?await openInventoryCapture({...base,userID,dealerID,key:randomUUID,authorize:async()=>{await request(api=>api.list(dealerID,{limit:1}));},lease:()=>claimMobileInventoryCapture(userID,dealerID),create:key=>request(api=>api.createDraft(dealerID,key)),get:id=>request(api=>api.get(dealerID,id)),edit:(id,attributes,revision)=>request(api=>api.edit(dealerID,id,attributes,revision)),onCreated:id=>{if(active)router.setParams({id});}})
+    :await openInventoryFormWorkspace({...base,scope:{userID,dealerID,recordID},get:()=>request(api=>api.get(dealerID,recordID)),edit:(attributes,revision)=>request(api=>api.edit(dealerID,recordID,attributes,revision))});
    if(!active){current?.dispose();return;}workspace.current=current;if(current)unsubscribe=current.subscribe(setState);
-  }catch(error){if(active){setFailed(true);setDenied(error instanceof InventoryClientError&&[401,403,404].includes(error.status));}}finally{if(active)setLoading(false);}})();
+  }catch(error){if(active){setFailed(true);setCaptureBusy(error instanceof Error&&error.message==='inventory_capture_busy');setDenied(error instanceof InventoryClientError&&[401,403,404].includes(error.status));}}finally{if(active)setLoading(false);}})();
   return()=>{active=false;unsubscribe();current?.dispose();if(workspace.current===current)workspace.current=null;};
  },[userID,dealerID,recordID,request,attempt]);
  usePreventRemove(!!state&&!state.denied&&state.recovery!=='ready',({data})=>{void (async()=>{if(await workspace.current?.flush())navigation.dispatch(data.action);})();});
- const draft=state?.draft;const errors=draft?inventoryFormErrors(draft):[];
+ const draft=state?.draft;const errors=draft?inventoryFormErrors(draft).filter(field=>state?.baseline||field!=='stock_number'):[];
  const label=(field:InventoryFormField)=>i18n.t(`inventory.field.${field}` as MessageKey);
  function change(field:InventoryFormField,value:string|boolean){const latest=workspace.current?.snapshot().draft;if(latest)workspace.current?.change({...latest,[field]:value});}
  function display(form:InventoryForm,field:InventoryFormField){const value=form[field];if(typeof value==='boolean')return i18n.t(value?'inventory.edit.yes':'inventory.edit.no');if(!value)return i18n.t('inventory.edit.unknown');if(field==='form'||field==='condition')return i18n.t(`inventory.${field}.${value}` as MessageKey);return value;}
@@ -35,14 +40,14 @@ function Editor({userID,dealerID,recordID}:{userID:string;dealerID:string;record
  function toggle(key:'featured'|'player_system'|'price_visible'){if(!draft)return null;return <View key={key} style={{flexDirection:'row',alignItems:'center',gap:16,minHeight:52}}><Text style={{...copyStyle,flex:1}}>{label(key)}</Text><Switch accessibilityLabel={label(key)} value={draft[key]} onValueChange={value=>change(key,value)} /></View>;}
  function choose(key:Choice){if(!draft)return null;return <Pressable key={key} accessibilityRole="button" accessibilityLabel={i18n.t('inventory.edit.choose',{field:label(key)})} onPress={()=>{Keyboard.dismiss();setChoice(key);}} style={({pressed})=>({padding:16,minHeight:52,borderRadius:10,backgroundColor:theme.surface,borderColor:theme.border,borderWidth:1,opacity:pressed?.6:1,gap:4})}><Text style={{color:theme.secondary,fontSize:15}}>{label(key)}</Text><Text style={copyStyle}>{display(draft,key)}</Text></Pressable>;}
  function heading(key:MessageKey){return <Text accessibilityRole="header" style={{color:theme.text,fontSize:22,fontWeight:'600',marginTop:16}}>{i18n.t(key)}</Text>;}
- return <><Stack.Screen options={{title:i18n.t('inventory.edit.editor'),headerBackButtonMenuEnabled:false}} />
+ return <><Stack.Screen options={{title:i18n.t(recordID==='new'&&!state?.baseline?'inventory.edit.new':'inventory.edit.editor'),headerBackButtonMenuEnabled:false}} />
  <KeyboardAvoidingView style={{flex:1}} enabled={Platform.OS==='android'} behavior="height"><ScrollView contentInsetAdjustmentBehavior="automatic" automaticallyAdjustKeyboardInsets keyboardDismissMode="interactive" keyboardShouldPersistTaps="handled" contentContainerStyle={{padding:20,gap:16,paddingBottom:40}}>
  {loading?<Text style={copyStyle}>{i18n.t('common.loading')}</Text>:null}
- {failed?<><Text accessibilityRole="alert" style={copyStyle}>{i18n.t(denied?'inventory.denied':'inventory.edit.loadFailed')}</Text><Button title={i18n.t('inventory.retry')} color={theme.accent} onPress={()=>setAttempt(v=>v+1)} disabled={loading} /></>:null}
+ {failed?<><Text accessibilityRole="alert" style={copyStyle}>{i18n.t(denied?'inventory.denied':captureBusy?'inventory.edit.captureBusy':'inventory.edit.loadFailed')}</Text><Button title={i18n.t('inventory.retry')} color={theme.accent} onPress={()=>setAttempt(v=>v+1)} disabled={loading} /></>:null}
  {state?.denied?<Text accessibilityRole="alert" style={copyStyle}>{i18n.t('inventory.denied')}</Text>:null}
  {draft&&state?<>
  <Text style={{color:theme.secondary,fontSize:16}}>{i18n.t('inventory.edit.privateDraft')}</Text>
- <Text accessibilityLiveRegion="polite" style={copyStyle}>{i18n.t(state.recovery==='failed'?'inventory.edit.storageFailed':state.recovery==='writing'?'inventory.edit.localSaving':state.busy?'inventory.edit.saving':state.restored?'inventory.edit.restored':state.conflict?'inventory.edit.conflict':state.uncertain?'inventory.edit.uncertain':state.failure?'inventory.edit.saveFailed':state.invalid?'inventory.edit.invalid':state.dirty?'inventory.edit.unsaved':'inventory.edit.saved')}</Text>
+ <Text accessibilityLiveRegion="polite" style={copyStyle}>{i18n.t(state.recovery==='failed'?'inventory.edit.storageFailed':state.recovery==='writing'?'inventory.edit.localSaving':state.busy?'inventory.edit.saving':state.restored?'inventory.edit.restored':state.conflict?'inventory.edit.conflict':state.uncertain?'inventory.edit.uncertain':state.failure?'inventory.edit.saveFailed':state.invalid?'inventory.edit.invalid':state.dirty?'inventory.edit.unsaved':!state.baseline?'inventory.edit.newReady':'inventory.edit.saved')}</Text>
  {heading('inventory.edit.identity')}{(['make','model','title','size','finish'] as const).map(key=>field(key))}{choose('form')}{choose('condition')}{toggle('player_system')}
  {heading('inventory.edit.date')}<Text style={{color:theme.secondary,fontSize:16}}>{i18n.t('inventory.edit.dateHint')}</Text>{field('year')}{field('month')}{field('day')}
  {heading('inventory.edit.offering')}{field('description',true)}<Text style={{color:theme.secondary,fontSize:16}}>{i18n.t('inventory.edit.moneyHint',{separator:draft.decimal})}</Text>{field('asking_amount')}{choose('asking_currency')}{toggle('price_visible')}{toggle('featured')}
@@ -58,8 +63,8 @@ function Editor({userID,dealerID,recordID}:{userID:string;dealerID:string;record
  </>;
 }
 export default function InventoryEditorScreen(){
- const {dealerID,id}=useLocalSearchParams<{dealerID:string;id:string}>();const auth=useMobileSession();const theme=useNativeTheme();
+ const route=useRoute();const {dealerID,id}=useLocalSearchParams<{dealerID:string;id:string}>();const auth=useMobileSession();const theme=useNativeTheme();
  if(!auth.ready)return <View style={{padding:20}}><Text style={{color:theme.text}}>{auth.i18n.t('common.loading')}</Text></View>;
  if(!auth.session||!auth.profile||typeof dealerID!=='string'||typeof id!=='string')return <Redirect href="/" />;
- return <Editor key={JSON.stringify([auth.profile.id,dealerID,id])} userID={auth.profile.id} dealerID={dealerID} recordID={id} />;
+ return <Editor key={JSON.stringify([auth.profile.id,dealerID,route.key])} userID={auth.profile.id} dealerID={dealerID} recordID={id} />;
 }

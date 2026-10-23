@@ -23,7 +23,7 @@ function Inventory({dealerID}:{dealerID:string}){
  useEffect(()=>{const unsubscribe=browser.subscribe(setState);return()=>{unsubscribe();browser.dispose();};},[browser]);
  useFocusEffect(useCallback(()=>{void browser.filter(browser.snapshot().filters);},[browser]));
  function apply(status:InventoryBrowseStatus){setFiltersOpen(false);void browser.filter({search,status});}
- return <><Stack.Screen options={{title:i18n.t('inventory.heading'),headerLargeTitle:true}} />
+ return <><Stack.Screen options={{title:i18n.t('inventory.heading'),headerLargeTitle:true,headerRight:()=><Button title={i18n.t('inventory.edit.new')} color={theme.accent} onPress={()=>router.push({pathname:'/inventory/[id]',params:{id:'new',dealerID}})} />}} />
  <FlatList data={state.items} keyExtractor={item=>item.id} contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled" contentContainerStyle={{padding:20,flexGrow:1}}
   refreshControl={<RefreshControl refreshing={pull.refreshing} onRefresh={()=>{void pull.refresh();}} tintColor={theme.accent} />}
   ListHeaderComponent={<View style={{gap:12,marginBottom:20}}>

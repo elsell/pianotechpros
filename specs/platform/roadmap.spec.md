@@ -258,6 +258,24 @@ Review found a Metro import-suffix issue, fixed before successful exports; follo
 review found no blockers. New-record capture, photos, voice, publication/lifecycle
 and the remaining parity rows are still required. The full goal remains active.
 
+
+New now opens the same editor on web/native without creating an empty server record
+on entry. First input durably reserves one creation key; interrupted creation and
+restarts reuse it. The account/dealer-scoped pending capture transfers into ordinary
+record recovery before its marker is removed. Tests cover storage failures, typing
+during creation, interrupted handoff, cleanup failure and denied creation. Browser
+Web Locks exclude a competing tab; native process leases exclude duplicate pending
+captures. Review found premature lease release during delayed attached-editor
+writes; a failing regression now passes after disposal drains all local writes.
+A follow-up review found no blockers. The real Chromium/controlled HTTP journey
+passes lazy creation, lost acknowledgement, reopening, same-key retry, generated
+stock, cross-tab exclusion/release and opening the created record from inventory.
+All 49 focused inventory core tests, full checks/contracts, the production web
+build and both Metro exports pass. Native route identity updates without an intentional form remount, but actual
+keyboard/gesture/background device interaction still requires acceptance. This
+completes the text-entry creation path, not the required camera/photo-first journey;
+media capture/upload and retained photo references are the next product work.
+
 Attribute editing persistence now applies the domain revision command under the
 same authority locks, with atomic audit/private history. Real PostgreSQL race
 coverage passes competing CAS writers, stale and cross-user/dealer edits,

@@ -13,6 +13,7 @@ const staffInvitations = new Map();
 let staffConflict = true;
 let inventoryMode = 'normal';
 let editorMode = 'normal';
+const captureIntents = new Map();const capturedRecords = new Map();let captureCreates = 0;let loseCapture = true;
 let editorWrites = 0;
 let editorRecord = { id: 'concert', dealer_id: 'created-shop', revision: 1, status: 'available', attributes: { stock_number: 'concert', title: 'Concert Grand', featured: true }, created_at: '2026-10-22T12:00:00Z', updated_at: '2026-10-22T12:00:00Z' };
 let denyStaff = false;
@@ -42,6 +43,15 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   let raw = ''; for await (const chunk of req) raw += chunk;
   const body = raw ? JSON.parse(raw) : {};
+  if (url.pathname.startsWith('/v1/dealers/created-shop/inventory/captured-')) {
+    const id = url.pathname.split('/').at(-1);const record = capturedRecords.get(id);
+    if (!record) return send(404, { code: 'not_found' });
+    if (req.method === 'PUT') {
+      if (body.expectedRevision !== record.revision) return send(409, { code: 'conflict' });
+      capturedRecords.set(id, { ...record, revision: record.revision + 1, attributes: body.attributes });
+    }
+    return send(200, { data: capturedRecords.get(id) });
+  }
   if (url.pathname === '/v1/dealers/created-shop/inventory/concert') {
     if (editorMode === 'denied') return send(404, { code: 'not_found' });
     if (req.method === 'PUT') {
@@ -55,13 +65,23 @@ const server = createServer(async (req, res) => {
   }
   if (url.pathname === '/v1/dealers/created-shop/inventory') {
     if (inventoryMode !== 'normal') return send(inventoryMode === 'denied' ? 404 : 503, { code: inventoryMode === 'denied' ? 'not_found' : 'unavailable' });
+    if (req.method === 'POST') {
+      captureCreates++;const key = req.headers['idempotency-key'];assert.ok(typeof key === 'string' && key.length >= 16);
+      if (!captureIntents.has(key)) {
+        const id = `captured-${captureIntents.size + 1}`;captureIntents.set(key, id);
+        capturedRecords.set(id, { id, dealer_id: 'created-shop', revision: 1, status: 'draft', attributes: { stock_number: `PT-${id}` }, created_at: '2026-10-22T12:00:00Z', updated_at: '2026-10-22T12:00:00Z' });
+      }
+      if (loseCapture) { loseCapture = false; return send(503, { code: 'unavailable' }); }
+      return send(201, { data: capturedRecords.get(captureIntents.get(key)) });
+    }
     const records = [
       { id: 'concert', title: 'Concert Grand', status: 'available', featured: true },
       { id: 'baby', title: 'Baby Grand', status: 'draft', featured: false },
       { id: 'upright', title: 'Studio Upright', status: 'sold', featured: false },
+      ...[...capturedRecords.values()].map(r => ({ id: r.id, title: r.attributes.title || r.attributes.stock_number, status: r.status, featured: !!r.attributes.featured })),
     ].filter(item => (url.searchParams.get('status') ? item.status === url.searchParams.get('status') : url.searchParams.get('includeInactive') === 'true' || item.status !== 'sold') && item.title.toLowerCase().includes((url.searchParams.get('search') || '').toLowerCase()));
     const offset = Number(url.searchParams.get('cursor') || 0);
-    return send(200, { data: records.slice(offset, offset + 1).map(item => ({ id: item.id, dealer_id: 'created-shop', revision: 1, status: item.status, attributes: { stock_number: item.id, title: item.title, featured: item.featured }, created_at: '2026-10-22T12:00:00Z', updated_at: '2026-10-22T12:00:00Z' })), meta: offset + 1 < records.length ? { nextCursor: String(offset + 1) } : {} });
+    return send(200, { data: records.slice(offset, offset + 1).map(item => capturedRecords.get(item.id) || ({ id: item.id, dealer_id: 'created-shop', revision: 1, status: item.status, attributes: { stock_number: item.id, title: item.title, featured: item.featured }, created_at: '2026-10-22T12:00:00Z', updated_at: '2026-10-22T12:00:00Z' })), meta: offset + 1 < records.length ? { nextCursor: String(offset + 1) } : {} });
   }
   if (url.pathname === '/v1/dealers' && req.method === 'POST') {
     createRequests++;
@@ -260,6 +280,47 @@ try {
   assert.equal(await page.getByLabel('Marca', { exact: true }).count(), 0);
   await page.getByRole('button', { name: 'Volver al inventario', exact: true }).click();
   await page.getByRole('heading', { name: 'Concert Grand', exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Nuevo piano', exact: true }).click();
+  await page.getByText('Añade datos para iniciar un borrador privado. El número de inventario se asigna automáticamente.', { exact: true }).waitFor();
+  assert.equal(captureCreates, 0);
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+  await page.screenshot({ path: '/tmp/piano-new-narrow.png', fullPage: true });
+  await page.getByLabel('Título visible', { exact: true }).fill('New capture');
+  await page.getByText('No se pudo confirmar el último guardado. Comprueba su estado antes de continuar.', { exact: true }).waitFor();
+  assert.equal(capturedRecords.size, 1);
+  const secondTab = await context.newPage();secondTab.setDefaultTimeout(15000);
+  await secondTab.goto(webURL);
+  await secondTab.getByRole('button', { name: 'Cargar más tiendas', exact: true }).click();
+  await secondTab.getByRole('button', { name: 'My edited shop', exact: true }).click();
+  await secondTab.getByRole('button', { name: 'Ver inventario', exact: true }).click();
+  await secondTab.getByRole('button', { name: 'Nuevo piano', exact: true }).click();
+  await secondTab.getByText('Ya hay un piano nuevo abierto en otra ventana. Continúa allí o ciérrala y vuelve a intentarlo.', { exact: true }).waitFor();
+  assert.equal(await secondTab.getByLabel('Título visible', { exact: true }).count(), 0);
+  await page.getByRole('button', { name: 'Volver al inventario', exact: true }).click();
+  await page.getByRole('button', { name: 'Nuevo piano', exact: true }).click();
+  await page.getByText('Los cambios recuperados están listos para revisar. El guardado está en pausa hasta que continúes.', { exact: true }).waitFor();
+  assert.equal(await page.getByLabel('Título visible', { exact: true }).inputValue(), 'New capture');
+  assert.equal(captureCreates, 1);
+  await page.getByLabel('Marca', { exact: true }).fill('Kawai');
+  await page.getByRole('button', { name: 'Guardar ahora', exact: true }).click();
+  await page.getByText('Guardado', { exact: true }).waitFor();
+  assert.equal(captureCreates, 2);assert.equal(captureIntents.size, 1);
+  assert.equal(capturedRecords.get('captured-1').attributes.make, 'Kawai');
+  assert.equal(capturedRecords.get('captured-1').attributes.stock_number, 'PT-captured-1');
+  await secondTab.getByRole('button', { name: 'Intentar de nuevo', exact: true }).click();
+  await secondTab.getByText('Añade datos para iniciar un borrador privado. El número de inventario se asigna automáticamente.', { exact: true }).waitFor();
+  assert.equal(await secondTab.getByLabel('Título visible', { exact: true }).inputValue(), '');
+  await secondTab.close();
+  await page.getByRole('button', { name: 'Volver al inventario', exact: true }).click();
+  await page.getByLabel('Buscar por número, título, marca o modelo', { exact: true }).fill('New capture');
+  await page.getByRole('button', { name: 'Buscar inventario', exact: true }).click();
+  await page.getByRole('button', { name: 'New capture', exact: true }).click();
+  await page.getByText('Guardado', { exact: true }).waitFor();
+  assert.equal(await page.getByLabel('Marca', { exact: true }).inputValue(), 'Kawai');
+  await page.getByRole('button', { name: 'Volver al inventario', exact: true }).click();
+  await page.getByLabel('Buscar por número, título, marca o modelo', { exact: true }).fill('');
+  await page.getByRole('button', { name: 'Buscar inventario', exact: true }).click();
+  await page.getByRole('heading', { name: 'Concert Grand', exact: true }).waitFor();
   inventoryMode = 'denied';
   await page.getByRole('button', { name: 'Actualizar inventario', exact: true }).click();
   await page.getByText('Ya no tienes acceso a este inventario.', { exact: true }).waitFor();
@@ -374,5 +435,5 @@ try {
   releaseRefresh();
   assert.equal(await page.evaluate(() => window.refreshResult), 'discarded');
   assert.equal(await page.evaluate(() => sessionStorage.getItem('pianotechpros_application_session')), null);
-  console.log('Inventory editing/autosave/partial-input recovery/lost-response reconciliation/conflict/denial, browsing/filter/search/pagination/retry/denial and dealer web invitation preview/acceptance/pending/replay, staff permissions/conflicts/removal/invitation revocation, creation retry, conflict review, form retention through session outages, Spanish pagination, keyboard selection, responsive layout and sign-out isolation passed');
+  console.log('Lazy New capture/idempotent retry/recovery/cross-tab exclusion and inventory editing/autosave/partial-input recovery/lost-response reconciliation/conflict/denial, browsing/filter/search/pagination/retry/denial and dealer web invitation preview/acceptance/pending/replay, staff permissions/conflicts/removal/invitation revocation, creation retry, conflict review, form retention through session outages, Spanish pagination, keyboard selection, responsive layout and sign-out isolation passed');
 } finally { releaseRefresh(); releaseDetail(); await browser.close(); server.close(); }

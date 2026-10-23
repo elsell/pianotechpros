@@ -21,3 +21,14 @@ export function protectPendingNavigation(pending:()=>boolean){
  window.addEventListener('beforeunload',beforeUnload);
  return()=>window.removeEventListener('beforeunload',beforeUnload);
 }
+
+/** Held until durable New-capture handoff; ifAvailable never waits behind another tab. */
+export function claimBrowserInventoryCapture(userID:string,dealerID:string):Promise<()=>void>{
+ return new Promise((resolve,reject)=>{
+  if(!navigator.locks){reject(new Error('inventory_capture_unavailable'));return;}
+  void navigator.locks.request(`pianotechpros.capture:${JSON.stringify([userID,dealerID])}`,{ifAvailable:true},async lock=>{
+   if(!lock){reject(new Error('inventory_capture_busy'));return;}
+   await new Promise<void>(release=>resolve(release));
+  }).catch(()=>reject(new Error('inventory_capture_unavailable')));
+ });
+}

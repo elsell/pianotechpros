@@ -53,6 +53,7 @@ export function createInventoryWorkspace<A,R extends InventoryEditorRecord<A>>(p
   async recover(){if(disposed)return;await editor.recover();await flush();},
   keepEdits(){if(disposed)return;restored=false;editor.keepEdits();},
   useLatest(){if(disposed)return;restored=false;editor.useLatest();},
+  async protect(){const checkpoint=editor.checkpoint();if(!checkpoint||disposed)return false;persist(checkpoint);notify();return flush();},
   flush,
   dispose(){if(disposed)return;disposed=true;cancel?.();cancel=null;unsubscribe();editor.dispose();signature='';listeners.clear();},
  });

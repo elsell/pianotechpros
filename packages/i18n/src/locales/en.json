@@ -226,5 +226,8 @@
   "inventory.condition.restored": "Restored",
   "inventory.condition.rebuilt": "Rebuilt",
   "inventory.condition.consignment": "Consignment",
-  "inventory.condition.other": "Other"
+  "inventory.condition.other": "Other",
+  "inventory.edit.new": "New piano",
+  "inventory.edit.newReady": "Add details to start a private draft. A stock number is assigned automatically.",
+  "inventory.edit.captureBusy": "A new piano is already open in another window. Continue there or close it, then retry."
 }

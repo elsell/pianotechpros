@@ -1,6 +1,6 @@
 # Piano capture and publication specification
 
-Status: product acceptance contract; not yet implemented by this scaffold.
+Status: implementation in progress; the complete acceptance journeys remain required.
 
 ## Task and vocabulary
 
@@ -230,3 +230,38 @@ inform labelled input, appropriate keyboards and selection controls;
 [React Navigation removal protection](https://reactnavigation.org/docs/use-prevent-remove/)
 defines the native navigation guard. These references guide implementation and do
 not replace large-text, screen-reader, keyboard and gesture device acceptance.
+
+## Lazy New capture and durable creation identity
+
+New opens the same editable task without creating a server record or requiring
+setup fields. The first accepted detail change (or future upload request) persists
+a versioned creation intent before sending an empty-draft create command. The
+intent holds one random idempotency key and raw form values, scoped by user/dealer
+in a reserved `@capture` recovery slot. Failed or interrupted requests always reuse
+that key. A restart pauses automatic mutation and requires explicit continuation.
+Leaving and returning to New resumes pending capture; it never silently replaces
+unsent input with an empty form. Fresh dealer/inventory read authority precedes
+opening local recovery; the create endpoint separately enforces write authority.
+
+Only one pending New capture per user/dealer may be open on an installation.
+Browser Web Locks provide exclusive ownership across tabs for the full pending
+handoff; native uses a process coordinator. Failure to acquire the capability
+fails closed with localized feedback. Do not use a race-prone read/write flag as
+a lock. Release ownership after queued local writes finish on teardown, and after
+a completed handoff. Browser closure releases its Web Lock through the platform.
+
+Record creation does not discard the intent. First persist the returned identity
+and creation baseline, then establish the ordinary record-scoped recovery journal
+with all current input, preserving the server-generated stock number when the
+user has not supplied one. Typing during creation/handoff must survive. Only after
+that journal is durable may the pending capture slot be removed. Failed removal
+is retryable and prevents treating handoff as complete. Recovery from an interrupted
+handoff prefers an already-existing record journal over the older capture payload;
+a changed server revision still requires explicit conflict review. The same editor
+continues after handoff; native updates its route identity without rebuilding the
+form or dismissing the keyboard. No initial facts are silently published.
+
+A confirmed empty capture has no saved record; its UI must not report server-saved
+status. Navigation waits for local durability, including pending creation intent,
+but does not wait for a network request whose exact intent is already protected.
+Photo capture remains required separately and must reuse this creation boundary.

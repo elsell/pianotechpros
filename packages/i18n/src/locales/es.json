@@ -226,5 +226,8 @@
   "inventory.condition.restored": "Restaurado",
   "inventory.condition.rebuilt": "Reconstruido",
   "inventory.condition.consignment": "En consignación",
-  "inventory.condition.other": "Otro"
+  "inventory.condition.other": "Otro",
+  "inventory.edit.new": "Nuevo piano",
+  "inventory.edit.newReady": "Añade datos para iniciar un borrador privado. El número de inventario se asigna automáticamente.",
+  "inventory.edit.captureBusy": "Ya hay un piano nuevo abierto en otra ventana. Continúa allí o ciérrala y vuelve a intentarlo."
 }

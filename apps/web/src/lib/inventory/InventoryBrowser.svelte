@@ -26,7 +26,7 @@
 {:else}
 <section aria-labelledby="inventory-heading">
  <button onclick={onBack}>{i18n.t('inventory.back')}</button>
- <header><h2 id="inventory-heading" tabindex="-1" bind:this={heading}>{i18n.t('inventory.heading')}</h2><button disabled={state.busy} onclick={()=>browser.refresh()}>{i18n.t('inventory.refresh')}</button></header>
+ <header><h2 id="inventory-heading" tabindex="-1" bind:this={heading}>{i18n.t('inventory.heading')}</h2><div class="actions"><button onclick={()=>{selected='new';}}>{i18n.t('inventory.edit.new')}</button><button disabled={state.busy} onclick={()=>browser.refresh()}>{i18n.t('inventory.refresh')}</button></div></header>
  <form onsubmit={(event)=>{event.preventDefault();apply();}}>
   <label for="inventory-search">{i18n.t('inventory.search')}</label>
   <div class="search"><input id="inventory-search" type="search" maxlength="120" bind:value={search} /><button type="submit">{i18n.t('inventory.submitSearch')}</button></div>
@@ -40,5 +40,5 @@
 </section>
 {/if}
 <style>
- .item{font:inherit;font-weight:650;text-align:left}header,.row-heading,.search{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}h2{font-size:1.65rem}h4{font-size:1.15rem;margin:0}form{display:grid;gap:.65rem;margin:1.5rem 0}label{font-weight:600}input,select,button{font:inherit;min-height:44px;border:1px solid #aabbb1;border-radius:.5rem;padding:.6rem .8rem;color:#183e32;background:white}input{flex:1;min-width:0;width:100%}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}:is(button,input,select):focus-visible{outline:3px solid #246aab;outline-offset:3px}ul{list-style:none;padding:0}li{padding:1rem 0;border-bottom:1px solid #d8e1da}li p{margin:.4rem 0;color:#52645e}.featured{font-size:.85rem;border:1px solid #aabbb1;border-radius:1rem;padding:.25rem .6rem}.status{font-weight:600}section{overflow-wrap:anywhere}@media(max-width:480px){.search{align-items:stretch;flex-direction:column}}
+ .item{font:inherit;font-weight:650;text-align:left}header,.row-heading,.search,.actions{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}h2{font-size:1.65rem}h4{font-size:1.15rem;margin:0}form{display:grid;gap:.65rem;margin:1.5rem 0}label{font-weight:600}input,select,button{font:inherit;min-height:44px;border:1px solid #aabbb1;border-radius:.5rem;padding:.6rem .8rem;color:#183e32;background:white}input{flex:1;min-width:0;width:100%}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}:is(button,input,select):focus-visible{outline:3px solid #246aab;outline-offset:3px}ul{list-style:none;padding:0}li{padding:1rem 0;border-bottom:1px solid #d8e1da}li p{margin:.4rem 0;color:#52645e}.featured{font-size:.85rem;border:1px solid #aabbb1;border-radius:1rem;padding:.25rem .6rem}.status{font-weight:600}section{overflow-wrap:anywhere}@media(max-width:480px){.search{align-items:stretch;flex-direction:column}}
 </style>

@@ -39,3 +39,21 @@ retention must honor published and historical references independently of the
 working draft. No public HTTP route or storage adapter is enabled by domain-only
 implementation; integration must atomically persist revisions, visibility,
 history and audit with authorization and rate limits before exposure.
+
+## Durable publication boundary
+
+A persistence-facing publication state contains only the allowlisted public
+snapshot, explicit visibility and last applied lifecycle revision. Export and
+restore clone nested values. Restoration validates canonical fields, photo
+uniqueness/order/alternative text, safe revisions and legal visibility/status
+combinations; malformed storage fails closed rather than normalizing corruption.
+A publication revision begins at two and cannot exceed its applied revision.
+Both revisions must fit the application's safe-integer range. Hidden snapshots
+retain their photos and content and never become visible merely by restoration.
+The derived display title may contain the full make/model pair (321 code points),
+while manually entered titles remain limited to 240 in the private draft.
+Persistence adapters must separately verify that the restored record/dealer
+identity and applied revision match the scoped current inventory record. State
+restoration is neither authorization nor evidence that media exists; publication
+creation still requires the scoped media repository. This boundary alone exposes
+no publication endpoint.

@@ -113,12 +113,16 @@ func (r Record) Publish(photos []PhotoEvidence, expected int64, actor string, at
 	if a.PriceVisible {
 		snapshot.Price = a.AskingPrice
 	}
-	return r, Publication{snapshot: cloneListing(snapshot), visible: true, appliedRevision: r.Revision}, event, nil
+	publication, err := RestorePublication(PublicationState{Snapshot: snapshot, Visible: true, AppliedRevision: r.Revision})
+	if err != nil {
+		return Record{}, Publication{}, History{}, err
+	}
+	return r, publication, event, nil
 }
 
 // ApplyLifecycle changes only availability; it never copies private attributes.
 func (p Publication) ApplyLifecycle(next Record) (Publication, error) {
-	if p.snapshot.ID == "" || p.snapshot.ID != next.ID || p.snapshot.DealerID != next.DealerID || !validStatus(next.Status) {
+	if p.snapshot.ID == "" || p.snapshot.ID != next.ID || p.snapshot.DealerID != next.DealerID || !validStatus(next.Status) || next.Revision > 9007199254740991 {
 		return Publication{}, ErrInvalidFields
 	}
 	if next.Revision <= p.appliedRevision {

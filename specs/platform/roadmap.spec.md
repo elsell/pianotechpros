@@ -2,6 +2,16 @@
 
 ## Current milestone: feature-complete product
 
+Publication now has an explicit persistence state with defensive copying and
+fail-closed restoration of canonical public fields, ordered photo references,
+visibility and safe revisions. Round-trip tests retain hidden snapshots and
+lifecycle overlays and reject malformed storage. Publication creation and overlay
+commands reject invalid identities/unsafe revisions before emitting durable state.
+This is the prerequisite for the transactional publication repository; database
+writes, authenticated command routes, public delivery and client publication/sale
+workflows remain unfinished. No publication endpoint is exposed by this change. Application/contract checks,
+domain race tests and required review pass.
+
 Go security remediation now pins gRPC v1.83.2, OpenTelemetry v1.45.0 and x/text
 v0.41.0 with their resolved transitive requirements (including x/net v0.58.0).
 The obsolete gRPC age exception is removed; no advisory suppression is added.

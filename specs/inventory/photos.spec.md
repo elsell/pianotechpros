@@ -66,3 +66,36 @@ return fixed machine-readable errors and never a partially ready rendition.
 
 Dimension preflight follows the [Go image security guidance](https://pkg.go.dev/image#hdr-Security_Considerations).
 PNG chunk framing and EXIF payload follow the [PNG specification](https://www.w3.org/TR/png-3/#11eXIf).
+
+## Transactional media persistence
+
+The first durable media adapter stores normalized JPEG bytes in PostgreSQL, in the
+same transaction as attachment, record revision, history and audit. This avoids a
+partially uploaded object becoming ready or an object-store/database split commit.
+Original uploads are not retained. This is an explicit initial storage choice;
+an external object-store adapter may follow with a separately specified lifecycle.
+
+Assets are immutable and scoped to dealer/record. Runtime privileges allow asset
+insert/read only, with a database guard against byte replacement or deletion.
+A separate ordered reference table owns draft position and alternative text,
+with a composite foreign key preventing references to another record's assets.
+Publication will reference the immutable asset identity, not the draft position.
+Private photo reads require current active draft attachment. Removed assets are
+retained for publication/history and have no public serving route by themselves.
+
+Upload receives a processor-produced JPEG, verifies digest, dimensions and bounds,
+and uses an actor/record-scoped printable idempotency key (16–128 bytes). Reserve
+that key with a hash of the normalized bytes and expected revision. A retry with
+matching intent returns the original asset ID and current record/photo state,
+without reattaching a subsequently removed photo or adding revision history.
+Different bytes or expected revision with the same key conflict. Candidate IDs
+on retries are ignored. Membership is rechecked under the dealer authority lock;
+all callers must first enforce SpiceDB and the configured limiter.
+
+An actual upload attaches once using optimistic record revision, inserts immutable
+bytes, advances record revision, and commits photo history plus matching audit
+atomically. Audit failure rolls back the bytes, reservation and attachment. Reads
+and replay responses also commit audit before returning data. Database failures
+return no partially populated response. Existing collection order must be dense,
+unique and scope-valid before any mutation. Stored rendition digest/dimensions are
+validated before returning bytes. Storage alone does not expose an upload route.

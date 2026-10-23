@@ -25,8 +25,21 @@ The image-processing port now has a concrete JPEG/static-PNG adapter with byte,
 dimension and pixel preflight limits, bounded concurrency, orientation correction,
 white transparency compositing and fresh metadata-free JPEG encoding. Real codec
 tests cover malformed inputs, EXIF/PNG metadata, all eight transforms, fixed errors, cancellation and limits. Race tests, 1,097,882 metadata-parser fuzz
-cases, `make check check-contracts` and read-only review pass. No upload route,
-storage readiness transaction or client capture integration is claimed yet.
+cases, `make check check-contracts` and read-only review pass. No upload route or client capture integration is claimed yet.
+
+Migration 23 and the PostgreSQL media repository now atomically store normalized
+JPEG assets, ordered draft references, record revisions, private history and
+audit. Assets have immutable runtime privileges and a database guard; composite
+foreign keys reject cross-record references. Actor/record-scoped upload retries
+return the original asset and current state without duplicate history or
+reattachment after removal. Private reads require current membership and active
+attachment and commit audit before returning bytes. Real PostgreSQL race tests
+pass concurrent revision contention, rollback on audit failure, scope/revocation,
+immutable privileges, detached retry and foreign-reference rejection. The full
+dealer persistence race suite and prior-release schema upgrade to 23 pass.
+Readiness now requires schema 23; review found and verified that correction.
+Full checks/contracts pass. HTTP authorization/limiting composition, photo editing
+persistence, upload endpoints and client capture still remain required.
 
 Completed run [39878787463](https://github.com/elsell/pianotechpros/actions/runs/39878787463)
 on `115bd0b` passed live acceptance. Both native jobs stopped before compilation:

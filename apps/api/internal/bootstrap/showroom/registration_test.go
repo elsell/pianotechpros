@@ -192,7 +192,7 @@ func TestPublicRoutesFailClosedWithoutLimiterOrRepository(t *testing.T) {
 				options.Clock = nil
 			}
 			if missing == "repository" {
-				options.DomainRegistrations = []func(huma.API){bootstrap.Registration(nil, nil)}
+				options.DomainRegistrations = []func(huma.API){bootstrap.Registration(nil, nil, nil)}
 			}
 			h, _ := httpserver.New(app.App{}, nil, options)
 			for _, path := range []string{"/v1/showrooms/piano-shop", "/v1/showrooms/piano-shop/pianos/piano", "/v1/showrooms/piano-shop/pianos/piano/photos/photo"} {

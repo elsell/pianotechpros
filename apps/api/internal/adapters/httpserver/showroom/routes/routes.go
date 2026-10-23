@@ -10,6 +10,7 @@ import (
 	"github.com/elsell/pianotechpros/apps/api/internal/adapters/httpserver/showroom/dto"
 	"github.com/elsell/pianotechpros/apps/api/internal/adapters/httpserver/showroom/mapper"
 	app "github.com/elsell/pianotechpros/apps/api/internal/app/showroom"
+	domain "github.com/elsell/pianotechpros/apps/api/internal/domain/showroom"
 	"github.com/elsell/pianotechpros/apps/api/internal/ports"
 )
 
@@ -40,25 +41,30 @@ type PhotoOutput struct {
 }
 
 func publicError(err error) error {
+	if errors.Is(err, domain.ErrInvalidQuery) {
+		return huma.Error400BadRequest("invalid request")
+	}
 	if errors.Is(err, ports.ErrNotFound) {
 		return huma.Error404NotFound("not found")
 	}
 	return huma.Error503ServiceUnavailable("service unavailable")
 }
 
+func publicOperation(api huma.API, configured bool, id, path string) huma.Operation {
+	return huma.Operation{OperationID: id, Method: http.MethodGet, Path: path, Security: []map[string][]string{}, Metadata: map[string]any{"sensitive-input": true}, Middlewares: huma.Middlewares{func(ctx huma.Context, next func(huma.Context)) {
+		ctx.SetHeader("Cache-Control", "no-store")
+		ctx.SetHeader("Referrer-Policy", "no-referrer")
+		ctx.SetHeader("X-Content-Type-Options", "nosniff")
+		if !shared.RequestLimitApplied(ctx.Context()) || !configured {
+			_ = huma.WriteErr(api, ctx, http.StatusServiceUnavailable, "service unavailable")
+			return
+		}
+		next(ctx)
+	}}}
+}
+
 func Register(api huma.API, service app.Repository) {
-	operation := func(id, path string) huma.Operation {
-		return huma.Operation{OperationID: id, Method: http.MethodGet, Path: path, Security: []map[string][]string{}, Metadata: map[string]any{"sensitive-input": true}, Middlewares: huma.Middlewares{func(ctx huma.Context, next func(huma.Context)) {
-			ctx.SetHeader("Cache-Control", "no-store")
-			ctx.SetHeader("Referrer-Policy", "no-referrer")
-			ctx.SetHeader("X-Content-Type-Options", "nosniff")
-			if !shared.RequestLimitApplied(ctx.Context()) || service == nil {
-				_ = huma.WriteErr(api, ctx, http.StatusServiceUnavailable, "service unavailable")
-				return
-			}
-			next(ctx)
-		}}}
-	}
+	operation := func(id, path string) huma.Operation { return publicOperation(api, service != nil, id, path) }
 	base := "/v1/showrooms/{slug}"
 	huma.Register(api, operation("read-public-showroom", base), func(ctx context.Context, in *ProfileInput) (*ProfileOutput, error) {
 		profile, err := service.ReadPublicProfile(ctx, in.Slug)

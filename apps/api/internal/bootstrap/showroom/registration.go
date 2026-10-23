@@ -9,12 +9,15 @@ import (
 	"gorm.io/gorm"
 )
 
-func Registration(db *gorm.DB, probe ports.Probe) func(huma.API) {
+func Registration(db *gorm.DB, probe ports.Probe, cursorKey []byte) func(huma.API) {
 	return func(api huma.API) {
 		var repository app.Repository
+		var collection app.CollectionRepository
 		if db != nil {
 			repository = dealerstore.New(db)
+			collection = dealerstore.New(db)
 		}
 		routes.Register(api, app.New(repository, probe))
+		routes.RegisterCollection(api, app.NewCollection(collection, cursorKey, probe))
 	}
 }

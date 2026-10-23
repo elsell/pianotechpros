@@ -2,6 +2,17 @@
 
 ## Current milestone: feature-complete product
 
+Public inventory browsing now has an anonymous collection API and generated
+client contract. AES-GCM continuation tokens bind the exact showroom, normalized
+filters and page size; invalid tokens fail before storage, and every page rechecks
+visibility. Optional price parameters preserve explicit zero. Source limiter
+proof, no-store responses and generic errors match individual public reads.
+Application/HTTP race tests, full repository/contract checks and required review
+pass. A fresh disposable real-backend journey passed collection filtering,
+published snapshot isolation, default sold exclusion and piano/showroom unpublish,
+alongside dealer/inventory/staff acceptance. Buyer pages, galleries, discovery and
+inquiries remain unfinished; native interaction acceptance remains separate.
+
 Public collection persistence now supports literal search, form, availability,
 currency and inclusive price filters against retained publication snapshots.
 Featured-first keyset pagination is bounded and shares the showroom visibility
@@ -10,8 +21,8 @@ edits, foreign/draft/unpublished records, pagination, dependency failures and
 concurrent unpublish. Snapshot restoration rejects missing/null/case-variant
 Featured keys so SQL ordering cannot disagree with continuation values. The full
 dealer-store PostgreSQL suite passed; final affected publication/collection race
-tests, repository/contract checks and required review passed. Collection API,
-integrity-protected cursors and buyer presentation remain the next delivery work.
+tests, repository/contract checks and required review passed. Buyer presentation
+remains required to deliver these collection capabilities to visitors.
 
 Public showroom profile, piano and JPEG routes are now registered through a
 project-owned bootstrap extension and Huma-generated contracts. Every route

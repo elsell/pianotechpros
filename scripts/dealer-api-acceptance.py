@@ -141,6 +141,12 @@ request("GET", public_piano, token="", expected=404)
 public_profile = request("PUT", path, {**update, "expectedRevision": 2, "showroom_published": True})["data"]
 assert request("GET", showroom_path, token="")["data"]["name"] == update["name"]
 assert request("GET", public_piano, token="")["data"]["piano"] == snapshot
+collection_path = showroom_path + "/pianos"
+assert request("GET", collection_path, token="")["data"]["pianos"] == [snapshot]
+assert request("GET", collection_path + "?currency=USD&minPrice=1234500&maxPrice=1234500", token="")["data"]["pianos"] == [snapshot]
+assert request("GET", collection_path + "?currency=USD&maxPrice=0", token="")["data"]["pianos"] == []
+assert request("GET", collection_path + "?search=does-not-match", token="")["data"]["pianos"] == []
+request("GET", collection_path + "?cursor=tampered", token="", expected=400)
 public_bytes = request("GET", public_photo, token="", binary=True)
 request("GET", showroom_path + "/pianos/foreign", token="", expected=404)
 request("GET", public_piano + "/photos/foreign", token="", expected=404)
@@ -151,9 +157,12 @@ sold = request("POST", piano_path + "/lifecycle", {"expectedRevision": private_e
 assert sold["record"]["status"] == "sold" and sold["publication"]["visible"]
 assert sold["publication"]["snapshot"] == {**snapshot, "status": "sold"}
 assert request("GET", public_piano, token="")["data"]["piano"] == {**snapshot, "status": "sold"}
+assert request("GET", collection_path, token="")["data"]["pianos"] == []
+assert request("GET", collection_path + "?availability=sold", token="")["data"]["pianos"] == [{**snapshot, "status": "sold"}]
 assert request("GET", public_photo, token="", binary=True) == public_bytes
 request("POST", piano_path + "/lifecycle", {"expectedRevision": private_edit["revision"], "status": "archived"}, expected=409)
 hidden = request("POST", piano_path + "/unpublish", {"expectedRevision": sold["record"]["revision"]})["data"]
+assert request("GET", collection_path + "?availability=all", token="")["data"]["pianos"] == []
 request("GET", public_piano, token="", expected=404)
 request("GET", public_photo, token="", expected=404)
 corrected = request("POST", piano_path + "/lifecycle", {"expectedRevision": hidden["record"]["revision"],
@@ -165,7 +174,7 @@ assert republished["publication"]["visible"] and republished["publication"]["sna
 assert republished["publication"]["snapshot"]["price"]["minor_units"] == 2000000
 assert request("GET", public_piano, token="")["data"]["piano"] == republished["publication"]["snapshot"]
 hidden_profile = request("PUT", path, {**update, "expectedRevision": public_profile["revision"], "showroom_published": False})["data"]
-for hidden_path in (showroom_path, public_piano, public_photo):
+for hidden_path in (showroom_path, collection_path, public_piano, public_photo):
     request("GET", hidden_path, token="", expected=404)
 request("PUT", path, {**update, "expectedRevision": hidden_profile["revision"], "showroom_published": True})
 print("Anonymous showroom/profile/listing/photo, private-edit isolation, sale snapshot and unpublish acceptance passed")

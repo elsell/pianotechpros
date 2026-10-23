@@ -101,7 +101,29 @@ featured edits can move records between pages. Refresh starts a new traversal.
 Do not invent a stable total count from page size. Signed continuation transport,
 collection routes and client filtering remain required beyond the repository.
 
+The collection application accepts filters, a limit (default 30, maximum 100),
+and an opaque continuation token; raw continuation tuples are never client input.
+Tokens use AES-GCM with a context-derived key from the configured cursor signing
+key (at least 32 bytes), a fresh cryptographic nonce, and a versioned showroom
+context distinct from private inventory tokens. Bind the token to the exact slug
+and all normalized filters including page size. Reject tampering, malformed or
+oversized tokens (maximum 4096 bytes), incompatible versions and changed bindings
+before repository access. Key rotation invalidates old tokens. Every page still
+rechecks publication visibility. Missing repository/key fails closed. Errors
+discard all content and tokens. Emit bounded typed outcome probes without query
+values. Repository pages must respect scope, size and nonempty continuation.
+
 ## Individual read API contract
+
+`GET /v1/showrooms/{slug}/pianos` exposes collection browsing with optional
+`search`, `form`, `availability`, `currency`, `minPrice`, `maxPrice`, `limit`, and
+`cursor` query parameters. `data` contains `profile` and `pianos`; `meta.nextCursor`
+is present only when another page exists. Price parameters retain the distinction
+between absent and zero. Invalid filters/cursors return a generic 400; Huma's
+structural parameter validation may return 422. The collection shares the same
+anonymous access, source-limiter proof, no-store headers and generic failures as
+individual reads. Application bootstrap injects the configured cursor key without
+adding environment access to application or adapter code.
 
 `GET /v1/showrooms/{slug}` returns `data` containing the public dealer profile.
 `GET /v1/showrooms/{slug}/pianos/{id}` returns `data.profile` and `data.piano` from

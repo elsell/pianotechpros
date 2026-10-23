@@ -476,6 +476,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/showrooms/{slug}/pianos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list-public-pianos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/showrooms/{slug}/pianos/{id}": {
         parameters: {
             query?: never;
@@ -601,6 +617,16 @@ export interface components {
             readonly $schema?: string;
             data: components["schemas"]["AuthorizationDeadLetterDTO"][];
             meta: components["schemas"]["PaginationMeta"];
+        };
+        CollectionOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/CollectionOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["PublicCollectionData"];
+            meta: components["schemas"]["MetaStruct"];
         };
         DataStruct: {
             /** Format: date-time */
@@ -927,6 +953,10 @@ export interface components {
              */
             readonly $schema?: string;
             data: components["schemas"]["PublicShowroomProfile"];
+        };
+        PublicCollectionData: {
+            pianos: components["schemas"]["PublicListing"][];
+            profile: components["schemas"]["PublicShowroomProfile"];
         };
         PublicListing: {
             condition: string;
@@ -2781,6 +2811,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProfileOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "list-public-pianos": {
+        parameters: {
+            query?: {
+                search?: string;
+                form?: "grand" | "full_size_upright" | "studio_upright" | "console" | "spinet";
+                availability?: "all" | "available" | "reserved" | "sold";
+                currency?: string;
+                minPrice?: number;
+                maxPrice?: number;
+                limit?: number;
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CollectionOutputBody"];
                 };
             };
             /** @description Error */

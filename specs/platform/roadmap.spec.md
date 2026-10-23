@@ -10,6 +10,17 @@ customer/technician profile parity; resolve security findings and collect real
 web/native interaction evidence throughout. Signing and production cutover alone
 remain deferred by user instruction.
 
+Private photo collection rules are now implemented at the domain boundary under
+`../inventory/photos.spec.md`: scoped ready-media evidence, bounded ordered
+collections, cover-by-order, alternative text, detach-only removal and revisioned
+history. Tests cover invalid scope/readiness/order, stale revisions, capacity,
+Unicode limits, defensive copies and preservation of a published photo after
+draft removal. The inventory domain race suite and `make check check-contracts`
+pass. Read-only review found and verified a fix for nested record-attribute
+aliasing. This is not upload delivery: transactional collection persistence,
+authorized media storage/processing, upload transport and web/native capture
+journeys remain the next work.
+
 Dealer implementation has started: the profile/access contract, typed fields,
 profile validation, generated repository/HTTP boundaries and contracts exist.
 Optional-field, Unicode and malformed-profile tests pass, as do `make check`

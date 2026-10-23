@@ -173,3 +173,25 @@ instance. Both server and OpenAPI entrypoints use this registration. Domain poli
 remains in the inventory application; bootstrap owns no authorization decisions.
 
 Configured browser origins must be able to preflight authenticated PATCH photo-description requests; unknown origins remain denied.
+
+## Shared client wire adapter
+
+The shared API client exposes photo state, binary upload, private image retrieval,
+ordering, alternative-text edits and removal through generated OpenAPI paths.
+Every request obtains the current opaque session. Upload accepts a byte array,
+copies it before asynchronous credential acquisition and sends exactly those
+bytes as application/octet-stream with the caller's stable retry key and original
+expected revision. The adapter never automatically retries or changes intent.
+
+State responses must validate the requested dealer/record, safe revision and
+record attributes, plus at most 50 distinct nonempty photo IDs and bounded
+alternative text. Upload metadata requires a valid photo ID and boolean replay;
+a replay may refer to a photo subsequently removed from the current collection.
+A fresh upload must appear in the returned collection. Invalid responses return
+a fixed protocol error, never partial state. Known media error codes are preserved
+without server details. Image reads use authenticated transport and return JPEG
+bytes, never credential-bearing URLs; validate JPEG content type, nonempty bounded
+bytes and JPEG signature before presentation. Fetch buffers the response on
+platforms without streaming; the size check is not a streaming memory guarantee.
+Optional cancellation propagates to fetch; aborted or failed network operations
+do not imply successful writes or permit discarding retry intent.

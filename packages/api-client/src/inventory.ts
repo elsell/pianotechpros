@@ -8,8 +8,8 @@ type Schema = components['schemas'];
 export type InventoryRecord = Schema['Item'];
 export type InventoryAttributes = Schema['Attributes'];
 export type InventoryErrorCode = Schema['APIError']['code'] | 'network' | 'protocol_error';
-const knownCodes = new Set<string>([
- 'invalid_invitation','bad_request','unauthenticated','invalid_credential','forbidden','not_found','conflict','idempotency_conflict','validation_failed','rate_limited','authorization_pending','authorization_dead_lettered','authorization_policy_not_configured','unavailable','internal_error','request_failed','oidc_discovery_unavailable',
+export const knownCodes = new Set<string>([
+ 'invalid_photo','photo_limit_exceeded','invalid_invitation','bad_request','unauthenticated','invalid_credential','forbidden','not_found','conflict','idempotency_conflict','validation_failed','rate_limited','authorization_pending','authorization_dead_lettered','authorization_policy_not_configured','unavailable','internal_error','request_failed','oidc_discovery_unavailable',
 ] satisfies Schema['APIError']['code'][]);
 export class InventoryClientError extends Error {
  constructor(readonly code: InventoryErrorCode, readonly status: number) { super(code); this.name='InventoryClientError'; }
@@ -35,7 +35,7 @@ function validAttributes(a: unknown): boolean {
  if(a.condition!==undefined&&(typeof a.condition!=='string'||!['','new','used','restored','rebuilt','consignment','other'].includes(a.condition)))return false;
  return validMoney(a.asking_price)&&validMoney(a.acquisition_cost)&&validDate(a.manufactured);
 }
-function validRecord(value: unknown, dealerID: string, id?: string): value is InventoryRecord {
+export function validRecord(value: unknown, dealerID: string, id?: string): value is InventoryRecord {
  if(!object(value)||typeof value.id!=='string'||!value.id||value.dealer_id!==dealerID||id!==undefined&&value.id!==id||!Number.isSafeInteger(value.revision)||(value.revision as number)<1||typeof value.status!=='string'||!['draft','available','reserved','in_service','sold','archived'].includes(value.status))return false;
  if(typeof value.created_at!=='string'||!Number.isFinite(Date.parse(value.created_at))||typeof value.updated_at!=='string'||!Number.isFinite(Date.parse(value.updated_at)))return false;
  return validAttributes(value.attributes);

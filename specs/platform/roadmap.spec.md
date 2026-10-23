@@ -68,6 +68,17 @@ undeclared media error codes. Full checks and generated-contract drift checks
 pass; read-only review found no remaining blockers. Client capture integration
 remains outstanding.
 
+The generated-contract photo client now supports state, binary upload, private
+JPEG reads, ordering, alternative text and removal. It snapshots upload bytes and
+order before asynchronous credential acquisition, preserves stable retry intent,
+validates scoped responses and accepts detached replay acknowledgements.
+Real HTTP tests cover all operations, authorization/service/conflict errors,
+malformed responses, binary bytes, cancellation and size bounds. All 96 API
+client tests, full repository checks and contract drift checks pass; read-only
+review found no blockers. Fetch buffers image downloads before the size check.
+Durable upload orchestration and web/native camera/library presentation remain
+required before photo capture is complete.
+
 Completed run [39878787463](https://github.com/elsell/pianotechpros/actions/runs/39878787463)
 on `115bd0b` passed live acceptance. Both native jobs stopped before compilation:
 Expo Router Doctor rejects an exact direct navigation declaration because its

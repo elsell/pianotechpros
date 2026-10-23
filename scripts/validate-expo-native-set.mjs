@@ -1,4 +1,5 @@
 import { inspectNavigationGraph } from './navigation-compatibility.mjs';
+import { checkScreensBackport } from './check-screens-backport.mjs';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
@@ -24,3 +25,5 @@ for (const name of ['expo-image-picker', 'expo-image-manipulator', 'expo-file-sy
   assert.equal(installed.version, pin, `${name} installed version must equal its pin`);
 }
 console.log('Native photo modules match pinned Expo versions');
+await checkScreensBackport();
+console.log('Native screens mounting-listener backport matches reviewed source');

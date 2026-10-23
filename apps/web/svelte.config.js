@@ -8,6 +8,7 @@ export default {
       mode: 'nonce',
       directives: {
         'default-src': ['self'],
+        'img-src': ['self', 'blob:'],
         'base-uri': ['self'],
         'connect-src': ['self'],
         'form-action': ['self'],

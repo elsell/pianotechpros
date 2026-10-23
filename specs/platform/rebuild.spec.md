@@ -2,6 +2,10 @@
 
 ## Scope
 
+The user's clarified completion target is the feature-complete web, iOS and
+Android product described in `product-parity.spec.md`. The scaffold milestone
+below is historical groundwork, not completion of the requested rebuild.
+
 PianoTechPros starts with fresh Git history in `elsell/pianotechpros`. It is a
 new implementation informed by the owner's existing product, not a claim of
 formal clean-room isolation. The first milestone is a runnable platform scaffold:

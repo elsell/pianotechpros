@@ -17,10 +17,10 @@ const runtimeSourceSubstitutions = new Map([
 const approvedSourceRoots = sourceRoots.map((sourceRoot) => path.join(root, sourceRoot));
 const webLibRoot = path.join(root, 'apps/web/src/lib');
 const approvedExternalImports = new Set([
-  '@sveltejs/kit', 'expo-auth-session', 'expo-constants', 'expo-crypto',
+  '@sveltejs/kit', '$app/state', 'expo-auth-session', 'expo-constants', 'expo-crypto',
   'expo-localization', 'expo-router', 'expo-secure-store', 'expo-web-browser',
   'node:assert/strict', 'node:test', 'oidc-client-ts', 'react', 'react-native',
-  'svelte',
+  'svelte', 'react-native-safe-area-context', '@react-navigation/native',
 ]);
 for (const packagePath of [
   'packages/api-client/package.json',
@@ -39,8 +39,13 @@ const providerImports = new Map([
 const allProviderImports = new Set([...providerImports.values()].flatMap((values) => [...values]));
 const safeGlobals = new Set([
   'Boolean', 'Date', 'Error', 'JSON', 'Math', 'Number', 'Object', 'Promise', 'Set', 'URL',
-  'clearTimeout', 'crypto', 'setTimeout',
+  'clearTimeout', 'crypto', 'setTimeout', 'encodeURIComponent',
 ]);
+const storageGlobals = new Set(['indexedDB', 'localStorage', 'TextEncoder', 'TextDecoder', 'Uint8Array']);
+function safeGlobal(relative, name) {
+  if (relative.startsWith('apps/web/src/routes/') && relative.endsWith('/+server.ts') && name === 'Response') return true;
+  return safeGlobals.has(name) || relative === 'apps/mobile/src/inventory/photo-media.ts' && name === 'Uint8Array' || relative === 'apps/web/src/lib/inventory/photo-media.ts' && ['Uint8Array', 'Blob'].includes(name) || relative === 'apps/web/src/lib/inventory/recovery-storage.ts' && storageGlobals.has(name) || relative === 'apps/mobile/src/inventory/recovery-storage.ts' && ['TextEncoder', 'TextDecoder'].includes(name);
+}
 const safeWindowMembers = new Set(['location', 'sessionStorage']);
 const browserGlobalReferences = new Set([
   'content', 'document', 'frameElement', 'frames', 'globalThis',
@@ -255,6 +260,8 @@ function importAllowed(specifier, relative, file) {
     const imported = resolveRelativeImport(file, specifier);
     return Boolean(imported && belowApprovedSourceRoot(imported));
   }
+  if (['expo-image-picker', 'expo-image-manipulator', 'expo-file-system'].includes(specifier)) return relative === 'apps/mobile/src/inventory/photo-media.ts';
+  if (specifier === 'expo-sqlite') return relative === 'apps/mobile/src/inventory/recovery-storage.ts';
   if (!approvedExternalImports.has(specifier)) return false;
   if (!allProviderImports.has(specifier)) return true;
   return providerImports.get(relative)?.has(specifier) ?? false;
@@ -328,12 +335,12 @@ function inspectSource(relative, file, source, index) {
       const rootNode = rootIdentifierNode(node.expression);
       const rootName = rootNode?.text;
       if (rootNode && ['globalThis', 'navigator', 'self'].includes(rootName) && !isLexicallyBound(rootNode)) violation = true;
-      else if (rootNode && rootName !== 'window' && !isLexicallyBound(rootNode) && !safeGlobals.has(rootName)) violation = true;
+      else if (rootNode && rootName !== 'window' && !isLexicallyBound(rootNode) && !safeGlobal(relative, rootName)) violation = true;
     }
     if (ts.isNewExpression(node)) {
       const rootNode = rootIdentifierNode(node.expression);
       const rootName = rootNode?.text;
-      if (rootNode && !isLexicallyBound(rootNode) && !safeGlobals.has(rootName)) violation = true;
+      if (rootNode && !isLexicallyBound(rootNode) && !safeGlobal(relative, rootName)) violation = true;
     }
     ts.forEachChild(node, visit);
   }

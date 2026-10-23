@@ -206,3 +206,49 @@ console.log('client API boundary rejects alternate transports and allows only ex
 result = check({ 'apps/web/src/lib/browser-events.ts': protectedBaseline['apps/web/src/lib/browser-events.ts'] + "\nfetch('/unreviewed');\n" });
 assert.notEqual(result.status, 0, 'reviewed browser capability adapter cannot acquire arbitrary transport');
 assert.match(result.stderr, /browser-events/);
+
+result = check({ 'apps/web/src/lib/inventory/recovery-storage.ts': "indexedDB.open('drafts', 1); localStorage.getItem('marker'); new TextEncoder().encode('data'); new TextDecoder().decode(new Uint8Array(12));" });
+assert.equal(result.status, 0, result.stderr);
+for (const source of ["fetch('/private');", "new WebSocket('wss://example.invalid');", "globalThis.fetch('/private');"]) {
+  result = check({ 'apps/web/src/lib/inventory/recovery-storage.ts': source });
+  assert.notEqual(result.status, 0, 'storage capability must not allow network bypass');
+}
+result = check({ 'apps/web/src/lib/unreviewed-storage.ts': "indexedDB.open('drafts', 1);" });
+assert.notEqual(result.status, 0, 'storage globals are scoped to the reviewed adapter');
+
+result = check({ 'apps/mobile/src/inventory/recovery-storage.ts': "import { openDatabaseAsync } from 'expo-sqlite'; openDatabaseAsync('recovery.db'); new TextEncoder().encode('data'); new TextDecoder().decode();" });
+assert.equal(result.status, 0, result.stderr);
+for (const source of ["fetch('/private');", "new WebSocket('wss://example.invalid');", "globalThis.fetch('/private');"]) {
+  result = check({ 'apps/mobile/src/inventory/recovery-storage.ts': source });
+  assert.notEqual(result.status, 0, 'native storage adapter must not bypass network policy');
+}
+result = check({ 'apps/mobile/src/unreviewed-storage.ts': "import { openDatabaseAsync } from 'expo-sqlite'; openDatabaseAsync('recovery.db');" });
+assert.notEqual(result.status, 0, 'native SQLite access is scoped to the storage adapter');
+result=check({'apps/web/src/lib/inventory/photo-media.ts':"const bytes=new Uint8Array([1]);const blob=new Blob([bytes]);URL.createObjectURL(blob);crypto.subtle.digest('SHA-256',bytes);"});
+assert.equal(result.status,0,'reviewed media adapter may construct bounded local byte/blob values');
+result=check({'apps/web/src/lib/inventory/photo-media.ts':"fetch('/unreviewed');"});
+assert.notEqual(result.status,0,'media adapter does not acquire transport');
+result=check({'apps/web/src/lib/unreviewed-media.ts':"new Blob([]);"});
+assert.notEqual(result.status,0,'media capability remains isolated');
+for(const module of ['expo-image-picker','expo-image-manipulator','expo-file-system']){
+ result=check({'apps/mobile/src/inventory/photo-media.ts':`import * as media from '${module}'; export {media};`});
+ assert.equal(result.status,0,`reviewed native media adapter may use ${module}`);
+ result=check({'apps/mobile/src/unreviewed-media.ts':`import * as media from '${module}'; export {media};`});
+ assert.notEqual(result.status,0,`native ${module} capability remains isolated`);
+}
+result=check({'apps/mobile/src/inventory/photo-media.ts':"fetch('/unreviewed');"});
+assert.notEqual(result.status,0,'native media adapter does not acquire transport');
+result=check({'apps/mobile/src/inventory/photo-media.ts':'const bytes=new Uint8Array([1]);'});
+assert.equal(result.status,0,'native media adapter can hash owned byte copies');
+result=check({'apps/mobile/src/unreviewed-media.ts':'const bytes=new Uint8Array([1]);'});
+assert.notEqual(result.status,0,'native byte capability remains scoped');
+
+result = check({
+  'apps/web/src/routes/showrooms/+server.ts': 'export function GET() { return new Response(null, {status: 404}); }',
+  'apps/web/src/routes/showrooms/+page.svelte': '<script>import {page} from "$app/state"; const slug = encodeURIComponent(page.params.slug);</script>',
+});
+assert.equal(result.status, 0, result.stderr);
+for (const source of ["fetch('/private');", "new WebSocket('wss://example.invalid');", "globalThis.fetch('/private');"]) {
+  result = check({'apps/web/src/routes/showrooms/+server.ts': source});
+  assert.notEqual(result.status, 0, 'response construction does not authorize network transport');
+}

@@ -153,7 +153,9 @@ Successful REST resource and invitation creation returns `201 Created` and the
 created representation. Credential exchange and command-style POST operations
 retain their protocol-appropriate status instead of being treated as resources.
 First-party container build and runtime stages use Red Hat Hardened Images for
-the Go builder, static API runtime, Node.js builder and runtime, and PostgreSQL.
+the Go build stage, static API runtime, Node.js builder and runtime, and PostgreSQL.
+The Go build stage uses the standard Go 1.26.10 image: its compiler is sufficient
+for CGO-disabled builds without the additional builder packages.
 Every Hardened Image is pinned to an immutable release tag and multi-platform
 manifest digest. SpiceDB and Dex retain reviewed upstream images because the
 catalog does not supply compatible components. The baseline does not claim FIPS
@@ -229,3 +231,14 @@ PostgreSQL is the sole time authority for authorization outbox leases so clock
 skew between API replicas cannot steal, extend, or complete another claim.
 Create responses are not successful until their owner relationship has been
 written; durable pending work remains retryable when SpiceDB is unavailable.
+
+The database bootstrap disables GORM's unstructured SQL logger. Query parameters
+can contain invitation digests or session material and must never appear in error
+or slow-query output. Infrastructure failures still propagate through ports to
+configured typed probes and error handling; SQL text/parameters are not telemetry.
+
+The configured OTLP/HTTP endpoint is a collector base URL. The adapter explicitly
+appends `v1/traces` and `v1/metrics`, preserving any base-path prefix, rather than
+relying on exporter defaults. Reject nonabsolute/non-HTTP(S), credentialed, queried
+or fragmented endpoints before exporter creation. Plain HTTP requires the explicit
+insecure flag. Test real collector requests at root and prefixed base URLs.

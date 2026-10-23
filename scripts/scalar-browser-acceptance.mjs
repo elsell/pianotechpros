@@ -11,12 +11,12 @@ const browser = await chromium.launch({ headless: true })
 try {
   const page = await browser.newPage()
   await page.goto(`${baseURL}/docs`, { waitUntil: 'domcontentloaded' })
-  await page.getByRole('button', { name: /Authorize/ }).waitFor()
+  await page.getByRole('button', { name: 'Authorize', exact: true }).waitFor()
   const authorizationRequestPromise = page.context().waitForEvent('request', {
     predicate: (request) => new URL(request.url()).pathname.endsWith('/dex/auth'),
   })
   const popupPromise = page.waitForEvent('popup')
-  await page.getByRole('button', { name: /Authorize/ }).click()
+  await page.getByRole('button', { name: 'Authorize', exact: true }).click()
   const authorizationURL = new URL((await authorizationRequestPromise).url())
   if (authorizationURL.searchParams.get('code_challenge_method') !== 'S256' || !authorizationURL.searchParams.get('code_challenge')) {
     throw new Error(`Scalar did not initiate S256 PKCE: ${authorizationURL}`)

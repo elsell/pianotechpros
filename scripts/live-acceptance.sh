@@ -13,22 +13,28 @@ done
 export MAKE_APP_UID="${MAKE_APP_UID:-$(id -u)}" MAKE_APP_GID="${MAKE_APP_GID:-$(id -g)}"
 export COMPOSE_PROJECT_NAME="make-app-acceptance-${MAKE_APP_ACCEPTANCE_RUN_ID:-$$}"
 export PIANOTECHPROS_ACCOUNT_PROVISIONING_MODE=existing
-export PIANOTECHPROS_ACCOUNT_INVITED_EMAILS=developer@example.com
+export PIANOTECHPROS_ACCOUNT_INVITED_EMAILS=developer@example.com,second@example.com
 cleanup() { status=$?; if [[ "$status" -ne 0 ]]; then docker compose ps -a >&2 || true; docker compose logs --tail=200 >&2 || true; fi; docker compose down --volumes --remove-orphans --rmi local >/dev/null 2>&1 || true; rm -rf "$lock_dir"; return "$status"; }
 trap cleanup EXIT
 
 docker compose down --volumes --remove-orphans >/dev/null 2>&1 || true
 ./scripts/start-postgres-for-acceptance.sh
 docker compose run --rm --build app-migrate
+docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U app_migrator -d postgres -c 'CREATE DATABASE dealer_acceptance OWNER app_migrator'
+docker compose run --rm -e PIANOTECHPROS_DATABASE_DSN='postgres://app_migrator:app_migrator@postgres:5432/dealer_acceptance?sslmode=disable' app-migrate
+bash scripts/dealer-grant-migration-sql.sh | docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U app_migrator -d dealer_acceptance
+(cd apps/api && go test ./internal/adapters/gormstore/dealer -database-dsn 'postgres://app_migrator:app_migrator@localhost:5432/dealer_acceptance?sslmode=disable')
 docker compose up -d --build spicedb dex api web
 for _ in $(seq 1 180); do curl -fsS http://localhost:8080/readyz >/dev/null 2>&1 && curl -fsS http://localhost:5556/dex/.well-known/openid-configuration >/dev/null 2>&1 && break; sleep 1; done
 curl -fsS http://localhost:8080/healthz >/dev/null
 curl -fsS http://localhost:8080/readyz >/dev/null
+(cd apps/api && go test ./internal/adapters/spicedb -spicedb-endpoint localhost:50051 -spicedb-token local-development-runtime-change-me -spicedb-insecure)
 for _ in $(seq 1 180); do curl -fsS http://localhost:5173 >/dev/null 2>&1 && break; sleep 1; done
 curl -fsS http://localhost:5173 >/dev/null
 
 node scripts/web-browser-acceptance.mjs
 node scripts/scalar-browser-acceptance.mjs
+node scripts/showroom-web-acceptance.mjs
 
 token() {
   curl -fsS -X POST http://localhost:5556/dex/token -d grant_type=password -d "client_id=$1" -d "username=$2" -d password=password -d scope='openid profile email' |
@@ -43,6 +49,8 @@ session() {
 expect_status() { expected="$1"; shift; actual="$(curl -sS -o /dev/null -w '%{http_code}' "$@")"; [[ "$actual" == "$expected" ]] || { echo "expected HTTP $expected, got $actual: $*" >&2; return 1; }; }
 
 owner_token="$(session pianotechpros-web developer@example.com)"
+other_token="$(session pianotechpros-web second@example.com)"
+DEALER_ACCEPTANCE_OWNER_SESSION="$owner_token" DEALER_ACCEPTANCE_OTHER_SESSION="$other_token" python3 scripts/dealer-api-acceptance.py
 expect_status 401 http://localhost:8080/v1/me
 expect_status 401 -H 'Authorization: Bearer malformed' http://localhost:8080/v1/me
 me="$(curl -fsS -H "Authorization: Bearer $owner_token" http://localhost:8080/v1/me)"

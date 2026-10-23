@@ -84,6 +84,36 @@ func TestCORSAllowsConfiguredOrigin(t *testing.T) {
 		t.Fatalf("unexpected origin %q", got)
 	}
 }
+func TestPhotoDescriptionCORSPreflight(t *testing.T) {
+	handler, _ := New(app.App{}, []string{"example"}, Options{CORSAllowedOrigins: []string{"https://app.example"}})
+	for _, origin := range []string{"https://app.example", "https://unknown.example"} {
+		t.Run(origin, func(t *testing.T) {
+			request := httptest.NewRequest(http.MethodOptions, "/v1/dealers/dealer/inventory/item/photos/photo", nil)
+			request.Header.Set("Origin", origin)
+			request.Header.Set("Access-Control-Request-Method", "PATCH")
+			request.Header.Set("Access-Control-Request-Headers", "Authorization, Content-Type")
+			response := httptest.NewRecorder()
+			handler.ServeHTTP(response, request)
+			if origin != "https://app.example" {
+				if response.Code != http.StatusForbidden || response.Header().Get("Access-Control-Allow-Origin") != "" {
+					t.Fatalf("unknown origin accepted: %d %v", response.Code, response.Header())
+				}
+				return
+			}
+			if response.Code != http.StatusNoContent {
+				t.Fatalf("preflight status: %d", response.Code)
+			}
+			if !strings.Contains(response.Header().Get("Access-Control-Allow-Methods"), "PATCH") {
+				t.Fatal("PATCH preflight is not allowed")
+			}
+			for _, header := range []string{"Authorization", "Content-Type"} {
+				if !strings.Contains(response.Header().Get("Access-Control-Allow-Headers"), header) {
+					t.Fatalf("missing allowed header %s", header)
+				}
+			}
+		})
+	}
+}
 func TestRateLimitedResponsesKeepSecurityAndCorrelationMiddleware(t *testing.T) {
 	handler, _ := New(app.App{}, []string{"example"}, Options{RequestRateLimiter: denyLimiter{}, Clock: docsClock{now: time.Now()}})
 	request := httptest.NewRequest(http.MethodGet, "/v1/examples", nil)

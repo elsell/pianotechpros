@@ -14,3 +14,29 @@ export function browserEvents(channelName: string) {
   },
  };
 }
+
+/** A tab close cannot wait for async storage; warn only while protection is incomplete. */
+export function protectPendingNavigation(pending:()=>boolean){
+ const beforeUnload=(event:BeforeUnloadEvent)=>{if(pending()){event.preventDefault();event.returnValue='';}};
+ window.addEventListener('beforeunload',beforeUnload);
+ return()=>window.removeEventListener('beforeunload',beforeUnload);
+}
+
+/** Held until durable New-capture handoff; ifAvailable never waits behind another tab. */
+export function claimBrowserInventoryCapture(userID:string,dealerID:string):Promise<()=>void>{
+ return claimBrowserLease(`pianotechpros.capture:${JSON.stringify([userID,dealerID])}`);
+}
+
+/** Photo ledgers remain exclusively owned until their queued mutations drain. */
+export function claimBrowserInventoryPhotos(userID:string,dealerID:string,recordID:string):Promise<()=>void>{
+ return claimBrowserLease(`pianotechpros.photos:${JSON.stringify([userID,dealerID,recordID])}`);
+}
+function claimBrowserLease(name:string):Promise<()=>void>{
+ return new Promise((resolve,reject)=>{
+  if(!navigator.locks){reject(new Error('inventory_capture_unavailable'));return;}
+  void navigator.locks.request(name,{ifAvailable:true},async lock=>{
+   if(!lock){reject(new Error('inventory_capture_busy'));return;}
+   await new Promise<void>(release=>resolve(release));
+  }).catch(()=>reject(new Error('inventory_capture_unavailable')));
+ });
+}

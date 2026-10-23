@@ -41,7 +41,11 @@ while IFS= read -r -d '' file; do
     report "$file uses ad hoc printing"
   fi
   if grep -nE '\.(Raw|Exec)\(' "$file" >/dev/null; then
-    report "$file uses direct SQL execution"
+    case "$file" in
+      # Exact security-test exception documented in platform/testing.spec.md.
+      apps/api/internal/adapters/gormstore/dealer/inventory_publication_test.go) ;;
+      *) report "$file uses direct SQL execution" ;;
+    esac
   fi
   case "$file" in
     */internal/config/*|*/cmd/*) ;;

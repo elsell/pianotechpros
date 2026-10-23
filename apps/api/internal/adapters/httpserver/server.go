@@ -92,12 +92,13 @@ type ResourceListOutput struct {
 type NoContentOutput struct{ Status int }
 
 type APIError struct {
-	Type   string              `json:"type,omitempty" format:"uri" default:"about:blank"`
-	Title  string              `json:"title,omitempty"`
-	Status int                 `json:"status,omitempty"`
-	Code   string              `json:"code" doc:"Stable machine-readable error code" enum:"bad_request,unauthenticated,invalid_credential,forbidden,not_found,conflict,idempotency_conflict,validation_failed,rate_limited,authorization_pending,authorization_dead_lettered,authorization_policy_not_configured,unavailable,internal_error,request_failed,oidc_discovery_unavailable"`
-	Detail string              `json:"detail,omitempty"`
-	Errors []*huma.ErrorDetail `json:"errors,omitempty"`
+	Missing []string            `json:"missing,omitempty" doc:"Stable publication readiness field identifiers"`
+	Type    string              `json:"type,omitempty" format:"uri" default:"about:blank"`
+	Title   string              `json:"title,omitempty"`
+	Status  int                 `json:"status,omitempty"`
+	Code    string              `json:"code" doc:"Stable machine-readable error code" enum:"inventory_not_ready,invalid_photo,photo_limit_exceeded,invalid_invitation,bad_request,unauthenticated,invalid_credential,forbidden,not_found,conflict,idempotency_conflict,validation_failed,rate_limited,authorization_pending,authorization_dead_lettered,authorization_policy_not_configured,unavailable,internal_error,request_failed,oidc_discovery_unavailable"`
+	Detail  string              `json:"detail,omitempty"`
+	Errors  []*huma.ErrorDetail `json:"errors,omitempty"`
 }
 
 func (e *APIError) Error() string  { return e.Detail }
@@ -175,6 +176,7 @@ type Options struct {
 func New(application app.App, domains []string, options Options) (http.Handler, huma.API) {
 	mux := http.NewServeMux()
 	config := huma.DefaultConfig("PianoTechPros API", "1.0.0")
+	config.Transformers = append([]huma.Transformer{redactSensitiveInputErrors}, config.Transformers...)
 	config.DocsPath = ""
 	docsBase := strings.TrimRight(options.PublicBaseURL, "/")
 	config.Components.SecuritySchemes = map[string]*huma.SecurityScheme{"oidc": {Type: "oauth2", Description: "OIDC authorization code with PKCE exchanged for a scoped application session.", Flows: &huma.OAuthFlows{AuthorizationCode: &huma.OAuthFlow{AuthorizationURL: options.OIDCAuthorizationURL, TokenURL: docsBase + "/oidc/token", Scopes: map[string]string{"openid": "Authenticate with OIDC", "profile": "Read profile claims", "email": "Read email claim"}, Extensions: map[string]any{"x-scalar-client-id": options.OIDCDocsClientID, "x-scalar-redirect-uri": options.OIDCDocsRedirectURI, "x-usePkce": "SHA-256"}}}, Extensions: map[string]any{"x-default-scopes": []string{"openid", "profile", "email"}, "x-openid-connect-url": docsBase + "/oidc/.well-known/openid-configuration"}}}
@@ -438,7 +440,12 @@ func withSecurity(next http.Handler) http.Handler {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Cache-Control", "no-store")
 		w.Header().Set("Referrer-Policy", "no-referrer")
-		r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+		limit := int64(1 << 20)
+		parts := strings.Split(r.URL.Path, "/")
+		if r.Method == http.MethodPost && len(parts) == 7 && parts[0] == "" && parts[1] == "v1" && parts[2] == "dealers" && parts[3] != "" && parts[4] == "inventory" && parts[5] != "" && parts[6] == "photos" {
+			limit = 20 << 20
+		}
+		r.Body = http.MaxBytesReader(w, r.Body, limit)
 		next.ServeHTTP(w, r)
 	})
 }
@@ -561,6 +568,7 @@ func withRequestRateLimit(next http.Handler, limiter ports.AuditRateLimiter, clo
 				}
 				return
 			}
+			r = r.WithContext(markRequestLimited(r.Context()))
 		}
 		next.ServeHTTP(w, r)
 	})
@@ -580,6 +588,13 @@ func docsExchangeError(err error) (int, string, string) {
 	}
 }
 func mapError(err error, concealForbidden bool) error {
+	if errors.Is(err, ports.ErrInvalidPhoto) {
+		return newCodedAPIError(http.StatusBadRequest, "invalid_photo", "invalid photo")
+	}
+	if errors.Is(err, ports.ErrPhotoLimit) {
+		return newCodedAPIError(http.StatusRequestEntityTooLarge, "photo_limit_exceeded", "photo exceeds limits")
+	}
+
 	if errors.Is(err, app.ErrUnauthenticated) {
 		return newCodedAPIError(http.StatusUnauthorized, "unauthenticated", "authentication required")
 	}
@@ -629,7 +644,7 @@ func withCORS(next http.Handler, origins []string) http.Handler {
 		if allowed[origin] {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, Idempotency-Key")
-			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
 			w.Header().Add("Vary", "Origin")
 		}
 		if r.Method == http.MethodOptions {

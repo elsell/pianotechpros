@@ -60,6 +60,11 @@ make mobile-build-ios      # unsigned iOS simulator app through Xcode
 Bundle export is useful but is not a native build. Generated CI compiles Android
 on Linux. Change routing selects iOS compilation on macOS and Android compilation on
 Linux for relevant pushes, pull requests and manual runs, without signing access.
+Successful Android builds retain `android-development-<commit>` for seven days in
+the run's artifacts. Download and unzip it, then install `app-debug.apk` using
+`adb install -r app-debug.apk`. This development client still needs Metro and a
+reachable development backend; use the same source commit for Metro. Artifact
+availability does not establish that device interactions have passed.
 
 ## Release configuration
 

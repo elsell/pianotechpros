@@ -1,3 +1,4 @@
+import { clearBrowserInventoryRecovery } from './inventory/recovery-storage';
 import { createSessionApiClient } from '@pianotechpros/api-client';
 import { refreshSessionCredential, sessionCredentialFromResponse, type ClientRuntimeConfig } from '@pianotechpros/client-core';
 import { beginProviderSignIn, completeProviderSignIn } from './provider-auth';
@@ -25,16 +26,22 @@ export async function refreshApplicationSession(config: ClientRuntimeConfig): Pr
   return refreshSessionCredential(
     current,
     async (credential) => createSessionApiClient(config.apiURL, () => credential.token).refresh(),
-    async (replacement) => saveApplicationSession(replacement),
+    async (replacement) => {
+      if (applicationSession()?.token !== current.token) throw { kind: 'expired' } as const;
+      saveApplicationSession(replacement);
+    },
   );
 }
 export async function revokeApplicationSession(config: ClientRuntimeConfig): Promise<void> {
 	const session = applicationSession();
 	clearApplicationSession();
+  const cleanup = clearBrowserInventoryRecovery().then(() => null, () => new Error("inventory_storage_unavailable"));
 	if (session) {
 		try { await createSessionApiClient(config.apiURL, () => session.token).revoke(); }
     catch { /* Local credential disposal must not depend on network availability. */ }
   }
+  const cleanupFailure = await cleanup;
+  if (cleanupFailure) throw cleanupFailure;
 }
 
 export async function beginApplicationSignIn(config: ClientRuntimeConfig): Promise<void> {

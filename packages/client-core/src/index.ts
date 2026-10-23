@@ -193,3 +193,4 @@ export {openInventoryFormWorkspace, type InventoryFormWorkspace, type InventoryF
 export {openInventoryCapture, createInventoryCaptureLease} from './inventory-capture';
 export {createSelectedMediaStore} from './selected-media';
 export {openPhotoUploadLedger,type PhotoUploadEntry,type PhotoUploadPhase} from './photo-upload-ledger';
+export {openPhotoUploadCoordinator,type PhotoUploadCoordinatorPort} from './photo-upload-coordinator';

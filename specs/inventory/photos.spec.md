@@ -259,3 +259,30 @@ must reopen from durable storage before using state. Never dispatch a request
 after a failed attempt checkpoint. Malformed or wrong-scope ledger data fails
 closed and is retained for diagnosis/explicit cleanup, rather than silently
 discarding potentially recoverable selection identities.
+
+## Upload coordinator
+
+Opening a coordinator authorizes before claiming the scope lease or reading local
+recovery. It retains the lease until all queued work drains, including after
+disposal. Recovery never automatically sends uploads. Each explicit operation
+reauthorizes and reopens the ledger; a failed checkpoint cannot be followed by a
+network mutation using stale in-memory state.
+
+Selection persists its reservation, then media, then readiness. An interrupted
+selection can resume only with its original ID, size and committed content.
+Upload reads complete protected media, obtains a current record/revision only for
+a ready entry, persists attempted intent, and reauthorizes immediately before
+dispatch. Attempted retries reuse the original target, revision, key and bytes.
+Validate acknowledgement target/ID, persist it, then enter removal state, delete
+media, and forget the reservation in that order. Cleanup failure retains the
+durable phase for retry without another upload. Only definitive upload conflicts
+or content rejections change attempted state; transient or malformed responses
+remain uncertain. Rebase is a separate explicit action and never sends itself.
+
+Activity loss or disposal hides snapshots, prevents subsequent dispatch, and
+suppresses late result disclosure. It need not undo a request already sent;
+the durable attempted entry handles its uncertain outcome. Error messages are
+fixed machine codes, without server/platform details. Lease, authorization and
+session identity remain injected platform responsibilities. Retention cleanup
+is still required before client UI integration; these dispatch primitives do not
+claim a completed expiry workflow.

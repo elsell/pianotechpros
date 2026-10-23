@@ -118,6 +118,24 @@ drift checks pass; read-only review has no blockers. The coordinator still must
 enforce authorization, leases, media readiness, dispatch ordering and cleanup
 before these pieces can be exposed in the web/native photo capture UI.
 
+The upload coordinator now composes authorization, exclusive scope ownership,
+ledger checkpoints, encrypted selected media and explicit upload dispatch.
+Recovery never automatically uploads; uncertain retries preserve exact intent.
+Acknowledgements precede local cleanup, and cleanup retries do not resend images.
+Disposal suppresses late results and releases ownership only after pending work
+drains. Tests cover lost acknowledgement, interrupted selection, before/after
+acknowledgement checkpoint failure, stale/corrupt recovery, permission loss,
+transient dependency failure and malformed response scope. Review caught and
+verified a fix for denial during target-record resolution. All 163 client-core
+tests, full repository checks and contract drift checks pass; read-only review
+has no remaining blockers.
+Retention cleanup and web/native platform capture integration remain outstanding.
+
+Run [39883710522](https://github.com/elsell/pianotechpros/actions/runs/39883710522)
+on `f3d10bb` passed hosted acceptance, verifying the exact-name Scalar locator
+correction in the complete browser/API harness. Native jobs are still pending
+completion; verification remains failed. This is not release approval.
+
 Completed run [39878787463](https://github.com/elsell/pianotechpros/actions/runs/39878787463)
 on `115bd0b` passed live acceptance. Both native jobs stopped before compilation:
 Expo Router Doctor rejects an exact direct navigation declaration because its

@@ -285,5 +285,12 @@
   "inventory.photos.pickerResume": "Check interrupted selection",
   "inventory.photos.nativeHint": "Take a photo or choose one from your library. It stays private until you publish.",
   "inventory.photos.pickerAdd": "Add selected photo",
-  "inventory.photos.pickerDiscardHint": "Remove the unfinished local picker selection. Photos already added to a draft or pending upload are kept."
+  "inventory.photos.pickerDiscardHint": "Remove the unfinished local picker selection. Photos already added to a draft or pending upload are kept.",
+  "inventory.photos.details": "Photo details",
+  "inventory.photos.inspect": "Inspect photo",
+  "inventory.photos.zoomIn": "Zoom in",
+  "inventory.photos.zoomOut": "Zoom out",
+  "inventory.photos.zoomReset": "Reset zoom",
+  "inventory.photos.zoomLevel": "Zoom: {{level}}%",
+  "inventory.photos.zoomHint": "Pinch to zoom. Drag to inspect details when zoomed in."
 }

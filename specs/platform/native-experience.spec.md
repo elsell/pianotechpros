@@ -176,3 +176,24 @@ Picker restoration uses the protected intent and device-only opaque global launc
 nonce described in photos.spec.md; it never attaches an unlabelled result based
 on the visible screen alone. Its controlled-fake evidence does not replace actual
 activity-destruction, account-switch, permission or camera acceptance.
+
+## Inventory photo inspection
+
+Opening a gallery photo starts a full-screen, safe-area-aware inspection view.
+Keep Close and Photo details explicit and reachable without a gesture. Details
+opens the description/order/removal controls for the same photo; returning to
+inspection and closing preserves the editor/gallery position.
+
+Use the iOS native zooming scroll view with a 1–4× range. Android recognizes pinch
+and one-finger pan in the bounded image viewport, preserving the touched focal
+point and clamping translation so a zoomed image cannot be lost offscreen. Fit the
+actual image aspect ratio at 1×; no invented crop. A contact-count/identity change
+reanchors the gesture without a jump. Reject nonfinite geometry; reset safely on
+viewport/image size change and gesture interruption. Do not intercept outside the
+image viewport. No network or persistence is involved in zoom/pan.
+
+Both platforms expose localized Zoom in, Zoom out and Reset controls plus current
+zoom, with disabled states at limits and screen-reader descriptions. The inspection
+view cannot compete with an enclosing vertical details scroller. Pinch, pan,
+rotation, large text, VoiceOver/TalkBack and dismissal require device acceptance;
+geometry tests and exports alone cannot establish that acceptance.

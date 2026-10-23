@@ -11,19 +11,21 @@ import {useInventoryPhotoRequest,useInventoryRequest} from '../use-inventory-req
 import {claimMobileInventoryPhotos} from './capture-lease';
 import {openMobileInventoryRecovery} from './recovery-storage';
 import {claimMobilePhotoPicker,discardMobilePhoto,launchMobilePhoto,mobilePhotoDigest,mobilePickerOwner,pendingMobilePhoto,prepareMobilePhoto} from './photo-media';
+import {PhotoInspection} from './PhotoInspection';
 type Photos=ReturnType<typeof createInventoryPhotoWorkspace>;
 type PickerSession=ReturnType<typeof createNativePickerSession>;
-function PhotoImage({dealerID,recordID,photoID,alt}:{dealerID:string;recordID:string;photoID:string;alt:string}){
+function PhotoImage({dealerID,recordID,photoID,alt,inspect=false}:{dealerID:string;recordID:string;photoID:string;alt:string;inspect?:boolean}){
  const request=useInventoryPhotoRequest();const {i18n}=useMobileSession();const theme=useNativeTheme();
  const [uri,setURI]=useState<string|null>(null);const [failed,setFailed]=useState(false);const [attempt,setAttempt]=useState(0);
  useEffect(()=>{let active=true;setURI(null);setFailed(false);void request(api=>api.image(dealerID,recordID,photoID)).then(bytes=>{if(active)setURI(photoPreviewURI(bytes));}).catch(()=>{if(active)setFailed(true);});return()=>{active=false;};},[dealerID,recordID,photoID,request,attempt]);
+ if(uri&&inspect)return <PhotoInspection uri={uri} alt={alt} onError={()=>{setURI(null);setFailed(true);}} />;
  return uri?<Image source={{uri}} accessibilityLabel={alt} accessible={!!alt} resizeMode="contain" style={{width:'100%',height:240}} onError={()=>{setURI(null);setFailed(true);}} />:<View style={{height:120,justifyContent:'center'}}><Text style={{color:theme.secondary}}>{i18n.t(failed?'inventory.photos.imageFailed':'common.loading')}</Text>{failed?<Button title={i18n.t('inventory.photos.retryImage')} onPress={()=>setAttempt(v=>v+1)} />:null}</View>;
 }
 export function InventoryPhotos({workspace,userID,dealerID,onBusy}:{workspace:InventoryFormWorkspace;userID:string;dealerID:string;onBusy:(busy:boolean)=>void}){
  const {i18n}=useMobileSession();const theme=useNativeTheme();const request=useInventoryPhotoRequest();const inventory=useInventoryRequest();
  const model=useRef<{photos:Photos;picker:PickerSession;active():boolean}|null>(null);
  const [state,setState]=useState<ReturnType<Photos['snapshot']>|null>(null);const [pickerView,setPickerView]=useState<ReturnType<PickerSession['snapshot']>>({state:{status:'idle'},held:false,busy:false,error:null});const pickerState=pickerView.state;
- const [working,setWorking]=useState(false);const operation=useRef(false);const [error,setError]=useState<MessageKey|null>(null);const [page,setPage]=useState(0);const [preview,setPreview]=useState<string|null>(null);const [alt,setAlt]=useState('');
+ const [working,setWorking]=useState(false);const operation=useRef(false);const [error,setError]=useState<MessageKey|null>(null);const [page,setPage]=useState(0);const [preview,setPreview]=useState<string|null>(null);const [alt,setAlt]=useState('');const [inspecting,setInspecting]=useState(true);
  useEffect(()=>{
   let alive=true;
   const active=()=>alive&&!!workspace.snapshot().draft;
@@ -68,21 +70,22 @@ export function InventoryPhotos({workspace,userID,dealerID,onBusy}:{workspace:In
  {button('inventory.photos.pickerDiscard',discard)}</View>:null}
  {state?.expiredSelections?<Text style={text}>{i18n.t('inventory.photos.expired')}</Text>:null}{state?.uncertainExpirations?<Text style={text}>{i18n.t('inventory.photos.expiredUncertain')}</Text>:null}
  {!state?.photos.length&&!busy?<Text style={{color:theme.secondary}}>{i18n.t('inventory.photos.empty')}</Text>:null}
- {state?.photos.slice(page*6,page*6+6).map((photo,index)=><Pressable key={photo.id} accessibilityRole="button" accessibilityLabel={i18n.t('inventory.photos.preview',{number:i18n.number(page*6+index+1)})} onPress={()=>{setAlt(photo.altText);setPreview(photo.id);}} style={{backgroundColor:theme.surface,borderRadius:12,padding:12,gap:8}}><PhotoImage dealerID={dealerID} recordID={workspace.recordID()} photoID={photo.id} alt={photo.altText} /><Text style={text}>{i18n.t('inventory.photos.number',{number:i18n.number(page*6+index+1)})}</Text>{page===0&&index===0?<Text style={{color:theme.accent}}>{i18n.t('inventory.photos.cover')}</Text>:null}</Pressable>)}
+ {state?.photos.slice(page*6,page*6+6).map((photo,index)=><Pressable key={photo.id} accessibilityRole="button" accessibilityLabel={i18n.t('inventory.photos.preview',{number:i18n.number(page*6+index+1)})} onPress={()=>{setAlt(photo.altText);setInspecting(true);setPreview(photo.id);}} style={{backgroundColor:theme.surface,borderRadius:12,padding:12,gap:8}}><PhotoImage dealerID={dealerID} recordID={workspace.recordID()} photoID={photo.id} alt={photo.altText} /><Text style={text}>{i18n.t('inventory.photos.number',{number:i18n.number(page*6+index+1)})}</Text>{page===0&&index===0?<Text style={{color:theme.accent}}>{i18n.t('inventory.photos.cover')}</Text>:null}</Pressable>)}
  {state&&state.photos.length>6?<View style={{flexDirection:'row',justifyContent:'space-between'}}>{button('inventory.photos.previous',()=>setPage(v=>v-1),page===0)}{button('inventory.photos.next',()=>setPage(v=>v+1),(page+1)*6>=state.photos.length)}</View>:null}
  {button('inventory.photos.refresh',()=>{void run(async current=>{await current.photos.refresh();});})}
  {state?.capturePending?<View><Text style={text}>{i18n.t('inventory.photos.capturePending')}</Text>{button('inventory.photos.retry',()=>{void run(current=>current.photos.retryCapture());})}{button('inventory.photos.discard',()=>{void run(current=>current.photos.discardCapture());})}</View>:null}
  {state?.entries.map(entry=><View key={entry.id} style={{padding:12,gap:8,backgroundColor:theme.surface}}><Text style={text}>{i18n.t(entry.state==='conflict'?'inventory.photos.uploadConflict':entry.state==='acknowledged'||entry.state==='removing'?'inventory.photos.cleanup':`inventory.photos.${entry.state}` as MessageKey)}</Text>
  {entry.state!=='rejected'?button(entry.state==='conflict'?'inventory.photos.rebase':entry.state==='acknowledged'||entry.state==='removing'?'inventory.photos.cleanupAction':'inventory.photos.retry',()=>{void run(current=>entry.state==='conflict'?current.photos.rebase(entry.id):current.photos.retry(entry.id));}):null}
  {['reserved','ready','conflict','rejected'].includes(entry.state)?button('inventory.photos.discard',()=>{void run(current=>current.photos.discard(entry.id));}):null}</View>)}
- <Modal visible={!!selected} presentationStyle="pageSheet" animationType="slide" onRequestClose={()=>{if(!busy)setPreview(null);}}><SafeAreaView style={{flex:1,backgroundColor:theme.background}}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{padding:20,gap:16}}>
- {selected?<><PhotoImage dealerID={dealerID} recordID={workspace.recordID()} photoID={selected.id} alt={selected.altText} /><Text accessibilityRole="header" style={text}>{i18n.t('inventory.photos.alt')}</Text><Text style={{color:theme.secondary}}>{i18n.t('inventory.photos.altHint')}</Text><TextInput accessibilityLabel={i18n.t('inventory.photos.alt')} multiline maxLength={480} value={alt} onChangeText={setAlt} style={{...text,minHeight:100,padding:12,borderColor:theme.border,borderWidth:1,borderRadius:10}} />
+ <Modal visible={!!selected} presentationStyle="fullScreen" animationType="slide" onRequestClose={()=>setPreview(null)}><SafeAreaView style={{flex:1,backgroundColor:theme.background}}>
+ {inspecting&&selected?<View style={{flex:1,padding:12,gap:12}}><View style={{flexDirection:'row',flexWrap:'wrap',justifyContent:'space-between'}}>{button('inventory.photos.close',()=>setPreview(null),false)}{button('inventory.photos.details',()=>setInspecting(false))}</View><PhotoImage inspect dealerID={dealerID} recordID={workspace.recordID()} photoID={selected.id} alt={selected.altText} /></View>:<ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{padding:20,gap:16}}>
+ {selected?<>{button('inventory.photos.inspect',()=>setInspecting(true))}<PhotoImage dealerID={dealerID} recordID={workspace.recordID()} photoID={selected.id} alt={selected.altText} /><Text accessibilityRole="header" style={text}>{i18n.t('inventory.photos.alt')}</Text><Text style={{color:theme.secondary}}>{i18n.t('inventory.photos.altHint')}</Text><TextInput accessibilityLabel={i18n.t('inventory.photos.alt')} multiline maxLength={480} value={alt} onChangeText={setAlt} style={{...text,minHeight:100,padding:12,borderColor:theme.border,borderWidth:1,borderRadius:10}} />
  {button('inventory.photos.saveAlt',()=>{void run(current=>current.photos.describe(selected.id,alt));},busy||[...alt.trim()].length>240)}
  {button('inventory.photos.makeCover',()=>{void run(current=>current.photos.cover(selected.id));},busy||state?.photos[0]?.id===selected.id)}
  {button('inventory.photos.earlier',()=>{void run(current=>current.photos.move(selected.id,-1));},busy||state?.photos[0]?.id===selected.id)}
  {button('inventory.photos.later',()=>{void run(current=>current.photos.move(selected.id,1));},busy||state?.photos.at(-1)?.id===selected.id)}
  {button('inventory.photos.remove',()=>remove(selected.id))}
- {error||state?.failure?<Text accessibilityRole="alert" style={text}>{i18n.t(error??'inventory.photos.failed')}</Text>:null}</>:null}{button('inventory.photos.close',()=>setPreview(null))}
- </ScrollView></SafeAreaView></Modal>
+ {error||state?.failure?<Text accessibilityRole="alert" style={text}>{i18n.t(error??'inventory.photos.failed')}</Text>:null}</>:null}{button('inventory.photos.close',()=>setPreview(null),false)}
+ </ScrollView>}</SafeAreaView></Modal>
  </View>;
 }

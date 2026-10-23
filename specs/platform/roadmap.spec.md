@@ -2,6 +2,16 @@
 
 ## Current milestone: feature-complete product
 
+Native photo inspection now opens full-screen with explicit Close/Details
+navigation, aspect-ratio fitting, native iOS scroll-view zoom, and bounded Android
+pinch/pan. Localized zoom-in/out/reset controls supplement gestures. Shared geometry
+covers focal-point preservation, contact changes, interruption, resize, invalid
+coordinates and translation bounds. Closing inspection returns to the editor even
+while a photo operation is pending; editor navigation stays protected. All 253
+client-core tests, `make check check-contracts` and both platform JavaScript exports
+pass; required review found no concrete blockers. Device rendering, gesture delivery, rotation and screen-reader
+acceptance remain unverified. This does not complete native photo acceptance.
+
 The native editor now connects camera/library selection to protected capture and
 photo uploads. Its photo-first panel includes explicit interrupted-selection
 recovery, private in-memory previews, six-photo pages, description editing,
@@ -18,7 +28,7 @@ coverage includes cancellation creating no record and explicit selection creatin
 one record/upload through the actual capture, picker and photo-workspace ports.
 All 248 client-core tests, `make check check-contracts`, i18n/transport checks and
 both platform JavaScript exports pass. Required review found no remaining blockers
-in this delta. Exports are not native builds or device acceptance. Zoom/pan,
+in this delta. Exports are not native builds or device acceptance. Zoom/pan device acceptance,
 sign-out/process-death raw-cache reconciliation, actual Android interruption,
 camera/HEIC, accessibility and physical-device UX remain required. Security
 findings and the rest of product parity remain release blockers.

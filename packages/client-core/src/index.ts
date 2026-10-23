@@ -201,3 +201,4 @@ export {createNativePhotoPicker,type NativePickerPort,type NativePickerScope,typ
 
 export {photoPreviewURI} from './photo-preview';
 export {createNativePickerSession} from './native-picker-session';
+export {createPhotoViewport,type PhotoTouch} from './photo-viewport';

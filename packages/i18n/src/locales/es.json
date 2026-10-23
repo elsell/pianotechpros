@@ -285,5 +285,12 @@
   "inventory.photos.pickerResume": "Comprobar selección interrumpida",
   "inventory.photos.nativeHint": "Toma una foto o elige una de tu biblioteca. Será privada hasta que publiques.",
   "inventory.photos.pickerAdd": "Añadir la foto seleccionada",
-  "inventory.photos.pickerDiscardHint": "Eliminar la selección local pendiente del selector. Se conservan las fotos ya añadidas a un borrador o pendientes de carga."
+  "inventory.photos.pickerDiscardHint": "Eliminar la selección local pendiente del selector. Se conservan las fotos ya añadidas a un borrador o pendientes de carga.",
+  "inventory.photos.details": "Detalles de la foto",
+  "inventory.photos.inspect": "Examinar foto",
+  "inventory.photos.zoomIn": "Acercar",
+  "inventory.photos.zoomOut": "Alejar",
+  "inventory.photos.zoomReset": "Restablecer zoom",
+  "inventory.photos.zoomLevel": "Zoom: {{level}}%",
+  "inventory.photos.zoomHint": "Pellizca para ampliar. Arrastra para examinar detalles al ampliar."
 }

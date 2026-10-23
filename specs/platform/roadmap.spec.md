@@ -19,11 +19,24 @@ application checks, contract checks and race tests pass. Module checksums verify
 required review found no concrete blockers. The full fourteen-day dependency-age
 gate passes without a new exception.
 
-The Red Hat catalog lists Go 1.26.10 builder candidates, including immutable release
-tag `1.26.10-builder-1792719708`. Adoption still requires digest resolution,
-signature/SBOM/CVE review, a documented exact security age exception and migration
-verification. No builder/toolchain change is part of this dependency patch, and
-issue #2 remains release-blocking.
+The workspace/API/tooling now target Go 1.26.10, with x/net v0.60.0 and its
+required x/text v0.42.0, x/sync v0.23.0 and x/sys v0.48.0 graph. A rebuilt
+govulncheck reports **No vulnerabilities found** for the application on this
+compiler. This is separate from the same-compiler dependency comparison above.
+
+The API build stage now pins the standard Red Hat Go image release
+`1.26.10-1792719708`, whose compiler supports the CGO-disabled build without
+the larger builder variant. Exact release signature and both platform SBOM
+hashes are verified. Compiler/image age exceptions are documented; the image
+still reports seven unresolved catalog CVEs (three high, four medium). The
+larger builder variant reported eighteen. Neither the image findings nor npm
+findings are waived. Application/contract checks, race tests, module verification and the dependency-age
+gate pass. All five API executables build as static binaries with CGO disabled.
+The initial race run exhausted task temporary storage; clearing only regenerable
+task cache and reducing parallelism resolved it. Local container-build acceptance
+is pending because root disk capacity is insufficient for the new image; hosted
+CI must supply that evidence. Required review found no concrete blockers in this
+migration; issue #2 remains release-blocking.
 
 Native photo inspection now opens full-screen with explicit Close/Details
 navigation, aspect-ratio fitting, native iOS scroll-view zoom, and bounded Android

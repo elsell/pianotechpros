@@ -98,3 +98,9 @@ test('inventory catches Compose interpolation and Svelte computed reads', () => 
   assert.ok(inspectApplicationEnvironmentSources([{path:'compose.yaml',contents:'command: ${UNREVIEWED_URL}'}]).length);
   assert.ok(inspectApplicationEnvironmentSources([{path:'apps/web/config.ts',contents:'env[name]'}]).length);
 });
+
+test('inventory recognizes Go module verification and compiler policy settings', () => {
+  assert.deepEqual(inspectApplicationEnvironmentSources([
+    { path: 'apps/api/Dockerfile', contents: 'ENV GOTOOLCHAIN=local GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org' },
+  ]), []);
+});

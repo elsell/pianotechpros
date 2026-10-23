@@ -305,3 +305,42 @@ and standard-library advisories require a separately reviewed toolchain and
 immutable build-image migration. Keep those findings release-blocking. Compare
 before/after scans with the same Go executable so a compiler change cannot be
 mistaken for dependency remediation. Package-audit findings remain independent.
+
+
+## Patched Go toolchain (2026-10-23)
+
+Use Go 1.26.10 consistently in the workspace, API, tools and container build,
+and raise x/net to v0.60.0. This is a separate compiler remediation from the
+same-compiler dependency comparison above. Rebuild govulncheck with the new
+compiler, run a fresh callable scan, module verification, application and contract
+checks, race tests and the dependency-age gate. Keep npm and image findings
+independent; a clean callable scan does not waive them.
+
+The exact compiler and Red Hat image release have security-driven exceptions to
+the fourteen-day age policy. Review the official compiler archive checksum,
+Red Hat signature, both platform SBOMs and the catalog CVE report before adoption.
+The existing automated age gate covers package dependencies; compiler/image age
+exceptions are recorded explicitly and reviewed manually.
+
+Select the standard Go image (which already contains the compiler), rather than
+the larger builder variant. Pin release 1.26.10-1792719708 and index
+sha256:c8a592e35cf512e3469c0c4cac4ac01445f6185b9366c6a586e5d210e118a9e7.
+Use GOTOOLCHAIN=local and checksum-verified modules through the HTTPS Go proxy
+without direct VCS fallback. Build with CGO disabled and copy only application
+binaries into the existing static runtime. No package installation is required.
+
+The Red Hat release signature was verified against the official 63405576 key
+and exact release identity/index digest; transparency-log inclusion was not
+verified. Per-platform SBOM blob digests are
+arm64 ae2bd21b4f4c87d13eb7697cbab10ff4f965963e1d906928abbbe56344b27895
+and amd64 f8be7941c4d3665da97b8460c70ba3337fce73dfd16624624a732edfb026cb04.
+The standard-image catalog report contains seven findings (three high, four
+medium): CVE-2026-25679, CVE-2026-13501, CVE-2026-113351, CVE-2026-107161,
+CVE-2026-97030, CVE-2026-6844 and CVE-2026-111497. These remain unresolved image
+findings, not asserted false positives. Build-only C libraries are not copied
+to the runtime; that containment is not evidence that the build image is clean.
+Official review sources: https://images.redhat.com/,
+https://security.access.redhat.com/data/63405576.txt and https://go.dev/dl/.
+
+The application environment inventory recognizes GOPROXY, GOSUMDB and
+GOTOOLCHAIN as explicit Go-owned settings; unknown unprefixed names still fail.

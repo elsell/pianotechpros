@@ -153,7 +153,9 @@ Successful REST resource and invitation creation returns `201 Created` and the
 created representation. Credential exchange and command-style POST operations
 retain their protocol-appropriate status instead of being treated as resources.
 First-party container build and runtime stages use Red Hat Hardened Images for
-the Go builder, static API runtime, Node.js builder and runtime, and PostgreSQL.
+the Go build stage, static API runtime, Node.js builder and runtime, and PostgreSQL.
+The Go build stage uses the standard Go 1.26.10 image: its compiler is sufficient
+for CGO-disabled builds without the additional builder packages.
 Every Hardened Image is pinned to an immutable release tag and multi-platform
 manifest digest. SpiceDB and Dex retain reviewed upstream images because the
 catalog does not supply compatible components. The baseline does not claim FIPS

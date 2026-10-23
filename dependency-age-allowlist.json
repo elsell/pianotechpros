@@ -320,5 +320,19 @@
     "version": "4.0.0",
     "reason": "Exact SDK 55 compatibility refresh required after hosted Expo Doctor rejected the inherited patch set; see specs/platform/rebuild.spec.md. This does not waive security advisories.",
     "compensatingVerification": "Frozen pnpm 11.0.7 installation with registry integrity hashes, Expo Doctor and bundled-native consistency, type and behavioral tests, both Metro exports, and hosted unsigned Android/iOS compilation before native acceptance. Release remains gated on security."
+  },
+  {
+    "kind": "toolchain",
+    "name": "go",
+    "version": "1.26.10",
+    "reason": "Urgent standard-library vulnerability remediation; this exact compiler release is younger than fourteen days.",
+    "compensatingVerification": "Official linux-amd64 archive SHA256 ccfe7ae822d2c2f41f4fe7c956199967a4dac22d0ee0d2b2bfdb440aab3b20c5 verified. Require fresh callable scan, module checksums, application/contract/race gates; retain independent npm/image blockers."
+  },
+  {
+    "kind": "image",
+    "name": "registry.access.redhat.com/hi/go",
+    "version": "1.26.10-1792719708@sha256:c8a592e35cf512e3469c0c4cac4ac01445f6185b9366c6a586e5d210e118a9e7",
+    "reason": "Exact hardened compiler image for the Go 1.26.10 security migration; younger than fourteen days.",
+    "compensatingVerification": "Exact release identity/digest signature verified using official Red Hat 63405576 public key; amd64/arm64 SBOM hashes verified. Catalog reports seven unresolved findings recorded in testing.spec.md. CGO-disabled build, HTTPS module proxy with checksums and no VCS fallback; only binaries enter separate static runtime. No vulnerability waiver."
   }
 ]

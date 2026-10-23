@@ -273,5 +273,15 @@
   "inventory.photos.next": "Next photos",
   "inventory.photos.refresh": "Refresh photos",
   "inventory.photos.localCleanup": "Finish removing this local selection. No upload is pending.",
-  "inventory.photos.capturePending": "A photo selection is waiting for this new draft. Retry to finish creation and upload. If protection was interrupted, choose the same photo again or discard it."
+  "inventory.photos.capturePending": "A photo selection is waiting for this new draft. Retry to finish creation and upload. If protection was interrupted, choose the same photo again or discard it.",
+  "inventory.photos.cameraPermission": "Take photos of pianos for your private inventory drafts.",
+  "inventory.photos.libraryPermission": "Choose piano photos to add to your private inventory drafts.",
+  "inventory.photos.permissionDenied": "Camera access is off. You can choose a photo from your library, or enable camera access in Settings.",
+  "inventory.photos.pickerWaiting": "A photo selection was interrupted. Check for the camera or photo picker result before trying again.",
+  "inventory.photos.pickerSelected": "Your selected photo is ready to add to this draft.",
+  "inventory.photos.pickerUncertain": "This photo may already be in the draft or its pending uploads. Review those before selecting it again.",
+  "inventory.photos.pickerOtherTarget": "Another draft has an unfinished photo selection. Return to that draft to finish it.",
+  "inventory.photos.pickerDiscard": "Discard unfinished selection",
+  "inventory.photos.pickerResume": "Check interrupted selection",
+  "inventory.photos.nativeHint": "Take a photo or choose one from your library. It stays private until you publish."
 }

@@ -273,5 +273,15 @@
   "inventory.photos.next": "Fotos siguientes",
   "inventory.photos.refresh": "Actualizar fotos",
   "inventory.photos.localCleanup": "Termina de eliminar esta selección local. No hay una carga pendiente.",
-  "inventory.photos.capturePending": "Hay una selección de foto pendiente para este nuevo borrador. Reintenta para terminar la creación y la carga. Si se interrumpió la protección, elige la misma foto otra vez o descártala."
+  "inventory.photos.capturePending": "Hay una selección de foto pendiente para este nuevo borrador. Reintenta para terminar la creación y la carga. Si se interrumpió la protección, elige la misma foto otra vez o descártala.",
+  "inventory.photos.cameraPermission": "Toma fotos de pianos para tus borradores privados de inventario.",
+  "inventory.photos.libraryPermission": "Elige fotos de pianos para añadirlas a tus borradores privados de inventario.",
+  "inventory.photos.permissionDenied": "El acceso a la cámara está desactivado. Puedes elegir una foto de tu biblioteca o activar el acceso a la cámara en Ajustes.",
+  "inventory.photos.pickerWaiting": "Se interrumpió la selección de una foto. Comprueba el resultado de la cámara o del selector de fotos antes de volver a intentarlo.",
+  "inventory.photos.pickerSelected": "La foto seleccionada está lista para añadirla a este borrador.",
+  "inventory.photos.pickerUncertain": "Es posible que esta foto ya esté en el borrador o en las cargas pendientes. Revísalos antes de seleccionarla de nuevo.",
+  "inventory.photos.pickerOtherTarget": "Otro borrador tiene una selección de foto sin terminar. Vuelve a ese borrador para completarla.",
+  "inventory.photos.pickerDiscard": "Descartar selección sin terminar",
+  "inventory.photos.pickerResume": "Comprobar selección interrumpida",
+  "inventory.photos.nativeHint": "Toma una foto o elige una de tu biblioteca. Será privada hasta que publiques."
 }

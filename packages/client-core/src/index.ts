@@ -197,3 +197,4 @@ export {openPhotoUploadCoordinator,type PhotoUploadCoordinatorPort} from './phot
 export {createInventoryPhotoWorkspace,type InventoryPhotoWorkspacePort,type InventoryPhotoCollection,type InventoryPhotoItem} from './inventory-photo-workspace';
 export {handoffCapturePhoto,discardCapturePhoto} from './capture-photo-handoff';
 export {prepareNativePhoto,type NativePhotoPreparationPort} from './native-photo-preparation';
+export {createNativePhotoPicker,type NativePickerPort,type NativePickerScope,type NativePickerAsset,type NativePickerResult,type NativePickerState} from './native-photo-picker';

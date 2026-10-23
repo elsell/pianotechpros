@@ -163,3 +163,16 @@ permission, process-restoration or photo-inspection acceptance evidence.
 SDK references reviewed for the preparation adapter:
 - https://docs.expo.dev/versions/v55.0.0/sdk/imagepicker/
 - https://docs.expo.dev/versions/v55.0.0/sdk/imagemanipulator/
+
+Native permission configuration now reads camera/library usage strings directly
+from the complete English/Spanish shared catalogs. The picker plugin disables
+microphone permission, and prebuild checks actual iOS Info.plist/InfoPlist.strings
+and Android manifest output. Android/iOS supported locales are explicit. System
+camera authorization is requested only for the camera action; library selection
+uses the system picker without requesting broad library access. A denied camera
+request is distinct from a cancelled selection and leaves the draft intact.
+
+Picker restoration uses the protected intent and device-only opaque global launch
+nonce described in photos.spec.md; it never attaches an unlabelled result based
+on the visible screen alone. Its controlled-fake evidence does not replace actual
+activity-destruction, account-switch, permission or camera acceptance.

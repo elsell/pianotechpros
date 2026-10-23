@@ -2,6 +2,25 @@
 
 ## Current milestone: feature-complete product
 
+Native picker orchestration now protects account/dealer/target ownership before
+launch, restores selected or interrupted results without uploading, and marks
+processing before accepting a photo so an uncertain handoff cannot be repeated.
+Review found and fixed a cross-account pending-result gap: a device-only opaque
+launch nonce now binds Android's global result across restarts and superseding
+launches. Camera denial remains distinct from cancellation. The native adapters
+request camera permission at use and use the system library picker. Shared
+English/Spanish permission copy is verified in actual generated iOS strings and
+Android manifest output; microphone access remains excluded. The picker editor UI,
+immutable new-capture identity binding, sign-out/process-death cache reconciliation,
+photo inspection gestures and real device acceptance are still required.
+
+Picker verification: 230 client-core tests, mobile/configuration tests, full
+checks/contracts, clean prebuild with generated-permission verification, i18n and
+transport-boundary checks, and both platform JavaScript exports pass. Final
+read-only review has no remaining blockers in this slice. These tests do not
+establish native interaction acceptance.
+
+
 Native photo preparation now has a framework-free admission/lifetime boundary and
 an Expo adapter: bounded still-image conversion, bounded JPEG reads, scope-loss
 suppression and ownership-restricted temporary-file cleanup. Review found and
@@ -19,8 +38,9 @@ Metro watch folder used for memory-backed dependencies is not committed. These
 exports do not exercise the not-yet-connected picker UI. The last committed web
 photo slice (`3c75ada`) passed hosted acceptance, Android Gradle and unsigned iOS
 Xcode in run [39887355061](https://github.com/elsell/pianotechpros/actions/runs/39887355061);
-its verification job failed. Native compilation of the new photo modules still
-needs hosted evidence after publication. Fresh local security checks on 2026-10-23
+its verification job failed. The preparation commit `8334d96` passed hosted Android native compilation and
+acceptance in run [39992152874](https://github.com/elsell/pianotechpros/actions/runs/39992152874);
+its iOS job was cancelled, so compilation of these modules on iOS remains unverified. Fresh local security checks on 2026-10-23
 report 16 reachable Go vulnerabilities (Go 1.25.13) and 70 npm findings (1 critical,
 47 high, 18 moderate, 4 low). Issue #2 remains release-blocking; neither security
 thresholds nor dependency-age policy were weakened.

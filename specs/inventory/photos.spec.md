@@ -413,3 +413,45 @@ all owned cleanup even after one deletion fails, report that failure, and do not
 admit another preparation until cleanup settles. This covers live-process save
 failures; process-death recovery and cache reconciliation remain part of the
 native interruption acceptance boundary above.
+
+## Native picker ownership and interruption
+
+One process-wide picker lease covers camera/library launch, result restoration,
+consumption and discard. Before launch, persist a protected intent containing the
+account, dealer, immutable capture/record identity, source, nonce and original
+creation time. Every operation requires current target authorization before
+opening protected storage. An intent for another target blocks a new launch and
+must not consume Android's pending result. With no intent, drain and clean any
+orphaned pending result before recording a new request; never infer ownership from
+the currently visible screen. Cancellation clears only the matching intent and
+preserves the text draft. Preserve the original seven-day deadline.
+
+A selected result's minimal local asset descriptor is encrypted in the intent.
+Do not include EXIF, filenames, credentials or provider identifiers. Restoration
+may recover a selected descriptor or obtain the pending system result for a
+matching waiting intent; restoration never uploads or creates a piano. Explicit
+consumption first durably marks the intent processing, then invokes native
+preparation and the existing protected-photo workspace. Only acknowledged
+consumption clears the intent. A crash or lost acknowledgement after processing
+begins restores as uncertain: inspect/retry the existing photo workspace rather
+than processing the asset again and risking a duplicate. Explicit picker discard
+cleans its owned temporary source and clears its intent; it never removes or
+undoes an already staged/uploaded photo. Expired intents must be discarded, not
+consumed. Cleanup failure retains the intent for retry.
+
+Scope loss suppresses private result disclosure and further dispatch at every
+asynchronous boundary. A late system result is cleaned without staging. Picker
+errors contain fixed diagnostic codes only. The platform adapter validates every
+restored asset path against the SDK cache ownership rules before read or cleanup.
+This journal protocol still requires actual Android activity-destruction and
+account-switch device acceptance.
+
+Because the SDK pending result is global and unlabelled, a separate durable secure
+storage slot contains only the opaque current launch nonce, never an account or
+record identifier. Write it before launching. Restoration may query/consume a
+pending result only while this nonce matches its protected intent; a newer launch
+invalidates older waiting intents across all accounts. Mismatches restore as
+uncertain without reading or discarding another launch's result. Clear the slot
+only if it still belongs to the completing/discarded intent. Failure to persist
+this global ownership blocks launch. The process lease serializes these operations;
+the durable nonce preserves the ownership boundary across process restarts.

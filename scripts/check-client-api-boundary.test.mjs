@@ -238,3 +238,7 @@ for(const module of ['expo-image-picker','expo-image-manipulator','expo-file-sys
 }
 result=check({'apps/mobile/src/inventory/photo-media.ts':"fetch('/unreviewed');"});
 assert.notEqual(result.status,0,'native media adapter does not acquire transport');
+result=check({'apps/mobile/src/inventory/photo-media.ts':'const bytes=new Uint8Array([1]);'});
+assert.equal(result.status,0,'native media adapter can hash owned byte copies');
+result=check({'apps/mobile/src/unreviewed-media.ts':'const bytes=new Uint8Array([1]);'});
+assert.notEqual(result.status,0,'native byte capability remains scoped');

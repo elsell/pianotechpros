@@ -96,6 +96,16 @@ repository/contract tests, dependency-age validation, Expo compatibility,
 actual web compilation and EAS startup must pass. Native compilation and real
 browser/native journeys remain necessary integration evidence, not substitutes
 for fixing outstanding advisories.
+
+The build-tool follow-up pins PostCSS 8.5.23, SvelteKit 2.70.2, Vite 8.1.6,
+baseline-browser-mapping 2.11.0, fast-uri 3.1.8, moment 2.31.0, Joi 17.13.8 and
+brace-expansion 5.0.12. Their registry release timestamps precede 2026-10-09.
+Move the existing callable-CommonJS compatibility patch to the reviewed
+brace-expansion release without changing its bounded expansion implementation.
+Regression coverage resolves both legacy EAS and modern Expo glob consumers,
+preserves their matching behavior and verifies bounded nesting through the real
+patched package. Run the complete audit, age gate, web build/browser journey,
+repository/contract tests, Expo compatibility/Doctor and native build gates.
 Migration acceptance applies the prior released migration set first, then runs
 the current migrator and verifies preserved baseline data and new schema objects.
 Every prior-release up and down migration is frozen by a checked-in SHA-256

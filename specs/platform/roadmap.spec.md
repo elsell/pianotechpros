@@ -2,6 +2,16 @@
 
 ## Current milestone: feature-complete product
 
+The subsequent build-tool refresh reduces the npm audit to four findings: three
+high (image-size and node-forge) and one moderate (decode-uri-component). It
+updates eight compatible tooling dependencies and carries the existing callable
+CommonJS brace-expansion shim onto 5.0.12. Installed legacy/modern matcher
+regressions, full repository/contract checks, dependency-age validation, required
+review, Expo compatibility, Doctor (19/19), web compilation and public showroom
+browser acceptance pass. Remaining advisories still block release;
+native compilation and runtime acceptance of this dependency graph remain
+separate pending gates.
+
 A compatible parser/tooling dependency refresh reduces the npm audit from 69 to
 19 findings: zero critical, 7 high, 11 moderate and 1 low. It upgrades URI, YAML,
 XML, serialization, target-resolution and configuration-validation dependencies;

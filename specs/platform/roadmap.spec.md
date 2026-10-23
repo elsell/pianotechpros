@@ -2,6 +2,16 @@
 
 ## Current milestone: feature-complete product
 
+The generated publication client now validates scoped records, immutable public
+snapshot fields, revision ordering and command effects. It copies sale amounts
+before asynchronous credential retrieval, forwards cancellation, and exposes
+only stable errors and validated readiness identifiers. Controlled HTTP journeys
+and malformed-response regressions pass (123 API-client tests); full repository
+checks and contract drift checks pass. Required review caught and verified the
+fix for coerced enum arrays. Shared review/confirmation orchestration and both
+platform presentation flows remain required; transport success is not product
+or device acceptance.
+
 Authenticated publication read, publish, unpublish and lifecycle HTTP commands
 now use explicit request-local view/publish/manage permissions, opaque sessions,
 SpiceDB, active membership and the audit limiter. Composition uses the existing

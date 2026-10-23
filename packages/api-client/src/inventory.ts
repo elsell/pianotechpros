@@ -9,16 +9,16 @@ export type InventoryRecord = Schema['Item'];
 export type InventoryAttributes = Schema['Attributes'];
 export type InventoryErrorCode = Schema['APIError']['code'] | 'network' | 'protocol_error';
 export const knownCodes = new Set<string>([
- 'invalid_photo','photo_limit_exceeded','invalid_invitation','bad_request','unauthenticated','invalid_credential','forbidden','not_found','conflict','idempotency_conflict','validation_failed','rate_limited','authorization_pending','authorization_dead_lettered','authorization_policy_not_configured','unavailable','internal_error','request_failed','oidc_discovery_unavailable',
+ 'inventory_not_ready','invalid_photo','photo_limit_exceeded','invalid_invitation','bad_request','unauthenticated','invalid_credential','forbidden','not_found','conflict','idempotency_conflict','validation_failed','rate_limited','authorization_pending','authorization_dead_lettered','authorization_policy_not_configured','unavailable','internal_error','request_failed','oidc_discovery_unavailable',
 ] satisfies Schema['APIError']['code'][]);
 export class InventoryClientError extends Error {
  constructor(readonly code: InventoryErrorCode, readonly status: number) { super(code); this.name='InventoryClientError'; }
 }
 const object = (value: unknown): value is Record<string,unknown> => !!value && typeof value==='object' && !Array.isArray(value);
-function validMoney(value: unknown): boolean {
+export function validMoney(value: unknown): boolean {
  return value == null || object(value) && Number.isSafeInteger(value.minor_units) && (value.minor_units as number)>=0 && typeof value.currency==='string' && /^[A-Z]{3}$/.test(value.currency);
 }
-function validDate(value: unknown): boolean {
+export function validDate(value: unknown): boolean {
  if(value == null)return true;
  if(!object(value))return false;
  const {year,month,day}=value;

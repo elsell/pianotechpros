@@ -116,3 +116,25 @@ stale revisions return 409. Errors never echo private attributes, sale prices,
 correction reasons, credentials or dependency diagnostics. Generated OpenAPI and
 TypeScript contracts must include all routes, nullable values and the readiness
 code. Existing generated registry composition stays generator-owned.
+
+## Shared client transport and review
+
+The generated-client adapter owns publication transport for both presentations.
+It validates record/dealer identity, safe revision ordering, current availability,
+explicit visibility, nullable publication and the exact public-field allowlist.
+Malformed money/dates, duplicate or oversized photo collections, unexpected
+private fields and inconsistent command acknowledgements fail as protocol errors.
+Command responses must advance exactly the submitted revision and match the
+requested publication/availability effect. Requests snapshot mutable amounts
+before credential retrieval yields. Abort signals reach the authenticated
+transport, and errors retain only stable codes and validated readiness keys,
+never server diagnostics or echoed input.
+
+Shared review orchestration must load current state through the editor's serialized
+mutation boundary, present an explicit command review, and submit at most once on
+confirmation. A revision change between review and confirmation requires renewed
+review rather than silently publishing newly saved edits. Uncertain responses
+never trigger automatic command retry or claim success; an explicit refresh reads
+current state. Account/record changes and disposal hide private state and suppress
+late responses. Platform presentations remain responsible for accessible native
+confirmation interactions and localized copy.

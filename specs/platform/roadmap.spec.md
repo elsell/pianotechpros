@@ -2,6 +2,17 @@
 
 ## Current milestone: feature-complete product
 
+New captures now expose a durably protected picker identity without making an
+untouched draft dirty or creating an empty record. A picker hold pauses scheduled
+creation and resumes eligible text autosave on release; accepted photo creation
+remains explicit. Qualified target identities accept a full underlying identifier,
+while account/dealer limits and exact scope fields remain enforced. Controlled
+behavior tests cover restart, failed storage, activity loss, duplicate acquisition,
+scheduled creation and release. Native presentation must still wire these holds
+into picker lifetime and navigation; this is not a completed camera workflow.
+Verification: all 237 client-core tests and `make check check-contracts` pass;
+required read-only review found no concrete blockers in this change.
+
 Native picker orchestration now protects account/dealer/target ownership before
 launch, restores selected or interrupted results without uploading, and marks
 processing before accepting a photo so an uncertain handoff cannot be repeated.
@@ -11,7 +22,7 @@ launches. Camera denial remains distinct from cancellation. The native adapters
 request camera permission at use and use the system library picker. Shared
 English/Spanish permission copy is verified in actual generated iOS strings and
 Android manifest output; microphone access remains excluded. The picker editor UI,
-immutable new-capture identity binding, sign-out/process-death cache reconciliation,
+sign-out/process-death cache reconciliation,
 photo inspection gestures and real device acceptance are still required.
 
 Picker verification: 230 client-core tests, mobile/configuration tests, full

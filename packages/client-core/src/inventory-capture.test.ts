@@ -119,3 +119,37 @@ test('inactive new capture hides private text while preserving recovery',async()
  c.change({...c.snapshot().draft!,private_notes:'Private draft'});await c.flush();const stored=[...f.data];active=false;
  assert.equal(c.snapshot().draft,null);assert.deepEqual([...f.data],stored);active=true;assert.equal(c.snapshot().draft?.private_notes,'Private draft');c.dispose();
 });
+
+test('picker identity survives restart without creating or dirtying an untouched capture',async()=>{
+ const f=fixture();const first=await openInventoryCapture(f.port);assert.ok(first);
+ const binding=await first.pickerTarget();assert.ok(binding);assert.match(binding.id,/^capture\//);
+ assert.equal(first.snapshot().dirty,false);assert.equal(first.snapshot().busy,true);assert.equal(f.counts().creates,0);
+ binding.release();binding.release();assert.equal(first.snapshot().busy,false);first.dispose();
+ for(let i=0;i<40&&f.locked();i++)await Promise.resolve();
+ const next=await openInventoryCapture(f.port);assert.ok(next);const restored=await next.pickerTarget();assert.ok(restored);
+ assert.equal(restored.id,binding.id);assert.equal(next.snapshot().dirty,false);restored.release();await next.save();assert.equal(f.counts().creates,0);next.dispose();
+});
+test('picker target fails on storage loss and does not leave editor busy',async()=>{
+ const f=fixture();const capture=await openInventoryCapture(f.port);assert.ok(capture);f.disk(true);
+ assert.equal(await capture.pickerTarget(),null);assert.equal(capture.snapshot().busy,false);assert.equal(f.counts().creates,0);capture.dispose();
+});
+test('picker hold blocks scheduled creation but accepts explicit photo/create flow',async()=>{
+ const f=fixture();const capture=await openInventoryCapture(f.port);assert.ok(capture);
+ const binding=await capture.pickerTarget();assert.ok(binding);capture.change({...capture.snapshot().draft!,title:'While selecting'});await capture.flush();
+ await f.tick();assert.equal(f.counts().creates,0);await capture.save();assert.equal(f.counts().creates,1);
+ await assert.rejects(capture.pickerTarget(),/inventory_picker_busy/);binding.release();
+ const recordBinding=await capture.pickerTarget();assert.ok(recordBinding);assert.equal(recordBinding.id,`record/${f.record()!.id}`);recordBinding.release();capture.dispose();
+});
+test('scope loss during picker target protection withholds identity and releases busy state',async()=>{
+ const f=fixture();const capture=await openInventoryCapture(f.port);assert.ok(capture);let finish!:()=>void;
+ f.holdCapture(()=>new Promise<void>(resolve=>{finish=resolve;}));const pending=capture.pickerTarget();
+ for(let i=0;i<40&&!finish;i++)await Promise.resolve();assert.ok(finish);await assert.rejects(capture.pickerTarget(),/inventory_picker_busy/);
+ f.port.active=()=>false;finish();assert.equal(await pending,null);assert.equal(capture.snapshot().draft,null);assert.equal(capture.snapshot().busy,false);assert.equal(f.counts().creates,0);capture.dispose();
+});
+
+test('releasing a picker target resumes eligible text autosave',async()=>{
+ const f=fixture();const capture=await openInventoryCapture(f.port);assert.ok(capture);
+ capture.change({...capture.snapshot().draft!,title:'Resume after camera'});await capture.flush();
+ const binding=await capture.pickerTarget();assert.ok(binding);await f.tick();assert.equal(f.counts().creates,0);
+ binding.release();await f.tick();assert.equal(f.counts().creates,1);assert.equal(f.record()?.attributes.title,'Resume after camera');capture.dispose();
+});

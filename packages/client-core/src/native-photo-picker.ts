@@ -15,20 +15,21 @@ const ttl=7*24*60*60*1000;
 class PickerError extends Error {}
 const failed=()=>new PickerError('native_picker_unavailable');
 const object=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v);
-const identity=(v:unknown):v is string=>typeof v==='string'&&v.length>0&&v.length<=128&&v.trim()===v&&!/[\x00-\x1f\x7f]/.test(v);
+const identity=(v:unknown,max=128):v is string=>typeof v==='string'&&v.length>0&&v.length<=max&&v.trim()===v&&!/[\x00-\x1f\x7f]/.test(v);
+const validScope=(v:unknown):v is NativePickerScope=>object(v)&&Object.keys(v).length===3&&identity(v.userID)&&identity(v.dealerID)&&identity(v.targetID,160);
 function validAsset(v:unknown):v is NativePickerAsset {
  return object(v)&&Object.keys(v).length===3&&typeof v.uri==='string'&&v.uri.startsWith('file:///')&&v.uri.length<=2048&&!/[\x00-\x1f\x7f]/.test(v.uri)&&
   typeof v.width==='number'&&typeof v.height==='number'&&Number.isSafeInteger(v.width)&&Number.isSafeInteger(v.height)&&v.width>0&&v.height>0&&v.width<=12000&&v.height<=12000&&v.width*v.height<=60_000_000;
 }
 /** Owns the system-picker handoff, not upload retry. All storage must be protected. */
 export function createNativePhotoPicker(port:NativePickerPort) {
- const scope={...port.scope};if(!Object.values(scope).every(identity))throw failed();
+ const scope={...port.scope};if(!validScope(scope))throw failed();
  const storageKey=JSON.stringify(['native-photo-picker',1,scope.userID]);
  const active=()=>{if(!port.active())throw new PickerError('native_picker_inactive');};
  function now(){const value=port.now();if(!Number.isSafeInteger(value)||value<0||value>Number.MAX_SAFE_INTEGER-ttl)throw failed();return value;}
  function parse(text:string):Intent {
   if(text.length>8192)throw failed();const v:unknown=JSON.parse(text);
-  if(!object(v)||Object.keys(v).length!==7||v.version!==1||!object(v.scope)||Object.keys(v.scope).length!==3||!Object.values(v.scope).every(identity)||!identity(v.id)||v.id.length<16||!['camera','library'].includes(String(v.source))||!Number.isSafeInteger(v.createdAt)||typeof v.createdAt!=='number'||v.createdAt<0||v.createdAt>now()||!['waiting','selected','processing'].includes(String(v.phase))||(v.phase==='waiting'?v.asset!==null:!validAsset(v.asset)))throw failed();
+  if(!object(v)||Object.keys(v).length!==7||v.version!==1||!validScope(v.scope)||!identity(v.id)||v.id.length<16||!['camera','library'].includes(String(v.source))||!Number.isSafeInteger(v.createdAt)||typeof v.createdAt!=='number'||v.createdAt<0||v.createdAt>now()||!['waiting','selected','processing'].includes(String(v.phase))||(v.phase==='waiting'?v.asset!==null:!validAsset(v.asset)))throw failed();
   if(v.scope.userID!==scope.userID)throw failed();
   if(v.scope.dealerID!==scope.dealerID||v.scope.targetID!==scope.targetID)throw new PickerError('native_picker_other_target');
   return v as unknown as Intent;

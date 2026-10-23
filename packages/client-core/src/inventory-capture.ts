@@ -3,9 +3,9 @@ import {photoUploadExpired,type PhotoSelectionImport} from './photo-upload-ledge
 import {createInventoryRecoveryJournal,type ProtectedInventoryDraftStorage} from './inventory-recovery';
 import {openInventoryFormWorkspace,type InventoryFormWorkspace,type InventoryFormRecord} from './inventory-form-workspace';
 import {inventoryFormFromAttributes,inventoryFormErrors,isInventoryForm,type InventoryForm,type InventoryWireAttributes} from './inventory-form';
-export type InventoryCaptureWorkspace = InventoryFormWorkspace & {ensureRecord():Promise<string|null>;stagePhoto(bytes:Uint8Array):Promise<string|null>;pendingPhoto():PhotoSelectionImport|null;expiredPhoto():boolean;discardPhoto():Promise<void>};
+export type InventoryCaptureWorkspace = InventoryFormWorkspace & {pickerTarget():Promise<{id:string;release():void}|null>;ensureRecord():Promise<string|null>;stagePhoto(bytes:Uint8Array):Promise<string|null>;pendingPhoto():PhotoSelectionImport|null;expiredPhoto():boolean;discardPhoto():Promise<void>};
 type RecordData={id:string;dealer_id:string;revision:number;attributes:InventoryWireAttributes};
-type Intent={version:1;key:string;attempted:boolean;form:InventoryForm;record:InventoryFormRecord|null;media?:PhotoSelectionImport|null};
+type Intent={dirty?:boolean;version:1;key:string;attempted:boolean;form:InventoryForm;record:InventoryFormRecord|null;media?:PhotoSelectionImport|null};
 export async function openInventoryCapture(port:{
  media?:{sha256(bytes:Uint8Array):Promise<string>;handoff(recordID:string,selection:PhotoSelectionImport):Promise<void>;discard?(recordID:string,selection:PhotoSelectionImport):Promise<void>};
  userID:string;dealerID:string;decimal:'.'|',';active():boolean;now():number;key():string;
@@ -21,7 +21,7 @@ export async function openInventoryCapture(port:{
   const validKey=(v:unknown):v is string=>typeof v==='string'&&/^[\x21-\x7e]{16,128}$/.test(v);
   const validRecord=(v:unknown):v is InventoryFormRecord=>!!v&&typeof v==='object'&&'id'in v&&typeof v.id==='string'&&v.id.length>0&&v.id.length<=128&&'dealer_id'in v&&v.dealer_id===port.dealerID&&'revision'in v&&Number.isSafeInteger(v.revision)&&Number(v.revision)>0&&'attributes'in v&&isInventoryForm(v.attributes)&&!!v.attributes.stock_number;
   const validMedia=(v:unknown):v is PhotoSelectionImport=>!!v&&typeof v==='object'&&'id'in v&&validKey(v.id)&&'key'in v&&validKey(v.key)&&'sourceScope'in v&&validKey(v.sourceScope)&&'size'in v&&Number.isSafeInteger(v.size)&&Number(v.size)>0&&Number(v.size)<=20*1024*1024&&'createdAt'in v&&Number.isSafeInteger(v.createdAt)&&Number(v.createdAt)>=0;
-  const validate=(v:unknown):v is Intent=>!!v&&typeof v==='object'&&'version'in v&&v.version===1&&'key'in v&&validKey(v.key)&&'attempted'in v&&typeof v.attempted==='boolean'&&'form'in v&&isInventoryForm(v.form)&&'record'in v&&(v.record===null||validRecord(v.record))&&(!('media'in v)||v.media===null||validMedia(v.media)&&v.media.sourceScope===v.key);
+  const validate=(v:unknown):v is Intent=>!!v&&typeof v==='object'&&'version'in v&&v.version===1&&(!('dirty'in v)||typeof v.dirty==='boolean')&&'key'in v&&validKey(v.key)&&'attempted'in v&&typeof v.attempted==='boolean'&&'form'in v&&isInventoryForm(v.form)&&'record'in v&&(v.record===null||validRecord(v.record))&&(!('media'in v)||v.media===null||validMedia(v.media)&&v.media.sourceScope===v.key);
   let photoExpired=false;
   async function expireMedia(value:Intent){
    const media=value.media;if(!media)return;if(!port.media||!port.active())throw Error('inventory_media_unavailable');
@@ -35,20 +35,20 @@ export async function openInventoryCapture(port:{
 if(!port.active()){unlock();return null;}
   let intent:Intent={version:1,key:loaded?.key??port.key(),attempted:loaded?.attempted??false,form:loaded?.form??inventoryFormFromAttributes({stock_number:''},port.decimal),record:loaded?.record??null,media:loaded?.media??null};
   if(!validate(intent))throw Error('invalid_inventory_capture');
-  let disposed=false;let dirty=!!loaded;let restored=!!loaded;let denied=false;let busy=false;let failure:unknown=null;
+  let pickerHeld=false;let disposed=false;let dirty=loaded?.dirty??!!loaded;let restored=!!loaded;let denied=false;let busy=false;let failure:unknown=null;
   let recovery:'ready'|'writing'|'failed'='ready';let writeVersion=0;let pendingWrite:Promise<void>=Promise.resolve();let pendingRemoval:Promise<void>=Promise.resolve();let cancel:(()=>void)|null=null;
   let editor:InventoryFormWorkspace|null=null;let unsubscribe=()=>{};let migrated=false;let migrationFailed=false;let saving:Promise<void>|null=null;let staging:Promise<string|null>|null=null;
   const listeners=new Set<(s:ReturnType<InventoryFormWorkspace['snapshot']>)=>void>();
   function snapshot():ReturnType<InventoryFormWorkspace['snapshot']>{
-   if(editor){const s=editor.snapshot();return {...s,busy:s.busy||busy||!!staging,recovery:!migrated?(migrationFailed?'failed':'writing'):s.recovery};}
-   return {baseline:null,draft:disposed||denied||!port.active()?null:{...intent.form},latest:null,dirty,busy:busy||!!staging,uncertain:intent.attempted&&!intent.record,conflict:false,denied,failure,recovery,restored,invalid:!disposed&&!denied&&port.active()&&inventoryFormErrors(intent.form).some(field=>field!=='stock_number')};
+   if(editor){const s=editor.snapshot();return {...s,busy:s.busy||busy||!!staging||pickerHeld,recovery:!migrated?(migrationFailed?'failed':'writing'):s.recovery};}
+   return {baseline:null,draft:disposed||denied||!port.active()?null:{...intent.form},latest:null,dirty,busy:busy||!!staging||pickerHeld,uncertain:intent.attempted&&!intent.record,conflict:false,denied,failure,recovery,restored,invalid:!disposed&&!denied&&port.active()&&inventoryFormErrors(intent.form).some(field=>field!=='stock_number')};
   }
   function notify(){if(!disposed)for(const listener of listeners)listener(snapshot());}
   function unschedule(){cancel?.();cancel=null;}
-  function schedule(){unschedule();if(!disposed&&!editor&&dirty&&!busy&&!staging&&!restored&&!failure&&!intent.attempted&&recovery==='ready')cancel=port.schedule(()=>{cancel=null;void save();});}
+  function schedule(){unschedule();if(!disposed&&!pickerHeld&&!editor&&dirty&&!busy&&!staging&&!restored&&!failure&&!intent.attempted&&recovery==='ready')cancel=port.schedule(()=>{cancel=null;void save();});}
   function persist(){
    const version=++writeVersion;recovery='writing';
-   pendingWrite=journal.save(intent).then(()=>{if(!disposed&&version===writeVersion){recovery='ready';notify();schedule();}},()=>{if(!disposed&&version===writeVersion){recovery='failed';notify();schedule();}});notify();
+   pendingWrite=journal.save({...intent,dirty}).then(()=>{if(!disposed&&version===writeVersion){recovery='ready';notify();schedule();}},()=>{if(!disposed&&version===writeVersion){recovery='failed';notify();schedule();}});notify();
   }
   async function flushIntent(){for(;;){const pending=pendingWrite;await pending;if(pending===pendingWrite)break;}return !disposed&&recovery==='ready';}
   async function finishMigration(){
@@ -119,6 +119,23 @@ if(!port.active()){unlock();return null;}
    subscribe(listener){if(!disposed)listeners.add(listener);listener(snapshot());return()=>{listeners.delete(listener);};},
    change(form){if(disposed||denied||!port.active())return;if(editor){editor.change(form);return;}intent={...intent,form:{...form}};dirty=true;failure=null;persist();},
    save,stagePhoto,
+   async pickerTarget(){
+    if(disposed||denied||!port.active())return null;
+    if(pickerHeld)throw new Error('inventory_picker_busy');
+    pickerHeld=true;unschedule();notify();let released=false;
+    const release=()=>{if(released)return;released=true;pickerHeld=false;notify();schedule();};
+    try{
+     await staging;await saving;
+     if(disposed||denied||!port.active()){release();return null;}
+     if(editor){
+      if(!migrated||!await editor.protect()||disposed||!port.active()){release();return null;}
+      return {id:`record/${editor.recordID()}`,release};
+     }
+     persist();
+     if(!await flushIntent()||disposed||denied||!port.active()){release();return null;}
+     return {id:`capture/${intent.key}`,release};
+    }catch{release();return null;}
+   },
    expiredPhoto:()=>!disposed&&!denied&&port.active()&&photoExpired,
    pendingPhoto:()=>disposed||denied||!port.active()?null:intent.media?{...intent.media}:null,
    async discardPhoto(){

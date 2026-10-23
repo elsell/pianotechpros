@@ -424,7 +424,11 @@ opening protected storage. An intent for another target blocks a new launch and
 must not consume Android's pending result. With no intent, drain and clean any
 orphaned pending result before recording a new request; never infer ownership from
 the currently visible screen. Cancellation clears only the matching intent and
-preserves the text draft. Preserve the original seven-day deadline.
+preserves the text draft. Preserve the original seven-day deadline. Account and
+dealer identities remain bounded to 128 characters; qualified capture/record
+target identities allow up to 160 characters to accommodate the scope prefix
+without truncating a valid 128-character underlying identity. Reject missing,
+extra, blank or control-character scope fields both on construction and restore.
 
 A selected result's minimal local asset descriptor is encrypted in the intent.
 Do not include EXIF, filenames, credentials or provider identifiers. Restoration

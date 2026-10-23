@@ -329,3 +329,21 @@ inspect the import receipt: clean the capture source if not imported, otherwise
 use the record ledger's normal removal transitions. Never discard an uncertain
 attempt. Then clear the capture reservation and finish the text handoff. Cancelling
 a photo-only selection before creation must not itself create an empty record.
+
+## Native picker target lifetime
+
+Before opening a native picker, protect the new capture's immutable identity even
+if it has no text or photo yet. This must not create an inventory record or mark
+an untouched form dirty. Store an explicit dirty flag with new capture journals;
+older journals retain their existing recovery semantics. A restored identity-only
+capture remains clean, and Save without changes does not create an empty record.
+
+Acquiring the picker target suspends scheduled creation, waits for already-running
+creation/media work, and persists the capture identity (or protects the existing
+record draft). It returns a capture/record-qualified identifier and an idempotent
+release callback. While held, present the editor as busy and block ordinary Save
+and navigation in presentation. Photo staging and its explicit ensure-record flow
+remain available to complete the accepted selection. Release resumes eligible
+text autosave. Failed storage, failed migration, scope loss or disposal returns no
+usable target and releases the hold. A second concurrent target acquisition fails
+closed. Never serialize a release callback or keep a process hold across restart.

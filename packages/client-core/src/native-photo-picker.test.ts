@@ -102,3 +102,25 @@ test('camera denial is distinct from cancellation and clears only its own intent
  const f=fixture();f.port.launch=async()=>({kind:'denied'});assert.deepEqual(await f.open().select('camera'),{status:'denied'});
  assert.equal(f.rows.size,0);assert.equal(await f.port.owner.read(),null);assert.equal(f.calls.includes('accept'),false);
 });
+
+test('qualified maximum-length capture and record identities survive picker restoration',async()=>{
+ for(const prefix of ['capture/','record/']){
+  const f=fixture();f.port.scope.targetID=prefix+'x'.repeat(128);
+  const selected=await f.open().select('library');assert.deepEqual(await f.open().restore(),selected);
+  await f.open().consume(selected.id!);assert.equal(f.calls.filter(c=>c==='accept').length,1);
+ }
+});
+test('scope bounds and exact fields are validated at construction and restoration',async()=>{
+ for(const scope of [
+  {userID:'x'.repeat(129),dealerID:'dealer',targetID:'target'},
+  {userID:'user',dealerID:'x'.repeat(129),targetID:'target'},
+  {userID:'user',dealerID:'dealer',targetID:'x'.repeat(161)},
+  {userID:'user',dealerID:'dealer',targetID:'target',extra:'value'},
+  {userID:'user',dealerID:'dealer'},
+  {userID:'user',dealerID:'dealer',targetID:'bad\nvalue'},
+ ]){
+  const f=fixture();assert.throws(()=>createNativePhotoPicker({...f.port,scope:scope as typeof f.port.scope}),{message:'native_picker_unavailable'});
+  await f.open().select('library');const key=[...f.rows.keys()][0];const row=JSON.parse(f.rows.get(key)!);row.scope=scope;f.rows.set(key,JSON.stringify(row));f.calls.length=0;
+  await assert.rejects(f.open().restore(),{message:'native_picker_unavailable'});assert.equal(f.calls.includes('pending'),false);assert.equal(f.calls.includes('accept'),false);
+ }
+});

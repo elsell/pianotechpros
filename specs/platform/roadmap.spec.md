@@ -2,6 +2,23 @@
 
 ## Current milestone: feature-complete product
 
+The showroom domain now projects only canonical, published dealer profiles and
+same-dealer visible inventory publications. Public fields are explicitly
+allowlisted, nested snapshot values are copied, and photo access requires current
+snapshot membership. Tests cover hidden/foreign/zero-value cases, malformed
+profiles, hidden prices, private edits, sale overlays and replaced photo references.
+Domain race tests, full repository checks, generated-contract checks and required
+review pass. Public persistence, HTTP transport, media
+delivery, browsing and discovery remain unfinished.
+
+Android runtime preparation has advanced to a booted Android 16/API 36 virtual
+device using Emulator 37.2.12 and Google APIs x86_64 image revision 7. A disposable
+backend built from commit 05d59aa reports API readiness 204 and OIDC discovery 200,
+with a separate test database and the typed SpiceDB proxy. The APK artifact run
+40007591474 is pending; no app interaction acceptance is claimed. Hosted backend
+acceptance on 1d5cbf4 passed. That run's Go scan is clean, while npm verification
+still reports 70 findings (1 critical, 47 high, 18 moderate, 4 low).
+
 Android CI now retains the exact debug APK for seven days, labelled with the
 source commit, to unblock emulator installation from hosted builds. The upload
 action is pinned to reviewed v7.0.2; dependency-age, CI routing and structural

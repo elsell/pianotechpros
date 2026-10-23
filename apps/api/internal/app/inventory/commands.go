@@ -10,6 +10,8 @@ import (
 )
 
 type CommandDependencies struct {
+	Photos            PhotoRepository
+	PhotoProcessor    ports.PhotoProcessor
 	Lists             ListingRepository
 	CursorSigningKey  []byte
 	SupportedCurrency func(string) bool

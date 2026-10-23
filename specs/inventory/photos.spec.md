@@ -84,7 +84,7 @@ Private photo reads require current active draft attachment. Removed assets are
 retained for publication/history and have no public serving route by themselves.
 
 Upload receives a processor-produced JPEG, verifies digest, dimensions and bounds,
-and uses an actor/record-scoped printable idempotency key (16–128 bytes). Reserve
+and uses an actor/record-scoped non-whitespace printable ASCII idempotency key (16–128 bytes). Reserve
 that key with a hash of the normalized bytes and expected revision. A retry with
 matching intent returns the original asset ID and current record/photo state,
 without reattaching a subsequently removed photo or adding revision history.
@@ -118,3 +118,27 @@ must read and reconcile the current state rather than silently retry against a
 newer revision. Unknown IDs, incomplete/duplicate reorder lists and invalid text
 are rejected. Revoked/view-only users cannot edit; a record/dealer mismatch fails
 closed. HTTP policy, structured errors and client conflict UX remain required.
+
+## Authorized photo application commands
+
+All photo commands use opaque application authentication, active confirmed local
+membership, SpiceDB permission checks and the coordinated principal limiter before
+repository access. List/image reads use inventory-read capability; upload and
+reference edits use inventory-write capability. Repository denials after an
+initial grant emit a collection-scoped denial audit without disclosing an ID.
+Failures return empty results. Successful results must match requested record and
+dealer scope, and returned collections must validate before presentation.
+
+Upload first validates IDs, non-whitespace printable ASCII retry key and expected revision, then reads
+the authorized record/photo state before consuming any source bytes. That read is
+audited. Only an injected image processor can create the rendition. After
+processing, reauthenticate and repeat membership, SpiceDB and principal limiting
+before storage; account identity and owner scope must be unchanged. Cancellation
+or any dependency failure prevents storage. Repository authority rechecks remain
+necessary inside the eventual transaction. Processing therefore uses two policy
+checks per upload, accounting for its read and mutation audit-producing phases.
+A valid retry is not rejected merely because the preflight sees a newer revision;
+the storage reservation distinguishes a replay from a new stale write.
+
+Photo commands are separate from HTTP serialization. No camera/library, upload
+route or production composition is implied by the application service alone.

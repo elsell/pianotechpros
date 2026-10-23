@@ -46,6 +46,17 @@ view-only/revoked access, concurrent edits and retained photo history. The full
 dealer persistence race suite and full checks/contracts pass. HTTP authorization
 and limiting composition, upload endpoints and client capture remain required.
 
+Photo application commands now enforce the existing opaque-session, membership,
+SpiceDB and coordinated limiter policy for reads, uploads and draft edits. Upload
+performs an audited scoped preflight before consuming image bytes and repeats
+authorization after processing, rejecting cancellation or changed identity/owner
+scope before storage. Repository denials emit scoped denial audit; invalid scoped
+results and failures return no partial data. Stateful-fake race tests cover all
+operation boundaries, dependency failures, processing revocation, cancellation,
+invalid input and replay after newer revisions or photo removal. Read-only review
+found no blockers; full checks and contract drift checks pass. HTTP body limits/error mapping, runtime composition and client
+capture are the next required integration work.
+
 Completed run [39878787463](https://github.com/elsell/pianotechpros/actions/runs/39878787463)
 on `115bd0b` passed live acceptance. Both native jobs stopped before compilation:
 Expo Router Doctor rejects an exact direct navigation declaration because its

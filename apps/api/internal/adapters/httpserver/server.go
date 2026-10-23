@@ -568,6 +568,7 @@ func withRequestRateLimit(next http.Handler, limiter ports.AuditRateLimiter, clo
 				}
 				return
 			}
+			r = r.WithContext(markRequestLimited(r.Context()))
 		}
 		next.ServeHTTP(w, r)
 	})

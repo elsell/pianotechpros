@@ -65,7 +65,27 @@ counts. Price filtering must never reveal hidden prices or compare unlike
 currencies. These HTTP, persistence and client behaviors remain required; domain
 projection tests alone do not establish delivery or product completion.
 
-## Verification
+## Read API contract
+
+`GET /v1/showrooms/{slug}` returns `data` containing the public dealer profile.
+`GET /v1/showrooms/{slug}/pianos/{id}` returns `data.profile` and `data.piano` from
+the same scoped read. `GET /v1/showrooms/{slug}/pianos/{id}/photos/{photoID}` returns
+normalized `image/jpeg` bytes. These operations declare no OIDC security requirement;
+an Authorization header grants no extra access. All responses are no-store with
+no-referrer and nosniff headers. Unknown/hidden/foreign resources return the same
+404 `not_found`; storage/configuration failures return 503 `unavailable` without
+storage error text. The contract reuses only the existing public listing DTO.
+
+Every public route requires proof in its request context that the server's
+coordinated source limiter accepted that request. Missing limiter/clock composition
+fails closed before storage. This proof is created only by the server middleware,
+not from a client header. The existing trusted-proxy policy chooses the source.
+Rate-limit rejection or dependency failure must not reach the repository. Public
+read application services emit typed operation/outcome probes without profile,
+record, photo, search, credential or contact values. Repository errors always
+discard any accompanying data before serialization.
+
+## Read API verification
 
 Domain tests cover unpublished/malformed/zero-value profiles, field allowlisting,
 foreign dealer publications, hidden publications, availability-only overlays,

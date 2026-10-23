@@ -16,7 +16,7 @@ outsider = os.environ["DEALER_ACCEPTANCE_OTHER_SESSION"]
 key = str(uuid.uuid4())
 
 
-def request(method, path, body=None, token=owner, expected=200, idempotency=key, content_type="application/json"):
+def request(method, path, body=None, token=owner, expected=200, idempotency=key, content_type="application/json", binary=False):
     headers = {"Content-Type": content_type, "Idempotency-Key": idempotency}
     if token:
         headers["Authorization"] = "Bearer " + token
@@ -28,11 +28,13 @@ def request(method, path, body=None, token=owner, expected=200, idempotency=key,
     with response:
         status = response.status
         raw = response.read()
-        payload = json.loads(raw) if raw else {}
-        if "/staff-invitations" in path or "/inventory" in path:
+        payload = raw if binary and status == 200 else json.loads(raw) if raw else {}
+        if binary and status == 200:
+            assert response.headers.get("Content-Type") == "image/jpeg" and raw.startswith(b"\xff\xd8")
+        if "/staff-invitations" in path or "/inventory" in path or "/showrooms/" in path:
             assert response.headers.get("Cache-Control") == "no-store"
             assert response.headers.get("Referrer-Policy") == "no-referrer"
-    assert status in (expected if isinstance(expected, tuple) else (expected,)), f"{method} {path}: expected {expected}, received {status} ({payload.get('code', '')})"
+    assert status in (expected if isinstance(expected, tuple) else (expected,)), f"{method} {path}: expected {expected}, received {status} ({payload.get('code', '') if isinstance(payload, dict) else 'binary'})"
     return payload
 
 
@@ -132,20 +134,41 @@ assert published["publication"]["visible"] and len(snapshot["photos"]) == 1
 assert snapshot["title"] == "Acceptance grand" and snapshot["price"]["minor_units"] == 1234500
 for forbidden in ("private_notes", "acquisition_cost", "serial", "salePrice", "location"):
     assert forbidden not in snapshot
+showroom_path = "/v1/showrooms/" + profile["slug"]
+public_piano = showroom_path + "/pianos/" + piano["id"]
+public_photo = public_piano + "/photos/" + snapshot["photos"][0]["id"]
+request("GET", public_piano, token="", expected=404)
+public_profile = request("PUT", path, {**update, "expectedRevision": 2, "showroom_published": True})["data"]
+assert request("GET", showroom_path, token="")["data"]["name"] == update["name"]
+assert request("GET", public_piano, token="")["data"]["piano"] == snapshot
+public_bytes = request("GET", public_photo, token="", binary=True)
+request("GET", showroom_path + "/pianos/foreign", token="", expected=404)
+request("GET", public_piano + "/photos/foreign", token="", expected=404)
 private_edit = request("PUT", piano_path, {"expectedRevision": published["record"]["revision"],
                        "attributes": {**ready_facts, "title": "Unpublished replacement", "asking_price": {"minor_units": 2000000, "currency": "USD"}}})["data"]
 sold = request("POST", piano_path + "/lifecycle", {"expectedRevision": private_edit["revision"], "status": "sold",
                "salePrice": {"minor_units": 1000000, "currency": "USD"}})["data"]
 assert sold["record"]["status"] == "sold" and sold["publication"]["visible"]
 assert sold["publication"]["snapshot"] == {**snapshot, "status": "sold"}
+assert request("GET", public_piano, token="")["data"]["piano"] == {**snapshot, "status": "sold"}
+assert request("GET", public_photo, token="", binary=True) == public_bytes
 request("POST", piano_path + "/lifecycle", {"expectedRevision": private_edit["revision"], "status": "archived"}, expected=409)
 hidden = request("POST", piano_path + "/unpublish", {"expectedRevision": sold["record"]["revision"]})["data"]
+request("GET", public_piano, token="", expected=404)
+request("GET", public_photo, token="", expected=404)
 corrected = request("POST", piano_path + "/lifecycle", {"expectedRevision": hidden["record"]["revision"],
                     "status": "available", "reason": "Acceptance sale correction"})["data"]
 assert not corrected["publication"]["visible"]
+request("GET", public_piano, token="", expected=404)
 republished = request("POST", piano_path + "/publish", {"expectedRevision": corrected["record"]["revision"]})["data"]
 assert republished["publication"]["visible"] and republished["publication"]["snapshot"]["title"] == "Unpublished replacement"
 assert republished["publication"]["snapshot"]["price"]["minor_units"] == 2000000
+assert request("GET", public_piano, token="")["data"]["piano"] == republished["publication"]["snapshot"]
+hidden_profile = request("PUT", path, {**update, "expectedRevision": public_profile["revision"], "showroom_published": False})["data"]
+for hidden_path in (showroom_path, public_piano, public_photo):
+    request("GET", hidden_path, token="", expected=404)
+request("PUT", path, {**update, "expectedRevision": hidden_profile["revision"], "showroom_published": True})
+print("Anonymous showroom/profile/listing/photo, private-edit isolation, sale snapshot and unpublish acceptance passed")
 print("Inventory photo upload, readiness, publish, snapshot-preserving sale, unpublish, correction and explicit republish acceptance passed")
 
 

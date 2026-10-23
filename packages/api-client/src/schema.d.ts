@@ -460,6 +460,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/showrooms/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["read-public-showroom"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/showrooms/{slug}/pianos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["read-public-piano"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/showrooms/{slug}/pianos/{id}/photos/{photoID}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["read-public-piano-photo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -781,6 +829,15 @@ export interface components {
             data: components["schemas"]["Item"][];
             meta: components["schemas"]["InventoryListMeta"];
         };
+        ListingOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/ListingOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["PublicShowroomListing"];
+        };
         ManufacturingDate: {
             /** Format: int64 */
             day: number;
@@ -862,6 +919,15 @@ export interface components {
             data: components["schemas"]["PhotoState"];
             meta: components["schemas"]["PhotoUploadMeta"];
         };
+        ProfileOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/ProfileOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["PublicShowroomProfile"];
+        };
         PublicListing: {
             condition: string;
             dealer_id: string;
@@ -886,6 +952,31 @@ export interface components {
         PublicPhoto: {
             alt_text: string;
             id: string;
+        };
+        PublicShowroomListing: {
+            piano: components["schemas"]["PublicListing"];
+            profile: components["schemas"]["PublicShowroomProfile"];
+        };
+        PublicShowroomProfile: {
+            accent_color: string;
+            appointment_note: string;
+            banner_alt_text: string;
+            city: string;
+            delivery_note: string;
+            description: string;
+            email: string;
+            id: string;
+            name: string;
+            phone: string;
+            postal_code: string;
+            region: string;
+            service_note: string;
+            slug: string;
+            street_address_1: string;
+            street_address_2: string;
+            tagline: string;
+            warranty_note: string;
+            website_url: string;
         };
         Publication: {
             /** Format: int64 */
@@ -2659,6 +2750,103 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SessionOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "read-public-showroom": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "read-public-piano": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListingOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "read-public-piano-photo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                id: string;
+                photoID: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Published normalized JPEG */
+            200: {
+                headers: {
+                    "Content-Type"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/jpeg": string;
                 };
             };
             /** @description Error */

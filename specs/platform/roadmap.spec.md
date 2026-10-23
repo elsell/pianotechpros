@@ -2,6 +2,23 @@
 
 ## Current milestone: feature-complete product
 
+Public showroom profile, piano and JPEG routes are now registered through a
+project-owned bootstrap extension and Huma-generated contracts. Every route
+requires server-owned evidence of the coordinated source limit, so missing
+limiter/clock composition cannot expose storage. Explicit DTOs omit private
+fields; errors discard partial results and reveal no database details. Controlled
+HTTP tests cover anonymous access, missing dependencies, source-header spoofing,
+scope/visibility denial, no-store headers and contract allowlisting.
+
+The updated disposable real-backend acceptance journey passed with PostgreSQL,
+Dex opaque session exchange and the typed SpiceDB proxy: public profile/listing/
+JPEG delivery, private edits remaining hidden through sale, piano unpublish,
+correction, explicit republish and whole-showroom hiding. Existing dealer,
+inventory, staff and invitation acceptance also passed. Repository/contract
+checks and required review pass. Public collection filtering/pagination, buyer
+pages, discovery and inquiries remain unfinished; this does not establish native
+interaction acceptance.
+
 Public profile, listing and photo persistence now implements a dedicated anonymous
 read port. Shared dealer/record locks coordinate with publication and profile
 writes; public content comes from the retained snapshot, without loading private

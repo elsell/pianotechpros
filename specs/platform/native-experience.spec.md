@@ -1,5 +1,16 @@
 # Native experience specification
 
+## Android runtime build handoff
+
+Every selected, successful Android native CI build retains only the generated
+`app-debug.apk` as a commit-labelled artifact for seven days. A missing APK fails
+the job. Artifact upload uses a reviewed immutable action commit; v7.0.2 was
+published 2026-10-07, satisfying the fourteen-day age policy on 2026-10-23.
+No signing material, environment files, source tree or Gradle cache is uploaded.
+This is a development client requiring Metro and an isolated development backend,
+not a signed store release or proof of native interaction acceptance. Runtime
+evidence must identify the source commit and the actual journeys exercised.
+
 Status: required design and acceptance standard for product slices. Dealer and
 inventory text workflows are implemented; native photo presentation and device
 interaction acceptance remain incomplete.

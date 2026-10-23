@@ -165,6 +165,16 @@ jobs:
         if: steps.routing.outcome == 'success' && needs.changes.outputs.native == 'true'
       - run: cd apps/mobile/android && ./gradlew assembleDebug
         if: steps.routing.outcome == 'success' && needs.changes.outputs.native == 'true'
+      - name: Retain Android development client for runtime acceptance
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: success() && steps.routing.outcome == 'success' && needs.changes.outputs.native == 'true'
+        with:
+          name: android-development-${{ github.sha }}
+          path: apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
+          include-hidden-files: false
 
   ios-native:
     needs: changes

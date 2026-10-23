@@ -2,6 +2,14 @@
 
 ## Current milestone: feature-complete product
 
+Android CI now retains the exact debug APK for seven days, labelled with the
+source commit, to unblock emulator installation from hosted builds. The upload
+action is pinned to reviewed v7.0.2; dependency-age, CI routing and structural
+checks pass, and required review found no concrete findings. The first hosted
+upload/download remains unverified. A separately scoped development SDK now has
+Android Emulator 37.2.12 installed; no system image or virtual device is ready yet.
+Neither change constitutes native journey acceptance.
+
 Native publication/sale presentation is implemented with one full-screen task,
 keyboard-aware entry, Cancel/Android Back boundaries, fixed confirmation placement,
 inline labeled choices and bounded public photo review. It uses committed-session

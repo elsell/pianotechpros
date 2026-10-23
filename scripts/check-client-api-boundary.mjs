@@ -43,7 +43,7 @@ const safeGlobals = new Set([
 ]);
 const storageGlobals = new Set(['indexedDB', 'localStorage', 'TextEncoder', 'TextDecoder', 'Uint8Array']);
 function safeGlobal(relative, name) {
-  return safeGlobals.has(name) || relative === 'apps/web/src/lib/inventory/recovery-storage.ts' && storageGlobals.has(name);
+  return safeGlobals.has(name) || relative === 'apps/web/src/lib/inventory/recovery-storage.ts' && storageGlobals.has(name) || relative === 'apps/mobile/src/inventory/recovery-storage.ts' && ['TextEncoder', 'TextDecoder'].includes(name);
 }
 const safeWindowMembers = new Set(['location', 'sessionStorage']);
 const browserGlobalReferences = new Set([
@@ -259,6 +259,7 @@ function importAllowed(specifier, relative, file) {
     const imported = resolveRelativeImport(file, specifier);
     return Boolean(imported && belowApprovedSourceRoot(imported));
   }
+  if (specifier === 'expo-sqlite') return relative === 'apps/mobile/src/inventory/recovery-storage.ts';
   if (!approvedExternalImports.has(specifier)) return false;
   if (!allProviderImports.has(specifier)) return true;
   return providerImports.get(relative)?.has(specifier) ?? false;

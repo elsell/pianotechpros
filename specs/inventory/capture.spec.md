@@ -160,3 +160,27 @@ primitives only in the reviewed browser recovery-storage adapter. It continues t
 reject fetch, sockets and global transport bypasses there; the adapter is not a
 blanket transport exemption. Gate regressions cover both permitted storage calls
 and forbidden network calls.
+
+## Native recovery storage
+
+Native checkpoints use a private SQLite database containing AES-256-GCM ciphertext,
+with a randomly generated installation key held in Expo SecureStore using
+WHEN_UNLOCKED_THIS_DEVICE_ONLY accessibility. The encryption authenticates the
+application user, installation generation and journal key; every write receives a
+fresh 96-bit nonce and a 128-bit tag. SQLite replaces a checkpoint atomically.
+The key and plaintext never enter SQLite, logs or diagnostic errors. Keys remain
+available to this application's runtime; this does not protect a compromised app
+or unlocked device from malicious code running with its privileges.
+
+One process-wide coordinator serializes storage operations. Handles capture the
+installation generation; sign-out immediately invalidates all in-memory handles.
+Before removing the key and ciphertext, cleanup persists a SecureStore marker.
+Failed cleanup leaves the marker and blocks access; opening recovery retries it
+before creating a new key. Old handles cannot write after cleanup or same-account
+reentry. A restart preserves successful writes, including uncertain save attempts.
+Storage, key access, decryption and tampering errors expose only a fixed diagnostic.
+Native session dismissal blocks private UI and clears both the credential and
+recovery storage; either failure retains the existing sign-out retry path. Network
+outages alone must not erase recovery. Tests cover real authenticated encryption,
+restart, account isolation, failed cleanup, tampering and delayed writes. Native
+build and device interruption evidence remain separate acceptance requirements.

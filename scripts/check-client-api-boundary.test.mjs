@@ -215,3 +215,12 @@ for (const source of ["fetch('/private');", "new WebSocket('wss://example.invali
 }
 result = check({ 'apps/web/src/lib/unreviewed-storage.ts': "indexedDB.open('drafts', 1);" });
 assert.notEqual(result.status, 0, 'storage globals are scoped to the reviewed adapter');
+
+result = check({ 'apps/mobile/src/inventory/recovery-storage.ts': "import { openDatabaseAsync } from 'expo-sqlite'; openDatabaseAsync('recovery.db'); new TextEncoder().encode('data'); new TextDecoder().decode();" });
+assert.equal(result.status, 0, result.stderr);
+for (const source of ["fetch('/private');", "new WebSocket('wss://example.invalid');", "globalThis.fetch('/private');"]) {
+  result = check({ 'apps/mobile/src/inventory/recovery-storage.ts': source });
+  assert.notEqual(result.status, 0, 'native storage adapter must not bypass network policy');
+}
+result = check({ 'apps/mobile/src/unreviewed-storage.ts': "import { openDatabaseAsync } from 'expo-sqlite'; openDatabaseAsync('recovery.db');" });
+assert.notEqual(result.status, 0, 'native SQLite access is scoped to the storage adapter');

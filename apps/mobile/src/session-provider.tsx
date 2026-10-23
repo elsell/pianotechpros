@@ -1,4 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
+import { clearMobileInventoryRecovery } from './inventory/recovery-storage';
 import Constants from 'expo-constants';
 import { getLocales } from 'expo-localization';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
@@ -64,7 +65,10 @@ function useSessionState() {
     const token = session?.token;
     const cleared = await dismissSession({
       block: () => { setPrivateBlocked(true); setReady(false); },
-      clear: () => lifecycle.clear(),
+      clear: async () => {
+        const results = await Promise.allSettled([lifecycle.clear(), clearMobileInventoryRecovery()]);
+        if (results.some(result => result.status === 'rejected')) throw new Error('session_cleanup_failed');
+      },
       failed: () => { setErrorKey('errors.signOutFailed'); setReady(true); },
       complete: () => { setSession(null); setRetryAttempt(0); setProfile(null); setAccessState(state); setErrorKey(message); setReady(true); },
     });

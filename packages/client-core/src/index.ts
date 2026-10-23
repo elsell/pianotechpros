@@ -185,3 +185,4 @@ export { dismissSession } from './session-dismissal';
 export { createDealerEditor, type DealerEditorState } from './dealer-editor';
 export { createInventoryEditor, isInventoryEditorCheckpoint, type InventoryEditorCheckpoint, type InventoryEditorRecord, type InventoryEditorState } from './inventory-editor';
 export { createInventoryRecoveryJournal, type InventoryRecoveryScope, type ProtectedInventoryDraftStorage } from './inventory-recovery';
+export { createProtectedRecovery, type RecoveryCrypto } from './protected-recovery';

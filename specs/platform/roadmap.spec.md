@@ -263,6 +263,29 @@ This supplies browser storage; native protection, capture editor mounting and
 continuous draft checkpoint scheduling remain outstanding. Encryption does not
 protect against malicious code running in the same origin/browser profile.
 
+Native recovery now uses an installation key in SecureStore and authenticated
+AES-GCM ciphertext in SQLite, with account/journal binding and serialized storage
+operations. Sign-out immediately invalidates existing handles, removes the key and
+ciphertext, and retains a durable retry marker if cleanup fails after marker
+creation. Session dismissal blocks private presentation until cleanup succeeds.
+Tests using real Node encryption cover restart, account isolation, tampering,
+cleanup failures and delayed reads/writes during sign-out. A real file-backed
+SQLite test verifies reopening and preservation of the previous checkpoint when
+replacement aborts. These tests do not execute Expo's native modules on a device.
+`make check check-contracts`, dependency-age, Expo compatibility, all 19 Expo
+Doctor checks, both Metro exports and clean native prebuild pass. Required code
+review found no blockers. Native compilation/device interaction for this change
+still require separate evidence. The exact SDK-matched SQLite dependency
+adds no reported npm advisory; the current audit still reports 71 findings
+(1 critical, 48 high, 18 moderate, 4 low), so security remains release-blocking.
+Capture editor mounting and continuous local checkpoint scheduling remain open.
+
+Hosted run [39850772745](https://github.com/elsell/pianotechpros/actions/runs/39850772745)
+on `42869c1` passed real-service acceptance, Android Gradle and unsigned iOS
+simulator Xcode builds. Verification failed on 23 reachable Go vulnerabilities.
+This verifies the preceding browser recovery commit and earlier native changes;
+it does not establish native build or device evidence for the new SQLite adapter.
+
 
 
 

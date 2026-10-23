@@ -1,6 +1,7 @@
 import { createApiClient } from './client';
 import type { TokenProvider } from './transport';
 export { createApiClient } from './client';
+export { createShowroomApiClient, ShowroomClientError, type PublicShowroomProfile, type PublicPiano, type ShowroomFilters, type ShowroomPage } from './showroom';
 export type { TokenProvider } from './transport';
 export { sessionExpiryAdvanced, sessionRefreshDelay, sessionRefreshLeadMs } from './session';
 

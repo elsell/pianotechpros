@@ -21,20 +21,9 @@ function validState(v: unknown, dealerID: string, id: string): v is InventoryPub
  if (v.publication === null) return true;
  const p = v.publication;
  if (!object(p) || !keys(p, 'visible applied_revision snapshot') || typeof p.visible !== 'boolean' || !revision(p.applied_revision) || p.applied_revision > v.record.revision) return false;
- const s = p.snapshot;
- if (!object(s) || !keys(s, 'id dealer_id publication_revision status stock_number title featured form player_system condition make model manufactured size finish description price photos')) return false;
- if (s.id !== id || s.dealer_id !== dealerID || !revision(s.publication_revision) || s.publication_revision < 2 || s.publication_revision > p.applied_revision || s.status !== v.record.status) return false;
- if (p.visible && !['available', 'reserved', 'sold'].includes(String(s.status))) return false;
- if (!text(s.title, 321, true) || !text(s.stock_number, 80, true) || !text(s.make, 160) || !text(s.model, 160) || !text(s.size, 80) || !text(s.finish, 200) || !text(s.description, 10000)) return false;
- if ([...s.title].length > 240 && (!s.make || s.title !== [s.make, s.model].filter(Boolean).join(' '))) return false;
- if (typeof s.featured !== 'boolean' || typeof s.player_system !== 'boolean' || typeof s.form !== 'string' || typeof s.condition !== 'string' || !['grand', 'full_size_upright', 'studio_upright', 'console', 'spinet'].includes(s.form) || !['new', 'used', 'restored', 'rebuilt', 'consignment', 'other'].includes(s.condition)) return false;
- if (!(s.price === null || object(s.price) && keys(s.price, 'minor_units currency') && validMoney(s.price)) || !(s.manufactured === null || object(s.manufactured) && keys(s.manufactured, 'year month day') && validDate(s.manufactured))) return false;
- if (!Array.isArray(s.photos) || !s.photos.length || s.photos.length > 50) return false;
- const ids = new Set<string>();
- for (const photo of s.photos) {
-  if (!object(photo) || !keys(photo, 'id alt_text') || !text(photo.id, 128, true) || ids.has(photo.id) || !text(photo.alt_text, 240)) return false;
-  ids.add(photo.id);
- }
+ if (!validPublicListing(p.snapshot, dealerID, id)) return false;
+ if (p.snapshot.publication_revision > p.applied_revision || p.snapshot.status !== v.record.status) return false;
+ if (p.visible && !['available', 'reserved', 'sold'].includes(p.snapshot.status)) return false;
  return true;
 }
 type WireResult = {response: Response; data?: unknown; error?: unknown};
@@ -69,4 +58,20 @@ export function createInventoryPublicationApiClient(baseURL: string, tokenProvid
    return request(() => client.POST('/v1/dealers/{dealerID}/inventory/{id}/lifecycle',{params:{path:{dealerID,id}},body:{expectedRevision,status,salePrice:amount,reason},signal}),dealerID,id,signal,expectedRevision,{status});
   },
  };
+}
+
+export function validPublicListing(s: unknown, dealerID: string, id: string): s is Schema['PublicListing'] {
+ if (!object(s) || !keys(s, 'id dealer_id publication_revision status stock_number title featured form player_system condition make model manufactured size finish description price photos')) return false;
+ if (s.id !== id || s.dealer_id !== dealerID || !revision(s.publication_revision) || s.publication_revision < 2) return false;
+ if (!text(s.title, 321, true) || !text(s.stock_number, 80, true) || !text(s.make, 160) || !text(s.model, 160) || !text(s.size, 80) || !text(s.finish, 200) || !text(s.description, 10000)) return false;
+ if ([...s.title].length > 240 && (!s.make || s.title !== [s.make, s.model].filter(Boolean).join(' '))) return false;
+ if (typeof s.featured !== 'boolean' || typeof s.player_system !== 'boolean' || typeof s.form !== 'string' || typeof s.condition !== 'string' || !['grand', 'full_size_upright', 'studio_upright', 'console', 'spinet'].includes(s.form) || !['new', 'used', 'restored', 'rebuilt', 'consignment', 'other'].includes(s.condition)) return false;
+ if (!(s.price === null || object(s.price) && keys(s.price, 'minor_units currency') && validMoney(s.price)) || !(s.manufactured === null || object(s.manufactured) && keys(s.manufactured, 'year month day') && validDate(s.manufactured))) return false;
+ if (!Array.isArray(s.photos) || !s.photos.length || s.photos.length > 50) return false;
+ const ids = new Set<string>();
+ for (const photo of s.photos) {
+  if (!object(photo) || !keys(photo, 'id alt_text') || !text(photo.id, 128, true) || ids.has(photo.id) || !text(photo.alt_text, 240)) return false;
+  ids.add(photo.id);
+ }
+ return true;
 }

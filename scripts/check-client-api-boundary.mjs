@@ -17,7 +17,7 @@ const runtimeSourceSubstitutions = new Map([
 const approvedSourceRoots = sourceRoots.map((sourceRoot) => path.join(root, sourceRoot));
 const webLibRoot = path.join(root, 'apps/web/src/lib');
 const approvedExternalImports = new Set([
-  '@sveltejs/kit', 'expo-auth-session', 'expo-constants', 'expo-crypto',
+  '@sveltejs/kit', '$app/state', 'expo-auth-session', 'expo-constants', 'expo-crypto',
   'expo-localization', 'expo-router', 'expo-secure-store', 'expo-web-browser',
   'node:assert/strict', 'node:test', 'oidc-client-ts', 'react', 'react-native',
   'svelte', 'react-native-safe-area-context', '@react-navigation/native',
@@ -39,10 +39,11 @@ const providerImports = new Map([
 const allProviderImports = new Set([...providerImports.values()].flatMap((values) => [...values]));
 const safeGlobals = new Set([
   'Boolean', 'Date', 'Error', 'JSON', 'Math', 'Number', 'Object', 'Promise', 'Set', 'URL',
-  'clearTimeout', 'crypto', 'setTimeout',
+  'clearTimeout', 'crypto', 'setTimeout', 'encodeURIComponent',
 ]);
 const storageGlobals = new Set(['indexedDB', 'localStorage', 'TextEncoder', 'TextDecoder', 'Uint8Array']);
 function safeGlobal(relative, name) {
+  if (relative.startsWith('apps/web/src/routes/') && relative.endsWith('/+server.ts') && name === 'Response') return true;
   return safeGlobals.has(name) || relative === 'apps/mobile/src/inventory/photo-media.ts' && name === 'Uint8Array' || relative === 'apps/web/src/lib/inventory/photo-media.ts' && ['Uint8Array', 'Blob'].includes(name) || relative === 'apps/web/src/lib/inventory/recovery-storage.ts' && storageGlobals.has(name) || relative === 'apps/mobile/src/inventory/recovery-storage.ts' && ['TextEncoder', 'TextDecoder'].includes(name);
 }
 const safeWindowMembers = new Set(['location', 'sessionStorage']);

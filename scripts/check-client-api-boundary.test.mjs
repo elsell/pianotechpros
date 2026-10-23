@@ -242,3 +242,13 @@ result=check({'apps/mobile/src/inventory/photo-media.ts':'const bytes=new Uint8A
 assert.equal(result.status,0,'native media adapter can hash owned byte copies');
 result=check({'apps/mobile/src/unreviewed-media.ts':'const bytes=new Uint8Array([1]);'});
 assert.notEqual(result.status,0,'native byte capability remains scoped');
+
+result = check({
+  'apps/web/src/routes/showrooms/+server.ts': 'export function GET() { return new Response(null, {status: 404}); }',
+  'apps/web/src/routes/showrooms/+page.svelte': '<script>import {page} from "$app/state"; const slug = encodeURIComponent(page.params.slug);</script>',
+});
+assert.equal(result.status, 0, result.stderr);
+for (const source of ["fetch('/private');", "new WebSocket('wss://example.invalid');", "globalThis.fetch('/private');"]) {
+  result = check({'apps/web/src/routes/showrooms/+server.ts': source});
+  assert.notEqual(result.status, 0, 'response construction does not authorize network transport');
+}

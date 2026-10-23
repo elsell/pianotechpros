@@ -2,6 +2,24 @@
 
 ## Current milestone: feature-complete product
 
+Buyer-facing showroom and piano pages now render published content on the server,
+with localized filters, a responsive card grid, price-on-request, a keyboard
+gallery, business notes and encoded contact links. A dedicated anonymous generated
+API adapter validates public projections; same-origin JPEG delivery preserves CSP
+and no-store behavior. Controlled browser acceptance passed SSR content, filters,
+gallery controls, contact targets, Spanish, narrow layouts and unpublish handling;
+desktop/narrow screenshots were inspected using synthetic image fixtures. Final
+repository/contract gates and required review pass. Canonical readable aliases,
+related listings, share interactions, discovery metadata, banner delivery and
+inquiries remain required before showroom parity is complete.
+
+The retried Android native job completed successfully. Its development APK was
+downloaded, checksum-verified after transfer and installed on the booted API 36
+emulator. iOS native build and backend acceptance also passed for branch head
+4c3b042; the artifact is labelled with PR merge revision 0d7b6e8. Metro attachment
+and native interaction journeys remain pending. Dependency security findings
+still block aggregate verification and release readiness.
+
 Public inventory browsing now has an anonymous collection API and generated
 client contract. AES-GCM continuation tokens bind the exact showroom, normalized
 filters and page size; invalid tokens fail before storage, and every page rechecks
@@ -52,12 +70,9 @@ full dealer-store PostgreSQL suite, repository/contract checks and required revi
 pass. HTTP/source-limiter
 registration and public browsing remain required before these reads are exposed.
 
-The native run on 4c3b042 completed with successful iOS build and backend acceptance.
-Android failed before compilation while sdkmanager downloaded pinned NDK
-27.0.12077973 (invalid ZIP archive). The exact failed Android job was resubmitted
-once the workflow completed, retaining the pinned toolchain. Its retry is pending;
-no APK installation or device interaction acceptance yet. Aggregate verification
-still fails on dependency security findings.
+The first Android attempt on 4c3b042 failed while sdkmanager downloaded pinned
+NDK 27.0.12077973 (invalid ZIP archive). Retrying retained the reviewed toolchain;
+the subsequent build and artifact installation evidence is recorded above.
 
 The showroom domain now projects only canonical, published dealer profiles and
 same-dealer visible inventory publications. Public fields are explicitly

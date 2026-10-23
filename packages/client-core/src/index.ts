@@ -204,4 +204,5 @@ export {createNativePickerSession} from './native-picker-session';
 export {createPhotoViewport,type PhotoTouch} from './photo-viewport';
 export {createInventoryPublicationWorkspace,type InventoryPublicationWorkspacePort,type PublicationCommand,type PublicationReviewState,type PublicationReviewFailure} from './inventory-publication-workspace';
 export {inventoryMoneyFromInput} from './inventory-form';
+export {showroomFilters,type ShowroomFilterFields} from './showroom-browse';
 export {publicationStatuses,publicationTransitionFromInput,type PublicationTransitionInput} from './publication-transition';

@@ -143,6 +143,32 @@ read application services emit typed operation/outcome probes without profile,
 record, photo, search, credential or contact values. Repository errors always
 discard any accompanying data before serialization.
 
+## Public web delivery
+
+Public web routes live at `/showrooms/{slug}` and
+`/showrooms/{slug}/pianos/{id}`. Server rendering uses the generated public API
+adapter with no application credential, cookies or redirect following. Profile,
+listing and page payloads are structurally validated and scoped before rendering;
+unknown/private fields, malformed money, unsafe links and foreign identifiers
+fail closed. API failures become localized unavailable/not-found states without
+upstream error details. HTML and photo delivery are no-store. A same-origin photo
+route obtains only the scoped public JPEG through that adapter, preserving the
+existing image CSP rather than permitting arbitrary remote image origins.
+The client boundary gate permits pure URI-component encoding, SvelteKit's page
+state reader, and response construction in `+server.ts` handlers. These permit
+safe links and returning already-fetched JPEG bytes, not direct network access;
+fetch/WebSocket and alternate transport imports remain rejected in those files.
+
+Browsing uses a photo-led card grid, an explicit filter submission, visible
+availability and price-on-request, and continuation links retaining the exact
+filters. Detail presents the selected photo, keyboard-operable previous/next and
+thumbnail controls, business contact links and public specifications. Back to
+showroom remains available. All interface and accessibility copy uses the shared
+English/Spanish catalog. Content is escaped, and contact targets come only from
+validated public profile data. This first web delivery still requires subsequent
+readable canonical aliases, related pianos, structured discovery metadata,
+responsive interaction acceptance and inquiry delivery before parity is complete.
+
 ## Read API verification
 
 Domain tests cover unpublished/malformed/zero-value profiles, field allowlisting,

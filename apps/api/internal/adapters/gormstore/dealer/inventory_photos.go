@@ -158,23 +158,8 @@ func (r *Repository) StorePhoto(ctx context.Context, actor, dealerID, id string,
 		if err := tx.Create(&reference).Error; err != nil {
 			return err
 		}
-		updated := tx.Model(&inventoryRecordModel{}).Where("id=? AND dealer_id=? AND revision=?", id, dealerID, upload.ExpectedRevision).Updates(map[string]any{"revision": next.Revision, "updated_at": next.UpdatedAt})
-		if updated.Error != nil {
-			return updated.Error
-		}
-		if updated.RowsAffected != 1 {
-			return ports.ErrConflict
-		}
-		if err := tx.Create(fromAudit(event)).Error; err != nil {
-			return err
-		}
 		state := app.PhotoState{Record: next, Photos: photos.Evidence()}
-		snapshot, err := json.Marshal(state)
-		if err != nil {
-			return err
-		}
-		row := inventoryHistoryModel{RecordID: id, DealerID: dealerID, Revision: next.Revision, ActorUserID: actor, Source: string(history.Source), Kind: history.Kind, Snapshot: snapshot, AuditID: event.ID, CreatedAt: history.At}
-		if err := tx.Create(&row).Error; err != nil {
+		if err := commitPhotoState(tx, state, history, event); err != nil {
 			return err
 		}
 		result = app.PhotoUploadResult{State: state, PhotoID: upload.ID}

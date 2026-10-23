@@ -99,3 +99,22 @@ and replay responses also commit audit before returning data. Database failures
 return no partially populated response. Existing collection order must be dense,
 unique and scope-valid before any mutation. Stored rendition digest/dimensions are
 validated before returning bytes. Storage alone does not expose an upload route.
+
+## Draft photo edits in persistence
+
+Reorder, alternative-text edits and removal use separate typed repository methods
+and require the record's current revision. The repository reloads and validates
+current references under the same dealer-authority and record locks used by
+uploads. Changes replace only draft references, advance the record revision and
+commit the resulting photo-state history with audit in one transaction. Image
+bytes are neither rewritten nor deleted. Reference positions remain dense from
+zero after removal. Failed audit or history insertion restores the entire prior
+order, alternative text and revision.
+
+An authorized no-op at the current revision returns current state with a read
+audit and adds no history revision. A stale expected revision still conflicts,
+even if the requested order or text happens to match. Uncertain client mutations
+must read and reconcile the current state rather than silently retry against a
+newer revision. Unknown IDs, incomplete/duplicate reorder lists and invalid text
+are rejected. Revoked/view-only users cannot edit; a record/dealer mismatch fails
+closed. HTTP policy, structured errors and client conflict UX remain required.

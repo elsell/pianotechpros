@@ -197,3 +197,25 @@ zoom, with disabled states at limits and screen-reader descriptions. The inspect
 view cannot compete with an enclosing vertical details scroller. Pinch, pan,
 rotation, large text, VoiceOver/TalkBack and dismissal require device acceptance;
 geometry tests and exports alone cannot establish that acceptance.
+
+## Publication and sale task
+
+The inventory editor opens a single full-screen modal for public snapshot review
+or sale/correction entry. A safe-area header exposes Cancel; Android Back and
+accessibility escape use the same cancellation boundary. Review and entry occupy
+one modal, never nested sheets. Inline labeled status/currency radio groups
+collapse after selection; current values remain visible. Keyboard-aware scrolling,
+a decimal-pad Done accessory on iOS, semantic colors and scaling text preserve
+platform presentation. Confirmation sits below the scrollable review and becomes
+unavailable during submission. Parent navigation remains protected while the task
+is open or a command is pending.
+
+Public review excludes private fields and loads at most six ordered image
+previews. Commands use the shared single-use revision review; rejected sale input
+remains in memory, and account teardown hides it. Numeric parsing and currency
+review retain exact safe minor units. Restored or invalid private edits require
+explicit resolution before publication.
+
+Source checks and Metro exports provide implementation evidence only. Native
+Back/cancel, keyboard, Dynamic Type, screen-reader focus, rotation, interruption
+and real-backend journeys remain unverified until executed on native builds.

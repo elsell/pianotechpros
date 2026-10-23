@@ -12,6 +12,7 @@ import {useNativeTheme} from '../../src/native-theme';
 import {randomUUID} from 'expo-crypto';
 import {claimMobileInventoryCapture,claimMobileInventoryPhotos} from '../../src/inventory/capture-lease';
 import {openMobileInventoryRecovery} from '../../src/inventory/recovery-storage';
+import {InventoryPublication} from '../../src/inventory/InventoryPublication';
 import {InventoryPhotos} from '../../src/inventory/InventoryPhotos';
 import {mobilePhotoDigest} from '../../src/inventory/photo-media';
 type Choice='form'|'condition'|'asking_currency'|'cost_currency';
@@ -20,6 +21,7 @@ function Editor({userID,dealerID,recordID:routeRecordID}:{userID:string;dealerID
  const {i18n}=useMobileSession();const theme=useNativeTheme();const request=useInventoryRequest();const navigation=useNavigation();
  const workspace=useRef<InventoryFormWorkspace|null>(null);
  const [state,setState]=useState<ReturnType<InventoryFormWorkspace['snapshot']>|null>(null);
+ const [publicationBusy,setPublicationBusy]=useState(false);
  const [photoBusy,setPhotoBusy]=useState(false);
  const [loading,setLoading]=useState(true);const [failed,setFailed]=useState(false);const [denied,setDenied]=useState(false);const [captureBusy,setCaptureBusy]=useState(false);const [attempt,setAttempt]=useState(0);const [internal,setInternal]=useState(false);const [choice,setChoice]=useState<Choice|null>(null);
  useEffect(()=>{
@@ -33,7 +35,7 @@ function Editor({userID,dealerID,recordID:routeRecordID}:{userID:string;dealerID
   }catch(error){if(active){setFailed(true);setCaptureBusy(error instanceof Error&&error.message==='inventory_capture_busy');setDenied(error instanceof InventoryClientError&&[401,403,404].includes(error.status));}}finally{if(active)setLoading(false);}})();
   return()=>{active=false;unsubscribe();current?.dispose();if(workspace.current===current)workspace.current=null;};
  },[userID,dealerID,recordID,request,attempt]);
- usePreventRemove(photoBusy||!!state&&!state.denied&&state.recovery!=='ready',({data})=>{if(photoBusy)return;void (async()=>{if(await workspace.current?.flush())navigation.dispatch(data.action);})();});
+ usePreventRemove(publicationBusy||photoBusy||!!state&&!state.denied&&state.recovery!=='ready',({data})=>{if(publicationBusy||photoBusy)return;void (async()=>{if(await workspace.current?.flush())navigation.dispatch(data.action);})();});
  const draft=state?.draft;const errors=draft?inventoryFormErrors(draft).filter(field=>state?.baseline||field!=='stock_number'):[];
  const label=(field:InventoryFormField)=>i18n.t(`inventory.field.${field}` as MessageKey);
  function change(field:InventoryFormField,value:string|boolean){const latest=workspace.current?.snapshot().draft;if(latest)workspace.current?.change({...latest,[field]:value});}
@@ -59,7 +61,8 @@ function Editor({userID,dealerID,recordID:routeRecordID}:{userID:string;dealerID
  {internal?<>{(['stock_number','serial','location'] as const).map(key=>field(key))}{field('cost_amount')}{choose('cost_currency')}{field('private_notes',true)}</>:null}
  {state.conflict||state.uncertain?<Button title={i18n.t('inventory.edit.review')} color={theme.accent} disabled={state.busy} onPress={()=>{void workspace.current?.recover();}} />:null}
  {state.latest?<View style={{gap:16}}>{(Object.keys(draft) as (keyof InventoryForm)[]).filter((key):key is InventoryFormField=>key!=='decimal').filter(key=>state.latest!.attributes[key]!==draft[key]).map(key=><View key={key} style={{gap:6}}><Text accessibilityRole="header" style={{...copyStyle,fontWeight:'600'}}>{label(key)}</Text><Text style={{color:theme.secondary}}>{i18n.t('inventory.edit.current')}</Text><Text style={copyStyle}>{display(state.latest!.attributes,key)}</Text><Text style={{color:theme.secondary}}>{i18n.t('inventory.edit.yours')}</Text><Text style={copyStyle}>{display(draft,key)}</Text></View>)}<Button title={i18n.t('inventory.edit.keep')} color={theme.accent} onPress={()=>workspace.current?.keepEdits()} /><Button title={i18n.t('inventory.edit.useLatest')} color={theme.accent} onPress={()=>workspace.current?.useLatest()} /></View>:null}
- <Button title={i18n.t('inventory.edit.save')} color={theme.accent} disabled={photoBusy||state.busy||state.conflict} onPress={()=>{Keyboard.dismiss();void workspace.current?.save();}} />
+ <Button title={i18n.t('inventory.edit.save')} color={theme.accent} disabled={publicationBusy||photoBusy||state.busy||state.conflict} onPress={()=>{Keyboard.dismiss();void workspace.current?.save();}} />
+ {workspace.current&&state.baseline?<InventoryPublication key={workspace.current.recordID()} workspace={workspace.current} userID={userID} dealerID={dealerID} recordID={workspace.current.recordID()} publishReady={!state.restored&&!state.invalid&&!state.conflict&&!state.uncertain} otherBusy={photoBusy} onBusy={setPublicationBusy} />:null}
  </>:null}
  </ScrollView></KeyboardAvoidingView>
  {Platform.OS==='ios'?<InputAccessoryView nativeID="inventory-keyboard"><View style={{backgroundColor:theme.surface,alignItems:'flex-end',paddingHorizontal:12}}><Button title={i18n.t('inventory.edit.done')} color={theme.accent} onPress={Keyboard.dismiss} /></View></InputAccessoryView>:null}

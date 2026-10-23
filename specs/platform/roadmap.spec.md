@@ -2,6 +2,30 @@
 
 ## Current milestone: feature-complete product
 
+Native publication/sale presentation is implemented with one full-screen task,
+keyboard-aware entry, Cancel/Android Back boundaries, fixed confirmation placement,
+inline labeled choices and bounded public photo review. It uses committed-session
+request adapters and the shared revision review; private sale input stays in memory
+and survives rejection. Restored/invalid/conflicted/uncertain drafts block publish
+review. Shared transition parsing tests cover exact amounts, zero/JPY, malformed
+input, correction reasons and exclusion of stale sale input on non-sale changes.
+The 271 client-core tests, mobile TypeScript, repository/contract checks and both
+platform Metro exports pass. Required review found no concrete blockers. These
+exports are not native builds or device acceptance; native interaction and full
+backend journeys remain required before parity is complete.
+
+Hosted run 40004537200 on commit 2f20c1d passed `make acceptance`, including the
+real-backend upload/readiness/publish/snapshot-preserving sale/unpublish/correction/
+republish journey. Its callable Go scan is clean; verification still fails on
+70 npm findings. This establishes backend integration evidence for those commands,
+not device or native presentation acceptance. Native build jobs were still running
+at inspection.
+
+Runtime preparation found adb and accessible KVM on the remote development host,
+but no emulator executable on PATH or default Android SDK directory. Android
+emulator setup may enable the outstanding runtime checks without store credentials;
+its available disk was 18.4 GiB at inspection. No production deployment was changed.
+
 The web editor now exposes localized publication, sale, availability correction
 and unpublish review. Public review shows saved allowlisted details and ordered
 photos in bounded six-image pages; private sale amounts/reasons have a separate
@@ -59,7 +83,7 @@ Application/contract checks, API race tests and the real PostgreSQL publication
 suite pass; required review found no concrete blockers. The disposable-stack
 script now includes real PNG upload and the
 complete snapshot-preserving sale/republish journey; execution of that new journey
-is pending hosted CI. Native publication controls, public delivery and the
+passed hosted run 40004537200 as recorded above. Native publication controls, public delivery and the
 remaining parity work are still required.
 
 Hosted run 40000690616 on Go-migration commit 73c1990 passed disposable-stack

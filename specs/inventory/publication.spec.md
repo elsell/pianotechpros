@@ -174,3 +174,26 @@ unfinished draft through the existing serialized mutation boundary.
 The public photo review shows ordered pages of at most six authorized image
 previews at once. Changing page disposes prior previews; never decode the entire
 50-photo collection simultaneously. Each new review starts at the first page.
+
+## Native publication interaction
+
+Native clients use one full-screen modal task for the longer public snapshot
+review or sale/correction task, with a safe-area header, explicit Cancel, scrollable
+content, and a reachable confirmation action. Do not layer a second modal over
+review. Status/currency choices are labeled inline radio groups within the task;
+selection collapses the group. Android Back and accessibility escape cancel before
+dispatch; while a command is pending, dismissal and parent navigation wait for its
+result. All text scales with the system font and uses semantic theme colors.
+
+The same saved-draft protection, exact money parsing/formatting, private-field
+allowlist, six-photo bound and revision-reviewed command semantics apply on native.
+Sale/correction input survives a rejected operation in memory; it is never written
+to recovery storage. Late account/record responses cannot reopen a modal or reveal
+private review state. Separate native request adapters use committed session
+credentials, preserving rotated credentials after an old-token rejection.
+
+Native publication is not accepted by TypeScript or Metro export alone. Verify
+Android Back, iOS modal cancellation, keyboard avoidance, screen-reader focus,
+large text, rotation, phone/tablet layout, interruptions and backend journeys on
+native builds before marking parity complete. Modal pattern reference:
+https://developer.apple.com/design/human-interface-guidelines/sheets

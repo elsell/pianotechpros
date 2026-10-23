@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { createInventoryApiClient, createInventoryPhotoApiClient, InventoryClientError } from '@pianotechpros/api-client';
+import { createInventoryApiClient, createInventoryPhotoApiClient, createInventoryPublicationApiClient, InventoryClientError } from '@pianotechpros/api-client';
 import { useMobileSession } from './session-provider';
 
 /** Mount within an account-keyed screen; only committed credentials are used. */
@@ -22,3 +22,5 @@ function useRequest<Client>(create:(baseURL:string,token:()=>string)=>Client) {
 
 export function useInventoryRequest(){return useRequest(createInventoryApiClient);}
 export function useInventoryPhotoRequest(){return useRequest(createInventoryPhotoApiClient);}
+
+export function useInventoryPublicationRequest(){return useRequest(createInventoryPublicationApiClient);}

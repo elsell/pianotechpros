@@ -73,6 +73,29 @@ and reject every line terminator after a comment token without executing any
 shell payload. Ordinary quoted arguments and comment behavior must remain
 usable. Keep the complete package audit enabled; resolving this advisory does
 not waive other findings or establish release readiness.
+
+The next security refresh pins the following compatible release lines using
+workspace overrides. Registry timestamps reviewed on 2026-10-23 place every
+listed release before the fourteen-day cutoff; no new age exception is needed.
+
+| Dependency | Reviewed pin | Boundary requiring verification |
+| --- | --- | --- |
+| fast-uri | 3.1.7 | URI authority normalization and AJV/schema tooling |
+| joi (EAS consumers) | 17.13.7 | CLI configuration validation |
+| js-yaml | 3.15.2 / 4.3.2 | Preserve each consumer's major API while fixing merge/omap limits |
+| nanoid | 3.3.18 | Existing CommonJS identifier-generation consumers |
+| browserslist | 4.28.7 | Web/native compilation target resolution |
+| source-map-js | 1.2.2 | Web compilation/source-map consumers |
+| compression | 1.8.2 | Development-server response teardown |
+| devalue | 5.9.3 | SvelteKit server-rendered data serialization |
+| @xmldom/xmldom | 0.8.15 / 0.9.12 | Preserve both installed minor API lines in Expo/XML tooling |
+
+Use a fresh full package audit as the advisory regression gate; retain its
+failure for findings outside this refresh. Frozen installation, complete
+repository/contract tests, dependency-age validation, Expo compatibility,
+actual web compilation and EAS startup must pass. Native compilation and real
+browser/native journeys remain necessary integration evidence, not substitutes
+for fixing outstanding advisories.
 Migration acceptance applies the prior released migration set first, then runs
 the current migrator and verifies preserved baseline data and new schema objects.
 Every prior-release up and down migration is frozen by a checked-in SHA-256

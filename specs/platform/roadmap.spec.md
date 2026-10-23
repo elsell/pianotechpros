@@ -2,6 +2,18 @@
 
 ## Current milestone: feature-complete product
 
+A compatible parser/tooling dependency refresh reduces the npm audit from 69 to
+19 findings: zero critical, 7 high, 11 moderate and 1 low. It upgrades URI, YAML,
+XML, serialization, target-resolution and configuration-validation dependencies;
+YAML major versions and XML minor lines remain separate. Review found two missed
+EAS Joi consumers; a Joi 17-wide override now covers them all. Frozen install,
+full repository/contract checks, dependency age, Expo compatibility, Expo Doctor
+(19/19), web build and required review pass. Public showroom browser acceptance
+passes SSR, filtering, keyboard gallery, contact links, Spanish, narrow layout and
+unpublish after moving Chromium temporary storage off the nearly full root disk.
+The remaining findings still block release; native compilation and device
+acceptance of the updated graph are required separately.
+
 The shell-quote override now pins 1.11.0, resolving the critical command-injection
 advisory GHSA-pqg4-j6r4-53mv. Regression tests through the actual React Native
 devtools dependency fail on 1.9.0 and pass on the new pin, covering all four line

@@ -623,3 +623,7 @@ for both its readiness probe and development-client URL; the synthetic API keeps
 its explicit IPv4 loopback address. Readiness requests have bounded connect/total
 timeouts and identify the failed local endpoint. A failed prerequisite remains
 a failing gate, never a skipped interaction test.
+
+The generated iOS UI-test target must set an explicit nonempty product name.
+The simulator build must produce `PianoInteractionTests.xctest` inside its named
+runner; an empty test product is a harness failure, not device acceptance evidence.

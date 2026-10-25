@@ -11,6 +11,7 @@ target = project.new_target(:ui_test_bundle, name, :ios, '15.1', nil, :swift)
 target.add_dependency(app)
 target.build_configurations.each do |config|
   config.build_settings.merge!({
+    'PRODUCT_NAME' => name,
     'PRODUCT_BUNDLE_IDENTIFIER' => 'com.pianotechpros.interaction-tests',
     'GENERATE_INFOPLIST_FILE' => 'YES', 'SWIFT_VERSION' => '5.0',
     'TEST_TARGET_NAME' => app.name, 'CODE_SIGNING_ALLOWED' => 'NO',

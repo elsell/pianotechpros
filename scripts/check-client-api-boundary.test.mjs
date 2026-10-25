@@ -8,6 +8,7 @@ import { spawnSync } from 'node:child_process';
 const checker = resolve('scripts/check-client-api-boundary.mjs');
 const protectedPaths = [
   'apps/web/src/lib/inquiry/turnstile.ts',
+  'apps/web/src/lib/inventory/voice-recorder.ts',
   'apps/web/src/lib/browser-events.ts',
   'apps/mobile/src/provider-auth.ts',
   'apps/mobile/src/provider-auth-state.ts',

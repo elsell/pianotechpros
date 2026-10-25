@@ -32,8 +32,13 @@ revision/transcript identity plus every typed candidate before presentation.
 Controlled real HTTP tests cover all fields and failure paths. The account/dealer/
 record-bound workflow now coordinates transcription, extraction, explicit review,
 local Apply and conditional Undo; cancellation/scope loss suppress late work and
-rejected local changes cannot claim success. Recording, review/clarification UI,
-voice-aware autosave/Undo and native microphone acceptance remain unfinished.
+rejected local changes cannot claim success. A local browser microphone adapter
+now bounds recording, releases tracks on cancellation/disposal/pagehide, and
+suppresses late permission grants. Real Chromium synthetic-microphone acceptance
+covers encoded audio, Stop, cancellation, permission denial, duration, device-loss
+events and observer reentrancy. Editor integration (including microphone policy),
+review/clarification UI, voice-aware autosave/Undo and native microphone acceptance
+remain unfinished; real microphone and Safari interaction are not yet verified.
 
 Buyer inquiry foundations now implement canonical contact validation, immutable
 public snapshot context and first-read domain state. Submission orchestration

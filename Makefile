@@ -83,7 +83,7 @@ pre-push:
 	$(HOOK_RECURSIVE_ENV) $(MAKE) acceptance
 
 acceptance:
-	pnpm exec playwright install chromium-headless-shell
+	pnpm exec playwright install chromium
 	./scripts/live-acceptance.sh .
 
 compose-up:

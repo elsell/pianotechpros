@@ -9,6 +9,7 @@ import (
 // domain service. Keep policy and product behavior in this package; adapters are
 // injected through these ports by the generated composition registry.
 type Dependencies struct {
+	ScanTokens              ports.ScanTokens
 	VoiceExtractor          VoiceExtractor
 	VoiceTranscriber        VoiceTranscriber
 	PhotoProcessor          ports.PhotoProcessor
@@ -29,6 +30,7 @@ type Dependencies struct {
 
 // Repository combines the generated persistence boundary with scoped membership.
 type Repository interface {
+	ScanRepository
 	HistoryRepository
 	PublicationRepository
 	PhotoRepository
@@ -39,7 +41,7 @@ type Repository interface {
 type Service struct{ *Commands }
 
 func New(d Dependencies) *Service {
-	return &Service{Commands: NewCommands(CommandDependencies{History: d.Repository, VoiceExtractor: d.VoiceExtractor, VoiceTranscriber: d.VoiceTranscriber, Publications: d.Repository, Photos: d.Repository, PhotoProcessor: d.PhotoProcessor, Access: AccessDependencies{Auth: d.Auth, Memberships: d.Repository, Authorizer: d.Authorizer, Audits: d.Audits, Limiter: d.AuditRateLimiter, Clock: d.Clock}, Records: d.Repository, Lists: d.Repository, CursorSigningKey: append([]byte(nil), d.CursorSigningKey...), SupportedCurrency: supportedCurrency, NewID: d.NewID, Probe: d.Probe})}
+	return &Service{Commands: NewCommands(CommandDependencies{Scans: d.Repository, ScanTokens: d.ScanTokens, History: d.Repository, VoiceExtractor: d.VoiceExtractor, VoiceTranscriber: d.VoiceTranscriber, Publications: d.Repository, Photos: d.Repository, PhotoProcessor: d.PhotoProcessor, Access: AccessDependencies{Auth: d.Auth, Memberships: d.Repository, Authorizer: d.Authorizer, Audits: d.Audits, Limiter: d.AuditRateLimiter, Clock: d.Clock}, Records: d.Repository, Lists: d.Repository, CursorSigningKey: append([]byte(nil), d.CursorSigningKey...), SupportedCurrency: supportedCurrency, NewID: d.NewID, Probe: d.Probe})}
 
 }
 

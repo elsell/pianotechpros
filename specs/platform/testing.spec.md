@@ -477,6 +477,12 @@ an explicitly rolled-back transaction. The fixed table names and repository-owne
 migration contain no external SQL input. These checks prove append-only runtime
 privileges and refusal to remove retained receipts on an isolated fixture.
 
+The exact file `apps/api/internal/adapters/gormstore/dealer/inventory_scan_test.go`
+has the same test-only exception for fixed UPDATE/DELETE/TRUNCATE statements
+against scan-label associations. Record IDs use bound parameters. These isolated
+PostgreSQL tests verify runtime privileges and trigger-enforced immutability;
+production SQL restrictions remain unchanged.
+
 The web Turnstile boundary is an exact hash-protected provider adapter. It may
 load only Cloudflare's fixed explicit-render script and expose token/error
 callbacks; it receives no contact or application credential. The ordinary client

@@ -1,0 +1,106 @@
+# Inventory scan labels
+
+## Product contract
+
+QR-01 preserves the legacy stable label, authenticated record identification and
+quick status actions. The label opens a focused piano view with cover image,
+stock number, title, make/model, availability, full-editor navigation and explicit
+unpublish. Sale retains the existing sale-price confirmation; archiving and
+unpublishing retain their existing confirmations. A scan never applies a mutation
+by itself. Viewer membership permits identification; existing manage/publish
+policy controls the respective actions. Draft, sold and archived pianos remain
+identifiable to authorized staff.
+
+## Stable private identity
+
+A scan label associates one dealer and one inventory record with an opaque token.
+Tokens contain 32 bytes from a cryptographic random source, encoded as canonical
+unpadded base64url (43 characters). All-zero bytes, malformed encodings, padding,
+whitespace and noncanonical aliases are invalid. Generation failure yields no
+label; there is no timestamp, record ID or pseudorandom fallback. The random
+source is injected behind a typed port. Token formatting/JSON serialization is
+redacted by default; transport code must explicitly request its encoded value.
+
+A label is immutable, including its original creator and creation time. Its time
+uses UTC microsecond precision in years 1–9999, consistent with PostgreSQL
+storage and client date rendering; the normalized zero time is invalid. Dealer,
+record and creator identifiers must be nonempty bounded identifiers without
+whitespace/control characters. One immutable association per dealer/record is
+created lazily and retained across record edits, publication and lifecycle changes.
+Concurrent creation returns the winning association; never replace a printed
+label. This separate identity association does not change inventory content or
+its revision. Label provisioning and its creation audit commit atomically;
+subsequent reads and scan resolution commit read audits. No token appears in audit
+metadata. The association has no ordinary update/delete operation.
+
+## Authorization and transport
+
+Every label provision/read and resolution requires an ordinary application
+session, coordinated principal limiter, current actor/dealer membership and
+SpiceDB dealer:view. The transactional repository rechecks scoped local authority
+under existing dealer/membership locks. Resolution includes actor and dealer IDs;
+there is no unscoped token lookup. Missing tokens and inaccessible records return
+the same not-found response. Permission or audit failures return no label or
+record. Mutations from the scan view reuse the existing revision-checked commands,
+with their stronger policy, audit and history requirements.
+
+The dedicated web scan link puts dealer ID and token in its URL fragment, never
+in path/query parameters. The client consumes and removes that fragment before
+loading other resources, sends the token only in a bounded authenticated POST
+body, and uses no-referrer/no-store responses. Login continuation is bounded,
+origin-local and cleared on cancellation/logout; tokens must not reach provider
+redirect URLs, logs, analytics or public DTOs. Native scanning validates the
+configured application origin and exact scan-link structure before navigating;
+untrusted QR links never trigger arbitrary network requests. Native uses the
+platform camera permission flow and retains a manual open-link alternative.
+
+## Delivery and evidence
+
+Web offers a printable high-contrast QR label with readable stock/title; native
+offers a readable full-screen label and native sharing. QR payloads contain no
+session or private piano attributes. A decoded printed/displayed QR must resolve
+the same record after edits, sale and unpublication. Browser and device acceptance
+must cover camera denial, malformed/foreign links, login continuation, authorized
+viewer/editor use, cross-dealer/revoked access, failed audit and cancellation.
+
+Initial domain/token-source implementation is not a delivered QR workflow.
+Persistence, policy/HTTP integration, QR rendering/decoding and web/native
+interaction evidence remain required before QR-01 is complete. The existing
+legacy labels/deployment are untouched; no production data or secrets are copied.
+
+## Transactional storage
+
+Migration 28 stores the canonical token as a private uniquely indexed value, one
+row per inventory record with a composite dealer/record foreign key. Inserts
+require the current transaction's matching creation audit, active confirmed
+view-capable membership, matching founding-owner identity and an existing record.
+The API runtime has SELECT/INSERT only. Triggers reject update, delete and truncate;
+rollback refuses to drop retained labels. Audit retention does not cascade into
+labels or invalidate them.
+
+Ensure receives a validated candidate plus a creation audit template. It locks
+current dealer authority, loads the record, then returns the existing association
+or inserts the candidate. Existing labels receive a fresh viewed audit instead of
+a duplicate creation event; competing requests serialize on the dealer lock.
+Candidate creation time must equal the audit time and cannot predate the record.
+Resolve receives actor/dealer scope and a parsed token, plus a read audit template
+whose initial target is the dealer. After scoped resolution it records only the
+resolved record ID as its inventory_scan audit target. Neither operation releases
+results on transaction/audit failure. Database error details are sanitized at this
+boundary so token values from constraint errors cannot enter diagnostics.
+
+## Application and HTTP boundary
+
+`POST /v1/dealers/{dealerID}/inventory/{id}/scan-label` ensures the stable label
+and returns only dealer_id, record_id and the explicitly encoded token.
+`POST /v1/dealers/{dealerID}/inventory/scan/resolve` accepts a bounded JSON body
+with token and returns only dealer_id and record_id. Clients then use ordinary
+private record/publication operations; resolution is never an authorization cache.
+Both endpoints use the existing opaque-session, limiter and read-policy boundary,
+no-store/no-referrer headers, sensitive-input handling and stable API errors.
+Token input never appears in a route parameter. Read-policy denial after initial
+preflight is audited through the existing denial path. Mis-scoped or malformed
+repository results fail closed. Secure generation is injected in bootstrap;
+no provider credential is needed. Project-owned scan registration composes the
+existing inventory application and repository without editing generated code,
+following the existing photo/voice extension boundary.

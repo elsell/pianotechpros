@@ -27,6 +27,8 @@ type Source string
 const (
 	Manual Source = "manual"
 	Voice  Source = "voice"
+	// Mixed is derived from field attribution, never accepted as a command source.
+	Mixed Source = "mixed"
 )
 
 // History is private append-only domain history, never a public DTO or audit payload.
@@ -36,6 +38,7 @@ type History struct {
 	Source                      Source
 	Kind                        string
 	Fields                      []string
+	FieldSources                map[string]Source
 	From, To                    Status
 	SalePrice                   *Money
 	Reason                      string
@@ -97,6 +100,10 @@ func (r Record) Revise(input Attributes, expected int64, actor string, source So
 	}
 	event := r.history(actor, source, at, "attributes")
 	event.Fields = fields
+	event.FieldSources = make(map[string]Source, len(fields))
+	for _, field := range fields {
+		event.FieldSources[field] = source
+	}
 	r.Attributes = attributes
 	r.Revision++
 	r.UpdatedAt = at

@@ -59,8 +59,11 @@ Ordinary attribute replacement requires the caller's exact revision and validate
 all fields, including a nonempty stock number. It cannot change record/dealer ID,
 creation time or lifecycle status. Each actual change increments the revision and
 returns a separate private history event naming changed fields, actor, source and
-injected timestamp. Reject empty changes. Sources are manual or voice; voice can
-only change attributes, never lifecycle. Revision exhaustion fails closed.
+injected timestamp. Reject empty changes. Command sources are manual or voice; voice can
+only change attributes, never lifecycle. Attributed attribute revisions additionally
+derive a mixed history source when manual and voice fields coexist, with an exact
+source map for changed fields as specified in `../voice/provenance.spec.md`. Mixed
+is never accepted as a whole-command source. Revision exhaustion fails closed.
 
 Statuses are draft, available, reserved, in_service, sold and archived. Distinct
 status transitions are explicit manual commands; leaving sold/archived or returning

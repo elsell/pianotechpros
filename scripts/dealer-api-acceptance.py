@@ -3,6 +3,7 @@
 import json
 import os
 import struct
+import subprocess
 import zlib
 import time
 import urllib.error
@@ -264,3 +265,26 @@ assert by_id[revocable["id"]]["revokedAt"]
 serialized = json.dumps(listed).lower()
 assert "token" not in serialized and "digest" not in serialized
 print("Owner staff and invitation list pagination, terminal state and secret exclusion acceptance passed")
+
+
+# Reuse only this run's disposable published fixture; browser children sign in
+# normally and receive no parent application session credentials.
+browser_environment = {name: value for name, value in os.environ.items()
+                       if name not in {"DEALER_ACCEPTANCE_OWNER_SESSION", "DEALER_ACCEPTANCE_OTHER_SESSION"}}
+for script in ("inquiry-persisted-browser-acceptance.mjs",
+               "inventory-history-persisted-acceptance.mjs",
+               "inventory-scan-persisted-acceptance.mjs"):
+    current_title = request("GET", piano_path)["data"]["attributes"]["title"]
+    subprocess.run(["node", "scripts/" + script], check=True, env={
+        **browser_environment,
+        "INQUIRY_ACCEPTANCE_WEB_URL": "http://localhost:5173",
+        "INQUIRY_ACCEPTANCE_SHOWROOM_SLUG": profile["slug"],
+        "INQUIRY_ACCEPTANCE_PIANO_ID": piano["id"],
+        "INQUIRY_ACCEPTANCE_DEALER_NAME": update["name"],
+        "HISTORY_ACCEPTANCE_WEB_URL": "http://localhost:5173",
+        "HISTORY_ACCEPTANCE_DEALER_NAME": update["name"],
+        "HISTORY_ACCEPTANCE_EXISTING_TITLE": current_title,
+        "SCAN_ACCEPTANCE_WEB_URL": "http://localhost:5173",
+        "SCAN_ACCEPTANCE_DEALER_NAME": update["name"],
+        "SCAN_ACCEPTANCE_EXISTING_TITLE": current_title,
+    })

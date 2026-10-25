@@ -88,16 +88,19 @@ real-catalog acceptance or the whole website complete.
 
 ## Next implementation sequence
 
-1. Complete and verify the new `profile-persisted-browser-acceptance.mjs`
-   real-service customer/technician path in recurring acceptance. It uses normal
-   login and UI commands with independent persisted reads. Local segmented
-   execution verified creation and subsequent updates of both profiles, linked
-   locations/pianos, weekly timezone/effective dates and separate-user isolation.
-   A stale development server and a corrected selector interrupted the first
-   attempts; a fresh single-pass CI run remains required. Retain fixture suites
-   for deterministic failures.
-2. Put the existing standalone persisted inquiry/history/scan journeys behind
-   synthetic setup in recurring acceptance rather than relying on manual setup.
+1. Preserve the new `profile-persisted-browser-acceptance.mjs` real-service
+   customer/technician path in recurring acceptance. A fresh single-pass run now
+   passed in CI run `40218708883`, acceptance job `121245408772`, source commit
+   `2ffaedb09c5d6bc1cc4babb706453ccd82960615`. Its log confirms normal PKCE,
+   business/two locations/linked piano, weekly timezone/effective dates,
+   persisted reload/edit and separate-user isolation. This supersedes the earlier
+   segmented local limitation for that journey. Retain fixture suites for
+   deterministic failures and complete broader browser/accessibility coverage.
+2. The persisted inquiry/history/scan journeys now run after synthetic dealer
+   setup in recurring acceptance. Local real-service runs passed inquiry snapshot
+   preservation after republish, history 20+5 pagination with unsaved edits, and
+   private scan continuation/sale/sign-out. The new combined CI wiring still needs
+   a fresh single-pass result; live Turnstile remains separate.
 3. Close the dealer/inventory/publication/photo/showroom composed browser gaps
    with owner and anonymous contexts against the same isolated persistent data.
 4. Exercise the real speech and challenge adapters with explicit non-production

@@ -600,3 +600,23 @@ weekly timezone and effective dates, reload and a subsequent edit via independen
 real API reads. A separate signed-in user must not receive either profile.
 Keep fixture browser tests for controlled failures; this composed journey adds
 evidence and does not substitute for authorization or device acceptance.
+
+## Recurring persisted inquiry, history and scan journeys
+
+After the isolated dealer API acceptance has provisioned and republished its
+synthetic dealer/piano and verified staff boundaries, run the existing persisted
+browser inquiry, history and scan journeys using those exact identifiers. Resolve
+the current private title before each journey rather than relying on a title an
+earlier journey may have changed. Each child authenticates normally; do not pass
+parent application session environment variables into browser subprocesses.
+
+Inquiry acceptance must verify the saved inquiry snapshot remains unchanged after
+the owner changes and republishes the piano. History keeps bounded 20+5 pagination
+and unsaved-field preservation. Scan retains real-provider continuation, private
+token handling, status changes and sale history assertions. A child failure fails
+the recurring acceptance command; no route fixtures replace these interactions.
+
+The disposable acceptance Compose override explicitly disables the external
+challenge on both API and web, with empty verifier credentials. This configuration
+is confined to synthetic local acceptance; production defaults stay fail closed.
+Live Turnstile composition remains a separate unproven provider gate.

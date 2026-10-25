@@ -539,3 +539,13 @@ old-token rejection after session rotation, denial cleanup, Spanish navigation
 and logout recovery invalidation. This is browser integration evidence; real
 API/session/PostgreSQL/SpiceDB tests remain separate, and it does not establish
 native interaction acceptance.
+
+Session-rotation browser acceptance runs the built web app with a stateful HTTP
+fake. It holds an inventory save, refreshes the opaque session, rejects the old
+request and proves reload retains both the exact pending command and newer edits.
+It separately holds voice extraction across refresh and preserves the transcript
+for explicit retry. Current-session rejection still clears credentials and hides
+private content. Typed API-client tests exercise delayed real HTTP failures for
+dealer, inventory, inquiry, voice and customer families; 403/404 and unrelated
+failures are not changed by rotation. These checks do not substitute for native
+device acceptance.

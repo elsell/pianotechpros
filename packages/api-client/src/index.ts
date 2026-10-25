@@ -28,3 +28,4 @@ export * from "./inventory-scan";
 export {createDealerBannerApiClient,type DealerBannerState,type DealerBannerUpload} from "./dealer-banner";
 
 export {createCustomerProfileApiClient,CustomerProfileClientError,type CustomerProfileErrorCode,type CustomerProfile,type CustomerProfileAttributes,type CustomerProfileLocation,type CustomerProfilePiano} from './customer-profile';
+export {sessionScopedFailure} from './session-scoped-failure';

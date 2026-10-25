@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {sessionScopedFailure} from '@pianotechpros/api-client';
  import {onMount,tick} from 'svelte';
  import {createDealerBannerApiClient,DealerClientError,type DealerProfile} from '@pianotechpros/api-client';
  import {createDealerBanner,type SessionCredential} from '@pianotechpros/client-core';
@@ -20,7 +21,7 @@
  async function request<T>(run:(api:ReturnType<typeof createDealerBannerApiClient>)=>Promise<T>):Promise<T>{
   const session=credential;
   try{return await run(createDealerBannerApiClient(apiURL,()=>Date.parse(session.expiresAt)>Date.now()?session.token:null));}
-  catch(error){if(active&&error instanceof DealerClientError&&error.status===401&&session.token===credential.token)onSessionRejected();throw error;}
+  catch(error){error=sessionScopedFailure(error,session.token,credential.token);if(active&&error instanceof DealerClientError&&error.status===401&&session.token===credential.token)onSessionRejected();throw error;}
  }
  const controller=createDealerBanner<DealerProfile>({
   dealerID,initial:null,key:()=>crypto.randomUUID(),

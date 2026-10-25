@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {sessionScopedFailure} from '@pianotechpros/api-client';
  import {onMount,tick} from 'svelte';
  import {createCustomerProfileApiClient,CustomerProfileClientError} from '@pianotechpros/api-client';
  import {openCustomerWorkspace,CustomerWorkspaceError,emptyCustomerForm,addCustomerLocation,addCustomerPiano,removeCustomerLocation,removeCustomerPiano,customerPianoForms,customerComparison,type CustomerForm,type CustomerWorkspace,type CustomerEditorState,type SessionCredential} from '@pianotechpros/client-core';
@@ -16,7 +17,7 @@
   const session=credential;
   if(!live())throw new CustomerProfileClientError('unauthenticated',401);
   try{return await operation(createCustomerProfileApiClient(apiURL,()=>Date.parse(session.expiresAt)>Date.now()?session.token:null));}
-  catch(error){if(error instanceof CustomerProfileClientError&&error.status===401){if(session.token!==credential.token)throw new CustomerProfileClientError('unavailable',503);if(active)onSessionRejected();}throw error;}
+  catch(error){error=sessionScopedFailure(error,session.token,credential.token);if(error instanceof CustomerProfileClientError&&error.status===401){if(active)onSessionRejected();}throw error;}
  }
  async function load(){loading=true;failure=null;try{
   const result=await openCustomerWorkspace({scope:{userID:accountId,apiBaseURL:apiURL},ownership:browserCustomerOwnership,active:live,now:Date.now,key:()=>crypto.randomUUID(),draft:emptyCustomerForm(),storage:()=>openBrowserCustomerRecovery(accountId),

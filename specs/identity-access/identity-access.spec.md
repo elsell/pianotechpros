@@ -241,3 +241,23 @@ stale work cannot restore a credential or presentation state. A failed secure
 storage deletion must not report successful sign-out: retain the local session
 presentation, show an actionable sign-out error and allow retry. Clear session
 presentation only after deletion succeeds, then attempt server revocation.
+
+## Delayed rejection after opaque session rotation
+
+A domain request uses the credential captured when dispatched. If a 401 arrives
+while the same mounted account already has a different application credential,
+the response rejects only the old credential. Normalize that failure to the
+client family's transient unavailable error before any logout, denial, draft
+cleanup, recorder cancellation or recovery classification. Keep its status/code
+machine-only and do not retain either credential in errors. Do not automatically
+resubmit a possibly applied mutation; existing immutable retry/review protocols
+remain authoritative.
+
+A 401 for the current credential remains a denial and invalidates that credential.
+Explicit logout/account scope loss remains authoritative. A 403/404 resource
+rejection is not reclassified merely because the token rotated; permissions may
+have been removed. Network/protocol/validation/conflict errors keep their existing
+meaning. Shared normalization lives with typed API client errors; web request
+boundaries and native request hooks apply it before domain-specific side effects.
+Verify delayed real HTTP failures for every client family and actual browser
+inventory recovery after session refresh, alongside current-credential rejection.

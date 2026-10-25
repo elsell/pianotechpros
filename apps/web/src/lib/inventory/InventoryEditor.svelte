@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {sessionScopedFailure} from '@pianotechpros/api-client';
  import {inventoryScanLabelTitle} from '@pianotechpros/client-core';
 import {onMount,tick} from 'svelte';
  import InventoryHistory from './InventoryHistory.svelte';
@@ -24,7 +25,7 @@ import {onMount,tick} from 'svelte';
  const privateFields=['stock_number','serial','location'] as const;
  const comparison=[...Object.keys(inventoryTextFields),'form','condition','year','month','day','asking_amount','asking_currency','cost_amount','cost_currency','featured','player_system','price_visible'] as InventoryFormField[];
  $: errors=state?.draft?inventoryFormErrors(state.draft).filter(field=>state?.baseline||field!=='stock_number'):[];
- async function request<T>(operation:(api:ReturnType<typeof createInventoryApiClient>)=>Promise<T>){const session=credential;try{return await operation(createInventoryApiClient(apiURL,()=>Date.parse(session.expiresAt)>Date.now()?session.token:null));}catch(error){if(active&&session.token===credential.token&&error instanceof InventoryClientError&&error.status===401)onSessionRejected();throw error;}}
+ async function request<T>(operation:(api:ReturnType<typeof createInventoryApiClient>)=>Promise<T>){const session=credential;try{return await operation(createInventoryApiClient(apiURL,()=>Date.parse(session.expiresAt)>Date.now()?session.token:null));}catch(error){error=sessionScopedFailure(error,session.token,credential.token);if(active&&session.token===credential.token&&error instanceof InventoryClientError&&error.status===401)onSessionRejected();throw error;}}
  async function load(){
   loading=true;failed=false;denied=false;captureBusy=false;
   try{

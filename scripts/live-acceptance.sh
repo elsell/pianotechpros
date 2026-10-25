@@ -45,6 +45,7 @@ WEB_ACCEPTANCE_BUILT=1 node scripts/crawler-no-origin-acceptance.mjs
 WEB_ACCEPTANCE_BUILT=1 node scripts/inquiry-web-acceptance.mjs
 WEB_ACCEPTANCE_BUILT=1 node scripts/banner-web-acceptance.mjs
 WEB_ACCEPTANCE_BUILT=1 node scripts/customer-web-acceptance.mjs
+node scripts/session-rotation-web-acceptance.mjs
 node scripts/voice-recorder-acceptance.mjs
 node scripts/dealer-web-suite.mjs
 WEB_ACCEPTANCE_BUILT=1 INQUIRY_TEST_TURNSTILE_FAILURE=1 node scripts/inquiry-web-acceptance.mjs

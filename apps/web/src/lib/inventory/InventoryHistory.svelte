@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {sessionScopedFailure} from '@pianotechpros/api-client';
  import {onDestroy,tick} from 'svelte';
  import {createInventoryHistoryApiClient,InventoryClientError,type InventoryHistoryEntry} from '@pianotechpros/api-client';
  import {createInventoryHistory,type InventoryHistoryState,type SessionCredential} from '@pianotechpros/client-core';
@@ -8,7 +9,7 @@
  let model:ReturnType<typeof createInventoryHistory<InventoryHistoryEntry>>|null=null;let unsubscribe=()=>{};
  let state:InventoryHistoryState<InventoryHistoryEntry>={items:[],busy:false,issue:null,operation:'latest',loaded:false};
  const message=(key:string)=>i18n.t(key as MessageKey);
- async function show(){open=true;const current=createInventoryHistory<InventoryHistoryEntry>({list:async(cursor,signal)=>{const session=credential;try{return await createInventoryHistoryApiClient(apiURL,()=>Date.parse(session.expiresAt)>Date.now()?session.token:null).list(dealerID,recordID,cursor,signal);}catch(error){if(active&&credential.token===session.token&&error instanceof InventoryClientError&&error.status===401)onSessionRejected();throw error;}},classify:error=>error instanceof InventoryClientError&&[401,403,404].includes(error.status)?'denied':error instanceof InventoryClientError&&error.code==='protocol_error'?'protocol_error':'unavailable'});model=current;unsubscribe=current.subscribe(value=>state=value);await tick();if(!active||model!==current||!open)return;heading?.focus();await current.latest();}
+ async function show(){open=true;const current=createInventoryHistory<InventoryHistoryEntry>({list:async(cursor,signal)=>{const session=credential;try{return await createInventoryHistoryApiClient(apiURL,()=>Date.parse(session.expiresAt)>Date.now()?session.token:null).list(dealerID,recordID,cursor,signal);}catch(error){error=sessionScopedFailure(error,session.token,credential.token);if(active&&credential.token===session.token&&error instanceof InventoryClientError&&error.status===401)onSessionRejected();throw error;}},classify:error=>error instanceof InventoryClientError&&[401,403,404].includes(error.status)?'denied':error instanceof InventoryClientError&&error.code==='protocol_error'?'protocol_error':'unavailable'});model=current;unsubscribe=current.subscribe(value=>state=value);await tick();if(!active||model!==current||!open)return;heading?.focus();await current.latest();}
  async function close(){unsubscribe();model?.dispose();model=null;open=false;await tick();if(active)trigger?.focus();}
  async function page(operation:'latest'|'older'|'retry'){await model?.[operation]();if(active&&open)heading.focus();}
  onDestroy(()=>{active=false;unsubscribe();model?.dispose();});

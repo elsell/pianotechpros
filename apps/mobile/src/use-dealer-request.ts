@@ -1,3 +1,4 @@
+import {sessionScopedFailure} from '@pianotechpros/api-client';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { createDealerApiClient, createDealerBannerApiClient, DealerClientError } from '@pianotechpros/api-client';
 import { useMobileSession } from './session-provider';
@@ -13,6 +14,7 @@ function useRequest<Client>(create:(baseURL:string,token:()=>string)=>Client) {
     if (!scope || !credential || Date.parse(credential.expiresAt) <= Date.now()) throw new DealerClientError('unauthenticated', 401);
     try { return await operation(create(scope.apiURL, () => credential.token)); }
     catch (error) {
+      error=sessionScopedFailure(error,credential.token,current.current?.session?.token??null);
       if (error instanceof DealerClientError && error.status === 401 && current.current?.session?.token === credential.token) current.current.reject(credential.token);
       throw error;
     }

@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {sessionScopedFailure} from '@pianotechpros/api-client';
   import DealerBanner from './DealerBanner.svelte';
   import InquiryInbox from '../inquiry/InquiryInbox.svelte';
   import InventoryBrowser from '../inventory/InventoryBrowser.svelte';
@@ -49,6 +50,7 @@
     const session = credential;
     try { return await operation(createDealerApiClient(apiURL, () => Date.parse(session.expiresAt) > Date.now() ? session.token : null)); }
     catch (error) {
+      error=sessionScopedFailure(error,session.token,credential.token);
       if (error instanceof DealerClientError && error.status === 401 && active && session.token === credential.token) onSessionRejected();
       throw error;
     }

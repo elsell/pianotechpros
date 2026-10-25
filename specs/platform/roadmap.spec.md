@@ -76,9 +76,11 @@ edits, two-tab exclusion, session rotation, denial cleanup, Spanish navigation
 and logout invalidation. Review corrected stale-token rejection handling and
 comparison of identically named locations. This is web integration evidence;
 native customer composition and real device acceptance remain unfinished, so
-CU-01 is not complete. The same old-token 401 classification pattern is present
-in inventory request adapters; audit and correct remaining client adapters before
-parity completion, with delayed-rejection recovery tests.
+CU-01 is not complete. Shared typed error normalization now protects remaining
+web domain request boundaries and native request hooks from delayed old-token
+401s. Built inventory/voice browser tests preserve pending commands, newer edits
+and transcripts across rotation; current-token rejection remains authoritative.
+Real HTTP tests cover all five client families without changing resource denial.
 Technician profile parity follows and remains required.
 
 QR scan parity (QR-01) is implemented with remaining device acceptance below.

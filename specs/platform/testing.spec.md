@@ -705,3 +705,13 @@ localized discovery text backed by actual saved records. Require exact public
 URLs and price, exclude private sentinels, and verify private edits leave discovery
 unchanged. After explicit unpublishing, require the listing URL to disappear from
 the showroom sitemap and old canonical/alias URLs to return 404 without redirect.
+
+## Persisted photo management
+
+Use a separate real photo-first journey with a second uploaded photo, paced in
+its own audit window before the longer publication/editing journey. Verify cover
+selection, earlier/later ordering and description persistence through independent
+API reads. Open and dismiss preview with the keyboard and verify focus returns
+to its trigger. Cancel removal without changing stored photos, then confirm it
+and prove the removed private image is inaccessible while the retained photo
+remains readable. Do not replace HTTP responses or suppress revisions.

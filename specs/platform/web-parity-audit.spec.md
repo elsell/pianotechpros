@@ -120,6 +120,10 @@ real-catalog acceptance or the whole website complete.
    persisted publication snapshots. Private edits preserve discovery; explicit
    unpublishing removes the URL and returns 404 for both canonical and ID aliases.
    The synthetic origin is acceptance-only; recurring CI still needs fresh proof.
+   A separate photo-management journey now verifies two processed uploads into
+   one draft, persisted cover/order/description changes, preview keyboard focus,
+   cancellation and confirmed removal with independent private-image reads.
+   Local real-service execution passed; recurring CI evidence remains pending.
 4. Exercise the real speech and challenge adapters with explicit non-production
    configuration. Missing access is an integration blocker, not completed work;
    never borrow legacy production credentials.

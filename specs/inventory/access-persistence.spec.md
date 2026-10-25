@@ -156,3 +156,44 @@ status for presentation/session policy. Successful records must match requested
 dealer and (for get/edit) record identity, contain a positive safe revision and
 recognized status, and preserve exact safe integer monetary amounts. Invalid
 successful envelopes fail as protocol errors instead of becoming editable state.
+
+## Private history reads
+
+A dedicated history port requires actor, dealer and record IDs, bounded revision
+paging and a successful `resource.listed` audit targeted at the record. It rechecks
+active/current dealer-view authority under the same locks as private detail,
+loads the scoped record, fixes the initial upper revision and rejects a future
+upper bound. A continuation's exclusive before-revision cannot exceed that bound.
+Limits are 1–50. One descending query retrieves at most limit+1 immutable rows;
+the extra row supplies both continuation evidence and the final predecessor.
+Every projected revision except creation must have its immediate predecessor.
+Missing/inconsistent evidence fails the whole read, without partial data.
+
+Require the canonical complete record JSON shape, including exact key casing and
+non-null scalar fields; decoding must not invent zero/false/empty defaults.
+Decode the known flat record snapshots for creation/attribute updates and nested
+record snapshots for photo/publication/lifecycle events. Lifecycle/publication
+metadata must match the row identity, actor, kind, source and durable timestamp.
+Per-field sources come only from their persisted column. Project through the
+validated domain history boundary; never return raw snapshot/audit/storage data.
+Successful reads commit their audit before returning a page. Audit failure,
+authority revocation and cross-dealer access return no page. Read-only history
+adds no privileges or migration and does not change append-only enforcement.
+
+### History application and HTTP boundary
+
+GET `/v1/dealers/{dealerID}/inventory/{id}/history` uses the ordinary opaque
+application session and dealer-view policy, including SpiceDB and coordinated
+principal limiter on every page. Query parameters are `limit` (default 20,
+maximum 50) and an opaque authenticated `cursor` (maximum 4096 bytes). Cursor
+authenticated data is distinct from inventory-list pagination and binds immutable
+actor/dealer/record identity, the upper revision, and the exclusive next bound.
+Changing a page size is allowed; changing identity or ciphertext is rejected.
+A cursor never confers permission and never contains visible private facts.
+
+Return `{data: [...], meta: {nextCursor?}}` with typed revision, actor_id, kind,
+source, fields, nullable field_sources, occurred_at and optional lifecycle
+from/to/sale_price/reason. No snapshots, audit IDs, emails or storage keys cross
+the boundary. Inaccessible records are 404; malformed query/cursor is a stable
+invalid-argument response; dependency failures return no partial data. Responses
+and errors use the existing no-store/no-referrer protections and sanitized errors.

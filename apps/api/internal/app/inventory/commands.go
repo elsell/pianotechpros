@@ -10,6 +10,7 @@ import (
 )
 
 type CommandDependencies struct {
+	History           HistoryRepository
 	VoiceTranscriber  VoiceTranscriber
 	VoiceExtractor    VoiceExtractor
 	Publications      PublicationRepository

@@ -100,6 +100,30 @@ func TestInventoryPublicationPersistsSnapshotSaleAndUnpublishAtomically(t *testi
 	if !visible || view.Title != "Unpublished piano" || view.Price.MinorUnits != 30000 || len(view.Photos) != 1 {
 		t.Fatal("explicit republish did not update snapshot")
 	}
+
+	historyRead := event
+	historyRead.ID += "-history"
+	historyRead.Action = audit.ResourceListed
+	timeline, err := r.ListHistory(ctx, actor, dealerID, id, domain.HistoryQuery{Limit: 50}, historyRead)
+	if err != nil || len(timeline.Entries) != int(state.Record.Revision) || timeline.HasMore {
+		t.Fatalf("complete persisted timeline: %+v %v", timeline, err)
+	}
+	kinds := map[string]bool{}
+	saleFound := false
+	for _, entry := range timeline.Entries {
+		kinds[entry.Kind] = true
+		if entry.SalePrice != nil && entry.SalePrice.MinorUnits == 10000 {
+			saleFound = true
+		}
+	}
+	for _, kind := range []string{"created", "attributes", "photos", "publish", "unpublish", "lifecycle"} {
+		if !kinds[kind] {
+			t.Fatalf("missing persisted history kind %s", kind)
+		}
+	}
+	if !saleFound {
+		t.Fatal("private sale history lost price")
+	}
 	var count int64
 	if err := admin.Table("inventory_publication_snapshots").Where("record_id=?", id).Count(&count).Error; err != nil || count != 2 {
 		t.Fatal("old snapshot was replaced", err, count)

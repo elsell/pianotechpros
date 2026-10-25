@@ -634,3 +634,15 @@ title/photo edits must leave the public snapshot unchanged until publication or
 unpublication is explicitly confirmed. Verify anonymous disappearance after
 unpublishing. This complements controlled failure tests without substituting for
 real speech-provider, accessibility or native-device acceptance.
+
+## Composed dealer profile settings
+
+The recurring real-service browser acceptance creates its own synthetic dealer
+through normal owner login. Verify duplicate-slug rejection retains the entered
+form, then create with a unique slug, persist all profile settings, reload/edit,
+and compare independent private API reads with the public showroom projection.
+Publish visibility only through explicit owner save, then hide it and prove
+anonymous access disappears. Browser setup must not mutate legacy data or seed
+application sessions. Verify banner selection/review, replacement, removal cancellation and confirmed
+removal through real processing/storage and anonymous rendered image delivery.
+Staff journeys remain separately tracked until verified with real services.

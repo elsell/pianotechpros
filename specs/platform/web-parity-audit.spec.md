@@ -105,7 +105,10 @@ real-catalog acceptance or the whole website complete.
    lazy single-record creation, exact money/partial-date reload, reviewed publication,
    private snapshot separation and explicit unpublishing. Local execution passed;
    recurring CI wiring needs fresh evidence. Complete the remaining dealer, staff,
-   complete-field editing, conflict and broader showroom journeys.
+   complete-field editing, conflict and broader showroom journeys. The dealer
+   profile/browser journey now locally verifies duplicate slug recovery, all
+   settings saved/reloaded, public projection/visibility and real banner
+   upload/render/replacement/removal; its recurring CI result remains pending.
 4. Exercise the real speech and challenge adapters with explicit non-production
    configuration. Missing access is an integration blocker, not completed work;
    never borrow legacy production credentials.

@@ -240,3 +240,19 @@ export * from "./publication-sale-defaults";
 export * from "./dealer-banner";
 
 export * from "./native-banner-picker";
+
+export {publicPianoID,publicPianoPath} from './showroom-url';
+export {relatedPublicPianos} from './showroom-related';
+export {showroomMetadata,pianoMetadata,type ShowroomMetadata} from './showroom-metadata';
+/** Optional discovery origin is never inferred from an incoming request. */
+export function publicWebOriginConfig(value:string|undefined,environment:'development'|'production'):string|null{
+ if(value===undefined)return null;
+ if(!value||value.trim()!==value)throw new Error('PUBLIC_WEB_ORIGIN');
+ const parsed=new URL(publicEndpointConfig(value,'','PUBLIC_WEB_ORIGIN',environment==='production'));
+ if(parsed.pathname!=='/'||parsed.search||parsed.hash||parsed.username||parsed.password)throw new Error('PUBLIC_WEB_ORIGIN');
+ if(parsed.protocol!=='https:'&&!(environment==='development'&&parsed.protocol==='http:'&&['localhost','127.0.0.1','[::1]'].includes(parsed.hostname)))throw new Error('PUBLIC_WEB_ORIGIN');
+ if(environment==='production'&&!parsed.hostname.includes('.'))throw new Error('PUBLIC_WEB_ORIGIN');
+ return parsed.origin;
+}
+export {sharePublicLink,type PublicLink,type PublicSharingPort} from './public-link-share';
+export {resolvePublicListingLink} from './public-listing-link';

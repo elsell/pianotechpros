@@ -179,3 +179,76 @@ add concurrent unpublish, unknown/foreign identifiers, dependency failure,
 malformed stored snapshots, bounded literal queries and retained-photo delivery.
 Browser journeys must verify the public UI and rendered metadata contain only
 the published projection, including after private edits and lifecycle changes.
+
+## Readable listing URLs
+
+A published listing uses a bounded readable title prefix followed by its immutable
+UUID. The prefix derives only from the published title, never private editor
+fields. Bare UUID links remain valid and resolve to the same current publication.
+The shared pure URL policy recognizes a UUID only at the end of a complete path
+segment; it never searches an arbitrary string for an embedded identifier.
+Malformed segments fail before an API read. Existing opaque safe identifiers
+remain usable without a readable alias. A stale title prefix resolves by ID and
+canonicalizes only after the current published projection has been authorized.
+Canonicalization uses a no-store temporary redirect. Locale negotiation remains
+Accept-Language based; canonical paths drop all query parameters;
+private identifiers, credentials and arbitrary query strings must not enter a
+canonical public link. Media routes continue to use immutable IDs. No database
+slug or redirect is written and no legacy implementation is imported.
+
+Behavioral provenance: the reviewed legacy public URL utility used a normalized
+title plus UUID and a bare-UUID fallback. This implementation independently
+specifies stricter whole-segment parsing and publication-derived canonicalization.
+
+## Related public pianos
+
+A listing offers up to three other available pianos from the same published
+showroom. Prefer matching physical form; if that yields none, use the showroom's
+existing featured-first ordering across available forms. Fetch at most four
+candidates per query and at most two queries, never an unbounded scan. Exclude the
+current piano and non-available records. Conflicting showroom identity or malformed
+results fail closed. Optional related-content failure leaves the main listing
+usable with a localized unavailable notice and an ordinary showroom link; it
+must never synthesize candidates from private inventory or cached editor data.
+Cards use publication-derived readable links and scoped public thumbnails. All
+copy and photo accessibility labels use the shared catalog.
+
+## Structured discovery metadata
+
+Public metadata is derived only from validated public showroom/listing DTOs.
+It includes an absolute canonical URL, social title/description/image and escaped
+JSON-LD for the showroom business and listing Product. Use only existing public
+contact/address/stock fields. Never emit serial, private notes, cost, sale price,
+QR tokens, draft values, fabricated ratings/reviews or a fake zero price. Offers
+are present only when the publication exposes a price; amounts preserve exact
+currency minor-unit precision. Availability reflects current public lifecycle
+status. Reserved and sold records must not claim ordinary in-stock availability.
+
+Absolute metadata URLs use an explicitly configured public web origin, never
+Host/Forwarded headers, the API URL or an internal service address. Missing public
+origin omits absolute discovery metadata while ordinary browsing remains usable;
+production publication requires configuring the intended public HTTPS origin.
+Invalid supplied origins fail startup validation. Local HTTP origins are allowed
+only in explicit development mode. Canonical paths never copy query parameters.
+JSON-LD serialization escapes HTML-significant characters so public text cannot
+close a script element. Hero imagery loads eagerly; secondary images remain lazy.
+
+References reviewed: Google Search Central's product-snippet guidance
+(https://developers.google.com/search/docs/appearance/structured-data/product-snippet)
+and canonical URL guidance
+(https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls).
+Metadata does not promise rich-result eligibility or invent an offer when the
+seller requests contact for pricing.
+
+## Public link sharing
+
+The public listing offers the platform share sheet when supported, with clipboard
+copy as the desktop fallback. Share only the configured canonical public URL and
+published title; never the request query, current private editor values, scan
+tokens or credentials. Missing discovery origin reports sharing unavailable.
+Sharing is an explicit user action. Cancellation is neutral, and permission or
+clipboard failure offers a selectable public link without claiming success.
+Disable repeated actions while pending; ignore completions after navigation or a
+listing change. Native owner sharing must independently resolve the current
+public projection before presenting a platform sheet; implementation and device
+acceptance for that native entry point remain required.

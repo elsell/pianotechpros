@@ -1,6 +1,7 @@
 <script lang="ts">
  import {createTranslator,type MessageKey} from '@pianotechpros/i18n';
- import {inventoryForms,inventoryCurrencies} from '@pianotechpros/client-core';
+ import {inventoryForms,inventoryCurrencies,publicPianoPath} from '@pianotechpros/client-core';
+ import DiscoveryMetadata from '#lib/showroom/DiscoveryMetadata.svelte';
  import ShowroomFrame from '#lib/showroom/ShowroomFrame.svelte';
  import type {PageData} from './$types';
  export let data:PageData;
@@ -10,6 +11,7 @@
  $: filtered=Object.entries(data.fields).some(([key,value])=>key!=='cursor'&&!!value);
 </script>
 <svelte:head><title>{profile.name} · {i18n.t('showroom.inventory')}</title><meta name="description" content={profile.tagline||profile.description.slice(0,160)} /></svelte:head>
+<DiscoveryMetadata metadata={data.metadata} />
 <ShowroomFrame {profile} {i18n}>
  <section class="intro"><p class="eyebrow">{i18n.t('showroom.title')}</p><h1>{profile.tagline||i18n.t('showroom.inventory')}</h1>{#if profile.description}<p class="description">{profile.description}</p>{/if}</section>
  <details class="filters" open={filtered}><summary>{i18n.t('showroom.filters')}</summary>
@@ -25,7 +27,7 @@
  </details>
  <section aria-label={i18n.t('showroom.inventory')}>
   {#if data.page.pianos.length===0}<p class="empty">{i18n.t('showroom.empty')}</p><a href={base}>{i18n.t('showroom.clear')}</a>{:else}
-   <div class="grid">{#each data.page.pianos as piano,index}<article><a href={base+'/pianos/'+encodeURIComponent(piano.id)}>
+   <div class="grid">{#each data.page.pianos as piano,index}<article><a href={publicPianoPath(profile.slug,piano)}>
     <div class="cover"><img src={base+'/pianos/'+encodeURIComponent(piano.id)+'/photos/'+encodeURIComponent(piano.photos[0].id)} alt={piano.photos[0].alt_text||i18n.t('showroom.photo',{title:piano.title,number:1})} loading={index===0?'eager':'lazy'} /></div>
     <div class="card-copy"><span class="status">{i18n.t(('inventory.status.'+piano.status) as MessageKey)}</span><h2>{piano.title}</h2><p class="price">{piano.price?i18n.money(piano.price.minor_units,piano.price.currency):i18n.t('showroom.requestPrice')}</p><p class="kind">{i18n.t(('inventory.form.'+piano.form) as MessageKey)}</p></div>
    </a></article>{/each}</div>

@@ -570,5 +570,14 @@
   "scan.native.signIn": "Inicia sesión para identificar este piano.",
   "scan.native.again": "Escanear otro piano",
   "scan.native.torchOn": "Encender luz",
-  "scan.native.torchOff": "Apagar luz"
+  "scan.native.torchOff": "Apagar luz",
+  "showroom.related": "Más pianos para explorar",
+  "showroom.relatedUnavailable": "No se pudieron cargar otros pianos. Visita la sala de exposición para ver los disponibles.",
+  "showroom.sharing.share": "Compartir este piano",
+  "showroom.sharing.copyLink": "Copiar enlace público",
+  "showroom.sharing.shared": "Se ha cerrado la hoja para compartir.",
+  "showroom.sharing.copied": "Enlace público copiado.",
+  "showroom.sharing.failed": "No se pudo completar la acción. Puedes seleccionar y copiar el enlace público a continuación.",
+  "showroom.sharing.link": "Enlace público del piano",
+  "showroom.sharing.unavailable": "No se puede compartir en este momento."
 }

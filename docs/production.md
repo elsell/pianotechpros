@@ -49,3 +49,10 @@ Required preparation:
 
 Scalar documentation can be disabled. Do so unless interactive production API
 documentation is intentional and its public OIDC client is registered.
+
+Public discovery metadata requires `PIANOTECHPROS_PUBLIC_WEB_ORIGIN`, an explicit
+HTTPS origin for the new web deployment (for example `https://pianos.example`).
+Do not use an API or internal service address. Without it, browsing works but
+absolute canonical/social links and JSON-LD are omitted. Invalid supplied origins
+fail startup. Configure this before opening the new hostname to crawlers; this
+setting does not change DNS, GitOps or the legacy site.

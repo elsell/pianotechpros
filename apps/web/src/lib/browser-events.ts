@@ -59,3 +59,11 @@ export function observeInventoryScanLocation(receive:()=>void){
  window.addEventListener('hashchange',receive);
  return()=>window.removeEventListener('hashchange',receive);
 }
+
+/** Explicit user actions only; callers supply an already validated public link. */
+export function browserPublicSharing(){
+ return {
+  ...(typeof navigator.share==='function'?{share:async(value:{url:string;title:string})=>{await navigator.share(value);}}:{}),
+  copy:async(value:string)=>{if(!navigator.clipboard)throw new Error('clipboard_unavailable');await navigator.clipboard.writeText(value);},
+ };
+}

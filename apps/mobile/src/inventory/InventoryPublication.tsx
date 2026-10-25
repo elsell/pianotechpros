@@ -7,6 +7,7 @@ import type {MessageKey} from '@pianotechpros/i18n';
 import {useMobileSession} from '../session-provider';
 import {useNativeTheme} from '../native-theme';
 import {useInventoryPhotoRequest,useInventoryPublicationRequest} from '../use-inventory-request';
+import {InventoryPublicShare} from './InventoryPublicShare';
 import {InventoryPhotoImage} from './InventoryPhotos';
 type ReviewState=InventoryPublicationState&{photos:InventoryPhoto[]};
 type Controller=ReturnType<typeof createInventoryPublicationWorkspace<ReviewState>>;
@@ -50,6 +51,7 @@ export function InventoryPublication({workspace,userID,dealerID,recordID,publish
  {button('publish',()=>review({kind:'publish'}),disabled||!publishReady)}
  {button('unpublish',()=>review({kind:'unpublish'}),disabled||!state?.state?.publication?.visible)}
  {button('change',()=>{Keyboard.dismiss();setInvalid(false);setChoice(null);chooseStatus(state?.state?.record.status??'available');setScreen('edit');})}
+ {state?.state?.publication?.visible?<InventoryPublicShare key={JSON.stringify([userID,dealerID,recordID])} dealerID={dealerID} recordID={recordID} disabled={disabled||screen!=='closed'} />:null}
  {button('refresh',()=>{void run(async current=>{await current.controller.refresh();});},busy||otherBusy)}
  <Modal visible={screen!=='closed'&&!!model.current?.active()} animationType="slide" presentationStyle="fullScreen" onRequestClose={cancel}>
  <SafeAreaView style={{flex:1,backgroundColor:theme.background}} accessibilityViewIsModal onAccessibilityEscape={cancel}>

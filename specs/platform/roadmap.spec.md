@@ -15,8 +15,16 @@ publication/sale/correction timelines, fixed upper revision paging, denied scope
 revocation and audit failure. The application and generated HTTP history contract
 add actor/dealer/record-bound encrypted cursors and fresh policy/limiter checks.
 HTTP tests cover legitimate paging, invalid sessions/cursors, cross-user/dealer
-access, denied permission and dependencies. Both client history views and real
-interaction acceptance remain to implement; this does not complete LC-02.
+access, denied permission and dependencies. Web and native clients now have scoped, on-demand history viewers with bounded
+20-entry pages, retry, latest-page reset and localized attribution. They preserve
+the active editor and discard history on scope change or dismissal; native also
+clears it on backgrounding. Controlled browser coverage verifies paging, retry,
+denial, Spanish copy and unsaved invalid input. Real Dex/API/PostgreSQL browser
+acceptance reads 25 saved revisions in pages of 20 and 5, preserves voice origins
+and excludes private snapshot values. Android emulator acceptance against the same persisted record verifies revisions
+25 through 6 followed by 5 through 1, the creation event, editor return on close
+and dismissal when backgrounded. The native controller also passes without a
+global structuredClone implementation. iOS interaction remains unverified. This does not complete LC-02.
 
 Voice capture and reversible proposal review have the following evidence. A new
 framework-independent domain validates typed suggestions for all 18 editable
@@ -135,9 +143,11 @@ stack now selects status content from the same system palette: measured light
 root/modal clock contrast improves from 1.09:1 to over 5.6:1. Changing system theme
 with a dialog open exposed React Native's creation-only appearance copy. An
 app-scoped prebuild hook updates shown dialogs on configuration changes without
-remounting their content; generator regressions and clean prebuild pass. Fresh
-native compilation and live light/dark dialog transitions remain required before
-claiming that part fixed. iOS status-bar interaction is not yet verified.
+remounting their content; generator regressions and clean prebuild pass. A fresh
+CI-built Android APK passes live light/dark/light dialog transitions with typed
+text and proposal selection preserved. Measured clock contrast is at least 5.6:1
+in light mode and 18:1 in dark mode. iOS native compilation passes; iOS status-bar
+interaction is not yet verified.
 
 Buyer inquiry foundations now implement canonical contact validation, immutable
 public snapshot context and first-read domain state. Submission orchestration

@@ -1,5 +1,6 @@
 <script lang="ts">
  import {onMount,tick} from 'svelte';
+ import InventoryHistory from './InventoryHistory.svelte';
  import InventoryVoice from './InventoryVoice.svelte';
  import InventoryPublication from './InventoryPublication.svelte';
  import InventoryPhotos from './InventoryPhotos.svelte';
@@ -16,6 +17,7 @@
  async function focusError(field:InventoryFormField){internal=true;await tick();const element=formElement.elements.namedItem(field);if(element&&'focus' in element)(element as HTMLElement).focus();}
  const fieldLink=(key:InventoryFormField)=>`#${key}`;
  const label=(key:InventoryFormField)=>i18n.t(`inventory.field.${key}` as MessageKey);
+ const historyScope=(id:string)=>JSON.stringify([accountId,dealerID,id]);
  const fields=['make','model','title','size','finish'] as const;
  const privateFields=['stock_number','serial','location'] as const;
  const comparison=[...Object.keys(inventoryTextFields),'form','condition','year','month','day','asking_amount','asking_currency','cost_amount','cost_currency','featured','player_system','price_visible'] as InventoryFormField[];
@@ -76,6 +78,7 @@
    </section>{/if}
    <footer><button type="submit" disabled={state.busy||state.conflict}>{i18n.t('inventory.edit.save')}</button></footer>
   </form>
+  {#if workspace&&state.baseline&&!state.denied}{#key historyScope(workspace.recordID())}<InventoryHistory {accountId} {dealerID} recordID={workspace.recordID()} {apiURL} {credential} {i18n} {onSessionRejected} />{/key}{/if}
   {#if workspace&&state.baseline}{#key workspace.recordID()}<InventoryPublication {workspace} {accountId} {dealerID} recordID={workspace.recordID()} {apiURL} {credential} {i18n} {onSessionRejected} otherBusy={photosBusy||voiceBusy} publishReady={!state.restored&&!state.invalid&&!state.conflict&&!state.uncertain} onBusy={value=>publicationBusy=value} />{/key}{/if}
  {/if}
 </section>

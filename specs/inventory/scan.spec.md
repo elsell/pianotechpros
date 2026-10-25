@@ -104,3 +104,34 @@ repository results fail closed. Secure generation is injected in bootstrap;
 no provider credential is needed. Project-owned scan registration composes the
 existing inventory application and repository without editing generated code,
 following the existing photo/voice extension boundary.
+
+## Shared client link contract
+
+Clients construct the canonical link `/scan#v=1&dealer=<id>&token=<token>` using
+only their configured web origin. The parser accepts that exact version, path,
+field set/order and encoding; it rejects foreign origins, credentials, query
+strings, extra/duplicate fragment fields, control characters, malformed tokens
+and oversized links before any API call. Generated dealer IDs use bounded ASCII
+letters/digits/hyphen/underscore. Development HTTP links are limited to loopback
+origins; production origins use HTTPS. The helper performs no network request or
+storage write. UI adapters consume/remove the browser fragment and own bounded
+login continuation; the pure parser cannot remove browser history itself.
+
+The generated-contract client sends tokens only in the resolution POST body,
+reads current application credentials for every request, and validates exact
+response fields, requested dealer/record identity and canonical token format.
+Protocol/network errors are sanitized and never retain the input token or raw
+response body. Both operations support abort signals for scope changes/dismissal.
+
+## QR encoding dependency
+
+Shared encoding pins `qr` 0.7.2 (Paul Miller, MIT OR Apache-2.0), published
+2026-09-28. The registry tarball SHA-512 integrity was verified against metadata;
+its encoder has no runtime dependencies or install lifecycle scripts. Only the
+encoder entry point is used in application rendering, with a custom ASCII encoder
+for the bounded canonical scan URL so native runtimes need no TextEncoder global.
+Use a four-module white quiet zone and quartile error correction, with black
+modules on white regardless of application theme. Matrix round-trip tests use the
+package decoder; native device rendering and physical scan acceptance remain
+separate requirements. No QR payload is sent to an external image service.
+Source: https://github.com/paulmillr/qr (tag/release 0.7.2).

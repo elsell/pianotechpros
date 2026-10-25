@@ -15,8 +15,11 @@ collision sanitization and runtime/trigger immutability. The application and pri
 checks, bounded token bodies, sanitized failures and scope-checked results.
 HTTP tests cover invalid sessions, cross-user/dealer access, revocation, failed
 authority/audit, rate limits and malformed/oversized input; bootstrap fails closed
-without capabilities. QR rendering/scanning and client acceptance are not yet
-implemented; QR-01 remains incomplete.
+without capabilities. Shared clients now validate canonical origin-bound fragment links, transport
+identifiers only in POST bodies and reject mis-scoped response data. A pinned
+local QR encoder produces a four-module quiet zone and passes a matrix decode
+round trip without a TextEncoder global. Screen integration, camera scanning,
+printing/sharing and client interaction acceptance remain; QR-01 is incomplete.
 
 Private inventory history (LC-02) now has domain, storage and client slices. The initial
 pure domain projection reconstructs changed attribute fields from adjacent

@@ -179,3 +179,36 @@ add concurrent unpublish, unknown/foreign identifiers, dependency failure,
 malformed stored snapshots, bounded literal queries and retained-photo delivery.
 Browser journeys must verify the public UI and rendered metadata contain only
 the published projection, including after private edits and lifecycle changes.
+
+## Readable listing URLs
+
+A published listing uses a bounded readable title prefix followed by its immutable
+UUID. The prefix derives only from the published title, never private editor
+fields. Bare UUID links remain valid and resolve to the same current publication.
+The shared pure URL policy recognizes a UUID only at the end of a complete path
+segment; it never searches an arbitrary string for an embedded identifier.
+Malformed segments fail before an API read. Existing opaque safe identifiers
+remain usable without a readable alias. A stale title prefix resolves by ID and
+canonicalizes only after the current published projection has been authorized.
+Canonicalization uses a no-store temporary redirect. Locale negotiation remains
+Accept-Language based; canonical paths drop all query parameters;
+private identifiers, credentials and arbitrary query strings must not enter a
+canonical public link. Media routes continue to use immutable IDs. No database
+slug or redirect is written and no legacy implementation is imported.
+
+Behavioral provenance: the reviewed legacy public URL utility used a normalized
+title plus UUID and a bare-UUID fallback. This implementation independently
+specifies stricter whole-segment parsing and publication-derived canonicalization.
+
+## Related public pianos
+
+A listing offers up to three other available pianos from the same published
+showroom. Prefer matching physical form; if that yields none, use the showroom's
+existing featured-first ordering across available forms. Fetch at most four
+candidates per query and at most two queries, never an unbounded scan. Exclude the
+current piano and non-available records. Conflicting showroom identity or malformed
+results fail closed. Optional related-content failure leaves the main listing
+usable with a localized unavailable notice and an ordinary showroom link; it
+must never synthesize candidates from private inventory or cached editor data.
+Cards use publication-derived readable links and scoped public thumbnails. All
+copy and photo accessibility labels use the shared catalog.

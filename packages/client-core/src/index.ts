@@ -240,3 +240,6 @@ export * from "./publication-sale-defaults";
 export * from "./dealer-banner";
 
 export * from "./native-banner-picker";
+
+export {publicPianoID,publicPianoPath} from './showroom-url';
+export {relatedPublicPianos} from './showroom-related';

@@ -570,5 +570,7 @@
   "scan.native.signIn": "Inicia sesión para identificar este piano.",
   "scan.native.again": "Escanear otro piano",
   "scan.native.torchOn": "Encender luz",
-  "scan.native.torchOff": "Apagar luz"
+  "scan.native.torchOff": "Apagar luz",
+  "showroom.related": "Más pianos para explorar",
+  "showroom.relatedUnavailable": "No se pudieron cargar otros pianos. Visita la sala de exposición para ver los disponibles."
 }

@@ -8,9 +8,15 @@ revisions, preserves unknown older origins, validates lifecycle/photo/publicatio
 evidence and returns independent copies. Timestamp comparisons use the documented
 UTC microsecond precision so older nanosecond snapshots remain readable. Domain
 race tests cover mixed voice/manual origins, corrupt evidence, private attribute
-isolation and persisted precision. The authorized paginated repository/API, both
-client history views and real interaction acceptance remain to implement; this
-does not complete LC-02.
+isolation and persisted precision. The scoped PostgreSQL history port now rechecks authority and commits read audit,
+reads at most limit+1 revisions and validates every persisted event before
+projection. Real database tests cover complete creation/attribute/photo/
+publication/sale/correction timelines, fixed upper revision paging, denied scope,
+revocation and audit failure. The application and generated HTTP history contract
+add actor/dealer/record-bound encrypted cursors and fresh policy/limiter checks.
+HTTP tests cover legitimate paging, invalid sessions/cursors, cross-user/dealer
+access, denied permission and dependencies. Both client history views and real
+interaction acceptance remain to implement; this does not complete LC-02.
 
 Voice capture and reversible proposal review have the following evidence. A new
 framework-independent domain validates typed suggestions for all 18 editable

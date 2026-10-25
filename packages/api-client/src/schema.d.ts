@@ -151,6 +151,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/dealers/{dealerID}/inventory/{id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list-inventory-history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/dealers/{dealerID}/inventory/{id}/lifecycle": {
         parameters: {
             query?: never;
@@ -854,6 +870,16 @@ export interface components {
             /** @description The value at the given location */
             value?: unknown;
         };
+        HistoryOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/HistoryOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["InventoryHistoryEntry"][];
+            meta: components["schemas"]["InventoryListMeta"];
+        };
         InboxInquiry: {
             contact: components["schemas"]["BuyerContact"];
             /** Format: date-time */
@@ -886,6 +912,25 @@ export interface components {
              */
             readonly $schema?: string;
             data: components["schemas"]["InboxInquiry"];
+        };
+        InventoryHistoryEntry: {
+            actor_id: string;
+            field_sources: {
+                [key: string]: string;
+            } | null;
+            fields: string[];
+            from?: string;
+            /** @enum {string} */
+            kind: "created" | "attributes" | "photos" | "publish" | "unpublish" | "lifecycle";
+            /** Format: date-time */
+            occurred_at: string;
+            reason?: string;
+            /** Format: int64 */
+            revision: number;
+            sale_price?: components["schemas"]["Money"];
+            /** @enum {string} */
+            source: "manual" | "voice" | "mixed";
+            to?: string;
         };
         InventoryListMeta: {
             nextCursor?: string;
@@ -1832,6 +1877,43 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ItemOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "list-inventory-history": {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                dealerID: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HistoryOutputBody"];
                 };
             };
             /** @description Error */

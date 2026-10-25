@@ -12,7 +12,8 @@ export default ({ config }: { config: Record<string, unknown> }) => ({
   plugins:[...(Array.isArray(config.plugins)?config.plugins:[]),
    ['expo-image-picker',{cameraPermission:en['inventory.photos.cameraPermission'],photosPermission:en['inventory.photos.libraryPermission'],microphonePermission:en['voice.microphonePermission']}],
    ['expo-localization',{supportedLocales:{ios:['en','es'],android:['en','es']}}],
-   ['expo-audio',{microphonePermission:en['voice.microphonePermission'],recordAudioAndroid:true,enableBackgroundRecording:false,enableBackgroundPlayback:false}]],
+   ['expo-audio',{microphonePermission:en['voice.microphonePermission'],recordAudioAndroid:true,enableBackgroundRecording:false,enableBackgroundPlayback:false}],
+   './plugins/with-native-system-bars.cjs'],
   locales:{en:permissionStrings(en),es:permissionStrings(es)},
   ios:{...((config.ios as Record<string,unknown>|undefined)??{}),infoPlist:{
    ...(((config.ios as Record<string,unknown>|undefined)?.infoPlist as Record<string,unknown>|undefined)??{}),CFBundleAllowMixedLocalizations:true,

@@ -17,7 +17,7 @@
     "mobile:release:ios": "PIANOTECHPROS_APP_ENV=production node ../../scripts/validate-mobile-release-env.mjs && node ../../scripts/run-eas.mjs ios",
     "build": "pnpm mobile:export",
     "check": "tsc --noEmit",
-    "test": "tsx --test src/native-intent.test.ts src/i18n.test.ts ../../scripts/mobile-recovery-bytes.test.ts src/inventory/photo-cache-path.test.ts src/inventory/voice-cache-path.test.ts src/inventory/voice-permission-resume.test.ts src/inventory/voice-failure.test.ts src/inventory/photo-render-scope.test.ts src/provider-auth-state.test.ts src/session-restoration.test.ts src/session-establishment.test.ts src/session-lifecycle.test.ts ../../scripts/mobile-recovery-database.test.ts ../../scripts/mobile-photo-config.test.ts && node --test ../../scripts/run-eas.test.mjs"
+    "test": "tsx --test src/native-intent.test.ts src/i18n.test.ts ../../scripts/mobile-recovery-bytes.test.ts src/inventory/photo-cache-path.test.ts src/inventory/voice-cache-path.test.ts src/inventory/voice-permission-resume.test.ts src/inventory/voice-failure.test.ts src/inventory/photo-render-scope.test.ts src/provider-auth-state.test.ts src/session-restoration.test.ts src/session-establishment.test.ts src/session-lifecycle.test.ts ../../scripts/mobile-recovery-database.test.ts ../../scripts/mobile-photo-config.test.ts && node --test ../../scripts/run-eas.test.mjs ../../scripts/mobile-system-bars.test.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "55.0.12",

@@ -254,3 +254,21 @@ explicit resolution before publication.
 Source checks and Metro exports provide implementation evidence only. Native
 Back/cancel, keyboard, Dynamic Type, screen-reader focus, rotation, interruption
 and real-backend journeys remain unverified until executed on native builds.
+
+## System-bar contrast
+
+The root native navigation stack explicitly selects dark status-bar content for
+light surfaces and light content for dark surfaces, using the same system color
+scheme as the app palette. Modal tasks inherit this policy. Theme changes must
+keep the status bar readable both in the stack and while a modal is open. Check
+actual device rendering; palette or compilation tests alone are insufficient.
+
+Android React Native dialogs copy activity appearance at creation. A project-local
+Expo prebuild plugin adds an activity configuration callback that updates status
+icons on currently shown, app-owned React Native dialogs to match the system
+palette. Traverse only this activity's view tree and owned dialog roots, guard
+against duplicate views, and never remount modal content to change appearance.
+Keep the generated hook idempotent and reject unknown activity formats or an
+existing custom configuration callback instead of overwriting it. No framework
+patch or new dependency is needed. Native compilation and an open-dialog theme
+transition are required acceptance gates for this hook.

@@ -4,7 +4,7 @@ import { useNativeTheme } from '../src/native-theme';
 function Navigation() {
   const { i18n } = useMobileSession();
   const theme = useNativeTheme();
-  return <Stack screenOptions={{ headerTintColor: theme.text, headerStyle: { backgroundColor: theme.surface }, contentStyle: { backgroundColor: theme.background } }}>
+  return <Stack screenOptions={{ statusBarStyle: theme.statusBarStyle, headerTintColor: theme.text, headerStyle: { backgroundColor: theme.surface }, contentStyle: { backgroundColor: theme.background } }}>
     <Stack.Screen name="inventory/[id]" options={{ title: i18n.t('inventory.edit.editor') }} />
     <Stack.Screen name="inventory/index" options={{ title: i18n.t('inventory.heading') }} />
     <Stack.Screen name="index" options={{ title: i18n.t('app.title') }} />

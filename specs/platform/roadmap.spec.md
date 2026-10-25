@@ -114,6 +114,15 @@ The Android emulator shows the silent-input meter and cancellation clears its
 owned audio cache. Type, structural, locale and contract gates pass. Physical
 microphone level behavior and iOS interaction remain unverified.
 
+Android device review exposed white status icons on pale surfaces. The native
+stack now selects status content from the same system palette: measured light
+root/modal clock contrast improves from 1.09:1 to over 5.6:1. Changing system theme
+with a dialog open exposed React Native's creation-only appearance copy. An
+app-scoped prebuild hook updates shown dialogs on configuration changes without
+remounting their content; generator regressions and clean prebuild pass. Fresh
+native compilation and live light/dark dialog transitions remain required before
+claiming that part fixed. iOS status-bar interaction is not yet verified.
+
 Buyer inquiry foundations now implement canonical contact validation, immutable
 public snapshot context and first-read domain state. Submission orchestration
 requires an explicit CAPTCHA policy and coordinated limiter, limits honeypots

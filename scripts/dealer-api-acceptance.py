@@ -277,6 +277,10 @@ for script in ("photo-publication-persisted-acceptance.mjs",
                "inventory-scan-persisted-acceptance.mjs",
                "dealer-profile-persisted-acceptance.mjs",
                "staff-persisted-browser-acceptance.mjs"):
+    # Each journey needs a fresh audit window after the preceding API/browser work.
+    # Preserve production limits and fail on any limit exceeded within a journey.
+    print("Waiting for a fresh audit window before " + script, flush=True)
+    time.sleep(61)
     current_title = request("GET", piano_path)["data"]["attributes"]["title"]
     subprocess.run(["node", "scripts/" + script], check=True, env={
         **browser_environment,

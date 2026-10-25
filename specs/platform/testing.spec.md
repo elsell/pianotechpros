@@ -671,3 +671,11 @@ invitation through the UI and reject its preview from the other user. Never put
 invitation tokens in URL paths, query strings, screenshots or failure output.
 Bound polling to the asynchronous grant behavior; do not retry mutations or
 replace real authorization decisions with HTTP fixtures.
+
+## Persisted journey rate-limit isolation
+
+The sequential real-service browser journeys reuse one synthetic owner. Wait a
+full minute plus one second before each child, including before its preparatory
+read, so earlier scenarios cannot consume its audit allowance. Keep production
+rate limits unchanged; do not retry failed mutations or suppress 429 assertions.
+A journey must still pass within its own normal per-principal allowance.

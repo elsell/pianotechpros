@@ -10,6 +10,7 @@ import (
 )
 
 type CommandDependencies struct {
+	VoiceExtractor    VoiceExtractor
 	Publications      PublicationRepository
 	Photos            PhotoRepository
 	PhotoProcessor    ports.PhotoProcessor

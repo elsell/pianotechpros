@@ -35,3 +35,21 @@ change status or emit a substitute for the authenticated mutation audit.
 Recording, server transcription/extraction, cancellation, field review/clarification
 UI, provenance-aware autosave/Undo and native microphone acceptance remain required
 before VO-01/VO-02 can be marked complete.
+
+## Authorized transcript extraction
+
+A request names one dealer record and its expected revision. Before sending a
+transcript to the injected extractor, require current inventory-write authority,
+principal limiting, and an audited actor/dealer-scoped record read. Reject stale
+revisions and invalid/overlong transcripts before provider work. The extractor
+receives only the bounded transcript, never session credentials or inventory
+private fields. It returns untrusted typed candidates; the domain validates them
+and composition rejects unsupported currencies. Provider failure exposes only a
+fixed unavailable error, never a provider response or echoed transcript.
+
+After extraction, repeat authorization and the audited scoped read. Revocation,
+account/session change, missing record, dependency failure or changed revision
+suppresses the proposal. Cancellation suppresses results as well. Extraction
+never persists inventory, transcript or proposals; applying reviewed fields must
+use the separately authorized revision mutation. This application boundary does
+not yet expose an HTTP route or configure a production provider.

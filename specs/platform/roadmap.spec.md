@@ -2,7 +2,17 @@
 
 ## Current milestone: feature-complete product
 
-The next product slice is voice capture and reversible proposal review. A new
+The next product slice is visible private inventory history (LC-02). The initial
+pure domain projection reconstructs changed attribute fields from adjacent
+revisions, preserves unknown older origins, validates lifecycle/photo/publication
+evidence and returns independent copies. Timestamp comparisons use the documented
+UTC microsecond precision so older nanosecond snapshots remain readable. Domain
+race tests cover mixed voice/manual origins, corrupt evidence, private attribute
+isolation and persisted precision. The authorized paginated repository/API, both
+client history views and real interaction acceptance remain to implement; this
+does not complete LC-02.
+
+Voice capture and reversible proposal review have the following evidence. A new
 framework-independent domain validates typed suggestions for all 18 editable
 inventory attributes, requires transcript evidence and confidence, ignores blank
 suggestions while preserving explicit false/zero, and rejects protected fields.

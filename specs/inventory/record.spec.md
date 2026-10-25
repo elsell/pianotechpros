@@ -91,3 +91,34 @@ policy and rejects unsupported asking-price or acquisition-cost currencies befor
 persistence. A missing policy fails closed. Expanding this configured set requires
 updating this contract and the composition policy with verified currency metadata;
 locale selection does not change a stored amount's currency.
+
+## Private history projection
+
+The record detail history presents newest revisions first: revision, actor ID,
+recorded timestamp, operation kind, source, changed field identifiers, and any
+persisted per-field origins. Lifecycle events additionally expose prior/next
+status, sale price and correction reason. This is dealer-private information;
+it never enters public listing DTOs. Actor IDs are immutable identifiers; do not
+join email or unrestricted profile data into history responses.
+
+Reconstruct attribute changed fields from the immediately preceding immutable
+revision's validated attributes. Missing attribution on an older row remains
+unknown, not invented as manual. Created events have no changed attributes;
+photo events identify `photos`; publication events retain their recorded event
+fields. Reconstruction rejects inconsistent identity, revision, timestamps,
+unknown kinds/sources, mismatched stored attribution and malformed snapshots.
+Restore comparisons normalize timestamps to UTC microseconds, matching the
+persisted timestamp precision; snapshots written before storage may retain finer
+precision. Differences of a full microsecond remain invalid. It never returns
+stored raw snapshots, photo storage keys, audit IDs or provider transcripts. All returned collections and monetary values are independent copies.
+
+History reads use the same fresh dealer-view authorization, principal limiter,
+transactional local-authority recheck and atomic read audit as private detail.
+Serve bounded pages (default 20, maximum 50), ordered by descending revision,
+with an authenticated opaque cursor bound to actor/dealer/record and a fixed
+upper revision. New writes do not enter an already-started page sequence.
+Revocation applies on every page; missing and inaccessible records are identical.
+Both clients expose history from record detail with localized event/field labels,
+loading/retry/empty states and explicit older-page loading, without hiding or
+resetting unsaved edits. Visible history remains incomplete until the endpoint,
+client views and real interaction evidence exist.

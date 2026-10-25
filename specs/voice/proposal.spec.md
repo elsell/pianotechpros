@@ -53,3 +53,26 @@ suppresses the proposal. Cancellation suppresses results as well. Extraction
 never persists inventory, transcript or proposals; applying reviewed fields must
 use the separately authorized revision mutation. This application boundary does
 not yet expose an HTTP route or configure a production provider.
+
+## Shared client proposal review
+
+Client review operates on the raw inventory form, preserving incomplete manual
+input in unrelated fields. Validate the complete transient proposal before showing
+or applying it: exact shape, revision, bounded transcript/evidence, unique allowed
+fields, one correctly typed canonical value, supported currency and valid date.
+No lifecycle, photo or private context data may be added to the wire shape.
+
+Applying requires an explicit field selection and the form snapshot shown during
+review. Compare each selected field group with the current form: any intervening
+manual edit rejects the whole application and identifies conflicts for renewed
+review. Price amount/currency and manufacturing year/month/day are atomic groups.
+Format proposed prices exactly from minor units using the current decimal style;
+preserve false, zero and date precision. Unselected and invalid partial manual
+input stays byte-for-byte unchanged. Unsupported, duplicate or unknown selections
+fail atomically. All snapshots and proposals are copied.
+
+Undo restores only groups still equal to their applied values and reports later
+manual edits as conflicts, preserving unrelated changes. This controller does not
+save or publish; presentation must pass accepted form changes through the existing
+durable workspace. Session/scope lifetime, recording, transport, review UI and
+voice provenance in saves remain separately required.

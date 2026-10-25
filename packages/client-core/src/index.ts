@@ -209,3 +209,4 @@ export {publicationStatuses,publicationTransitionFromInput,type PublicationTrans
 export {createInquiryComposer,validateInquiryContact,type InquiryContactFields,type InquiryContactField,type InquiryComposerState,type InquiryDeliveryIssue} from './inquiry-composer';
 export {inquiryChallengeConfig,type InquiryChallengeConfig} from './inquiry-config';
 export {createInquiryWorkspace,type InquiryWorkspacePort,type InquiryWorkspaceState,type InquiryWorkspaceIssue} from './inquiry-workspace';
+export {validInventoryVoiceProposal,applyInventoryVoiceProposal,type InventoryVoiceProposal,type InventoryVoiceCandidate,type InventoryVoiceField,type InventoryVoiceValue,type InventoryVoiceChange} from './inventory-voice';

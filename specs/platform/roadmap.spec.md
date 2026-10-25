@@ -22,7 +22,11 @@ quality remains unverified. Authenticated transcription/extraction HTTP routes n
 compose the provider through optional all-or-none server configuration. Audio is
 read only after authority, bounded to 6 MiB, with scoped processing deadlines and
 private error/response handling. Generated contracts and HTTP security tests cover
-success, denial, stale/revoked access and unavailable processing. Recording, review/clarification UI,
+success, denial, stale/revoked access and unavailable processing. Shared client
+proposal validation and explicit field selection now preserve incomplete manual
+input. Atomic price/date groups detect intervening edits, and conditional Undo
+preserves later corrections; tests cover all 18 fields and exact large prices.
+Recording, review/clarification UI,
 voice-aware autosave/Undo and native microphone acceptance remain unfinished.
 
 Buyer inquiry foundations now implement canonical contact validation, immutable

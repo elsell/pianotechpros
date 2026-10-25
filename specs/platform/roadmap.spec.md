@@ -8,7 +8,12 @@ inventory attributes, requires transcript evidence and confidence, ignores blank
 suggestions while preserving explicit false/zero, and rejects protected fields.
 Explicit application and field-specific Undo preserve unrelated/later edits and
 deep-copy private values. Domain/race tests cover the full field set and invalid
-inputs. Recording, authorized transcription/extraction, review/clarification UI,
+inputs. Transcript extraction now has an application boundary that checks write
+authority, scoped audited context and revision before and after provider work,
+validates untrusted candidates/currency, and suppresses cancelled or revoked
+results. Controlled provider tests verify denial, stale revisions and sanitized
+failures without saving inventory. Production provider/HTTP composition remains
+unfinished. Recording, transcription, review/clarification UI,
 voice-aware autosave/Undo and native microphone acceptance remain unfinished.
 
 Buyer inquiry foundations now implement canonical contact validation, immutable

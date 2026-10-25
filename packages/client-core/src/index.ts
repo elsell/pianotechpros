@@ -257,3 +257,6 @@ export function publicWebOriginConfig(value:string|undefined,environment:'develo
 export {sharePublicLink,type PublicLink,type PublicSharingPort} from './public-link-share';
 export {resolvePublicListingLink} from './public-listing-link';
 export {crawlerRobots,crawlerSitemap,crawlerText} from './showroom-crawlers';
+
+export * from './customer-form';
+export * from './customer-editor';

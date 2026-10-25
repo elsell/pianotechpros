@@ -188,3 +188,22 @@ func TestProfileAcceptsCataloguedIANAAlias(t *testing.T) {
 		t.Fatalf("supported IANA alias rejected: %v", err)
 	}
 }
+
+// Keep these exact-mailbox cases paired with customer-form.test.ts so clients
+// can edit every supported spelling without replacing server-valid addresses.
+func TestProfileExactMailboxClientParity(t *testing.T) {
+	for _, email := range []string{"a@[127.0.0.1]", "a@[::1]", "ü@example.test", "a@-host", "a@host-", "a@under_score", "a@!host", "a@a/b"} {
+		a := validAttributes()
+		a.Email = email
+		if _, err := New("profile", "owner", a, zones, instant); err != nil {
+			t.Fatalf("%s: %v", email, err)
+		}
+	}
+	for _, email := range []string{`"a b"@example.test`, "a@[999.1.1.1]", "a@[IPv6:::1]"} {
+		a := validAttributes()
+		a.Email = email
+		if _, err := New("profile", "owner", a, zones, instant); !errors.Is(err, ErrInvalidFields) {
+			t.Fatalf("%s: %v", email, err)
+		}
+	}
+}

@@ -53,7 +53,11 @@ schema-name collisions. The typed shared client now snapshots commands, validate
 profile identity/revisions and nested response shapes, and exposes safe machine
 errors. HTTP fixture tests cover current credentials, cancellation, stale and
 malformed replies and private-field rejection. The optional manufacturing-year
-schema now explicitly permits null. Recoverable web/native editing and
+schema now explicitly permits null. Shared form/controller tests now cover field
+validation, stable child keys and safe removals, durable-command-before-request
+ordering, immutable retries, edits during saves, explicit conflict choices and
+scope-loss suppression. Review corrected mailbox parity and observer-triggered
+reads after disposal. Protected recovery adapters, web/native composition and
 interaction acceptance remain unfinished; this foundation is not CU-01 completion.
 Technician profile parity follows and remains required.
 

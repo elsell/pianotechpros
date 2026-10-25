@@ -15,7 +15,7 @@ try{
   try{if((await fetch(webURL,{signal:AbortSignal.timeout(500)})).ok)break;}catch{}
   if(i===99)throw Error(log);await new Promise(resolve=>setTimeout(resolve,200));
  }
- for(const script of ['scripts/dealer-web-acceptance.mjs','scripts/inventory-scan-web-acceptance.mjs']){
+ for(const script of ['scripts/private-scan-navigation.test.mjs','scripts/dealer-web-acceptance.mjs','scripts/inventory-scan-web-acceptance.mjs']){
   test=spawn(process.execPath,[script],{env,stdio:'inherit'});
   const [code]=await once(test,'exit');if(code!==0)throw Error(`browser_acceptance_exit_${code}: ${script}\n${log}`);
  }

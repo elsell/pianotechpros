@@ -204,3 +204,9 @@ recoverable drafts.
 Action access denial revalidates the ordinary scoped scan and record read, clearing identification and cover immediately. Viewer identification returns only if that fresh read authorizes it. Automatic denial revalidation is bounded to once per explicit interaction to avoid a read-denial/remount loop; a subsequent explicit action or refresh starts a new opportunity. The retained viewer sees a localized action-denied notice.
 
 Each explicitly opened scan link starts a new scoped resolution, including a repeat of the same link after a denied lookup; prior denied state is never reused as the new scan result.
+
+Persisted browser acceptance uses only an explicitly configured loopback web/API
+and synthetic local identity. It creates an isolated draft, provisions a stable
+label, signs in from a fresh browser context via the real provider, consumes the
+continuation once, and confirms lifecycle commands against persisted state. No
+scan token or application credential is printed or saved as evidence.

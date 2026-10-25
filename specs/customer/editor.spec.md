@@ -46,7 +46,7 @@ The customer journal uses a dedicated versioned namespace keyed by canonical API
 base URL and immutable user ID. It uses the existing per-user encrypted storage
 capability on each platform, so logout cleanup invalidates customer drafts along
 with other private drafts. No fake dealer or inventory identifier is introduced.
-Validate envelopes/checkpoints, bound UTF-8 serialized size to 1 MiB, and expire
+Validate envelopes/checkpoints, bound UTF-8 serialized size to 4 MiB, and expire
 after seven days using an injected clock. Invalid/expired entries are removed
 and reported as machine-only recovery notices. Reads/writes/removal are serialized within each journal instance;
 disposal prevents queued writes from reviving discarded data. Errors contain no
@@ -85,10 +85,14 @@ or denial cleanup. Test concurrent tabs/workspaces and lease release after faile
 opening, denial, storage failure and close. Until this exists, screens must not
 consume the workspace; exported foundations alone do not establish recovery.
 
-The inherited 1 MiB vault limit can also reject a checkpoint containing three
-copies (baseline, draft, pending) of a large valid profile. Before UI integration,
-provide bounded capacity for the maximum accepted aggregate and all checkpoint
-copies, either through reviewed vault capacity or atomic chunking. Preserve the
-inventory journal's own 1 MiB bound and ciphertext validation. Exercise a large
-valid profile through encrypt/write/reopen/retry on both platform adapters.
-These are concrete deferred integration findings, not feature completion.
+### Aggregate capacity implementation
+
+The protected vault and customer journal admit at most 4 MiB of UTF-8 plaintext
+per record, covering baseline, draft and pending copies of an API-bounded profile
+(1 MiB per submitted aggregate) plus envelope overhead. Inventory journals retain
+their separate 1 MiB bound; selected-media chunk sizes stay unchanged. Shared
+constants define plaintext bytes and AES-GCM combined-envelope/base64 ceilings.
+Native decoders validate decoded size as well as canonical base64 length, and
+web ciphertext limits include the authentication tag. Test encrypted restart with
+a valid large customer checkpoint, oversized Unicode rejection, and unchanged
+inventory bounds. Multi-workspace ownership remains required before UI use.

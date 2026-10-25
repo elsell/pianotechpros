@@ -201,7 +201,7 @@ do not imply successful writes or permit discarding retry intent.
 Selected source bytes are stored through the existing account-bound encrypted
 recovery port, never as plaintext filesystem paths or browser storage. A scoped
 media store splits each immutable selection (1 byte through 20 MiB) into 256 KiB
-raw chunks encoded as hex, keeping each plaintext row below the existing 1 MiB
+raw chunks encoded as hex, keeping each plaintext row below the selected-media 1 MiB
 limit. Chunk keys bind user, dealer, capture/record scope, selection ID and index.
 A small versioned manifest is written last; absence means no complete selection.
 Reads validate every chunk and return all bytes or a fixed storage error, never

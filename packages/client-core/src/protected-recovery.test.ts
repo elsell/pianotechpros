@@ -87,3 +87,20 @@ test('sign-out during selected-media hashing suppresses final plaintext disclosu
  const reading=selected.read('selection');const rejected=assert.rejects(reading,/selected_media_unavailable/);
  await ready;await vault.clear();release();await rejected;
 });
+
+test('large customer checkpoints survive encrypted restart while inventory bounds remain independent',async()=>{
+ const {createCustomerRecoveryJournal}=await import('./customer-recovery.js');
+ const {customerFormFromAttributes,customerFormIssues}=await import('./customer-form.js');
+ const {createInventoryRecoveryJournal}=await import('./inventory-recovery.js');
+ const f=fixture();const vault=f.create();const storage=await vault.open('alice');
+ const form=customerFormFromAttributes({name:'Ada',isBusiness:false,email:'ada@example.test',locations:[{key:'home',label:'Home',street1:'1 Main',city:'Town',region:'State',postalCode:'123',timezone:'UTC'}],pianos:Array.from({length:200},(_,i)=>({key:'p'+i,locationKey:'home',nickname:'Piano',form:'grand',player:false,notes:'x'.repeat(2000)}))});
+ assert.deepEqual(customerFormIssues(form,new Set(['UTC'])),[]);
+ const cp={version:1 as const,baseline:{id:'profile',revision:1,attributes:form},draft:form,pending:{kind:'save' as const,id:'profile',revision:1,attributes:form},conflict:false};
+ assert.ok(Buffer.byteLength(JSON.stringify(cp))>1024*1024);
+ const port={scope:{userID:'alice',apiBaseURL:'https://api.example.test'},storage,zones:new Set(['UTC']),now:()=>1000};
+ await createCustomerRecoveryJournal(port).save(cp);
+ const restored=await createCustomerRecoveryJournal({...port,storage:await f.create().open('alice')}).load();assert.deepEqual(restored.checkpoint,cp);
+ const inventory=createInventoryRecoveryJournal<string>({scope:{userID:'alice',dealerID:'shop',recordID:'piano'},storage,now:()=>1000,validate:(v:unknown):v is string=>typeof v==='string'});
+ await assert.rejects(inventory.save('x'.repeat(1024*1024)));
+ await assert.rejects(storage.write('oversized','😀'.repeat(1024*1024+1)),/^Error: inventory_storage_unavailable$/);
+});

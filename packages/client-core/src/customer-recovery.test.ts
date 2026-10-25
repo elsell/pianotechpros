@@ -27,7 +27,7 @@ test('customer discard follows active writes and prevents queued resurrection',a
 
 test('customer journal applies UTF-8 size bounds and hides a read completed after scope loss',async()=>{
  const f=fixture();let active=true;const port={scope,storage:f.storage,zones:new Set(['UTC']),now:()=>1000,active:()=>active};const j=createCustomerRecoveryJournal(port);
- const large=checkpoint();large.draft.pianos=Array.from({length:200},(_,i)=>({key:'p'+i,locationKey:'home',nickname:'Piano',form:'grand',make:'',model:'',serial:'',manufacturedYear:'',player:false,notes:'😀'.repeat(2000)}));await assert.rejects(j.save(large));assert.equal(f.values.size,0);
+ const large=checkpoint();large.draft.pianos=Array.from({length:200},(_,i)=>({key:'p'+i,locationKey:'home',nickname:'Piano',form:'grand',make:'x'.repeat(2000),model:'',serial:'',manufacturedYear:'',player:false,notes:'😀'.repeat(5000)}));await assert.rejects(j.save(large));assert.equal(f.values.size,0);
  await j.save(checkpoint());const read=f.storage.read;f.storage.read=async key=>{const value=await read(key);active=false;return value;};assert.deepEqual(await j.load(),{checkpoint:null,discarded:null});
  active=true;f.storage.read=read;const alias=createCustomerRecoveryJournal({...port,scope:{...scope,apiBaseURL:scope.apiBaseURL+'/'}});assert.equal((await alias.load()).checkpoint!.draft.name,'PRIVATE');
  for(const bad of [{...scope,apiBaseURL:'https://user:secret@example.test'},{...scope,userID:''},{...scope,apiBaseURL:'https://api.example.test?token=PRIVATE'}])assert.throws(()=>createCustomerRecoveryJournal({...port,scope:bad}),e=>e instanceof Error&&e.message==='customer_recovery_unavailable');

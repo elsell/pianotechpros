@@ -263,3 +263,5 @@ export * from './customer-editor';
 
 export * from './customer-recovery';
 export * from './customer-workspace';
+
+export * from './recovery-limits';

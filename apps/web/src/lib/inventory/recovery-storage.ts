@@ -1,6 +1,7 @@
+import {protectedRecoveryMaxBytes} from '@pianotechpros/client-core';
 import type { ProtectedInventoryDraftStorage } from '@pianotechpros/client-core';
 const databaseName='pianotechpros-inventory-recovery';
-const limit=1024*1024;
+const limit=protectedRecoveryMaxBytes;
 const algorithm='aes-gcm';
 const cleanupMarker='pianotechpros_inventory_cleanup_pending';
 function requireOpen(){if(localStorage.getItem(cleanupMarker))throw unavailable();}

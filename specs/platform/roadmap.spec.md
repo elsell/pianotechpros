@@ -60,8 +60,11 @@ scope-loss suppression. Review corrected mailbox parity and observer-triggered
 reads after disposal. A separate API/user-bound recovery journal and workspace
 now validate checkpoints, authorize before restore, retain writes across navigation
 and share platform vault cleanup. Review identified required integration follow-ups:
-exclusive ownership across concurrent workspaces and capacity for large aggregate
-checkpoint copies. Screens must not consume this foundation until both are tested.
+exclusive ownership across concurrent workspaces. Large aggregate recovery now
+uses a shared 4 MiB vault/customer bound while inventory stays at 1 MiB; encrypted
+restart and actual browser reload tests preserve full pending checkpoints. Native
+codec tests cover large ciphertext and precise size rejection. Screens must not
+consume this foundation until exclusive ownership is implemented and tested.
 Protected recovery integration, web/native composition and
 interaction acceptance remain unfinished; this foundation is not CU-01 completion.
 Technician profile parity follows and remains required.

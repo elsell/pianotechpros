@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
+import {verifyPersistedShowroomFilters} from './persisted-showroom-filters.mjs';
 const base=process.env.INQUIRY_ACCEPTANCE_WEB_URL??'http://localhost:5173';
 const dealerName=process.env.INQUIRY_ACCEPTANCE_DEALER_NAME;
 const slug=process.env.INQUIRY_ACCEPTANCE_SHOWROOM_SLUG;
@@ -45,5 +46,6 @@ try{
  await buyer.goto(`${base}${new URL(canonical).pathname}`);await buyer.getByRole('heading',{level:1,name:title,exact:true}).waitFor();await buyer.setViewportSize({width:390,height:844});assert.equal(await buyer.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
  await buyer.getByRole('button',{name:'Next photo',exact:true}).click();await buyer.getByText('Photo 2 of 2',{exact:true}).waitFor();await buyer.screenshot({path:'/tmp/piano-persisted-gallery-mobile.png',fullPage:true});
  await buyer.getByRole('link',{name:'Back to the showroom',exact:true}).click();await buyer.locator('details.filters').waitFor();assert.equal(await buyer.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
- console.log(JSON.stringify({result:'PASS',recordID,checks:['real two-photo public gallery','keyboard next and previous','exact canonical clipboard URL','persisted dealer contact links','related listing navigation','390px gallery interaction and no horizontal overflow','back to showroom']}));
+ await verifyPersistedShowroomFilters(buyer,{context,base,slug,title,recordURL,authorization});
+ console.log(JSON.stringify({result:'PASS',recordID,checks:['real two-photo public gallery','keyboard next and previous','exact canonical clipboard URL','persisted dealer contact links','related listing navigation','390px gallery interaction and no horizontal overflow','back to showroom','real title/type/currency/exact-price filters','private draft title excluded','sold excluded by default and deliberately discoverable','unpublished absent even from all availability']}));
 }finally{await browser.close();}

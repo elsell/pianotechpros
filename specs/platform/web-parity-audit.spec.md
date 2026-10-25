@@ -186,3 +186,18 @@ screenshot was inspected: gallery controls, contact actions, inquiry form and
 related cards remain readable without horizontal overflow. Synthetic color-block
 photos establish processing and layout behavior, not photographic quality.
 Recurring CI and actual touch/device acceptance remain pending.
+
+## Persisted showroom filtering
+
+Extend the real public-listing journey with exact-title search, matching and
+nonmatching piano type, currency and inclusive minimum/maximum price boundaries.
+After a private title edit, only the explicit published title is searchable.
+Sold status disappears from default available results and appears through sold
+and include-sold filters; explicit unpublishing removes it even from include-sold
+results. Exercise browser form submission against persisted API data. This does
+not replace large-catalog pagination or native touch acceptance.
+
+The full corrected gallery/filter journey passed locally on 2026-10-25 for
+synthetic record `96568d3c-f6ec-41fd-89d7-70016f12e788`. Each filter form opens
+with an active initial search so the control remains accessible after sale or
+unpublication leaves a small catalog. Recurring fresh-fixture CI remains pending.

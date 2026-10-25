@@ -252,3 +252,43 @@ Disable repeated actions while pending; ignore completions after navigation or a
 listing change. Native owner sharing must independently resolve the current
 public projection before presenting a platform sheet; implementation and device
 acceptance for that native entry point remain required.
+
+## Crawler discovery
+
+SH-05 provides `/robots.txt`, `/sitemap.xml` and `/llms.txt` without exposing
+authenticated routes or private inventory. Robots permits public showroom pages
+and their rendering assets, and discourages crawling authenticated surfaces. It
+is a crawl hint, never an authorization mechanism. Without an explicitly
+configured public web origin it disallows crawling and advertises no sitemap;
+XML and discovery-text routes fail unavailable instead of guessing a hostname.
+
+The root sitemap is an index of current published showroom sitemaps. A showroom
+sitemap contains its canonical profile URL and current visible published listing
+URLs, including reserved and sold publications. Paths derive from public titles
+and immutable IDs. Discovery uses a dedicated anonymous repository/application
+boundary with coordinated source limiting, no-store responses and publication
+visibility checks serialized against writes. It must never enumerate private
+repository methods or issue one full inventory request per listing. Only public
+identity, slug, name and published listing ID/title may cross this boundary.
+
+Reads and output are bounded. The initial capacity is 10,000 published showrooms
+and 10,000 visible listings per showroom, each detected with a limit-plus-one
+read. Overflow fails unavailable rather than silently publishing a partial
+sitemap. XML is UTF-8, entity escaped, limited to 50,000 entries and 50 MiB;
+absolute URLs are shorter than 2,048 characters and share the configured origin.
+Do not invent last-modified timestamps from request time. Anonymous dependency
+failures never reuse stale private or previously published data.
+
+Discovery text identifies the product, links to the complete sitemap and lists
+published showrooms with safe plain-text names and URLs. Shared English/Spanish
+catalogs own all explanatory text. User text cannot inject Markdown links or
+control characters. It does not claim any search engine or model consumes it.
+
+Required evidence includes empty results, unpublished shops and pianos, private
+title isolation, concurrent unpublication, malformed stored data, scope mismatch,
+overflow, rate-limit/dependency failure, configured-origin enforcement, XML
+escaping and crawler browser responses. The implementation is independent of
+the reviewed legacy crawler routes; no legacy code is imported.
+
+Protocol references: https://www.sitemaps.org/protocol.html and
+https://developers.google.com/search/docs/crawling-indexing/robots/intro.

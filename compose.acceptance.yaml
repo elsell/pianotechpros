@@ -7,5 +7,6 @@ services:
       PIANOTECHPROS_TURNSTILE_HOSTNAME: ""
   web:
     environment:
+      PIANOTECHPROS_PUBLIC_WEB_ORIGIN: https://pianos.example
       PIANOTECHPROS_INQUIRY_CHALLENGE_POLICY: disabled
       PIANOTECHPROS_TURNSTILE_SITE_KEY: ""

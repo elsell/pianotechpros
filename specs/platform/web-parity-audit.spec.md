@@ -115,6 +115,11 @@ real-catalog acceptance or the whole website complete.
    Complete inventory attributes, invalid partial-date reload protection and
    two-session conflict review now have passing local real-service evidence;
    automated recurring execution must still confirm the extended journey.
+   The photo journey now also checks real server-rendered canonical redirects,
+   exact-price JSON-LD, robots, sitemap membership and localized discovery against
+   persisted publication snapshots. Private edits preserve discovery; explicit
+   unpublishing removes the URL and returns 404 for both canonical and ID aliases.
+   The synthetic origin is acceptance-only; recurring CI still needs fresh proof.
 4. Exercise the real speech and challenge adapters with explicit non-production
    configuration. Missing access is an integration blocker, not completed work;
    never borrow legacy production credentials.

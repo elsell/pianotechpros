@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
+import {verifyPublicDiscovery} from './persisted-public-discovery.mjs';
 const base=process.env.INQUIRY_ACCEPTANCE_WEB_URL??'http://localhost:5173';
 const dealerName=process.env.INQUIRY_ACCEPTANCE_DEALER_NAME;
 const slug=process.env.INQUIRY_ACCEPTANCE_SHOWROOM_SLUG;
@@ -47,11 +48,15 @@ try{
  const snapshot=(await publish.json()).data.publication.snapshot;assert.equal(snapshot.title,title);assert.equal(snapshot.photos.length,1);
  const buyer=await anonymous.newPage();await buyer.goto(`${base}/showrooms/${slug}/pianos/${recordID}`);await buyer.getByRole('heading',{name:title,exact:true}).waitFor();for(const secret of ['PRIVATE PHOTO PUBLICATION SENTINEL',fields.serial,fields.location])assert.ok(!(await buyer.content()).includes(secret));
  await buyer.waitForFunction(()=>document.querySelector('.hero img')?.naturalWidth===80);await buyer.screenshot({path:'/tmp/piano-persisted-public-photo.png',fullPage:true});
+ const verifyDiscovery=()=>verifyPublicDiscovery(anonymous.request,{base,slug,recordID,title,privateValues:['PRIVATE PHOTO PUBLICATION SENTINEL',fields.serial,fields.location]});
+ const canonical=await verifyDiscovery();
  const photoURL=publicURL+'/photos/'+snapshot.photos[0].id;const delivered=await anonymous.request.get(photoURL);assert.equal(delivered.status(),200);assert.equal(delivered.headers()['content-type'],'image/jpeg');assert.deepEqual([...((await delivered.body()).subarray(0,2))],[255,216]);
  await page.getByLabel('Display title',{exact:true}).fill(title+' private edit');await page.getByRole('button',{name:'Save now',exact:true}).click();await page.getByText('Saved',{exact:true}).waitFor();
  await page.getByRole('button',{name:'Remove photo',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'Remove photo',exact:true}).click();await page.getByRole('button',{name:'Preview photo 1',exact:true}).waitFor({state:'detached'});
  const privatePhotos=await context.request.get(recordURL+'/photos',{headers:{authorization}});assert.equal(privatePhotos.status(),200);const privateState=(await privatePhotos.json()).data;assert.equal(privateState.photos.length,0);assert.equal(privateState.record.attributes.title,title+' private edit');
  await buyer.reload();await buyer.getByRole('heading',{name:title,exact:true}).waitFor();assert.equal((await anonymous.request.get(photoURL)).status(),200);const unchanged=await anonymous.request.get(publicURL);assert.deepEqual((await unchanged.json()).data.piano,snapshot);
+ assert.equal(await verifyDiscovery(),canonical);
  await page.getByRole('button',{name:'Review unpublishing',exact:true}).click();await page.getByRole('dialog').waitFor();const [unpublished]=await Promise.all([page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname.endsWith('/unpublish')),page.getByRole('dialog').getByRole('button',{name:'Confirm change',exact:true}).click()]);assert.equal(unpublished.status(),200);assert.equal((await anonymous.request.get(publicURL)).status(),404);assert.equal((await anonymous.request.get(photoURL)).status(),404);
- console.log(JSON.stringify({result:'PASS',recordID,checks:['lazy New','photo-first single private creation','real processed image','all inventory fields and exact money reload','invalid partial date recovery preserves server record','two-session conflict explicitly reviewed and reconciled','reviewed publication','private data excluded','private title/photo edits preserve snapshot','explicit unpublish removes public access']}));
+ await verifyPublicDiscovery(anonymous.request,{base,slug,recordID,title,canonical,unpublished:true,privateValues:['PRIVATE PHOTO PUBLICATION SENTINEL',fields.serial,fields.location]});
+ console.log(JSON.stringify({result:'PASS',recordID,checks:['lazy New','photo-first single private creation','real processed image','all inventory fields and exact money reload','invalid partial date recovery preserves server record','two-session conflict explicitly reviewed and reconciled','reviewed publication','private data excluded','private title/photo edits preserve snapshot','explicit unpublish removes public access','persisted SSR canonical and exact-price JSON-LD','robots and localized discovery','sitemap retains snapshot through private edits and removes unpublished URL']}));
 }catch(error){if(page)console.error(await page.locator('body').innerText());throw error;}finally{await browser.close();}

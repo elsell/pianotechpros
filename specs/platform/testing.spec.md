@@ -694,3 +694,13 @@ full minute plus one second before each child, including before its preparatory
 read, so earlier scenarios cannot consume its audit allowance. Keep production
 rate limits unchanged; do not retry failed mutations or suppress 429 assertions.
 A journey must still pass within its own normal per-principal allowance.
+
+## Persisted public discovery
+
+Configure only the disposable acceptance web service with the synthetic canonical
+origin `https://pianos.example`. After browser publication, fetch server-rendered
+HTML, canonical redirects, JSON-LD, robots, sitemap index, showroom sitemap and
+localized discovery text backed by actual saved records. Require exact public
+URLs and price, exclude private sentinels, and verify private edits leave discovery
+unchanged. After explicit unpublishing, require the listing URL to disappear from
+the showroom sitemap and old canonical/alias URLs to return 404 without redirect.

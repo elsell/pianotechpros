@@ -2,6 +2,15 @@
 
 ## Current milestone: feature-complete product
 
+The next product slice is voice capture and reversible proposal review. A new
+framework-independent domain validates typed suggestions for all 18 editable
+inventory attributes, requires transcript evidence and confidence, ignores blank
+suggestions while preserving explicit false/zero, and rejects protected fields.
+Explicit application and field-specific Undo preserve unrelated/later edits and
+deep-copy private values. Domain/race tests cover the full field set and invalid
+inputs. Recording, authorized transcription/extraction, review/clarification UI,
+voice-aware autosave/Undo and native microphone acceptance remain unfinished.
+
 Buyer inquiry foundations now implement canonical contact validation, immutable
 public snapshot context and first-read domain state. Submission orchestration
 requires an explicit CAPTCHA policy and coordinated limiter, limits honeypots
@@ -61,8 +70,8 @@ mobile exports and clean native prebuild pass. This is a tested local mitigation
 not an upstream release or proof of every cryptographic property. Hosted native
 builds remain required. The audit still reports the one high advisory; no audit
 suppression or version relabeling was added. Compiler-image findings remain open.
-The next product slice is persisted anonymous buyer inquiries and the authorized
-dealer inbox, including snapshot context and abuse controls (IQ-01 through IQ-03).
+Inquiry implementation and real browser/Android acceptance are recorded above;
+remaining platform acceptance is tracked separately from the next voice slice.
 
 The web upgrade to SvelteKit 3.0.1/adapter-node 6.0.0 removes the two remaining
 SvelteKit advisories. Compatible Svelte, web TypeScript and checker pins pass the

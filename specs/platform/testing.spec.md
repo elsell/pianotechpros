@@ -588,3 +588,30 @@ before entering the editor and advance only at explicit rotation steps. A real
 scheduler delay before manual save must not allow autosave to dispatch the held
 request first. This keeps manual-save/rotation assertions deterministic without
 weakening autosave behavior or extending interaction timeouts.
+
+## iOS simulator interaction acceptance
+
+Unsigned Xcode compilation remains separate from interaction acceptance. Exercise
+normal application screens in a booted simulator through XCTest UI automation;
+never add production authentication, secure-store or navigation bypasses for tests.
+Use the existing Bundler-locked Xcodeproj dependency to compose the UI test target.
+The test runner activates the installed development app after its ordinary Metro
+URL is opened; it must not replace production screen models with test components.
+
+A loopback-only controlled HTTP fixture may provide synthetic provider and API
+responses for presentation journeys. It is test infrastructure, never a production
+adapter or evidence of backend authorization. Exercise the ordinary authorization
+code/PKCE redirect, token exchange and opaque application session flow. Bind codes
+to the exact synthetic client and callback, require S256 PKCE, consume codes once,
+and reject unknown identities/sessions. Never seed app credentials directly or
+accept arbitrary bearer tokens. Persist synthetic fixture state only in memory.
+Reject unsupported routes and bound request bodies. Fixture tests cover malformed
+PKCE, mismatched redirects, code reuse, unauthenticated APIs and successful flow.
+
+Profile interaction journeys must create/edit/reopen customer and technician
+profiles, preserve incomplete drafts across application restarts, exercise explicit
+conflict and retry choices, and verify choice-sheet dismissal/validation focus.
+Screenshots and XCTest results are synthetic-only artifacts. They supplement the
+real PostgreSQL/SpiceDB/API tests and Android interaction evidence; neither a
+fixture test nor a screenshot of the sign-in page completes product acceptance.
+Physical camera/audio, VoiceOver and manual interaction quality remain separate.

@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# Creates and deletes only its own simulator; all data and endpoints are synthetic.
+[[ "$(uname -s)" == Darwin ]] || { echo 'iOS UI acceptance requires macOS' >&2; exit 1; }
+root="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$root"
+evidence="$root/build/ios-ui-evidence"
+mkdir -p "$evidence"
+fixture_pid='' metro_pid='' simulator=''
+cleanup() {
+  if [[ -n "$metro_pid" ]]; then kill -TERM -- "-$metro_pid" 2>/dev/null || true; fi
+  if [[ -n "$fixture_pid" ]]; then kill "$fixture_pid" 2>/dev/null || true; fi
+  if [[ -n "$simulator" ]]; then xcrun simctl shutdown "$simulator" >/dev/null 2>&1 || true; xcrun simctl delete "$simulator"; fi
+}
+trap cleanup EXIT
+node --test scripts/native-ui-fixture.test.mjs
+node scripts/run-native-ui-fixture.mjs 18082 > "$evidence/fixture.log" 2>&1 &
+fixture_pid=$!
+export PIANOTECHPROS_APP_ENV=development PIANOTECHPROS_API_URL=http://127.0.0.1:18082
+export PIANOTECHPROS_OIDC_ISSUER=http://127.0.0.1:18082/oidc PIANOTECHPROS_MOBILE_OIDC_CLIENT_ID=pianotechpros-mobile
+export CI=1
+python3 -c 'import os; os.setsid(); os.execvp("pnpm", ["pnpm", "--dir", "apps/mobile", "start", "--port", "18081", "--localhost"])' > "$evidence/metro.log" 2>&1 &
+metro_pid=$!
+for endpoint in http://127.0.0.1:18082/oidc/.well-known/openid-configuration http://127.0.0.1:18081/status; do
+  ready=false
+  for _ in {1..90}; do if curl --fail --silent "$endpoint" >/dev/null; then ready=true; break; fi; sleep 1; done
+  [[ "$ready" == true ]] || { echo 'Native UI dependency failed to become ready' >&2; exit 1; }
+done
+(cd apps/mobile && bundle exec ruby ../../scripts/prepare-ios-ui-tests.rb)
+xcrun simctl list devices available --json > "$evidence/devices.json"
+selection="$(python3 - "$evidence/devices.json" <<'PY'
+import json,sys
+for runtime,devices in json.load(open(sys.argv[1]))['devices'].items():
+    for device in devices:
+        if '.iOS-' in runtime and device.get('isAvailable') and device['name'].startswith('iPhone') and device.get('deviceTypeIdentifier'):
+            print(device['deviceTypeIdentifier'],runtime);sys.exit(0)
+raise SystemExit('No available iPhone simulator runtime')
+PY
+)"
+read -r device_type runtime <<< "$selection"
+simulator="$(xcrun simctl create PianoInteractionAcceptance "$device_type" "$runtime")"
+xcrun simctl boot "$simulator"
+xcrun simctl bootstatus "$simulator" -b
+xcrun simctl spawn "$simulator" defaults write NSGlobalDomain AppleLanguages -array en
+workspace="$(find apps/mobile/ios -maxdepth 1 -name '*.xcworkspace' -print -quit)"
+test -n "$workspace"
+args=(-workspace "$workspace" -scheme PianoInteractionTests -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,id=$simulator" -derivedDataPath build/ios-simulator CODE_SIGNING_ALLOWED=NO)
+xcodebuild "${args[@]}" build-for-testing > "$evidence/build.log" 2>&1
+application="$(find build/ios-simulator/Build/Products/Debug-iphonesimulator -maxdepth 1 -name '*.app' ! -name '*Runner.app' -print -quit)"
+test -n "$application"
+xcrun simctl install "$simulator" "$application"
+open_app() { xcrun simctl openurl "$simulator" 'exp+pianotechpros://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A18081'; }
+run_journey() {
+  local name="$1" method="$2" result=0
+  xcodebuild "${args[@]}" test-without-building -parallel-testing-enabled NO "-only-testing:PianoInteractionTests/ProfileInteractionTests/$method" -resultBundlePath "$evidence/$name.xcresult" > "$evidence/$name.log" 2>&1 || result=$?
+  if [[ -d "$evidence/$name.xcresult" ]]; then
+    xcrun xcresulttool export attachments --path "$evidence/$name.xcresult" --output-path "$evidence/$name-screenshots"
+  fi
+  return "$result"
+}
+open_app
+run_journey create testCreateProfilesAndProtectPartialDraft
+xcrun simctl terminate "$simulator" com.pianotechpros.pianotechpros || true
+open_app
+run_journey restore testRestorePartialDraftAfterProcessRestart

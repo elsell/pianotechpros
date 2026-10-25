@@ -523,6 +523,12 @@ rejection, and rejection of previously committed audit proof. This exception
 allows testing database enforcement beneath the repository. Production customer
 persistence uses typed GORM operations; the exception does not cover product code.
 
+The same narrowly scoped schema-test exception applies to
+`apps/api/internal/adapters/gormstore/technician/postgres_test.go`. It creates
+isolated users and attempts unauthorized writes, corrupt attributes and audit
+reuse to prove the technician database boundary. Production technician storage
+continues to use typed GORM operations; no other file gains SQL execution.
+
 Customer editor ownership is confined to the exact hash-protected adapters
 `apps/web/src/lib/customer/ownership.ts` and
 `apps/mobile/src/customer/ownership.ts`. The web adapter holds a conditional

@@ -67,7 +67,7 @@ export function createCustomerEditor(port:{
   async review(){if(!active()||busy||!conflict)return;busy=true;failure=null;publish();try{if(!active())return;const value=await port.get();if(!active())return;if(!accept(value)||baseline&&(value.id!==baseline.id||value.revision<baseline.revision)){failure='uncertain';return;}latest=copyRecord(value);}catch(error){if(active()){if(port.classify(error)==='denied')closed=true;else failure='uncertain';}}finally{busy=false;publish();}},
   async keepEdits(){if(!active()||busy||!conflict||!latest)return;baseline=copyRecord(latest);latest=null;conflict=false;failure=null;publish();await persist();},
   async useLatest(){if(!active()||busy||!conflict||!latest)return;baseline=copyRecord(latest);draft=copyCustomerForm(latest.attributes);latest=null;conflict=false;failure=null;publish();await persist();},
-  async flush(){await tail;},
+  async flush(){for(;;){const current=tail;await current;if(current===tail)return;}},
   dispose(){closed=true;publish();listeners.clear();},
  });
 }

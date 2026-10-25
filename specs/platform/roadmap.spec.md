@@ -57,7 +57,12 @@ schema now explicitly permits null. Shared form/controller tests now cover field
 validation, stable child keys and safe removals, durable-command-before-request
 ordering, immutable retries, edits during saves, explicit conflict choices and
 scope-loss suppression. Review corrected mailbox parity and observer-triggered
-reads after disposal. Protected recovery adapters, web/native composition and
+reads after disposal. A separate API/user-bound recovery journal and workspace
+now validate checkpoints, authorize before restore, retain writes across navigation
+and share platform vault cleanup. Review identified required integration follow-ups:
+exclusive ownership across concurrent workspaces and capacity for large aggregate
+checkpoint copies. Screens must not consume this foundation until both are tested.
+Protected recovery integration, web/native composition and
 interaction acceptance remain unfinished; this foundation is not CU-01 completion.
 Technician profile parity follows and remains required.
 

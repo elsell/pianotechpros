@@ -260,3 +260,6 @@ export {crawlerRobots,crawlerSitemap,crawlerText} from './showroom-crawlers';
 
 export * from './customer-form';
 export * from './customer-editor';
+
+export * from './customer-recovery';
+export * from './customer-workspace';

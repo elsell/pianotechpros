@@ -39,3 +39,56 @@ late responses and exposes no snapshot after scope loss; presentation disposes
 on logout/account switch and uses a matching protected user-scoped journal.
 Durable journal adapters, UI composition and device recovery acceptance are
 separate required integration work; controller unit tests alone do not prove them.
+
+## Protected journal and workspace
+
+The customer journal uses a dedicated versioned namespace keyed by canonical API
+base URL and immutable user ID. It uses the existing per-user encrypted storage
+capability on each platform, so logout cleanup invalidates customer drafts along
+with other private drafts. No fake dealer or inventory identifier is introduced.
+Validate envelopes/checkpoints, bound UTF-8 serialized size to 1 MiB, and expire
+after seven days using an injected clock. Invalid/expired entries are removed
+and reported as machine-only recovery notices. Reads/writes/removal are serialized within each journal instance;
+disposal prevents queued writes from reviving discarded data. Errors contain no
+stored input or underlying storage cause.
+
+Workspace opening first performs current own-profile and authenticated timezone
+requests, checks the active scope after each await, then opens protected storage.
+Only an explicit not-found permits the new-profile path. Authentication,
+authorization readiness, network and other failures never disclose a cached
+profile. A restored baseline must match the currently authorized profile ID;
+otherwise discard it and fail closed. Clean checkpoints use fresh server state.
+Dirty/pending/conflicted checkpoints retain edits and original creation commands.
+The workspace maps wire attributes to form state at its injected API boundary;
+UI and native adapters must never submit form strings directly to the HTTP API.
+
+Authenticated denial during editing disposes the editor and clears its journal.
+User scope loss prevents newly dispatched API calls and journal writes; already
+queued protected-storage cleanup must finish before logout is reported complete.
+Account-only creation drafts may reopen after authenticated not-found because
+no existing protected resource is cached. Recoveries report whether a draft was
+restored or an invalid/expired entry was removed; presentation localizes notices.
+
+Before navigation, protection follows checkpoint writes queued while an earlier
+write is in flight. Close returns false and leaves the editor available after a
+storage failure; explicit disposal remains available for scope loss/logout. A
+closed or denied editor cannot report successful protection. Workspace callers
+must honor a failed protection/close result rather than silently navigating.
+
+## Required before UI integration
+
+The initial journal/workspace is not yet safe for concurrent consumers. Add an
+exclusive API/user-scoped lease spanning load, editing, pending writes and final
+cleanup, or an equivalent persisted CAS protocol. Two instances must not overwrite
+one another's pending creation command or delete a newer checkpoint during expiry
+or denial cleanup. Test concurrent tabs/workspaces and lease release after failed
+opening, denial, storage failure and close. Until this exists, screens must not
+consume the workspace; exported foundations alone do not establish recovery.
+
+The inherited 1 MiB vault limit can also reject a checkpoint containing three
+copies (baseline, draft, pending) of a large valid profile. Before UI integration,
+provide bounded capacity for the maximum accepted aggregate and all checkpoint
+copies, either through reviewed vault capacity or atomic chunking. Preserve the
+inventory journal's own 1 MiB bound and ciphertext validation. Exercise a large
+valid profile through encrypt/write/reopen/retry on both platform adapters.
+These are concrete deferred integration findings, not feature completion.

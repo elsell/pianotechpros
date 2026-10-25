@@ -161,7 +161,20 @@ fetch/WebSocket and alternate transport imports remain rejected in those files.
 
 Browsing uses a photo-led card grid, an explicit filter submission, visible
 availability and price-on-request, and continuation links retaining the exact
-filters. Detail presents the selected photo, keyboard-operable previous/next and
+filters. For an initial default-availability page containing zero or one piano
+and no continuation, omit the browse/filter panel and an empty-state Clear
+filters link. Keep a simple Include sold pianos link outside the omitted panel:
+the default page cannot establish whether sold publications exist. This
+matches the reviewed legacy threshold (`showBrowseTools` used count > 1) without
+importing implementation. Keep the panel for two or more pianos, an active filter,
+a current cursor or a next-page cursor: a small result page does not prove the
+entire showroom is small. Active filters remain open and clearable even when no
+records match. Use already authorized public page data; do not add count probes
+or inspect private inventory to choose presentation. Browser acceptance covers
+zero, one, two, sold-listing discovery, filtered-empty, current-cursor and
+next-page cases.
+
+Detail presents the selected photo, keyboard-operable previous/next and
 thumbnail controls, business contact links and public specifications. Back to
 showroom remains available. All interface and accessibility copy uses the shared
 English/Spanish catalog. Content is escaped, and contact targets come only from

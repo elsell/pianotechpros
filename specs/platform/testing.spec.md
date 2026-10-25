@@ -627,3 +627,15 @@ a failing gate, never a skipped interaction test.
 The generated iOS UI-test target must set an explicit nonempty product name.
 The simulator build must produce `PianoInteractionTests.xctest` inside its named
 runner; an empty test product is a harness failure, not device acceptance evidence.
+
+## Persisted web profile acceptance
+
+The recurring isolated real-service acceptance must exercise customer and
+technician profiles through normal browser sign-in and UI saves, without replacing
+API routes or seeding application session storage. Use the synthetic second
+account and require absent profiles before creating fixtures; never overwrite
+existing profiles to make a test pass. Assert business/location/piano references,
+weekly timezone and effective dates, reload and a subsequent edit via independent
+real API reads. A separate signed-in user must not receive either profile.
+Keep fixture browser tests for controlled failures; this composed journey adds
+evidence and does not substitute for authorization or device acceptance.

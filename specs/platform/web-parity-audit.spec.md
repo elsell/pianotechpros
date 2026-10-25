@@ -150,3 +150,21 @@ Local execution of this recurring script passed on 2026-10-25 with synthetic
 marker `Browse3d5c1bb6`: all four search fields, featured-first ordering, exact
 31-record set across pagination and exclusion of drafts from sold results.
 Recurring CI remains pending.
+
+## Persisted web lifecycle acceptance
+
+Exercise a new synthetic photo-first draft through publication, reserved, sold,
+sale correction, in-service, available, draft and archived states using ordinary
+browser review and confirmation. Check sale amount defaults to asking price,
+explicit override persists in append-only history, correction adds a new event,
+and lifecycle-only changes retain the published snapshot's other fields despite
+private edits. Hidden states and unpublishing must remove anonymous access;
+returning to available must not silently republish. Run through isolated real
+services with unchanged authorization and rate limits. No completion claim until
+actual execution passes. Pace the two halves across fresh audit windows; never
+relax rate limits or retry a rejected mutation.
+
+The paced real-service journey passed locally on 2026-10-25 for synthetic record
+`4b78e80e-ed4d-488e-8fe1-107e3823f68c`, including explicit unpublish independence,
+sale defaults/override, immutable correction history, all six lifecycle states,
+private-edit isolation and no silent republication. Recurring CI remains pending.

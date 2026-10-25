@@ -183,3 +183,24 @@ error with cancellation, never a sign-in request or record lookup.
 Same-document fragment changes consume and validate the new target and dispose
 the prior view. Logout clears the in-memory target before local cleanup; cleanup
 failure retains a retry screen with sign-in disabled, never the previous scan.
+
+## Focused scan actions
+
+The focused scan view offers unpublish and availability changes without opening
+or flushing an editor draft. These actions never create a publication snapshot;
+publication remains an explicit editor workflow. Each action reads the current
+publication/record, presents saved identity and its proposed effect for review,
+then rechecks revision before the existing command. Sale requires a valid amount
+and currency; corrections retain the existing reason requirements. Cancellation
+and Escape do not mutate. Conflicts require a new review. Lost responses expose
+uncertainty and never retry the command automatically. Viewer-only users retain
+record identification; denied action results do not grant new capabilities.
+Confirmed changes refresh the focused record. Pending commands disable leaving
+for the editor or starting a second scan refresh. Scope disposal suppresses late
+results and discards reviews. The scan action controller serializes its own
+interactions; it never constructs an artificial editor workspace or touches
+recoverable drafts.
+
+Action access denial revalidates the ordinary scoped scan and record read, clearing identification and cover immediately. Viewer identification returns only if that fresh read authorizes it. Automatic denial revalidation is bounded to once per explicit interaction to avoid a read-denial/remount loop; a subsequent explicit action or refresh starts a new opportunity. The retained viewer sees a localized action-denied notice.
+
+Each explicitly opened scan link starts a new scoped resolution, including a repeat of the same link after a denied lookup; prior denied state is never reused as the new scan result.

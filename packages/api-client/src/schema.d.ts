@@ -812,6 +812,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/technician-profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get-technician-profile"];
+        put: operations["save-technician-profile"];
+        post: operations["create-technician-profile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/technician-profile/timezones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["technician-profile-timezones"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/technicians": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list-technicians"];
+        put?: never;
+        post: operations["create-technician"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/technicians/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get-technician"];
+        put: operations["update-technician"];
+        post?: never;
+        delete: operations["delete-technician"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1813,6 +1877,156 @@ export interface components {
             name?: string;
             phone?: string;
             preference?: string;
+        };
+        TechnicianCreate: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/TechnicianCreate.json
+             */
+            readonly $schema?: string;
+            accepts_requests_without_availability: boolean;
+            biography: string;
+            business_name: string;
+            email: string;
+            name: string;
+            phone: string;
+            searchable: boolean;
+        };
+        TechnicianItem: {
+            accepts_requests_without_availability: boolean;
+            biography: string;
+            business_name: string;
+            email: string;
+            id: string;
+            name: string;
+            phone: string;
+            searchable: boolean;
+        };
+        TechnicianItemOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/TechnicianItemOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["TechnicianItem"];
+        };
+        TechnicianListOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/TechnicianListOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["TechnicianItem"][];
+            meta: components["schemas"]["MetaStruct"];
+        };
+        TechnicianProfileAttributes: {
+            acceptsRequestsWithoutAvailability: boolean;
+            availability: components["schemas"]["TechnicianWeeklyRule"][];
+            biography?: string;
+            businessName?: string;
+            /** Format: int64 */
+            drivingMinutes?: number | null;
+            email: string;
+            forms: string[];
+            name: string;
+            origin: components["schemas"]["TechnicianProfileOrigin"];
+            phone?: string;
+            /** Format: int64 */
+            radiusMiles: number;
+            searchable: boolean;
+            services: string[];
+        };
+        TechnicianProfileCreateInputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/TechnicianProfileCreateInputBody.json
+             */
+            readonly $schema?: string;
+            attributes: components["schemas"]["TechnicianProfileAttributes"];
+        };
+        TechnicianProfileItem: {
+            attributes: components["schemas"]["TechnicianProfileAttributes"];
+            /** Format: date-time */
+            createdAt: string;
+            id: string;
+            /** Format: int64 */
+            revision: number;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        TechnicianProfileOrigin: {
+            city: string;
+            label: string;
+            postalCode: string;
+            region: string;
+            street1: string;
+            street2?: string;
+            timezone: string;
+        };
+        TechnicianProfileOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/TechnicianProfileOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["TechnicianProfileItem"];
+        };
+        TechnicianProfileSaveInputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/TechnicianProfileSaveInputBody.json
+             */
+            readonly $schema?: string;
+            attributes: components["schemas"]["TechnicianProfileAttributes"];
+            /** Format: int64 */
+            expectedRevision: number;
+        };
+        TechnicianProfileTimezoneChoices: {
+            names: string[];
+        };
+        TechnicianProfileTimezonesOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/TechnicianProfileTimezonesOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["TechnicianProfileTimezoneChoices"];
+        };
+        TechnicianUpdate: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/TechnicianUpdate.json
+             */
+            readonly $schema?: string;
+            accepts_requests_without_availability: boolean;
+            biography: string;
+            business_name: string;
+            email: string;
+            name: string;
+            phone: string;
+            searchable: boolean;
+        };
+        TechnicianWeeklyRule: {
+            effectiveEnd?: string;
+            effectiveStart?: string;
+            end: string;
+            key: string;
+            /** @enum {string} */
+            kind: "available" | "unavailable";
+            /** @enum {string} */
+            recurrence: "weekly";
+            start: string;
+            timezone: string;
+            /** Format: int64 */
+            weekday: number;
         };
         Update: {
             /**
@@ -4484,6 +4698,310 @@ export interface operations {
                 content: {
                     "image/jpeg": string;
                 };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "get-technician-profile": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TechnicianProfileOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "save-technician-profile": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TechnicianProfileSaveInputBody"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TechnicianProfileOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "create-technician-profile": {
+        parameters: {
+            query?: never;
+            header: {
+                Authorization?: string;
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TechnicianProfileCreateInputBody"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TechnicianProfileOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "technician-profile-timezones": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TechnicianProfileTimezonesOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "list-technicians": {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                Authorization?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TechnicianListOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "create-technician": {
+        parameters: {
+            query?: never;
+            header: {
+                Authorization?: string;
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TechnicianCreate"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TechnicianItemOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "get-technician": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TechnicianItemOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "update-technician": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TechnicianUpdate"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TechnicianItemOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "delete-technician": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Error */
             default: {

@@ -6,12 +6,15 @@ import (
 	customerstore "github.com/elsell/pianotechpros/apps/api/internal/adapters/gormstore/customer"
 	dealerstore "github.com/elsell/pianotechpros/apps/api/internal/adapters/gormstore/dealer"
 	inventorystore "github.com/elsell/pianotechpros/apps/api/internal/adapters/gormstore/inventory"
+	technicianstore "github.com/elsell/pianotechpros/apps/api/internal/adapters/gormstore/technician"
 	customerroutes "github.com/elsell/pianotechpros/apps/api/internal/adapters/httpserver/customer/routes"
 	dealerroutes "github.com/elsell/pianotechpros/apps/api/internal/adapters/httpserver/dealer/routes"
 	inventoryroutes "github.com/elsell/pianotechpros/apps/api/internal/adapters/httpserver/inventory/routes"
+	technicianroutes "github.com/elsell/pianotechpros/apps/api/internal/adapters/httpserver/technician/routes"
 	customerapp "github.com/elsell/pianotechpros/apps/api/internal/app/customer"
 	dealerapp "github.com/elsell/pianotechpros/apps/api/internal/app/dealer"
 	inventoryapp "github.com/elsell/pianotechpros/apps/api/internal/app/inventory"
+	technicianapp "github.com/elsell/pianotechpros/apps/api/internal/app/technician"
 	"github.com/elsell/pianotechpros/apps/api/internal/ports"
 	"gorm.io/gorm"
 	"time"
@@ -51,6 +54,11 @@ func Registrations(dependencies Dependencies) []func(huma.API) {
 		repository := inventorystore.New(dependencies.DB)
 		service := inventoryapp.New(inventoryapp.Dependencies{Auth: dependencies.Auth, Authorizer: dependencies.Authorizer, AuthorizationOutbox: dependencies.AuthorizationOutbox, AuthorizationSerializer: dependencies.AuthorizationSerializer, Repository: repository, Audits: dependencies.Audits, AuditRateLimiter: dependencies.AuditRateLimiter, Clock: dependencies.Clock, Probe: dependencies.Probe, NewID: dependencies.NewID, AuthorizationWorker: dependencies.AuthorizationWorker, AuthorizationLease: dependencies.AuthorizationLease, CursorSigningKey: dependencies.CursorSigningKey})
 		inventoryroutes.Register(api, service)
+	})
+	registrations = append(registrations, func(api huma.API) {
+		repository := technicianstore.New(dependencies.DB)
+		service := technicianapp.New(technicianapp.Dependencies{Auth: dependencies.Auth, Authorizer: dependencies.Authorizer, AuthorizationOutbox: dependencies.AuthorizationOutbox, AuthorizationSerializer: dependencies.AuthorizationSerializer, Repository: repository, Audits: dependencies.Audits, AuditRateLimiter: dependencies.AuditRateLimiter, Clock: dependencies.Clock, Probe: dependencies.Probe, NewID: dependencies.NewID, AuthorizationWorker: dependencies.AuthorizationWorker, AuthorizationLease: dependencies.AuthorizationLease, CursorSigningKey: dependencies.CursorSigningKey})
+		technicianroutes.Register(api, service)
 	})
 	return registrations
 }

@@ -26,7 +26,46 @@ checks and critic review pass, including Unicode-control sanitization. Hosted
 verification reported only the previously reviewed node-forge advisory. Customer/technician
 profiles and broader native/device acceptance remain required parity work.
 
-Customer profile parity (CU-01) is the active implementation slice. The legacy
+Technician profile and weekly availability parity (TE-01/TE-02) now has a
+reviewed legacy-derived contract, validated versioned domain and owner-scoped
+aggregate persistence. Real PostgreSQL race tests cover creation/edit races,
+atomic audit/outbox rollback, strict stored-field validation and runtime guards.
+Application policy uses completed grant readiness and serialized SpiceDB checks;
+revoked retries cannot regrant ownership. Real runtime-proxy tests establish
+independence from customer/dealer permissions. The explicit HTTP profile surface
+and shared timezone catalog are composed in server/OpenAPI bootstrap. Real-session
+HTTP integration covers create/update/replay, stale edits, foreign users, revoked
+permissions and expired/revoked sessions. Dedicated schema names preserve customer
+composition. The shared typed client now snapshots commands, validates bounded
+profile/rule responses and preserves current sessions after retired-token failures.
+Real HTTP fixtures cover malformed replies, cancellation and credential rotation.
+The shared form model now preserves incomplete numeric/time/date input and
+stable weekly rules with confirmed removal and catalog validation. The shared
+controller now durably snapshots exact retries, preserves newer edits and requires
+explicit conflict review. Its API/user-bound journal validates checkpoints,
+expires entries and serializes discard; full baselines are required while drafts
+may remain incomplete. The shared workspace now authorizes before draft restore,
+freezes canonical account/API scope and holds exclusive ownership until pending
+writes and denied cleanup finish. Presentation restarts retry retained cleanup
+before opening another editor. Platform adapters now share encrypted vault/logout cleanup, native ownership
+and presentation singletons, and web cross-tab locks. Native request/workspace
+hooks bind current account/API/session and normalize retired-token failures.
+Encrypted restart/sign-out, native module refresh and real two-tab lock journeys
+pass. The web editor now offers focused contact/origin/work/rule sections,
+localized field-level conflict comparisons and confirmed weekday removal. Its
+built-browser journey passes partial draft recovery, exact retries, validation
+focus, origin/rule independence, conflicts, competing tabs, token rotation,
+Spanish removal and denial cleanup/exit. Native screens now provide focused
+sections, stable-key choice sheets, protected Back and controlled weekday removal.
+Model tests, full checks and both JavaScript exports pass; native build jobs and
+real-device interaction acceptance remain required. Neither technician parity
+item is complete.
+
+Customer profile implementation merged in PR #63 at
+`4431aaaad3810a6894bcbb66167d146559a3c378` after Android, iOS and acceptance passed.
+Verification reported only the reviewed node-forge advisory; its backport
+regressions passed on that exact commit. CU-01 remains incomplete pending the
+remaining interaction acceptance below. The legacy
 contract now specifies private personal/business details, stable locations and
 owned pianos, injected timezone validation and optimistic revisions. Domain tests
 cover validation, nested defensive copies, stale saves, no-ops and clock/revision

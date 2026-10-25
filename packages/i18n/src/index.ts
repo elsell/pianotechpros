@@ -64,3 +64,4 @@ export function createTranslator(candidates: readonly (string | null | undefined
 }
 export {inventoryHistoryFieldKey} from './inventory-history';
 export {customerContactFields,customerLocationFields,customerPianoFields,customerFieldLabel} from './customer-fields';
+export {technicianContactFields,technicianOriginFields,technicianFieldLabel} from './technician-fields';

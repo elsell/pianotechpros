@@ -8,7 +8,8 @@ import {InventoryClientError,createInventoryApiClient} from './inventory';
 import {InquiryClientError,createInquiryInboxApiClient} from './inquiry';
 import {VoiceClientError,createInventoryVoiceApiClient} from './inventory-voice';
 import {CustomerProfileClientError,createCustomerProfileApiClient} from './customer-profile';
-const errors=[DealerClientError,InventoryClientError,InquiryClientError,VoiceClientError,CustomerProfileClientError] as const;
+import {TechnicianProfileClientError,createTechnicianProfileApiClient} from './technician-profile';
+const errors=[DealerClientError,InventoryClientError,InquiryClientError,VoiceClientError,CustomerProfileClientError,TechnicianProfileClientError] as const;
 test('only retired credential 401 becomes transient, without credential or cause disclosure',()=>{
  for(const ErrorType of errors){
   const denied=new ErrorType('unauthenticated',401);
@@ -22,7 +23,7 @@ test('real delayed HTTP rejection uses the captured credential and preserves a r
  let respond!:(()=>void);let received!:(()=>void);let ready=new Promise<void>(r=>{received=r;});const calls:string[]=[];
  const server=createServer((req,res)=>{calls.push(req.headers.authorization??'');respond=()=>{res.writeHead(401,{'Content-Type':'application/json'});res.end(JSON.stringify({code:'unauthenticated'}));};received();});
  server.listen(0,'127.0.0.1');await once(server,'listening');t.after(()=>server.close());const address=server.address();assert.ok(address&&typeof address!=='string');const url=`http://127.0.0.1:${address.port}`;
- const operations=[(token:string)=>createDealerApiClient(url,()=>token).list(),(token:string)=>createInventoryApiClient(url,()=>token).get('shop','piano'),(token:string)=>createInquiryInboxApiClient(url,()=>token).list('shop'),(token:string)=>createInventoryVoiceApiClient(url,()=>token).extract('shop','piano',1,'A grand piano'),(token:string)=>createCustomerProfileApiClient(url,()=>token).get()];
+ const operations=[(token:string)=>createDealerApiClient(url,()=>token).list(),(token:string)=>createInventoryApiClient(url,()=>token).get('shop','piano'),(token:string)=>createInquiryInboxApiClient(url,()=>token).list('shop'),(token:string)=>createInventoryVoiceApiClient(url,()=>token).extract('shop','piano',1,'A grand piano'),(token:string)=>createCustomerProfileApiClient(url,()=>token).get(),(token:string)=>createTechnicianProfileApiClient(url,()=>token).get()];
  for(const operation of operations){
   ready=new Promise<void>(r=>{received=r;});let current='before';const dispatched=current;
   const pending=operation(dispatched).catch(error=>{throw sessionScopedFailure(error,dispatched,current);});const rejection=assert.rejects(pending,(error:unknown)=>error instanceof Error&&(error as DealerClientError).code==='unavailable'&&(error as DealerClientError).status===503);

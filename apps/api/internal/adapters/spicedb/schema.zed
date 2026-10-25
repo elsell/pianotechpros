@@ -23,3 +23,9 @@ definition customer {
   permission view = owner
   permission update = owner
 }
+
+definition technician {
+  relation owner: user
+  permission view = owner
+  permission update = owner
+}

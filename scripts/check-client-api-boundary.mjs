@@ -53,6 +53,10 @@ const browserGlobalReferences = new Set([
 ]);
 const windowProxyMembers = new Set(['contentWindow', 'defaultView', 'view']);
 const protectedProviderAdapters = new Set([
+  'apps/web/src/lib/technician/ownership.ts',
+  'apps/mobile/src/technician/ownership.ts',
+  'apps/mobile/src/technician/presentation.ts',
+
   'apps/web/src/lib/customer/ownership.ts',
   'apps/mobile/src/customer/ownership.ts',
   'apps/mobile/src/customer/presentation.ts',
@@ -277,7 +281,7 @@ function importAllowed(specifier, relative, file) {
 }
 
 function inspectSource(relative, file, source, index) {
-  if (relative === 'apps/mobile/src/customer/presentation.ts' || relative === 'apps/web/src/lib/customer/ownership.ts' || relative === 'apps/mobile/src/customer/ownership.ts' || relative === 'apps/web/src/lib/browser-events.ts' || relative === 'apps/web/src/lib/inquiry/turnstile.ts' || relative === 'apps/web/src/lib/inventory/voice-recorder.ts') return false;
+  if (relative === 'apps/web/src/lib/technician/ownership.ts' || relative === 'apps/mobile/src/technician/ownership.ts' || relative === 'apps/mobile/src/technician/presentation.ts' || relative === 'apps/mobile/src/customer/presentation.ts' || relative === 'apps/web/src/lib/customer/ownership.ts' || relative === 'apps/mobile/src/customer/ownership.ts' || relative === 'apps/web/src/lib/browser-events.ts' || relative === 'apps/web/src/lib/inquiry/turnstile.ts' || relative === 'apps/web/src/lib/inventory/voice-recorder.ts') return false;
 
   const kind = relative.endsWith('.tsx') || relative.endsWith('.jsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
   const scriptName = relative.endsWith('.svelte') ? `${relative}.script-${index}.ts` : relative;

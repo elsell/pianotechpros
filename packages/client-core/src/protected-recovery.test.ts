@@ -104,3 +104,19 @@ test('large customer checkpoints survive encrypted restart while inventory bound
  await assert.rejects(inventory.save('x'.repeat(1024*1024)));
  await assert.rejects(storage.write('oversized','😀'.repeat(1024*1024+1)),/^Error: inventory_storage_unavailable$/);
 });
+
+test('technician drafts retain incomplete weekly input through encrypted restart and sign-out invalidates handles',async()=>{
+ const {createTechnicianRecoveryJournal}=await import('./technician-recovery.js');
+ const {emptyTechnicianForm}=await import('./technician-form.js');
+ const f=fixture(),vault=f.create(),storage=await vault.open('alice');
+ const draft={...emptyTechnicianForm(),name:'PRIVATE TECHNICIAN',radiusMiles:'2.',availability:[{key:'monday',weekday:0,kind:'available',recurrence:'weekly',start:'09:',end:'17:00',timezone:'UTC',effectiveStart:'',effectiveEnd:''}]};
+ const cp={version:1 as const,baseline:null,draft,pending:null,conflict:false};
+ const port={scope:{userID:'alice',apiBaseURL:'https://api.example.test'},storage,zones:new Set(['UTC']),now:()=>1000};
+ const journal=createTechnicianRecoveryJournal(port);await journal.save(cp);
+ assert.ok([...f.rows.values()].every(value=>!value.includes('PRIVATE TECHNICIAN')));
+ const restart=createTechnicianRecoveryJournal({...port,storage:await f.create().open('alice')});assert.deepEqual((await restart.load()).checkpoint,cp);
+ const foreign=createTechnicianRecoveryJournal({...port,scope:{...port.scope,userID:'bob'},storage:await vault.open('bob')});assert.equal((await foreign.load()).checkpoint,null);
+ const otherAPI=createTechnicianRecoveryJournal({...port,scope:{...port.scope,apiBaseURL:'https://other.example.test'}});assert.equal((await otherAPI.load()).checkpoint,null);
+ await vault.clear();assert.equal(f.rows.size,0);await assert.rejects(journal.save(cp),/technician_recovery_unavailable/);
+ const fresh=createTechnicianRecoveryJournal({...port,storage:await vault.open('alice')});assert.equal((await fresh.load()).checkpoint,null);
+});

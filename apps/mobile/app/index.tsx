@@ -41,6 +41,7 @@ export default function Home() {
     </View>
     <Button title={i18n.t('scan.native.open')}  disabled={!auth.ready} onPress={()=>router.push('/scan')} />
     {auth.ready && auth.profile && auth.session ? <Button title={i18n.t('customer.heading')}  onPress={()=>router.push('/customer')} /> : null}
+    {auth.ready && auth.profile && auth.session ? <Button title={i18n.t('technician.heading')}  onPress={()=>router.push('/technician')} /> : null}
     {auth.ready && auth.profile && auth.session ? <ShopList key={auth.profile.id} accountId={auth.profile.id} /> : null}
   </View>;
 }

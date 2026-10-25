@@ -5,4 +5,4 @@
  import type {SupportedLocale} from '@pianotechpros/i18n';
  export let data:{locale:SupportedLocale;config:ClientRuntimeConfig};
 </script>
-<SessionShell {data} let:accountId let:apiURL let:credential let:i18n let:onSessionRejected><p><a href="/customer" data-sveltekit-reload>{i18n.t('customer.heading')}</a></p><DealerDirectory {accountId} {apiURL} {credential} {i18n} {onSessionRejected}/></SessionShell>
+<SessionShell {data} let:accountId let:apiURL let:credential let:i18n let:onSessionRejected><p><a href="/customer" data-sveltekit-reload>{i18n.t('customer.heading')}</a></p><p><a href="/technician" data-sveltekit-reload>{i18n.t('technician.heading')}</a></p><DealerDirectory {accountId} {apiURL} {credential} {i18n} {onSessionRejected}/></SessionShell>

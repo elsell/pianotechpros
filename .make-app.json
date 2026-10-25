@@ -20,6 +20,11 @@
       "name": "inventory",
       "plural": "inventory",
       "fields": "stock_number:string"
+    },
+    {
+      "name": "technician",
+      "plural": "technicians",
+      "fields": "name:string,business_name:string,email:string,phone:string,biography:string,searchable:bool,accepts_requests_without_availability:bool"
     }
   ]
 }

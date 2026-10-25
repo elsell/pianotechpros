@@ -1,0 +1,5 @@
+import type {MessageKey} from './index';
+export const technicianContactFields=[{key:'name',required:true,max:200},{key:'businessName',required:false,max:200},{key:'email',required:true,max:320},{key:'phone',required:false,max:32},{key:'biography',required:false,max:2000}] as const;
+export const technicianOriginFields=[{key:'label',required:true,max:100},{key:'street1',required:true,max:200},{key:'street2',required:false,max:200},{key:'city',required:true,max:100},{key:'region',required:true,max:64},{key:'postalCode',required:true,max:20}] as const;
+const leaves=new Set(['name','businessName','email','phone','biography','label','street1','street2','city','region','postalCode','timezone','radiusMiles','drivingMinutes','searchable','acceptsRequestsWithoutAvailability','services','forms','availability','weekday','kind','start','end','effectiveStart','effectiveEnd']);
+export function technicianFieldLabel(path:string):MessageKey{const leaf=path.split('.').at(-1)??'';return leaves.has(leaf)?`technician.field.${leaf}` as MessageKey:'technician.invalid';}

@@ -144,3 +144,19 @@ clients with platform-appropriate navigation and accessible unread state. Do not
 call this feature complete until real persistence, HTTP authorization, source
 limits, CAPTCHA failure behavior, generated contracts, web/native journeys and
 required adversarial tests pass. Domain/application tests alone are insufficient.
+
+The generated-client adapter strips credentials from anonymous submissions and
+uses the rotating session transport for inbox requests. Both disable cache and
+redirect following. Only an empty 204 confirms submission; malformed successful
+responses fail as protocol errors. Errors expose a stable category/status, never
+server detail or buyer data. Network failures do not trigger automatic resubmission
+because delivery may already have committed. Inbox responses validate exact public
+snapshot shape, dealer/inquiry scope, contact bounds and consistent read state
+before presentation. Invalid pagination or foreign responses fail closed.
+
+The shared buyer composer keeps contact input only in page memory, trims values
+for submission, and reports field identifiers for localized validation. It
+serializes submission, retains contact fields after failure, consumes challenge
+tokens per attempt, and clears contact data only after confirmed success or
+disposal. Navigation/disposal aborts pending transport and ignores late results;
+aborting is not represented as proof that the server did not receive a message.

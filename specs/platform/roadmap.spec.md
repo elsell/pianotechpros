@@ -2,6 +2,15 @@
 
 ## Current milestone: feature-complete product
 
+Web-only parity is now tracked separately in `web-parity-audit.spec.md` across all
+30 baseline rows. The composed profile browser journey is awaiting fresh-account
+CI; local real-service evidence is segmented and not represented as a single pass.
+The audit exposed unconditional filters on small showrooms. Their correction now
+passes red/green development and built-web browser checks, preserves sold discovery
+and active/paginated recovery, and passes Svelte/i18n checks. Remaining real-service
+browser composition, provider integration and accessibility/browser evidence must
+be closed independently of native build status. The full goal remains active.
+
 Dealer banner parity (DL-03) is merged in PR #60 after both native builds and acceptance passed. The read-only legacy review confirms upload/replacement/removal, alt text and public delivery. The new banner contract specifies owner-only audited media commands, revision-bound replacement, replay-safe uploads, scoped current-image delivery and native review before publication. The backend slice has scoped banner evidence, owner-authorized processing and transactional replacement/removal, current public-image lookup, and metadata-stripping WebP decoding through the shared concurrency budget. Domain/application/processor race tests and real PostgreSQL banner lifecycle/public-visibility tests pass; the project critic found no blocking issues in these boundaries. Private/public HTTP routes and generated contracts are now connected; public clients accept only explicit bounded banner metadata. HTTP lifecycle, denied-before-read, binary body limits and anonymous source-limit tests pass. Public web banner display now passes image-load, English/Spanish fallback text, narrow-layout and unpublished-image denial browser acceptance. The owner web workflow now uses shared immutable upload intents and explicit review/removal; development and built-runtime browser journeys cover cancellation, invalid previews, uncertain committed uploads, conflict refresh/review, replacement, uncertain removal, revocation clearing, Escape, Spanish and narrow layout. Its API adapter and controller pass the full client suites (196 and 377 tests). Native owner controls now use the protected system-picker broker and an explicit review sheet. Five picker lifecycle tests and all 382 client-core tests pass. Android emulator interaction with the isolated real API verifies picker cancellation, preview cancellation, confirmed upload, removal cancellation and confirmed removal. iOS device, screen-reader and broader interruption acceptance remain open. Dependency-age, Go vulnerability scanning, generated-contract checks and broad project checks pass; the broader security command reports only the previously reviewed node-forge advisory. The critic confirmed the corrected outer upload budget and found no remaining blockers in the backend/public-display boundaries. Its remaining device acceptance is not represented as complete.
 
 Public listing discovery and sharing (SH-03/SH-04) merged in PR #61 at

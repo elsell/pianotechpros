@@ -63,7 +63,7 @@ implementation gap is explicitly identified.
 | LC-02 | `inventory-history-persisted-acceptance.mjs` real service browser journey for bounded history and voice origin | Retain exact-run evidence; add this standalone script to reproducible recurring acceptance with synthetic setup |
 | QR-01 | `inventory-scan-persisted-acceptance.mjs` real service browser flow; fixture scan failures and action review | Retain exact-run evidence and automate fixture provisioning; browser print/scan usability remains separate from token authorization |
 | SH-01 | Real API public projections; built showroom fixture renders brand, trust notes, images and fallbacks | Render a real persisted dealer/publication with actual processed photos/banner |
-| SH-02 | Real API public filters and built showroom fixture; **known implementation gap:** showroom presentation always renders filters without a catalog-size/usefulness condition | Implement hiding unhelpful filters for small catalogs; verify real catalog filtering and sold/private exclusion |
+| SH-02 | Real API public filters and built showroom fixture; **gap at audited base:** showroom presentation always renders filters without a catalog-size/usefulness condition | Implement hiding unhelpful filters for small catalogs; verify real catalog filtering and sold/private exclusion |
 | SH-03 | Built showroom fixture gallery/contact/share/related records; real API public detail | Real listing gallery and related links plus keyboard/touch and contact/share behavior |
 | SH-04 | Built showroom fixture canonical redirects, SSR metadata, JSON-LD and private sentinel checks | Crawl rendered pages backed by real saved/public snapshots, checking exact canonical and private-field exclusion |
 | SH-05 | Built crawler fixture and no-origin rejection; real database catalog visibility/race tests | Fetch sitemap/robots/discovery text against real publication changes; verify public URL scope |
@@ -73,6 +73,18 @@ implementation gap is explicitly identified.
 | CU-01 | Built `customer-web-acceptance.mjs` fixture recovery/conflict/validation; real Go HTTP/PostgreSQL/SpiceDB suites | Browser create/edit/reload of business, multiple locations and linked pianos through real API; cross-user denial |
 | TE-01 | Built `technician-web-acceptance.mjs` fixture editing/recovery; real Go backend boundary suites | Real browser profile save/reopen, service-area/preferences and separate-user privacy |
 | TE-02 | Fixture browser partial rule recovery, timezone independence and removal; real domain/persistence validation | Real browser weekly/effective-date save/reopen with timezone semantics, duplicate/invalid rejection and request preference |
+
+## Small-showroom correction
+
+The follow-up implementation now omits the filter panel for zero/one initial
+results with no continuation, preserves it for active filters and pagination,
+and retains an Include sold pianos link. The legacy read-only source threshold
+was greater than one listing. The new regression failed before the change and
+passes against development and built web servers; zero/one/two records, filtered
+empty results, current/next cursors and sold discovery are covered. Svelte checks
+and the shared locale gate pass; the single-listing screenshot was inspected.
+This fixes that presentation gap without claiming SH-02's remaining composed
+real-catalog acceptance or the whole website complete.
 
 ## Next implementation sequence
 

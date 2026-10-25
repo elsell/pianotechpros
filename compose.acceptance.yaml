@@ -1,0 +1,11 @@
+# Synthetic local acceptance only; never use for deployment.
+services:
+  api:
+    environment:
+      PIANOTECHPROS_INQUIRY_CHALLENGE_POLICY: disabled
+      PIANOTECHPROS_TURNSTILE_SECRET: ""
+      PIANOTECHPROS_TURNSTILE_HOSTNAME: ""
+  web:
+    environment:
+      PIANOTECHPROS_INQUIRY_CHALLENGE_POLICY: disabled
+      PIANOTECHPROS_TURNSTILE_SITE_KEY: ""

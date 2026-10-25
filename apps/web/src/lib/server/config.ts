@@ -1,6 +1,6 @@
 import { inquiryChallengeConfig, publicWebOriginConfig } from '@pianotechpros/client-core';
 import * as env from '$app/env/private';
-import { parseWebConfig } from '#lib/config.js';
+import { parseWebConfig, parseServerApiURL } from '#lib/config.js';
 
 export function loadWebConfig() {
   return parseWebConfig({
@@ -12,6 +12,7 @@ export function loadWebConfig() {
 }
 
 export const webConfig = loadWebConfig();
+export const serverApiURL = parseServerApiURL(env.PIANOTECHPROS_SERVER_API_URL, webConfig);
 
 export const inquiryConfig = inquiryChallengeConfig(env.PIANOTECHPROS_INQUIRY_CHALLENGE_POLICY, env.PIANOTECHPROS_TURNSTILE_SITE_KEY);
 

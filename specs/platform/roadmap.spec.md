@@ -3,8 +3,9 @@
 ## Current milestone: feature-complete product
 
 Web-only parity is now tracked separately in `web-parity-audit.spec.md` across all
-30 baseline rows. The composed profile browser journey is awaiting fresh-account
-CI; local real-service evidence is segmented and not represented as a single pass.
+30 baseline rows. The composed profile browser journey now passes in a fresh-account CI run
+`40218708883` at source `2ffaedb09c5d6bc1cc4babb706453ccd82960615`; this
+supersedes the earlier segmented local limitation for that journey.
 The audit exposed unconditional filters on small showrooms. Their correction now
 passes red/green development and built-web browser checks, preserves sold discovery
 and active/paginated recovery, and passes Svelte/i18n checks. Remaining real-service

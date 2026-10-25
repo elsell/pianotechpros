@@ -1,5 +1,6 @@
+import {NativeButton as Button} from '../native-button';
 import {useLayoutEffect,useRef,useState} from 'react';
-import {AppState,Button,Text,View} from 'react-native';
+import {AppState,Text,View} from 'react-native';
 import {useIsFocused} from '@react-navigation/native';
 import {createShowroomApiClient} from '@pianotechpros/api-client';
 import {resolvePublicListingLink,sharePublicLink} from '@pianotechpros/client-core';
@@ -26,7 +27,7 @@ export function InventoryPublicShare({dealerID,recordID,disabled}:{dealerID:stri
   }catch{if(current.active&&!abort.signal.aborted)setFailed(true);}
   finally{if(scope.current===current&&current.pending===abort){current.pending=null;setBusy(false);}}
  }
- return <View style={{gap:8}}><Button title={i18n.t('showroom.sharing.share')} color={theme.accent} disabled={disabled||busy||!focused} onPress={()=>void share()} />
+ return <View style={{gap:8}}><Button title={i18n.t('showroom.sharing.share')}  disabled={disabled||busy||!focused} onPress={()=>void share()} />
  {busy?<Text accessibilityLiveRegion="polite" style={{color:theme.secondary}}>{i18n.t('common.loading')}</Text>:null}
  {failed?<Text accessibilityRole="alert" style={{color:theme.text}}>{i18n.t('showroom.sharing.unavailable')}</Text>:null}</View>;
 }

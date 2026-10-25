@@ -1,5 +1,6 @@
+import {NativeButton as Button} from '../../src/native-button';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Button, KeyboardAvoidingView, Platform, Pressable, RefreshControl, SectionList, Text, TextInput, View } from 'react-native';
+import {Alert,KeyboardAvoidingView,Platform,Pressable,RefreshControl,SectionList,Text,TextInput,View} from 'react-native';
 import { Redirect, useLocalSearchParams } from 'expo-router';
 import { DealerClientError } from '@pianotechpros/api-client';
 import { createDealerStaff, type StaffMember, type StaffInvitation, type StaffRole } from '@pianotechpros/client-core';
@@ -54,14 +55,14 @@ function Staff({ id }: { id: string }) {
       refreshControl={<RefreshControl refreshing={pull.refreshing} onRefresh={() => { void pull.refresh(); }} tintColor={theme.accent} />}
       ListHeaderComponent={<View style={{ gap: 16, marginBottom: 24 }}>
         <Text style={{ color: theme.secondary, fontSize: 17 }}>{i18n.t('staff.ownerOnly')}</Text>
-        <Button title={i18n.t('staff.refresh')} color={theme.accent} disabled={state.busy} onPress={() => { void controller.refresh(); }} />
+        <Button title={i18n.t('staff.refresh')}  disabled={state.busy} onPress={() => { void controller.refresh(); }} />
         {state.busy ? <Text accessibilityLiveRegion="polite" style={textStyle}>{i18n.t('common.loading')}</Text> : null}
         {state.failure ? <Text accessibilityRole="alert" style={textStyle}>{i18n.t(failureKey)}</Text> : null}
         {state.issued ? <View style={cardStyle}>
           <Text accessibilityRole="header" style={{ ...textStyle, fontWeight: '600' }}>{i18n.t('staff.code')}</Text>
           <Text selectable accessibilityLabel={i18n.t('staff.code')} style={textStyle}>{JSON.stringify({ dealerID: state.issued.dealerID, invitationID: state.issued.id, token: state.issued.token })}</Text>
           <Text style={textStyle}>{i18n.t('staff.codeHelp')}</Text>
-          <Button title={i18n.t('staff.dismissCode')} color={theme.accent} onPress={() => controller.dismissIssued()} />
+          <Button title={i18n.t('staff.dismissCode')}  onPress={() => controller.dismissIssued()} />
         </View> : null}
         {state.ready ? <View style={cardStyle}>
           <Text accessibilityRole="header" style={{ ...textStyle, fontSize: 22, fontWeight: '600' }}>{i18n.t('staff.invite')}</Text>
@@ -70,7 +71,7 @@ function Staff({ id }: { id: string }) {
           <Text style={textStyle}>{i18n.t('staff.expiryHours')}</Text>
           <TextInput accessibilityLabel={i18n.t('staff.expiryHours')} keyboardType="number-pad" maxLength={3} value={hours} onChangeText={setHours} editable={!disabled && !state.issued} style={{ ...textStyle, padding: 12, minHeight: 48, borderWidth: 1, borderColor: theme.border, borderRadius: 8 }} />
           {!validHours ? <Text accessibilityRole="alert" style={textStyle}>{i18n.t('staff.invalidExpiry')}</Text> : null}
-          <Button title={i18n.t('staff.invite')} color={theme.accent} disabled={disabled || !validHours || Boolean(state.issued)} onPress={() => { void controller.createInvitation(role, Number(hours)); }} />
+          <Button title={i18n.t('staff.invite')}  disabled={disabled || !validHours || Boolean(state.issued)} onPress={() => { void controller.createInvitation(role, Number(hours)); }} />
         </View> : null}
       </View>}
       renderSectionHeader={({ section }) => state.ready || section.data.length ? <Text accessibilityRole="header" style={{ color: theme.text, fontSize: 22, fontWeight: '600', marginVertical: 12 }}>{i18n.t(section.kind === 'members' ? 'staff.members' : 'staff.invitations')}</Text> : null}
@@ -79,18 +80,18 @@ function Staff({ id }: { id: string }) {
         <Text style={textStyle}>{i18n.t(item.role === 'owner' ? 'staff.owner' : item.role === 'editor' ? 'staff.editor' : 'staff.viewer')}</Text>
         <Text style={textStyle}>{i18n.t(!item.active ? 'staff.removed' : item.grantPending ? 'staff.pending' : 'staff.active')}</Text>
         {item.role !== 'owner' && item.active ? <>
-          <Button title={i18n.t(item.role === 'editor' ? 'staff.makeViewer' : 'staff.makeEditor')} color={theme.accent} disabled={disabled || item.grantPending} onPress={() => { void controller.changeRole(item, item.role === 'editor' ? 'viewer' : 'editor'); }} />
-          <Button title={i18n.t('staff.remove')} color={theme.accent} disabled={disabled} onPress={() => confirmRemove(item)} />
+          <Button title={i18n.t(item.role === 'editor' ? 'staff.makeViewer' : 'staff.makeEditor')}  disabled={disabled || item.grantPending} onPress={() => { void controller.changeRole(item, item.role === 'editor' ? 'viewer' : 'editor'); }} />
+          <Button title={i18n.t('staff.remove')}  disabled={disabled} onPress={() => confirmRemove(item)} />
         </> : null}
       </View> : <View style={cardStyle}>
         <Text style={textStyle}>{i18n.t(item.role === 'editor' ? 'staff.editor' : 'staff.viewer')}</Text>
         <Text style={textStyle}>{i18n.t(item.revokedAt ? 'staff.revoked' : item.consumedAt ? 'staff.used' : Date.parse(item.expiresAt) <= now ? 'staff.expired' : 'staff.offered')}</Text>
         <Text style={{ color: theme.secondary, fontSize: 17 }}>{i18n.t('staff.expires', { date: i18n.date(new Date(item.expiresAt), { dateStyle: 'medium', timeStyle: 'short' }) })}</Text>
-        {!item.consumedAt && !item.revokedAt ? <Button title={i18n.t('staff.revoke')} color={theme.accent} disabled={disabled} onPress={() => confirmRevoke(item)} /> : null}
+        {!item.consumedAt && !item.revokedAt ? <Button title={i18n.t('staff.revoke')}  disabled={disabled} onPress={() => confirmRevoke(item)} /> : null}
       </View>}
       renderSectionFooter={({ section }) => <View style={{ marginBottom: 24 }}>
         {state.ready && !section.data.length ? <Text style={textStyle}>{i18n.t(section.kind === 'members' ? 'staff.emptyMembers' : 'staff.emptyInvitations')}</Text> : null}
-        {(section.kind === 'members' ? state.memberCursor : state.invitationCursor) ? <Button title={i18n.t(section.kind === 'members' ? 'staff.moreMembers' : 'staff.moreInvitations')} color={theme.accent} disabled={disabled} onPress={() => { void (section.kind === 'members' ? controller.moreStaff() : controller.moreInvitations()); }} /> : null}
+        {(section.kind === 'members' ? state.memberCursor : state.invitationCursor) ? <Button title={i18n.t(section.kind === 'members' ? 'staff.moreMembers' : 'staff.moreInvitations')}  disabled={disabled} onPress={() => { void (section.kind === 'members' ? controller.moreStaff() : controller.moreInvitations()); }} /> : null}
       </View>}
     />
   </KeyboardAvoidingView>;

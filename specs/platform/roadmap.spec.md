@@ -80,7 +80,11 @@ conflict comparisons and confirmed removal. Android interaction with the isolate
 real API verifies contact/location creation, timezone selection, save/reopen,
 cold-start recovery of an unfinished piano, validation opening the type selector,
 empty-search feedback, piano type selection, invalid-year focus and recovery,
-section Back positioning, and cancelled/confirmed piano removal. Review fixed private picker
+section Back positioning, and cancelled/confirmed piano removal. Spanish dark
+mode with 1.3 font scaling exposed pale Android button fills; a shared native
+button adapter now uses platform-specific primary/destructive colors, with
+contrast checks and reviewed Android rendering. This is partial accessibility
+evidence, not screen-reader or iOS acceptance. Review fixed private picker
 retention after denial, Back after denial and cleanup ownership across remounts.
 The remaining native conflict/failure/recovery, accessibility and iOS interaction
 matrix is not yet accepted; CU-01 remains incomplete.

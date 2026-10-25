@@ -1,5 +1,6 @@
+import {NativeButton as Button} from '../native-button';
 import {useEffect,useRef,useState} from 'react';
-import {AppState,Button,Modal,ScrollView,Text,View} from 'react-native';
+import {AppState,Modal,ScrollView,Text,View} from 'react-native';
 import {SafeAreaProvider,SafeAreaView} from 'react-native-safe-area-context';
 import {InventoryClientError,type InventoryHistoryEntry} from '@pianotechpros/api-client';
 import {createInventoryHistory,type InventoryHistoryState} from '@pianotechpros/client-core';
@@ -23,12 +24,12 @@ export function InventoryHistory({userID,dealerID,recordID}:{userID:string;deale
  async function page(operation:'latest'|'older'|'retry'){const current=model.current;await current?.[operation]();if(model.current===current)scroll.current?.scrollTo({y:0,animated:true});}
  const copy={color:theme.text,fontSize:17};const secondary={color:theme.secondary,fontSize:15};
  const row=(label:string,value:string)=><View key={label} style={{gap:4}}><Text style={secondary}>{label}</Text><Text style={copy} selectable>{value}</Text></View>;
- return <View style={{borderTopWidth:1,borderColor:theme.border,paddingTop:16}}><Button title={i18n.t('history.open')} color={theme.accent} onPress={()=>setOpen(true)}/>
+ return <View style={{borderTopWidth:1,borderColor:theme.border,paddingTop:16}}><Button title={i18n.t('history.open')}  onPress={()=>setOpen(true)}/>
  <Modal visible={open} animationType="slide" presentationStyle="pageSheet" onRequestClose={close}><SafeAreaProvider><SafeAreaView style={{flex:1,backgroundColor:theme.background}}>
- <View style={{padding:16,gap:12,borderBottomWidth:1,borderColor:theme.border}}><Button title={i18n.t('history.close')} color={theme.accent} onPress={close}/><Text accessibilityRole="header" style={{...copy,fontSize:28,fontWeight:'600'}}>{i18n.t('history.title')}</Text></View>
+ <View style={{padding:16,gap:12,borderBottomWidth:1,borderColor:theme.border}}><Button title={i18n.t('history.close')}  onPress={close}/><Text accessibilityRole="header" style={{...copy,fontSize:28,fontWeight:'600'}}>{i18n.t('history.title')}</Text></View>
  <ScrollView ref={scroll} contentContainerStyle={{padding:20,gap:20}}><Text style={secondary}>{i18n.t('history.savedOnly')}</Text>
  {state.busy?<Text accessibilityLiveRegion="polite" style={copy}>{i18n.t('common.loading')}</Text>:null}
- {state.issue?<View style={{gap:12}}><Text accessibilityRole="alert" style={copy}>{i18n.t(state.issue==='denied'?'inventory.denied':'history.failed')}</Text>{state.issue!=='denied'?<Button title={i18n.t('inventory.retry')} color={theme.accent} disabled={state.busy} onPress={()=>void page('retry')}/>:null}</View>:null}
+ {state.issue?<View style={{gap:12}}><Text accessibilityRole="alert" style={copy}>{i18n.t(state.issue==='denied'?'inventory.denied':'history.failed')}</Text>{state.issue!=='denied'?<Button title={i18n.t('inventory.retry')}  disabled={state.busy} onPress={()=>void page('retry')}/>:null}</View>:null}
  {state.loaded&&!state.items.length?<Text style={copy}>{i18n.t('history.empty')}</Text>:null}
  {state.items.map(entry=><View key={entry.revision} style={{gap:12,paddingBottom:20,borderBottomWidth:1,borderColor:theme.border}}>
  <Text accessibilityRole="header" style={{...copy,fontSize:21,fontWeight:'600'}}>{message(`history.kind.${entry.kind}`)}</Text><Text style={secondary}>{i18n.t('history.revision',{number:i18n.number(entry.revision)})}</Text><Text style={secondary}>{i18n.date(new Date(entry.occurred_at),{dateStyle:'medium',timeStyle:'short'})}</Text>
@@ -38,6 +39,6 @@ export function InventoryHistory({userID,dealerID,recordID}:{userID:string;deale
  {entry.sale_price?row(i18n.t('history.field.sale_price'),i18n.money(entry.sale_price.minor_units,entry.sale_price.currency)):null}{entry.reason?row(i18n.t('history.reason'),entry.reason):null}
  {entry.fields.map(field=><Text key={field} style={copy}>{entry.kind==='attributes'?i18n.t('history.fieldOrigin',{field:i18n.t(inventoryHistoryFieldKey(field)),origin:message(`history.source.${entry.field_sources?.[field]??'unknown'}`)}):i18n.t(inventoryHistoryFieldKey(field))}</Text>)}
  </View>)}
- {state.issue!=='denied'?<View style={{gap:16}}><Button title={i18n.t('history.latest')} color={theme.accent} disabled={state.busy} onPress={()=>void page('latest')}/>{state.nextCursor?<Button title={i18n.t('history.older')} color={theme.accent} disabled={state.busy} onPress={()=>void page('older')}/>:null}</View>:null}
+ {state.issue!=='denied'?<View style={{gap:16}}><Button title={i18n.t('history.latest')}  disabled={state.busy} onPress={()=>void page('latest')}/>{state.nextCursor?<Button title={i18n.t('history.older')}  disabled={state.busy} onPress={()=>void page('older')}/>:null}</View>:null}
  </ScrollView></SafeAreaView></SafeAreaProvider></Modal></View>;
 }

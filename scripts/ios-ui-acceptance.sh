@@ -21,10 +21,10 @@ export PIANOTECHPROS_OIDC_ISSUER=http://127.0.0.1:18082/oidc PIANOTECHPROS_MOBIL
 export CI=1
 python3 -c 'import os; os.setsid(); os.execvp("pnpm", ["pnpm", "--dir", "apps/mobile", "start", "--port", "18081", "--localhost"])' > "$evidence/metro.log" 2>&1 &
 metro_pid=$!
-for endpoint in http://127.0.0.1:18082/oidc/.well-known/openid-configuration http://127.0.0.1:18081/status; do
+for endpoint in http://127.0.0.1:18082/oidc/.well-known/openid-configuration http://localhost:18081/status; do
   ready=false
-  for _ in {1..90}; do if curl --fail --silent "$endpoint" >/dev/null; then ready=true; break; fi; sleep 1; done
-  [[ "$ready" == true ]] || { echo 'Native UI dependency failed to become ready' >&2; exit 1; }
+  for _ in {1..90}; do if curl --fail --silent --connect-timeout 2 --max-time 3 "$endpoint" >/dev/null; then ready=true; break; fi; sleep 1; done
+  [[ "$ready" == true ]] || { echo "Native UI dependency failed to become ready: $endpoint" >&2; exit 1; }
 done
 (cd apps/mobile && bundle exec ruby ../../scripts/prepare-ios-ui-tests.rb)
 xcrun simctl list devices available --json > "$evidence/devices.json"
@@ -49,7 +49,7 @@ xcodebuild "${args[@]}" build-for-testing > "$evidence/build.log" 2>&1
 application="$(find build/ios-simulator/Build/Products/Debug-iphonesimulator -maxdepth 1 -name '*.app' ! -name '*Runner.app' -print -quit)"
 test -n "$application"
 xcrun simctl install "$simulator" "$application"
-open_app() { xcrun simctl openurl "$simulator" 'exp+pianotechpros://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A18081'; }
+open_app() { xcrun simctl openurl "$simulator" 'exp+pianotechpros://expo-development-client/?url=http%3A%2F%2Flocalhost%3A18081'; }
 run_journey() {
   local name="$1" method="$2" result=0
   xcodebuild "${args[@]}" test-without-building -parallel-testing-enabled NO "-only-testing:PianoInteractionTests/ProfileInteractionTests/$method" -resultBundlePath "$evidence/$name.xcresult" > "$evidence/$name.log" 2>&1 || result=$?

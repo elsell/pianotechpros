@@ -615,3 +615,11 @@ Screenshots and XCTest results are synthetic-only artifacts. They supplement the
 real PostgreSQL/SpiceDB/API tests and Android interaction evidence; neither a
 fixture test nor a screenshot of the sign-in page completes product acceptance.
 Physical camera/audio, VoiceOver and manual interaction quality remain separate.
+
+### iOS fixture readiness addressing
+
+The iOS interaction harness uses the hostname Metro actually binds (`localhost`)
+for both its readiness probe and development-client URL; the synthetic API keeps
+its explicit IPv4 loopback address. Readiness requests have bounded connect/total
+timeouts and identify the failed local endpoint. A failed prerequisite remains
+a failing gate, never a skipped interaction test.

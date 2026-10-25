@@ -163,6 +163,13 @@ and forbidden network calls.
 
 ## Native recovery storage
 
+Native recovery decodes canonical bounded base64 ciphertext to bytes before calling
+the native sealed-data constructor. Invalid encodings fail with the fixed storage
+diagnostic. The reviewed native recovery-bytes adapter may construct byte arrays,
+but cannot fetch or open sockets; structural tests enforce that narrow capability.
+Existing ciphertext is preserved; reopening after process death must
+recover it without resetting storage or keys.
+
 Native checkpoints use a private SQLite database containing AES-256-GCM ciphertext,
 with a randomly generated installation key held in Expo SecureStore using
 WHEN_UNLOCKED_THIS_DEVICE_ONLY accessibility. The encryption authenticates the

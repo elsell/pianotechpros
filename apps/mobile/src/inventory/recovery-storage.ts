@@ -3,6 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import { openDatabaseAsync } from 'expo-sqlite';
 import { createProtectedRecovery } from '@pianotechpros/client-core';
 import { createRecoveryDatabase } from './recovery-database';
+import { recoveryBytes } from './recovery-bytes';
 
 const options={keychainAccessible:SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY};
 let database:ReturnType<typeof createRecoveryDatabase>|undefined;
@@ -37,7 +38,7 @@ const vault=createProtectedRecovery({
   },
   open:async(key,aad,value)=>{
    if(value.length>1400000)throw new Error('inventory_storage_unavailable');
-   const bytes=await aesDecryptAsync(AESSealedData.fromCombined(value,{ivLength:12,tagLength:16}),await AESEncryptionKey.import(key,'hex'),{additionalData:encoder.encode(aad)});
+   const bytes=await aesDecryptAsync(AESSealedData.fromCombined(recoveryBytes(value),{ivLength:12,tagLength:16}),await AESEncryptionKey.import(key,'hex'),{additionalData:encoder.encode(aad)});
    return decoder.decode(bytes);
   },
  },

@@ -274,6 +274,10 @@ browser_environment = {name: value for name, value in os.environ.items()
 for script in ("inquiry-persisted-browser-acceptance.mjs",
                "inventory-history-persisted-acceptance.mjs",
                "inventory-scan-persisted-acceptance.mjs"):
+    # Each journey needs a fresh audit window after the preceding API/browser work.
+    # Preserve production limits and fail on any limit exceeded within a journey.
+    print("Waiting for a fresh audit window before " + script, flush=True)
+    time.sleep(61)
     current_title = request("GET", piano_path)["data"]["attributes"]["title"]
     subprocess.run(["node", "scripts/" + script], check=True, env={
         **browser_environment,

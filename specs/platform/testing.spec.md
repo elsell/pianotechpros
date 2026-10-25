@@ -631,3 +631,11 @@ Production preserves the existing HTTPS/nonlocal endpoint constraints; credentia
 queries, fragments and non-HTTP(S) URLs are rejected in every environment.
 Exercise the split address in composed browser acceptance and cover invalid
 configuration and production fallback in behavioral configuration tests.
+
+## Persisted journey rate-limit isolation
+
+The sequential real-service browser journeys reuse one synthetic owner. Wait a
+full minute plus one second before each child, including before its preparatory
+read, so earlier scenarios cannot consume its audit allowance. Keep production
+rate limits unchanged; do not retry failed mutations or suppress 429 assertions.
+A journey must still pass within its own normal per-principal allowance.

@@ -11,8 +11,12 @@ canonical 256-bit identifiers, redacted formatting, stored timestamp precision
 and entropy failure without fallback. Scoped PostgreSQL storage now provisions one immutable association and audits
 creation, repeat reads and resolution atomically. Real database race tests cover
 concurrent creation, viewer access, denied scope/revocation, audit rollback,
-collision sanitization and runtime/trigger immutability. Routes, QR rendering/
-scanning and client acceptance are not implemented yet; QR-01 remains incomplete.
+collision sanitization and runtime/trigger immutability. The application and private POST endpoints now enforce fresh policy/limiter
+checks, bounded token bodies, sanitized failures and scope-checked results.
+HTTP tests cover invalid sessions, cross-user/dealer access, revocation, failed
+authority/audit, rate limits and malformed/oversized input; bootstrap fails closed
+without capabilities. QR rendering/scanning and client acceptance are not yet
+implemented; QR-01 remains incomplete.
 
 Private inventory history (LC-02) now has domain, storage and client slices. The initial
 pure domain projection reconstructs changed attribute fields from adjacent

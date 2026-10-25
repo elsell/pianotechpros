@@ -88,3 +88,19 @@ whose initial target is the dealer. After scoped resolution it records only the
 resolved record ID as its inventory_scan audit target. Neither operation releases
 results on transaction/audit failure. Database error details are sanitized at this
 boundary so token values from constraint errors cannot enter diagnostics.
+
+## Application and HTTP boundary
+
+`POST /v1/dealers/{dealerID}/inventory/{id}/scan-label` ensures the stable label
+and returns only dealer_id, record_id and the explicitly encoded token.
+`POST /v1/dealers/{dealerID}/inventory/scan/resolve` accepts a bounded JSON body
+with token and returns only dealer_id and record_id. Clients then use ordinary
+private record/publication operations; resolution is never an authorization cache.
+Both endpoints use the existing opaque-session, limiter and read-policy boundary,
+no-store/no-referrer headers, sensitive-input handling and stable API errors.
+Token input never appears in a route parameter. Read-policy denial after initial
+preflight is audited through the existing denial path. Mis-scoped or malformed
+repository results fail closed. Secure generation is injected in bootstrap;
+no provider credential is needed. Project-owned scan registration composes the
+existing inventory application and repository without editing generated code,
+following the existing photo/voice extension boundary.

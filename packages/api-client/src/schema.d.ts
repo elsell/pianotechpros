@@ -135,6 +135,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/dealers/{dealerID}/inventory/scan/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resolve-inventory-scan-label"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/dealers/{dealerID}/inventory/{id}": {
         parameters: {
             query?: never;
@@ -273,6 +289,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["publish-inventory-record"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dealers/{dealerID}/inventory/{id}/scan-label": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ensure-inventory-scan-label"];
         delete?: never;
         options?: never;
         head?: never;
@@ -935,6 +967,15 @@ export interface components {
         InventoryListMeta: {
             nextCursor?: string;
         };
+        InventoryScanLabel: {
+            dealer_id: string;
+            record_id: string;
+            token: string;
+        };
+        InventoryScanResolution: {
+            dealer_id: string;
+            record_id: string;
+        };
         InvitationCreateInputBody: {
             /**
              * Format: uri
@@ -1228,6 +1269,33 @@ export interface components {
             readonly $schema?: string;
             /** Format: int64 */
             expectedRevision: number;
+        };
+        ScanLabelOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/ScanLabelOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["InventoryScanLabel"];
+        };
+        ScanResolveInputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/ScanResolveInputBody.json
+             */
+            readonly $schema?: string;
+            token: string;
+        };
+        ScanResolveOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/ScanResolveOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["InventoryScanResolution"];
         };
         SessionExchangeInputBody: {
             /**
@@ -1805,6 +1873,43 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ItemOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "resolve-inventory-scan-label": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                dealerID: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScanResolveInputBody"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScanResolveOutputBody"];
                 };
             };
             /** @description Error */
@@ -2442,6 +2547,40 @@ export interface operations {
             };
             /** @description Service Unavailable */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "ensure-inventory-scan-label": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                dealerID: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScanLabelOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };

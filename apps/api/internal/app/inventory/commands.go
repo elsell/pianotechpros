@@ -10,6 +10,8 @@ import (
 )
 
 type CommandDependencies struct {
+	Scans             ScanRepository
+	ScanTokens        ports.ScanTokens
 	History           HistoryRepository
 	VoiceTranscriber  VoiceTranscriber
 	VoiceExtractor    VoiceExtractor

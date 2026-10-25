@@ -263,7 +263,9 @@ function importAllowed(specifier, relative, file) {
     const imported = resolveRelativeImport(file, specifier);
     return Boolean(imported && belowApprovedSourceRoot(imported));
   }
-  if (['expo-image-picker', 'expo-image-manipulator', 'expo-file-system'].includes(specifier)) return relative === 'apps/mobile/src/inventory/photo-media.ts';
+  if (specifier === 'expo-audio') return relative === 'apps/mobile/src/inventory/voice-media.ts';
+  if (specifier === 'expo-file-system') return ['apps/mobile/src/inventory/photo-media.ts','apps/mobile/src/inventory/voice-media.ts'].includes(relative);
+  if (['expo-image-picker', 'expo-image-manipulator'].includes(specifier)) return relative === 'apps/mobile/src/inventory/photo-media.ts';
   if (specifier === 'expo-sqlite') return relative === 'apps/mobile/src/inventory/recovery-storage.ts';
   if (!approvedExternalImports.has(specifier)) return false;
   if (!allProviderImports.has(specifier)) return true;

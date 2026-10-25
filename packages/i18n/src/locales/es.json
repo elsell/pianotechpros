@@ -465,5 +465,6 @@
   "voice.error.network": "Falló la conexión. La transcripción sigue aquí para otro intento.",
   "voice.error.protocol_error": "No se pudieron verificar las sugerencias. Inténtalo de nuevo.",
   "voice.editTranscript": "Editar transcripción",
-  "voice.error.undoConflict": "Algunos campos se editaron de nuevo y no se deshicieron."
+  "voice.error.undoConflict": "Algunos campos se editaron de nuevo y no se deshicieron.",
+  "voice.microphonePermission": "Graba una descripción del piano para crear sugerencias que revisarás antes de aplicarlas."
 }

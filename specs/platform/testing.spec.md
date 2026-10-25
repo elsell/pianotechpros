@@ -673,6 +673,21 @@ invitation tokens in URL paths, query strings, screenshots or failure output.
 Bound polling to the asynchronous grant behavior; do not retry mutations or
 replace real authorization decisions with HTTP fixtures.
 
+## Persisted complete inventory fields
+
+Extend photo-first browser acceptance to save/reopen every specified inventory
+field, including private serial/location/cost/notes, independent player and featured
+flags, exact asking/acquisition money, and explicit partial date precision. Use
+independent API assertions for the complete attributes object and prove private
+values remain absent from rendered public HTML. A malformed partial date must
+survive real reload as a protected draft without replacing the last valid server
+record; correcting and saving it must resume persistence.
+
+A second independently signed-in browser session must also commit a competing
+edit. The original editor must surface the revision conflict, fetch the current
+version, and require an explicit keep-my-changes decision before saving. Confirm
+the chosen values through an independent persisted read; never bypass revisions.
+
 ## Persisted journey rate-limit isolation
 
 The sequential real-service browser journeys reuse one synthetic owner. Wait a
@@ -680,3 +695,13 @@ full minute plus one second before each child, including before its preparatory
 read, so earlier scenarios cannot consume its audit allowance. Keep production
 rate limits unchanged; do not retry failed mutations or suppress 429 assertions.
 A journey must still pass within its own normal per-principal allowance.
+
+## Persisted public discovery
+
+Configure only the disposable acceptance web service with the synthetic canonical
+origin `https://pianos.example`. After browser publication, fetch server-rendered
+HTML, canonical redirects, JSON-LD, robots, sitemap index, showroom sitemap and
+localized discovery text backed by actual saved records. Require exact public
+URLs and price, exclude private sentinels, and verify private edits leave discovery
+unchanged. After explicit unpublishing, require the listing URL to disappear from
+the showroom sitemap and old canonical/alias URLs to return 404 without redirect.

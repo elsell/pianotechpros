@@ -199,3 +199,8 @@ message text. No contact payload is placed in navigation parameters. Native
 surfaces clear memory on blur and reload authority on focus. Unread status is
 textual as well as typographic. Email and phone actions use encoded/sanitized
 scheme URLs; unavailable native handlers provide localized copy guidance.
+
+Read acknowledgments return the receipt reloaded inside the same transaction,
+including the database's timestamp precision. A successful first response,
+subsequent detail read and repeated acknowledgment must report the exact same
+first-read timestamp even when the injected application clock has nanoseconds.

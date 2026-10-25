@@ -40,8 +40,15 @@ Web and native inbox screens now use a shared account/dealer-scoped workspace
 with cancellation, explicit read acknowledgment, conflict reconciliation and
 authority-loss clearing. Native uses pushed list/detail navigation and clears
 buyer data on blur. Controlled HTTP browser acceptance covers contact actions,
-read conflict, narrow layout and revocation. Real persisted browser delivery and
-native interaction acceptance remain; screen implementation is not device acceptance.
+read conflict, narrow layout and revocation. Real browser acceptance now verifies anonymous form delivery, Dex sign-in,
+persisted inbox access and identical first-read receipts after reload. It exposed
+a database timestamp-precision mismatch, fixed by reloading the receipt inside
+the write transaction. Android emulator acceptance verifies restoration, inbox
+list/detail, explicit read and refreshed read status against the actual API.
+Hermes exposed an Intl BigInt currency crash; formatting now passes an exact safe
+whole-number quotient while retaining exact fractional digits. This Android run
+uses the existing compatible development binary and current JS; hosted builds,
+iOS interaction acceptance and remaining challenge lifecycle coverage are separate.
 
 The node-forge 1.4.0 mitigation backports the exact RSA nested-DigestAlgorithm
 validation from unmerged upstream PR 1152, with license, source and installed

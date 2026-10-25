@@ -30,7 +30,7 @@ func TestInquiryInboxReadAndAcknowledgmentAreAudited(t *testing.T) {
 	}
 	event.ID += "-read"
 	event.Action = audit.ResourceUpdated
-	event.OccurredAt = event.OccurredAt.Add(time.Minute)
+	event.OccurredAt = event.OccurredAt.Add(time.Minute + 247*time.Nanosecond)
 	entry, err = repository.MarkInboxInquiryRead(ctx, event.ActorUserID, string(profile.ID), id, 1, event)
 	if err != nil || entry.State().ReadBy != event.ActorUserID || entry.State().Revision != 2 {
 		t.Fatal("mark read", err)

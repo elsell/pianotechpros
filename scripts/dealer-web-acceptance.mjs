@@ -204,7 +204,7 @@ const server = createServer(async (req, res) => {
 });
 server.listen(Number(process.env.DEALER_ACCEPTANCE_API_PORT??8089), '127.0.0.1'); await once(server, 'listening');
 const browser = await chromium.launch({channel:'chromium',headless:true,args:['--use-fake-device-for-media-stream']});
-let evidencePage;
+let evidencePage;const browserFailures=[];
 try {
   const context = await browser.newContext({locale:'es-ES',permissions:['microphone']});
   await context.addInitScript(() => window.sessionStorage.setItem('pianotechpros_application_session', JSON.stringify({ token: 'browser-test-session', expiresAt: new Date(Date.now() + 3600000).toISOString() })));
@@ -212,7 +212,7 @@ try {
     const create=URL.createObjectURL.bind(URL),revoke=URL.revokeObjectURL.bind(URL);window.photoURLs=new Set();
     URL.createObjectURL=value=>{const url=create(value);window.photoURLs.add(url);return url;};URL.revokeObjectURL=url=>{window.photoURLs.delete(url);revoke(url);};
   });
-  const page = await context.newPage();evidencePage=page;
+  const page = await context.newPage();evidencePage=page;page.on('pageerror',error=>browserFailures.push(error.message));
   page.setDefaultTimeout(15000);
   await page.clock.install();
   const initialResponse=await page.goto(webURL);assert.match(initialResponse.headers()['content-security-policy'],/img-src 'self' blob:/);
@@ -680,4 +680,4 @@ try {
   assert.equal(await page.evaluate(() => window.refreshResult), 'discarded');
   assert.equal(await page.evaluate(() => sessionStorage.getItem('pianotechpros_application_session')), null);
   console.log('Voice recorded audio/typed transcript/review/selection/intervening edit/re-review/Undo/retry/cancel/transcript correction/recording autosave; Inquiry list/detail/explicit read/conflict reconciliation/contact actions/mobile layout/access revocation clearing; Publication review/cancellation/Escape/private-field exclusion/restored-draft protection/stale revisions/acknowledgement with concurrent revision/sale snapshot preservation/uncertain unpublish refresh; Photo-first lost-create recovery, protected upload retry, private image preview, photo ordering conflict, description and removal confirmation; lazy New capture/idempotent retry/recovery/cross-tab exclusion and inventory editing/autosave/partial-input recovery/lost-response reconciliation/conflict/denial, browsing/filter/search/pagination/retry/denial and dealer web invitation preview/acceptance/pending/replay, staff permissions/conflicts/removal/invitation revocation, creation retry, conflict review, form retention through session outages, Spanish pagination, keyboard selection, responsive layout and sign-out isolation passed');
-} catch(error){if(evidencePage){await evidencePage.screenshot({path:'/tmp/piano-publication-failure.png',fullPage:true});console.error(await evidencePage.locator('body').innerText());}throw error;} finally { releaseRefresh(); releaseDetail(); await browser.close(); server.close(); }
+} catch(error){console.error(browserFailures);if(evidencePage){await evidencePage.screenshot({path:'/tmp/piano-publication-failure.png',fullPage:true});console.error(await evidencePage.locator('body').innerText());}throw error;} finally { releaseRefresh(); releaseDetail(); await browser.close(); server.close(); }

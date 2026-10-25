@@ -152,3 +152,34 @@ HTTPS origin with no credentials, path, query or fragment. The signed-release
 gate requires this origin. The web label uses its current page origin.
 
 Web label printing and body-level dialog mounting use the integrity-pinned browser capability adapter; presentation code receives only those explicit operations.
+
+## Scan view orchestration
+
+The shared scan view accepts a canonical configured-origin link, validates it
+before network activity, then resolves its private identity and reads the record
+through separate authenticated ports. Both responses must match the requested
+dealer and the resolved record. The view exposes only a copied record and stable
+busy/error state; it never exposes the token or link in presentation state.
+Changing a scan or disposing the view aborts pending requests, clears prior data
+and ignores late responses. A transient failure may retry the current link, but
+malformed/foreign input and access denial clear it. Revalidation always repeats
+resolution and the ordinary record read; a prior success never grants authority.
+
+Login continuation contains only the canonical scan link, schema version and an
+absolute expiry no more than ten minutes from capture. It is stored in the same
+tab's session storage behind an injected port. Malformed, foreign-origin,
+oversized, expired or unexpectedly extended entries are deleted and rejected.
+Reading does not renew expiry; consuming removes the entry before use. Storage
+failure fails closed. Cancellation and logout explicitly clear continuation.
+The callback may choose only the fixed local `/scan` destination when a valid
+continuation exists; the token is never part of the callback/provider URL.
+
+Web scan entry removes the fragment before mounting the session shell or making
+application API requests. It reuses the ordinary session restoration/rotation and
+sign-out implementation. The shell clears continuation on explicit sign-out;
+callback errors clear it too. An absent or invalid target renders a localized
+error with cancellation, never a sign-in request or record lookup.
+
+Same-document fragment changes consume and validate the new target and dispose
+the prior view. Logout clears the in-memory target before local cleanup; cleanup
+failure retains a retry screen with sign-in disabled, never the previous scan.

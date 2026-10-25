@@ -515,5 +515,11 @@
   "scan.label.image": "Código escaneable de este piano",
   "scan.label.failed": "No se pudo cargar la etiqueta. Inténtalo de nuevo.",
   "scan.label.saved": "Esta etiqueta usa el número de inventario y el título guardados.",
-  "scan.label.shareFailed": "No se pudo compartir el enlace. Inténtalo de nuevo."
+  "scan.label.shareFailed": "No se pudo compartir el enlace. Inténtalo de nuevo.",
+  "scan.view.title": "Piano escaneado",
+  "scan.view.invalid": "Este enlace de piano no es válido o ha caducado. Escanea la etiqueta de nuevo.",
+  "scan.view.failed": "No se pudo cargar el piano. Inténtalo de nuevo.",
+  "scan.view.cancel": "Cerrar escaneo",
+  "scan.view.editor": "Abrir editor completo",
+  "scan.view.refresh": "Actualizar piano"
 }

@@ -47,3 +47,15 @@ export function mountInventoryLabel(node:HTMLDialogElement){
  return {destroy(){node.remove();}};
 }
 export function printInventoryLabel(){window.print();}
+
+/** Remove private scan input before mounting authentication or private data views. */
+export function consumeInventoryScanLocation():string|null{
+ const link=window.location.hash||window.location.search?window.location.href:null;
+ window.history.replaceState(null,'','/scan');
+ return link;
+}
+
+export function observeInventoryScanLocation(receive:()=>void){
+ window.addEventListener('hashchange',receive);
+ return()=>window.removeEventListener('hashchange',receive);
+}

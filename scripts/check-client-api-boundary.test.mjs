@@ -293,3 +293,8 @@ for(const source of ["fetch('/private');", "new WebSocket('wss://example.invalid
 }
 result=check({'apps/web/src/lib/unreviewed-meter.ts':'new AudioContext();new Float32Array(2048);'});
 assert.notEqual(result.status,0,'audio analysis capabilities remain scoped to the reviewed adapter');
+
+result=check({'apps/web/src/lib/cancellable-view.ts':'const request=new AbortController();request.abort();'});
+assert.equal(result.status,0,'cancellation does not grant network transport');
+result=check({'apps/web/src/lib/cancellable-view.ts':"const request=new AbortController();fetch('/private',{signal:request.signal});"});
+assert.notEqual(result.status,0,'cancellation cannot bypass generated transport');

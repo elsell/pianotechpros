@@ -38,7 +38,7 @@ const providerImports = new Map([
 ]);
 const allProviderImports = new Set([...providerImports.values()].flatMap((values) => [...values]));
 const safeGlobals = new Set([
-  'Boolean', 'Date', 'Error', 'JSON', 'Math', 'Number', 'Object', 'Promise', 'Set', 'URL',
+  'AbortController', 'Boolean', 'Date', 'Error', 'JSON', 'Math', 'Number', 'Object', 'Promise', 'Set', 'URL',
   'clearTimeout', 'crypto', 'setTimeout', 'encodeURIComponent',
 ]);
 const storageGlobals = new Set(['indexedDB', 'localStorage', 'TextEncoder', 'TextDecoder', 'Uint8Array']);

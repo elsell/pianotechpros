@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {browserScanContinuation} from '#lib/scan-continuation.js';
   import { onMount } from 'svelte';
   import type { ClientRuntimeConfig } from '@pianotechpros/client-core';
   import { createTranslator, type MessageKey, type SupportedLocale, type Translator } from '@pianotechpros/i18n';
@@ -12,9 +13,9 @@
   onMount(async () => {
     try {
       await completeApplicationSignIn(data.config);
-      window.location.replace('/');
+      window.location.replace(browserScanContinuation().peek()?'/scan':'/');
     }
-    catch { errorKey = 'errors.callbackFailed'; }
+    catch { browserScanContinuation().clear();errorKey = 'errors.callbackFailed'; }
   });
 </script>
 

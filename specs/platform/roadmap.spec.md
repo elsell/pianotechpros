@@ -57,9 +57,17 @@ built-browser journey passes partial draft recovery, exact retries, validation
 focus, origin/rule independence, conflicts, competing tabs, token rotation,
 Spanish removal and denial cleanup/exit. Native screens now provide focused
 sections, stable-key choice sheets, protected Back and controlled weekday removal.
-Model tests, full checks and both JavaScript exports pass; native build jobs and
-real-device interaction acceptance remain required. Neither technician parity
-item is complete.
+Model tests, full checks and both JavaScript exports pass. Android emulator
+interaction against the isolated real API now covers profile creation, partial
+weekly-rule validation and process-death recovery, named removal, conflict review,
+byte-identical uncertain-save retry with newer edits, and controlled denial with
+an open choice sheet followed by Back exit. Real SQLite write contention verifies
+retained input, blocked navigation/mutation and recovery. It exposed a stale
+presentation warning after successful retry; both native profile screens now
+clear that old warning while retaining current editor failures. English/Spanish
+dark-mode rendering at 130% text size was inspected. Native build jobs,
+screen-reader, iOS and broader physical-device acceptance remain required.
+Neither technician parity item is complete.
 
 Customer profile implementation merged in PR #63 at
 `4431aaaad3810a6894bcbb66167d146559a3c378` after Android, iOS and acceptance passed.
@@ -125,8 +133,14 @@ button adapter now uses platform-specific primary/destructive colors, with
 contrast checks and reviewed Android rendering. This is partial accessibility
 evidence, not screen-reader or iOS acceptance. Review fixed private picker
 retention after denial, Back after denial and cleanup ownership across remounts.
-The remaining native conflict/failure/recovery, accessibility and iOS interaction
-matrix is not yet accepted; CU-01 remains incomplete.
+Additional Android interaction verifies competing-writer conflict choices,
+byte-identical retry after a committed update loses its response, retention of
+newer edits, and controlled denial while a timezone sheet is open followed by
+Back exit. Real SQLite write contention blocks navigation and server mutation,
+retains input and permits retry after release. The stale-warning correction
+above applies here too. These tests do not cover every secure-store/deletion
+failure. Screen-reader, iOS and broader interaction acceptance remain open;
+CU-01 remains incomplete.
 Shared typed error normalization now protects remaining
 web domain request boundaries and native request hooks from delayed old-token
 401s. Built inventory/voice browser tests preserve pending commands, newer edits

@@ -137,3 +137,10 @@ Keep local time/date text intact during editing. Removal is a controlled modal
 naming the weekday, dismissed with all private presentation on scope loss. A
 stale confirmation cannot remove a different rule. Denied navigation awaits
 cleanup and remains escapable. Conflict review shows localized field differences.
+
+After a completed save retry or successful navigation-protection attempt, clear
+the presentation-only storage warning from earlier failed navigation. Current
+editor storage failures remain authoritative and visible; a pending or failed
+write must never be reported as saved. Acceptance must hold a real native SQLite
+write lock, verify blocked Back/save and retained input, release it, then verify
+retry persistence and removal of the stale warning on the current/parent screen.

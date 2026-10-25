@@ -30,17 +30,17 @@ function Editor({accountId,apiURL}:{accountId:string;apiURL:string}){
  usePreventRemove(!leaving,({data})=>{void back(data.action);});
  async function back(action:NavigationAction){if(navigating.current)return;navigating.current=true;try{
   if(workspace&&!workspace.editor.snapshot()){await workspace.cleanup();setLeaving(action);return;}
-  if(workspace&&!await workspace.protect()){setStorageFailure(true);return;}
+  if(workspace&&!await workspace.protect()){setStorageFailure(true);return;}setStorageFailure(false);
   if(section.kind!=='overview'){setSection({kind:section.kind==='rule'?'availability':'overview'});setShowIssues(false);Keyboard.dismiss();return;}
   if(workspace&&!await workspace.close()){setStorageFailure(true);return;}setLeaving(action);
  }catch{setStorageFailure(true);}finally{navigating.current=false;}}
  async function edit(next:TechnicianForm){if(!workspace||leaving)return;setEdited(true);setWrites(n=>n+1);try{await workspace.editor.edit(next);setStorageFailure(false);}finally{setWrites(n=>n-1);}}
  function change(path:string,value:string|boolean|string[]){const current=workspace?.editor.snapshot();if(current)void edit(applyTechnicianValue(current.draft,path,value));}
- async function select(next:TechnicianSection){if(workspace&&!await workspace.protect()){setStorageFailure(true);return;}Keyboard.dismiss();setSection(next);setShowIssues(false);}
+ async function select(next:TechnicianSection){if(workspace&&!await workspace.protect()){setStorageFailure(true);return;}setStorageFailure(false);Keyboard.dismiss();setSection(next);setShowIssues(false);}
  async function add(){if(!state)return;const next=addTechnicianRule(state.draft,randomUUID);if(next){await edit(next);await select({kind:'rule',key:next.availability.at(-1)!.key});}}
  function focusText(path:string){const y=positions.current[path];if(y!==undefined){scroll.current?.scrollTo({y:Math.max(0,y-16),animated:false});inputs.current[path]?.focus();setFocus(null);}}
  function focusIssue(path:string){setSection(technicianSection(path));setShowIssues(true);setFocus(path);}
- async function save(){if(!workspace||!state)return;setShowIssues(true);if(!state.pending&&state.issues.length){focusIssue(state.issues[0].path);return;}await workspace.editor.save();}
+ async function save(){if(!workspace||!state)return;setShowIssues(true);if(!state.pending&&state.issues.length){focusIssue(state.issues[0].path);return;}await workspace.editor.save();setStorageFailure(false);}
  async function remove(){const current=workspace?.editor.snapshot(),key=removing;setRemoving(null);if(current&&key){const next=removeTechnicianRule(current.draft,key,true);if(next){await edit(next);await select({kind:'availability'});}}}
  const rule=section.kind==='rule'?state?.draft.availability.find(r=>r.key===section.key):undefined;
  const removed=state?.draft.availability.find(r=>r.key===removing);

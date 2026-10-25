@@ -26,7 +26,10 @@ success, denial, stale/revoked access and unavailable processing. Shared client
 proposal validation and explicit field selection now preserve incomplete manual
 input. Atomic price/date groups detect intervening edits, and conditional Undo
 preserves later corrections; tests cover all 18 fields and exact large prices.
-Recording, review/clarification UI,
+The shared generated-contract transport now snapshots binary audio before token
+lookup, rotates sessions, rejects redirects, propagates cancellation and validates
+revision/transcript identity plus every typed candidate before presentation.
+Controlled real HTTP tests cover all fields and failure paths. Recording, review/clarification UI,
 voice-aware autosave/Undo and native microphone acceptance remain unfinished.
 
 Buyer inquiry foundations now implement canonical contact validation, immutable

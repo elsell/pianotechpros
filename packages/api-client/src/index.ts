@@ -20,3 +20,4 @@ export { createInventoryApiClient, InventoryClientError, type InventoryRecord, t
 export { createInventoryPhotoApiClient, type InventoryPhoto, type InventoryPhotoState, type InventoryPhotoUpload } from './inventory-photos';
 export { createInventoryPublicationApiClient, InventoryPublicationError, type InventoryPublicationState, type PublicationReadinessField } from './inventory-publication';
 export {createPublicInquiryApiClient,createInquiryInboxApiClient,InquiryClientError,type InquiryErrorCode,type InquirySubmission,type BuyerContact,type InboxInquiry,type InquiryPage} from './inquiry';
+export {createInventoryVoiceApiClient,VoiceClientError,type VoiceErrorCode,type VoiceProposal,type VoiceTranscript} from './inventory-voice';

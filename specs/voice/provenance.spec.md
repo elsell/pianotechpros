@@ -99,3 +99,15 @@ While a write is pending, a later accepted voice value may equal the old baselin
 but differ from the pending value. Retain that origin relative to either baseline
 until the pending outcome is resolved; otherwise a retry or recovered commit would
 incorrectly turn the later voice edit into a manual edit.
+
+## Form and client integration
+
+Web and native Apply pass only the fields actually changed by the accepted
+proposal into the shared form workspace. Undo uses the ordinary manual-change
+path. Capture must attach an authorized record before accepting attributed
+changes; it must never drop provenance in the pre-record intent journal.
+
+Form attribution treats amount/currency/decimal and year/month/day as atomic
+attribute groups. Raw manual corrections clear the group's label even when the
+normalized value is unchanged. Save labels compare normalized wire attributes,
+so whitespace or numeric formatting alone cannot claim a voice revision.

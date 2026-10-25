@@ -53,3 +53,10 @@ test('audio is cleared before review waits and preparation failure releases the 
  await new Promise(resolve=>setImmediate(resolve));assert.deepEqual([...audio],[0,0]);w.cancel();await run;
  const g=fixture();g.port.ensureRecord=async()=>null;const x=createInventoryVoiceWorkspace(g.port);await x.extractTranscript('Grand piano');assert.equal(x.snapshot().issue,'unavailable');assert.equal(g.held,false);
 });
+
+test('review coordinator forwards accepted origins and keeps Undo manual across queue release',async()=>{
+ const f=fixture();const origins:(readonly string[]|undefined)[]=[];const change=f.port.change;
+ f.port.change=(form,fields)=>{origins.push(fields);change(form,fields);};
+ const w=createInventoryVoiceWorkspace(f.port);const run=w.extractTranscript('Grand piano');await reviewed(w);
+ w.apply(['title']);await run;w.undo();assert.deepEqual(origins,[['title'],undefined]);w.dispose();
+});

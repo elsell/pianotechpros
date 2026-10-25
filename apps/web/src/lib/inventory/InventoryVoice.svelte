@@ -40,7 +40,7 @@
  onMount(()=>{
   active=true;
   workflow=createInventoryVoiceWorkspace({accountID:accountId,dealerID,active:()=>active&&!denied,
-   snapshot:()=>workspace.snapshot(),change:form=>workspace.change(form),withMutation:work=>workspace.withMediaMutation(work),
+   snapshot:()=>workspace.snapshot(),change:(form,fields)=>workspace.change(form,fields),withMutation:work=>workspace.withMediaMutation(work),
    ...('ensureRecord'in workspace?{ensureRecord:()=> (workspace.ensureRecord as ()=>Promise<string|null>)()}:{}),
    transcribe:(recordID,revision,bytes,mime,signal)=>request(client=>client.transcribe(dealerID,recordID,revision,bytes,mime,signal)),
    extract:(recordID,revision,text,signal)=>request(client=>client.extract(dealerID,recordID,revision,text,signal)),

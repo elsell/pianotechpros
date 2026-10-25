@@ -762,5 +762,7 @@
   "technician.day.5": "sábado",
   "technician.day.6": "domingo",
   "technician.kind.available": "Disponible",
-  "technician.kind.unavailable": "No disponible"
+  "technician.kind.unavailable": "No disponible",
+  "technician.done": "Listo",
+  "technician.noChoices": "No hay opciones coincidentes. Prueba otra búsqueda."
 }

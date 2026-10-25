@@ -55,8 +55,11 @@ pass. The web editor now offers focused contact/origin/work/rule sections,
 localized field-level conflict comparisons and confirmed weekday removal. Its
 built-browser journey passes partial draft recovery, exact retries, validation
 focus, origin/rule independence, conflicts, competing tabs, token rotation,
-Spanish removal and denial cleanup/exit. Native UI and device interaction
-acceptance remain unfinished; neither technician parity item is complete.
+Spanish removal and denial cleanup/exit. Native screens now provide focused
+sections, stable-key choice sheets, protected Back and controlled weekday removal.
+Model tests, full checks and both JavaScript exports pass; native build jobs and
+real-device interaction acceptance remain required. Neither technician parity
+item is complete.
 
 Customer profile implementation merged in PR #63 at
 `4431aaaad3810a6894bcbb66167d146559a3c378` after Android, iOS and acceptance passed.

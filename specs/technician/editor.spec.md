@@ -120,3 +120,20 @@ Conflict review lists differing fields, including selections and stable-key week
 rules, with separate current/yours values and explicit keep/use-latest actions.
 Never display raw JSON, internal rule keys or machine field codes. New/deleted
 rules have localized absent values. Group comparison rows by localized weekday.
+
+## Native presentation
+
+The native route opens an overview with contact, service area, work and weekly
+availability rows. Back from a rule returns to availability; Back from another
+section returns to overview, and Back from overview awaits durable protection
+before leaving. Validation opens the correct section and focuses text or opens
+a searchable choice sheet. Weekday options exclude days already in use; service
+and piano-form sheets allow multiple selections without dismissing after each.
+Choice edits address immutable rule keys, not the screen's current section.
+
+Use platform keyboards and an iOS Done accessory, safe-area sheets, theme colors,
+large-type-compatible rows, labeled inputs and selected accessibility states.
+Keep local time/date text intact during editing. Removal is a controlled modal
+naming the weekday, dismissed with all private presentation on scope loss. A
+stale confirmation cannot remove a different rule. Denied navigation awaits
+cleanup and remains escapable. Conflict review shows localized field differences.

@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {openCustomerWorkspace} from './customer-workspace.js';
+import {openCustomerWorkspace,type CustomerWorkspace} from './customer-workspace.js';
 import {createCustomerOwnershipRegistry} from './customer-ownership.js';
+import {createCustomerPresentationLifetime} from './customer-presentation.js';
 import {createCustomerRecoveryJournal} from './customer-recovery.js';
 import {emptyCustomerForm,customerFormFromAttributes,type CustomerWireAttributes} from './customer-form.js';
 const scope={userID:'user',apiBaseURL:'https://api.example.test'};
@@ -52,6 +53,27 @@ test('customer ownership remains held through delayed discard and retries failed
  f.deny();await w.editor.save();await assert.rejects(openCustomerWorkspace(f.port),e=>e instanceof Error&&e.message==='customer_workspace_busy');release();await assert.rejects(w.cleanup());
  await assert.rejects(openCustomerWorkspace(f.port),e=>e instanceof Error&&e.message==='customer_workspace_busy');fail=false;await w.cleanup();assert.equal(f.values.size,0);
  await assert.rejects(openCustomerWorkspace(f.port),e=>e instanceof Error&&e.message==='customer_workspace_access');
+});
+
+test('runtime presentation retains denied cleanup across route unmount and remount',async()=>{
+ const f=fixture(),lifetime=createCustomerPresentationLifetime();
+ const turn=()=>new Promise<void>(resolve=>setImmediate(resolve));
+ let workspace:Awaited<ReturnType<typeof openCustomerWorkspace>>=null,errors=0;
+ const port={open:()=>openCustomerWorkspace(f.port),ready:(value:NonNullable<typeof workspace>)=>{workspace=value;},failed:()=>{errors++;}};
+ const unmount=lifetime.start(port);await turn();assert.ok(workspace);
+ const opened=workspace as CustomerWorkspace;
+ await opened.editor.edit({...opened.editor.snapshot()!.draft,name:'Protected'});
+ const remove=f.storage.remove;let fail=true;
+ f.storage.remove=async key=>{if(fail)throw Error('storage');await remove(key);};
+ f.deny();await opened.editor.save();assert.equal(opened.editor.snapshot(),null);
+ unmount();await turn();assert.ok(f.values.size>0);
+ const failedMount=lifetime.start(port);await turn();assert.equal(errors,1);
+ failedMount();await turn();fail=false;
+ // The runtime lifetime survives both component instances and drains the old
+ // journal before a new authorization attempt, which correctly still denies.
+ const finalMount=lifetime.start(port);await turn();assert.equal(errors,2);assert.equal(f.values.size,0);
+ await assert.rejects(openCustomerWorkspace(f.port),error=>error instanceof Error&&error.message==='customer_workspace_access');
+ finalMount();await turn();
 });
 
 test('customer disposal holds ownership until in-flight storage drains',async()=>{

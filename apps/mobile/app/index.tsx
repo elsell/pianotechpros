@@ -39,6 +39,7 @@ export default function Home() {
       <Button title={i18n.t(auth.session ? 'auth.signOut' : 'auth.signIn')} color={theme.accent} disabled={!auth.ready || (!auth.session && !auth.signInReady)} onPress={() => { void (auth.session ? auth.signOut() : auth.signIn()); }} />
     </View>
     <Button title={i18n.t('scan.native.open')} color={theme.accent} disabled={!auth.ready} onPress={()=>router.push('/scan')} />
+    {auth.ready && auth.profile && auth.session ? <Button title={i18n.t('customer.heading')} color={theme.accent} onPress={()=>router.push('/customer')} /> : null}
     {auth.ready && auth.profile && auth.session ? <ShopList key={auth.profile.id} accountId={auth.profile.id} /> : null}
   </View>;
 }

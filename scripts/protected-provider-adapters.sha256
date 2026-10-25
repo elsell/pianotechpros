@@ -6,3 +6,4 @@ bfff42d47060dc960d5a69893cc6f068d0403b2ea1f99a7cf381235b1a6f9074  apps/web/src/l
 54fe0cc490fc422c2fab8e3d1d99077192ce61a994aaa6aa898d5fb018cc5398  apps/web/src/lib/inventory/voice-recorder.ts
 ab5c36d3499d061dd199e9010fbdde05f8b1ead3e5523b90b00fc1984807eb35  apps/web/src/lib/customer/ownership.ts
 13dc3c854ebf24a43207e7f57c85b65eeee48872c83409954e361ba28707e7f4  apps/mobile/src/customer/ownership.ts
+6be1faefbb49545031b2b93791c2fac1b63a045cec35181505a3552e3c3deaa8  apps/mobile/src/customer/presentation.ts

@@ -155,3 +155,17 @@ from rejection of the current credential. An old-token 401 is uncertain, retains
 the protected command and cannot sign out or discard a newer session's draft.
 Conflict comparison detects changed location keys before mapping to display data;
 address context and localized ordinal positions disambiguate identical labels.
+
+### Native presentation lifetime
+
+Native effect restarts serialize workspace opening after the previous opening
+and its disposal/cleanup have completed. A retired opening must never publish
+private state or an error into a replacement screen. Cleanup failure prevents
+replacement acquisition; a later explicit retry retries that cleanup before
+opening. Retirement suppresses access immediately, including while acquisition
+is unresolved. This lifecycle is tested with controlled asynchronous ports;
+React effect replay must not produce a false competing-editor error.
+The native lifetime is runtime-stable across actual route remounts and development
+refreshes, retaining failed cleanup handles until successful retry. Denial hides
+picker options immediately with the editor, clears presentation-only copies,
+and allows Back after cleanup rather than treating disposal as draft failure.

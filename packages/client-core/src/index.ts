@@ -268,3 +268,4 @@ export * from './recovery-limits';
 
 export * from './customer-ownership';
 export {customerComparison,type CustomerComparison} from './customer-comparison';
+export {createCustomerPresentationLifetime} from './customer-presentation';

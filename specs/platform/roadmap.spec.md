@@ -2,7 +2,16 @@
 
 ## Current milestone: feature-complete product
 
-The next product slice is visible private inventory history (LC-02). The initial
+QR scan parity (QR-01) is the next implementation slice after the history client.
+The legacy scan flow has been rechecked read-only: stable label, authenticated
+dealer-scoped resolution, piano identification and confirmed status actions.
+The new scan contract keeps the identifier in a consumed URL fragment and
+requires scoped, audited resolution. Initial domain/token-source tests cover
+canonical 256-bit identifiers, redacted formatting, stored timestamp precision
+and entropy failure without fallback. Storage, routes, QR rendering/scanning
+and client acceptance are not implemented yet; QR-01 remains incomplete.
+
+Private inventory history (LC-02) now has domain, storage and client slices. The initial
 pure domain projection reconstructs changed attribute fields from adjacent
 revisions, preserves unknown older origins, validates lifecycle/photo/publication
 evidence and returns independent copies. Timestamp comparisons use the documented

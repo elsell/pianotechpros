@@ -530,3 +530,12 @@ exclusive Web Lock until its lease releases; the native adapter shares one
 registry across module reloads in the UI runtime. Neither grants network or
 storage capabilities to callers. Review and regenerate hashes when changing
 these files; do not broadly permit browser globals or runtime registries.
+
+The built-web customer acceptance journey uses a stateful local HTTP fake behind
+the generated client and real browser Web Locks, IndexedDB and WebCrypto. It
+covers creation, immutable retry after lost response and reload, child validation
+focus, explicit conflict decisions, removal confirmation, competing tabs, delayed
+old-token rejection after session rotation, denial cleanup, Spanish navigation
+and logout recovery invalidation. This is browser integration evidence; real
+API/session/PostgreSQL/SpiceDB tests remain separate, and it does not establish
+native interaction acceptance.

@@ -267,3 +267,4 @@ export * from './customer-workspace';
 export * from './recovery-limits';
 
 export * from './customer-ownership';
+export {customerComparison,type CustomerComparison} from './customer-comparison';

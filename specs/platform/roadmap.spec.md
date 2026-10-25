@@ -68,8 +68,17 @@ Large aggregate recovery now
 uses a shared 4 MiB vault/customer bound while inventory stays at 1 MiB; encrypted
 restart and actual browser reload tests preserve full pending checkpoints. Native
 codec tests cover large ciphertext and precise size rejection.
-Protected recovery integration, web/native composition and
-interaction acceptance remain unfinished; this foundation is not CU-01 completion.
+Web composition now exposes an account-owned customer entry, focused location
+and piano editors, protected navigation, localized validation focus, confirmed
+removal and explicit conflict comparisons. Built-browser integration with a
+stateful HTTP fake passes creation, lost-response/reload retry preserving newer
+edits, two-tab exclusion, session rotation, denial cleanup, Spanish navigation
+and logout invalidation. Review corrected stale-token rejection handling and
+comparison of identically named locations. This is web integration evidence;
+native customer composition and real device acceptance remain unfinished, so
+CU-01 is not complete. The same old-token 401 classification pattern is present
+in inventory request adapters; audit and correct remaining client adapters before
+parity completion, with delayed-rejection recovery tests.
 Technician profile parity follows and remains required.
 
 QR scan parity (QR-01) is implemented with remaining device acceptance below.

@@ -117,3 +117,41 @@ Test two workspaces sharing a vault, cleanup ordering, opening failures and an
 actual browser two-tab acquisition/release/closed-tab recovery sequence.
 Snapshot the canonical identity once before awaiting acquisition and use the same
 frozen scope for the journal; caller mutation must not redirect protected storage.
+
+## Presentation integration
+
+The account home exposes My customer profile independently of shops. A profile
+workspace has contact details, a location list and a piano list. Selecting or
+adding a child opens one focused editor; returning preserves partial input in
+the protected aggregate draft. New locations begin without an assumed timezone;
+users search the authenticated IANA catalog and select an exact name. Pianos
+choose an existing location and a localized form; unknown year remains blank.
+
+Every edit queues protected persistence. Track outstanding writes separately
+from server saving and never claim saved/protected while a write is pending.
+Explicit Back awaits protection and close, retaining the editor on failure;
+unload warns while protection is pending or failed. Removal is a separate
+explicit confirmation and never permits last/referenced location deletion.
+Validation is shown on save or after leaving a field, with the first issue
+opening its child editor and focusing the correct labeled input. Required fields
+are identified before entry. No field errors are serialized as human copy.
+
+Conflicts show a field-by-field comparison of latest server and local values,
+including child additions/removals and optional/boolean values; no raw JSON or
+internal child keys are displayed. Keeping edits changes only the expected
+revision and requires a subsequent Save. Replacing edits is explicit. An
+uncertain command retries its original payload even when newer edits exist;
+the interface explains that the newer draft can be saved afterwards.
+
+Web uses semantic forms, keyboard-operable controls, visible focus, responsive
+single-column child editors and native select choices. Native uses grouped
+sections, focused child screens, platform keyboards, safe-area/keyboard-aware
+scrolling and localized confirmation alerts. These decisions follow Apple HIG
+Entering data and Sheets (reviewed 2026-10-25); actual device interaction remains
+an acceptance gate, independent of build/export success.
+
+Request adapters distinguish a late rejection of a replaced opaque credential
+from rejection of the current credential. An old-token 401 is uncertain, retains
+the protected command and cannot sign out or discard a newer session's draft.
+Conflict comparison detects changed location keys before mapping to display data;
+address context and localized ordinal positions disambiguate identical labels.

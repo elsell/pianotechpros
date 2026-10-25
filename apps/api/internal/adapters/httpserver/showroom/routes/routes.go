@@ -66,6 +66,15 @@ func publicOperation(api huma.API, configured bool, id, path string) huma.Operat
 func Register(api huma.API, service app.Repository) {
 	operation := func(id, path string) huma.Operation { return publicOperation(api, service != nil, id, path) }
 	base := "/v1/showrooms/{slug}"
+	banner := operation("read-public-showroom-banner", base+"/banner/{bannerID}")
+	banner.Responses = map[string]*huma.Response{"200": {Description: "Current published showroom JPEG", Content: map[string]*huma.MediaType{"image/jpeg": {Schema: &huma.Schema{Type: "string", Format: "binary"}}}}}
+	huma.Register(api, banner, func(ctx context.Context, in *BannerInput) (*PhotoOutput, error) {
+		image, err := service.ReadPublicBanner(ctx, in.Slug, in.BannerID)
+		if err != nil {
+			return nil, publicError(err)
+		}
+		return &PhotoOutput{ContentType: "image/jpeg", Body: image.JPEG}, nil
+	})
 	huma.Register(api, operation("read-public-showroom", base), func(ctx context.Context, in *ProfileInput) (*ProfileOutput, error) {
 		profile, err := service.ReadPublicProfile(ctx, in.Slug)
 		if err != nil {
@@ -93,4 +102,9 @@ func Register(api huma.API, service app.Repository) {
 		}
 		return &PhotoOutput{ContentType: "image/jpeg", Body: image.JPEG}, nil
 	})
+}
+
+type BannerInput struct {
+	ProfileInput
+	BannerID string `path:"bannerID" maxLength:"128"`
 }

@@ -34,7 +34,23 @@ func lockPublicShowroom(tx *gorm.DB, slug string) (domain.Showroom, error) {
 	if err := tx.Where("slug=? AND showroom_published", slug).Clauses(clause.Locking{Strength: "SHARE"}).Take(&row).Error; err != nil {
 		return domain.Showroom{}, err
 	}
-	return domain.New(toEntity(row))
+	showroom, err := domain.New(toEntity(row))
+	if err != nil {
+		return domain.Showroom{}, err
+	}
+	var asset bannerAssetModel
+	err = tx.Select("id", "dealer_id", "sha256", "width", "height", "created_at").Where("dealer_id=?", row.ID).Take(&asset).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return showroom, nil
+	}
+	if err != nil {
+		return domain.Showroom{}, err
+	}
+	evidence, err := bannerEvidence(asset)
+	if err != nil {
+		return domain.Showroom{}, err
+	}
+	return showroom.WithBanner(evidence)
 }
 
 func readPublicPublication(tx *gorm.DB, showroom domain.Showroom, id string) (inventory.Publication, error) {
@@ -128,6 +144,40 @@ func (r *Repository) ReadPublicPhoto(ctx context.Context, slug, id, photoID stri
 		}
 		var asset photoAssetModel
 		if err := tx.Where("id=? AND record_id=? AND dealer_id=?", photoID, id, profile.ID).Take(&asset).Error; err != nil {
+			return err
+		}
+		result = ports.ProcessedPhoto{JPEG: asset.JPEG, Width: asset.Width, Height: asset.Height, SHA256: asset.SHA256}
+		if !validPhotoImage(result) {
+			return ports.ErrInvalidArgument
+		}
+		return nil
+	})
+	if err != nil {
+		return ports.ProcessedPhoto{}, publicReadError(err)
+	}
+	return result, nil
+}
+
+// ReadPublicBanner serializes current visibility and asset identity against profile writes.
+func (r *Repository) ReadPublicBanner(ctx context.Context, slug, assetID string) (ports.ProcessedPhoto, error) {
+	if !publicLookup(slug, 80) || !publicLookup(assetID, 128) {
+		return ports.ProcessedPhoto{}, ports.ErrNotFound
+	}
+	var result ports.ProcessedPhoto
+	err := r.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		showroom, err := lockPublicShowroom(tx, slug)
+		if err != nil {
+			return err
+		}
+		profile, err := showroom.Profile()
+		if err != nil {
+			return err
+		}
+		if profile.Banner == nil || profile.Banner.ID != assetID {
+			return ports.ErrNotFound
+		}
+		var asset bannerAssetModel
+		if err := tx.Where("dealer_id=? AND id=?", profile.ID, assetID).Take(&asset).Error; err != nil {
 			return err
 		}
 		result = ports.ProcessedPhoto{JPEG: asset.JPEG, Width: asset.Width, Height: asset.Height, SHA256: asset.SHA256}

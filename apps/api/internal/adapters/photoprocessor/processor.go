@@ -13,6 +13,8 @@ import (
 	_ "image/png"
 	"io"
 
+	_ "golang.org/x/image/webp"
+
 	"github.com/elsell/pianotechpros/apps/api/internal/ports"
 )
 
@@ -27,7 +29,18 @@ func New() *Processor { return &Processor{slots: make(chan struct{}, 2)} }
 
 var _ ports.PhotoProcessor = (*Processor)(nil)
 
+// Banner enables WebP while retaining the shared decode budget.
+func (p *Processor) Banner() ports.PhotoProcessor { return bannerProcessor{p} }
+
+type bannerProcessor struct{ processor *Processor }
+
+func (b bannerProcessor) Process(ctx context.Context, source io.Reader) (ports.ProcessedPhoto, error) {
+	return b.processor.process(ctx, source, true)
+}
 func (p *Processor) Process(ctx context.Context, source io.Reader) (ports.ProcessedPhoto, error) {
+	return p.process(ctx, source, false)
+}
+func (p *Processor) process(ctx context.Context, source io.Reader, allowWebP bool) (ports.ProcessedPhoto, error) {
 	empty := ports.ProcessedPhoto{}
 	if err := ctx.Err(); err != nil {
 		return empty, err
@@ -55,7 +68,7 @@ func (p *Processor) Process(ctx context.Context, source io.Reader) (ports.Proces
 		return empty, ports.ErrPhotoLimit
 	}
 	config, format, err := image.DecodeConfig(bytes.NewReader(raw))
-	if err != nil || (format != "jpeg" && format != "png") {
+	if err != nil || (format != "jpeg" && format != "png" && !(allowWebP && format == "webp")) {
 		return empty, ports.ErrInvalidPhoto
 	}
 	if config.Width < 1 || config.Height < 1 || config.Width > maxAxis || config.Height > maxAxis || int64(config.Width)*int64(config.Height) > maxPixels {

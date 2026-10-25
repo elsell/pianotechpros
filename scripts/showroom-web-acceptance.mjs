@@ -5,7 +5,7 @@ import {readFileSync} from 'node:fs';
 import {spawn} from 'node:child_process';
 import {chromium} from 'playwright';
 
-const profile={id:'atelier',name:'Atelier Pianos',slug:'atelier',email:'shop?bcc=other@example.com',phone:'+1 555 0100',website_url:'https://example.com',tagline:'A piano for your next chapter',description:'Thoughtfully selected instruments, ready to be played.',street_address_1:'12 Example Street',street_address_2:'',city:'Portland',region:'OR',postal_code:'97201',appointment_note:'Visit by appointment.',delivery_note:'Ask us about delivery.',warranty_note:'Every piano is carefully inspected.',service_note:'Tuning and care, for years to come.',banner_alt_text:'',accent_color:'#245346'};
+const profile={banner:{id:"current",width:1200,height:600},id:'atelier',name:'Atelier Pianos',slug:'atelier',email:'shop?bcc=other@example.com',phone:'+1 555 0100',website_url:'https://example.com',tagline:'A piano for your next chapter',description:'Thoughtfully selected instruments, ready to be played.',street_address_1:'12 Example Street',street_address_2:'',city:'Portland',region:'OR',postal_code:'97201',appointment_note:'Visit by appointment.',delivery_note:'Ask us about delivery.',warranty_note:'Every piano is carefully inspected.',service_note:'Tuning and care, for years to come.',banner_alt_text:'',accent_color:'#245346'};
 const piano={id:'grand',dealer_id:'atelier',publication_revision:2,status:'available',stock_number:'PT-1',title:'Walnut baby grand',featured:true,form:'grand',player_system:false,condition:'used',make:'Example maker',model:'Studio',manufactured:null,size:'5 ft',finish:'Walnut',description:'A warm, expressive instrument for a welcoming room.',price:{minor_units:1250000,currency:'USD'},photos:[{id:'front',alt_text:'Walnut baby grand, front view'},{id:'keys',alt_text:'Keyboard detail'}]};
 const upright={...piano,id:'upright',title:'Studio upright',featured:false,form:'studio_upright',stock_number:'PT-2',price:null};
 const image=readFileSync(new URL('./fixtures/showroom.jpg',import.meta.url));
@@ -15,7 +15,7 @@ const api=createServer((req,res)=>{
  res.setHeader('Cache-Control','no-store');res.setHeader('Content-Type','application/json');
  const url=new URL(req.url,'http://localhost');const send=(status,data)=>{res.statusCode=status;res.end(JSON.stringify(data));};
  if(!published)return send(404,{code:'not_found',detail:'PRIVATE'});
- if(url.pathname.includes('/photos/')){res.setHeader('Content-Type','image/jpeg');res.end(image);return;}
+ if(url.pathname.includes('/photos/')||url.pathname==='/v1/showrooms/atelier/banner/current'){res.setHeader('Content-Type','image/jpeg');res.end(image);return;}
  if(url.pathname==='/v1/showrooms/atelier/pianos'){
   let pianos=[piano,upright];if(url.searchParams.get('search'))pianos=pianos.filter(p=>p.title.toLowerCase().includes(url.searchParams.get('search').toLowerCase()));
   if(url.searchParams.get('form'))pianos=pianos.filter(p=>p.form===url.searchParams.get('form'));
@@ -37,6 +37,9 @@ try{
  const csp=html.headers.get('content-security-policy');assert.match(csp,/default-src 'self'/);assert.match(csp,/frame-ancestors 'none'/);assert.match(csp,/object-src 'none'/);assert.match(csp,/script-src[^;]*'nonce-[^']+'/);assert.equal(html.headers.get('x-content-type-options'),'nosniff');assert.equal(html.headers.get('referrer-policy'),'no-referrer');
  const source=await html.text();assert.ok(source.includes('Walnut baby grand'));assert.ok(!source.includes('PRIVATE'));
  await page.goto(webURL+'/showrooms/atelier');await page.getByRole('heading',{name:'Walnut baby grand'}).waitFor();
+ await page.getByRole('img',{name:'Atelier Pianos showroom',exact:true}).waitFor();
+ await page.waitForFunction(()=>{const image=document.querySelector('.banner img');return image?.complete&&image.naturalWidth>0;});
+ const bannerResponse=await fetch(webURL+'/showrooms/atelier/banner/current');assert.equal(bannerResponse.status,200);assert.equal(bannerResponse.headers.get('cache-control'),'no-store');assert.equal(bannerResponse.headers.get('x-content-type-options'),'nosniff');
  assert.equal(await page.locator('#svelte-announcer').evaluate(el=>getComputedStyle(el).clipPath),'inset(50%)');
  assert.equal(await page.getByRole('heading',{name:'Studio upright'}).count(),1);
  await page.locator('summary').click();await page.getByLabel('Piano type',{exact:true}).selectOption('studio_upright');await page.getByRole('button',{name:'Show pianos',exact:true}).click();await page.waitForURL(/form=studio_upright/);assert.equal(await page.getByRole('heading',{name:'Walnut baby grand'}).count(),0);
@@ -48,8 +51,8 @@ try{
  await page.screenshot({path:'/tmp/piano-showroom-detail-desktop.png',fullPage:true});
  await page.setViewportSize({width:390,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await page.screenshot({path:'/tmp/piano-showroom-detail-mobile.png',fullPage:true});
  await page.getByRole('link',{name:'Back to the showroom',exact:true}).click();await page.getByRole('heading',{name:'Studio upright'}).waitFor();await page.screenshot({path:'/tmp/piano-showroom-grid-mobile.png',fullPage:true});
- const spanish=await browser.newPage({locale:'es-ES'});await spanish.goto(webURL+'/showrooms/atelier');await spanish.getByText('Precio a consultar',{exact:true}).waitFor();await spanish.close();
- published=false;await page.reload();await page.getByText('This showroom or piano is no longer available.',{exact:true}).waitFor();assert.equal(await page.getByText('PRIVATE').count(),0);
+ const spanish=await browser.newPage({locale:'es-ES'});await spanish.goto(webURL+'/showrooms/atelier');await spanish.getByText('Precio a consultar',{exact:true}).waitFor();await spanish.getByRole('img',{name:'Sala de exposición de Atelier Pianos',exact:true}).waitFor();await spanish.close();
+ published=false;const hiddenBanner=await fetch(webURL+'/showrooms/atelier/banner/current');assert.equal(hiddenBanner.status,404);assert.equal(hiddenBanner.headers.get('cache-control'),'no-store');await page.reload();await page.getByText('This showroom or piano is no longer available.',{exact:true}).waitFor();assert.equal(await page.getByText('PRIVATE').count(),0);
  assert.deepEqual(errors.filter(message=>message!=='Failed to load resource: the server responded with a status of 404 (Not Found)'),[]);assert.ok(requests.some(p=>p.includes('/photos/')));
  console.log('Public SSR, filtering, listing/gallery keyboard navigation, contact links, narrow layout, Spanish and unpublish acceptance passed');
 }catch(error){console.error(errors);if(evidencePage){console.error(await evidencePage.locator('body').innerText());await evidencePage.screenshot({path:'/tmp/piano-showroom-browser-failure.png',fullPage:true});}throw error;}finally{await browser?.close();api.close();if(web.exitCode===null){process.kill(-web.pid,'SIGTERM');await once(web,'exit');}}

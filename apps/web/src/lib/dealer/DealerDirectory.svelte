@@ -1,4 +1,5 @@
 <script lang="ts">
+  import DealerBanner from './DealerBanner.svelte';
   import InquiryInbox from '../inquiry/InquiryInbox.svelte';
   import InventoryBrowser from '../inventory/InventoryBrowser.svelte';
   import DealerJoin from './DealerJoin.svelte';
@@ -25,6 +26,7 @@
   let staffShop: string | null = null;
   let inventoryShop: string | null = null;
   let inboxShop: string | null = null;
+  let bannerShop:string|null=null;
   let joinOpen = false;
   const joinAPI = {
     preview: (input: DealerInvitationCode) => withCredential((api) => api.previewInvitation(input.dealerID, input.invitationID, input.token)),
@@ -69,8 +71,9 @@
   });
 </script>
 
-<section class="directory" aria-labelledby={inboxShop ? 'inbox-heading' : inventoryShop ? 'inventory-heading' : 'shops-heading'}>
-  {#if inboxShop}{#key JSON.stringify([accountId,inboxShop])}<InquiryInbox {accountId} dealerID={inboxShop} {credential} {apiURL} {i18n} {onSessionRejected} onBack={()=>{inboxShop=null;}} />{/key}
+<section class="directory" aria-labelledby={bannerShop ? 'banner-heading' : inboxShop ? 'inbox-heading' : inventoryShop ? 'inventory-heading' : 'shops-heading'}>
+  {#if bannerShop}{#key JSON.stringify([accountId,bannerShop])}<DealerBanner dealerID={bannerShop} {credential} {apiURL} {i18n} {onSessionRejected} onBack={()=>{const id=bannerShop;bannerShop=null;void directory.select(id);}} />{/key}
+  {:else if inboxShop}{#key JSON.stringify([accountId,inboxShop])}<InquiryInbox {accountId} dealerID={inboxShop} {credential} {apiURL} {i18n} {onSessionRejected} onBack={()=>{inboxShop=null;}} />{/key}
   {:else if inventoryShop}{#key inventoryShop}<InventoryBrowser {accountId} dealerID={inventoryShop} {credential} {apiURL} {i18n} {onSessionRejected} onBack={() => { const id = inventoryShop; inventoryShop = null; void directory.select(id); }} />{/key}
   {:else}
   <header>
@@ -104,6 +107,7 @@
         <button onclick={() => { savedNotice = false; inventoryShop = shop.id; }}>{i18n.t('inventory.browse')}</button>
         <button onclick={() => { savedNotice = false; staffShop = shop.id; }}>{i18n.t('staff.manage')}</button>
         <button onclick={() => { savedNotice = false; form = { initial: shop }; }}>{i18n.t('dealer.edit')}</button>
+        <button onclick={()=>{savedNotice=false;bannerShop=shop.id;}}>{i18n.t('dealer.banner.heading')}</button>
         {#if shop.tagline}<p class="tagline">{shop.tagline}</p>{/if}
         {#if shop.description}<p class="prose">{shop.description}</p>{/if}
         <h4>{i18n.t('dealer.contact')}</h4>

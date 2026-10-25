@@ -14,9 +14,13 @@ const exact=(v:Record<string,unknown>,keys:string)=>Object.keys(v).sort().join('
 const text=(v:unknown,max:number,required=false):v is string=>typeof v==='string'&&v.trim()===v&&[...v].length<=max&&!/\p{Surrogate}/u.test(v)&&(!required||!!v);
 const identifier=(v:unknown,max=128):v is string=>text(v,max,true)&&!/[\u0000-\u001f\u007f]/u.test(v)&&!/[/?#\\]/u.test(v);
 function validProfile(v:unknown,slug:string):v is PublicShowroomProfile{
- if(!object(v)||!exact(v,'id name slug email phone website_url tagline description street_address_1 street_address_2 city region postal_code appointment_note delivery_note warranty_note service_note banner_alt_text accent_color')||!identifier(v.id)||v.slug!==slug||!text(v.name,200,true))return false;
+ if(!object(v)||!exact(v,'banner id name slug email phone website_url tagline description street_address_1 street_address_2 city region postal_code appointment_note delivery_note warranty_note service_note banner_alt_text accent_color')||!identifier(v.id)||v.slug!==slug||!text(v.name,200,true))return false;
  const bounds:Record<string,number>={id:128,name:200,slug:80,email:320,phone:32,website_url:2048,tagline:240,description:4000,street_address_1:200,street_address_2:200,city:100,region:64,postal_code:20,appointment_note:2000,delivery_note:2000,warranty_note:2000,service_note:2000,banner_alt_text:240,accent_color:7};
- for(const [key,value] of Object.entries(v))if(!text(value,bounds[key]!))return false;
+ for(const [key,value] of Object.entries(v))if(key!=='banner'&&!text(value,bounds[key]!))return false;
+ if(v.banner!==null){
+  const b=v.banner;
+  if(!object(b)||!exact(b,'id width height')||!identifier(b.id)||!Number.isSafeInteger(b.width)||!Number.isSafeInteger(b.height)||Number(b.width)<1||Number(b.height)<1||Number(b.width)>10000||Number(b.height)>10000||Number(b.width)*Number(b.height)>25000000)return false;
+ }
  // The API validates RFC mailbox syntax. Presentation validates a bounded single
  // recipient and URI-encodes it; it must not invent narrower email rules.
  if(!text(v.email,320,true)||!v.email.includes('@')||/[\u0000-\u001f\u007f<>]/u.test(v.email))return false;
@@ -49,6 +53,12 @@ export function createShowroomApiClient(baseURL:string){
    scope(slug,id);const result=await execute(()=>client.GET('/v1/showrooms/{slug}/pianos/{id}',{params:{path:{slug,id}},signal}));const body=result.data;
    if(!object(body)||!object(body.data)||!exact(body.data,'profile piano')||!validProfile(body.data.profile,slug)||!validPublicListing(body.data.piano,body.data.profile.id,id)||!['available','reserved','sold'].includes(body.data.piano.status))throw invalid();
    return {profile:body.data.profile,piano:body.data.piano};
+  },
+  async banner(slug:string,bannerID:string,signal?:AbortSignal):Promise<ArrayBuffer>{
+   scope(slug,bannerID);
+   const result=await execute(()=>client.GET('/v1/showrooms/{slug}/banner/{bannerID}',{params:{path:{slug,bannerID}},parseAs:'arrayBuffer',signal}));
+   if(!(result.data instanceof ArrayBuffer)||result.data.byteLength<4||result.data.byteLength>20*1024*1024||result.response.headers.get('content-type')?.split(';')[0]!=='image/jpeg')throw invalid();
+   const bytes=new Uint8Array(result.data);if(bytes[0]!==255||bytes[1]!==216||bytes.at(-2)!==255||bytes.at(-1)!==217)throw invalid();return result.data;
   },
   async photo(slug:string,id:string,photoID:string,signal?:AbortSignal):Promise<ArrayBuffer>{
    scope(slug,id);if(!identifier(photoID))throw new ShowroomClientError('invalid_query',0);

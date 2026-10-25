@@ -11,6 +11,8 @@ import (
 // domain service. Keep policy and product behavior in this package; adapters are
 // injected through these ports by the generated composition registry.
 type Dependencies struct {
+	Banners                 BannerRepository
+	BannerProcessor         ports.PhotoProcessor
 	Auth                    ports.Authenticator
 	Authorizer              ports.Authorizer
 	AuthorizationOutbox     ports.AuthorizationOutbox

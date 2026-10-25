@@ -9,12 +9,17 @@ import (
 	"testing"
 )
 
-func TestOnlyPhotoUploadReceivesLargerBodyBudget(t *testing.T) {
+func TestOnlyMediaUploadReceivesLargerBodyBudget(t *testing.T) {
 	for _, tc := range []struct {
 		method, path string
 		allow        bool
 	}{
 		{"POST", "/v1/dealers/shop/inventory/piano/photos", true},
+		{"POST", "/v1/dealers/shop/banner", true},
+		{"PUT", "/v1/dealers/shop/banner", false},
+		{"POST", "/v1/dealers//banner", false},
+		{"POST", "/v1/dealers/shop/banner/extra", false},
+		{"POST", "/v1/dealers/shop/not-banner", false},
 		{"PUT", "/v1/dealers/shop/inventory/piano/photos/order", false},
 		{"POST", "/v1/dealers/shop/inventory/piano", false},
 		{"POST", "/v1/dealers//inventory/piano/photos", false},

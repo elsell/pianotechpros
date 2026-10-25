@@ -3,9 +3,13 @@
  import type {Translator} from '@pianotechpros/i18n';
  export let profile:PublicShowroomProfile;
  export let i18n:Translator;
+ let bannerFailed=false;
+ $: bannerID=profile.banner?.id;
+ $: {bannerID;bannerFailed=false;}
 </script>
 <div class="showroom">
  <header><a class="identity" href={'/showrooms/'+encodeURIComponent(profile.slug)}>{profile.name}</a><a class="contact" href={'mailto:'+encodeURIComponent(profile.email)}>{i18n.t('showroom.email')}</a></header>
+ {#if profile.banner&&!bannerFailed}<div class="banner"><img src={'/showrooms/'+encodeURIComponent(profile.slug)+'/banner/'+encodeURIComponent(profile.banner.id)} alt={profile.banner_alt_text||i18n.t('showroom.banner',{name:profile.name})} width={profile.banner.width} height={profile.banner.height} on:error={()=>bannerFailed=true} /></div>{/if}
  <main><slot /></main>
  <footer>
   <div><h2>{profile.name}</h2>{#if profile.tagline}<p>{profile.tagline}</p>{/if}<address>{[profile.street_address_1,profile.street_address_2,profile.city,profile.region,profile.postal_code].filter(Boolean).join(', ')}</address>
@@ -15,5 +19,6 @@
  </footer>
 </div>
 <style>
+ .banner{max-width:1160px;margin:1.5rem auto 0;aspect-ratio:3/1;overflow:hidden;background:#e3e6dc}.banner img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}@media(max-width:650px){.banner{aspect-ratio:2/1;margin-top:1rem}}
  :global(body){margin:0;background:#f7f5ef;color:#242d28}.showroom{font-family:system-ui,sans-serif;line-height:1.6}header,main,footer{max-width:1160px;margin:auto;padding:1.5rem 2rem}header{display:flex;align-items:center;justify-content:space-between;gap:1rem;border-bottom:1px solid #d8ddd3}.identity{font:600 1.4rem Georgia,serif;text-decoration:none}.contact{font-size:.9rem}a{color:#245346}footer{margin-top:4rem;border-top:1px solid #d8ddd3;display:grid;grid-template-columns:1fr 1fr;gap:3rem;padding-top:3rem;padding-bottom:4rem}footer p{white-space:pre-line}address{font-style:normal;color:#58645a}nav{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1rem}.notes{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}h2,h3{font-family:Georgia,serif;margin-top:0}h3{font-size:1.1rem}:global(.showroom a:focus-visible),:global(.showroom button:focus-visible),:global(.showroom input:focus-visible),:global(.showroom select:focus-visible){outline:3px solid #ab6525;outline-offset:4px}@media(max-width:650px){header,main,footer{padding-left:1.2rem;padding-right:1.2rem}footer{grid-template-columns:1fr}.contact{max-width:8rem}.notes{gap:1rem}}
 </style>

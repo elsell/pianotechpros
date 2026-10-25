@@ -24,3 +24,5 @@ export {createInventoryVoiceApiClient,VoiceClientError,type VoiceErrorCode,type 
 export {createInventoryHistoryApiClient,type InventoryHistoryEntry,type InventoryHistoryPage} from './inventory-history';
 
 export * from "./inventory-scan";
+
+export {createDealerBannerApiClient,type DealerBannerState,type DealerBannerUpload} from "./dealer-banner";

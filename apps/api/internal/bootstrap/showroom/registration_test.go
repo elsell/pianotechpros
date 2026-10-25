@@ -258,3 +258,47 @@ func TestPublicSourceLimitIgnoresUntrustedForwardedHeader(t *testing.T) {
 		t.Fatal("untrusted header bypassed limiter")
 	}
 }
+
+func TestPublicBannerCurrentVisibilityAndSourceBudget(t *testing.T) {
+	repo := memory(t)
+	limiter := &budget{remaining: 3}
+	h, _ := httpserver.New(app.App{}, nil, httpserver.Options{Clock: clock{}, RequestRateLimiter: limiter, DomainRegistrations: []func(huma.API){func(api huma.API) { routes.Register(api, showroomapp.New(repo, nil)) }}})
+	request := func(path string, want int) {
+		t.Helper()
+		res := httptest.NewRecorder()
+		h.ServeHTTP(res, httptest.NewRequest("GET", path, nil))
+		if res.Code != want {
+			t.Fatalf("%s: %d want %d %s", path, res.Code, want, res.Body.String())
+		}
+		if want != 429 {
+			for key, value := range map[string]string{"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"} {
+				if res.Header().Get(key) != value {
+					t.Fatal("missing", key)
+				}
+			}
+		}
+		if want == 200 && !bytes.Equal(res.Body.Bytes(), repo.image.JPEG) {
+			t.Fatal("wrong public banner")
+		}
+	}
+	request("/v1/showrooms/piano-shop/banner/current", 200)
+	request("/v1/showrooms/piano-shop/banner/old", 404)
+	repo.profile.ShowroomPublished = false
+	request("/v1/showrooms/piano-shop/banner/current", 404)
+	before := repo.reads
+	request("/v1/showrooms/piano-shop/banner/current", 429)
+	if repo.reads != before {
+		t.Fatal("exhausted budget reached media")
+	}
+}
+
+func (m *publicMemory) ReadPublicBanner(_ context.Context, slug, id string) (ports.ProcessedPhoto, error) {
+	m.reads++
+	if _, err := m.showroom(slug); err != nil {
+		return ports.ProcessedPhoto{}, err
+	}
+	if id != "current" {
+		return ports.ProcessedPhoto{}, ports.ErrNotFound
+	}
+	return m.image, m.failure
+}

@@ -46,3 +46,7 @@ func (s *Service) ReadPublicListing(ctx context.Context, slug, id string) (Listi
 func (s *Service) ReadPublicPhoto(ctx context.Context, slug, id, photoID string) (ports.ProcessedPhoto, error) {
 	return read(ctx, s, "showroom.photo.viewed", func() (ports.ProcessedPhoto, error) { return s.repository.ReadPublicPhoto(ctx, slug, id, photoID) })
 }
+
+func (s *Service) ReadPublicBanner(ctx context.Context, slug, id string) (ports.ProcessedPhoto, error) {
+	return read(ctx, s, "showroom.banner.viewed", func() (ports.ProcessedPhoto, error) { return s.repository.ReadPublicBanner(ctx, slug, id) })
+}

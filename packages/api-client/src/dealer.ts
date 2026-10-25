@@ -11,8 +11,8 @@ export type DealerInvitation = Schema['StaffInvitationSummary'];
 export type DealerPage<T> = { items: T[]; nextCursor?: string };
 export type DealerErrorCode = Schema['APIError']['code'] | 'network' | 'protocol_error';
 
-const knownCodes = new Set<string>([
-  'invalid_invitation', 'bad_request', 'unauthenticated', 'invalid_credential',
+export const dealerErrorCodes = new Set<string>([
+  'invalid_photo', 'photo_limit_exceeded', 'invalid_invitation', 'bad_request', 'unauthenticated', 'invalid_credential',
   'forbidden', 'not_found', 'conflict', 'idempotency_conflict', 'validation_failed',
   'rate_limited', 'authorization_pending', 'authorization_dead_lettered',
   'authorization_policy_not_configured', 'unavailable', 'internal_error',
@@ -35,7 +35,7 @@ async function execute<T>(request: () => Promise<Result<T>>): Promise<Result<T>>
   if (!result.response.ok) {
     const error = result.error;
     const candidate = error && typeof error === 'object' && 'code' in error ? error.code : undefined;
-    const code = typeof candidate === 'string' && knownCodes.has(candidate) ? candidate as Schema['APIError']['code'] : 'protocol_error';
+    const code = typeof candidate === 'string' && dealerErrorCodes.has(candidate) ? candidate as Schema['APIError']['code'] : 'protocol_error';
     throw new DealerClientError(code, result.response.status);
   }
   return result;

@@ -744,3 +744,13 @@ localized discovery text backed by actual saved records. Require exact public
 URLs and price, exclude private sentinels, and verify private edits leave discovery
 unchanged. After explicit unpublishing, require the listing URL to disappear from
 the showroom sitemap and old canonical/alias URLs to return 404 without redirect.
+
+### iOS development-client launch ownership
+
+XCTest setup must open the development-client URL itself with
+`XCUIApplication.open(_:)` on a supported simulator. A shell `simctl openurl`
+before starting XCTest is insufficient: runner initialization can relaunch the
+app on the development launcher, discarding that URL. Preserve explicit process
+termination between create and restore journeys. Unsupported simulator versions
+must fail, never skip the interaction gate. The third hosted run reached the
+launcher but not Sign in; this is failed interaction evidence, not acceptance.

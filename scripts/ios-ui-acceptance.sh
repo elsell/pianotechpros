@@ -49,7 +49,6 @@ xcodebuild "${args[@]}" build-for-testing > "$evidence/build.log" 2>&1
 application="$(find build/ios-simulator/Build/Products/Debug-iphonesimulator -maxdepth 1 -name '*.app' ! -name '*Runner.app' -print -quit)"
 test -n "$application"
 xcrun simctl install "$simulator" "$application"
-open_app() { xcrun simctl openurl "$simulator" 'exp+pianotechpros://expo-development-client/?url=http%3A%2F%2Flocalhost%3A18081'; }
 run_journey() {
   local name="$1" method="$2" result=0
   xcodebuild "${args[@]}" test-without-building -parallel-testing-enabled NO "-only-testing:PianoInteractionTests/ProfileInteractionTests/$method" -resultBundlePath "$evidence/$name.xcresult" > "$evidence/$name.log" 2>&1 || result=$?
@@ -58,8 +57,6 @@ run_journey() {
   fi
   return "$result"
 }
-open_app
 run_journey create testCreateProfilesAndProtectPartialDraft
 xcrun simctl terminate "$simulator" com.pianotechpros.pianotechpros || true
-open_app
 run_journey restore testRestorePartialDraftAfterProcessRestart

@@ -4,7 +4,11 @@ final class ProfileInteractionTests: XCTestCase {
     let app = XCUIApplication(bundleIdentifier: "com.pianotechpros.pianotechpros")
     override func setUpWithError() throws {
         continueAfterFailure = false
-        app.activate()
+        if #available(iOS 16.4, *) {
+            app.open(URL(string: "exp+pianotechpros://expo-development-client/?url=http%3A%2F%2Flocalhost%3A18081")!)
+        } else {
+            XCTFail("The interaction gate requires iOS 16.4 or newer")
+        }
     }
     func button(_ name: String) -> XCUIElement { app.buttons[name].firstMatch }
     func reach(_ element: XCUIElement) {

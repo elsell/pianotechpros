@@ -90,3 +90,7 @@ retired owner. This registry holds resource handles, never transcript or audio.
 The native modal owns a SafeAreaProvider so its insets reflect its own window,
 not the underlying navigation screen. The Apply footer must remain completely
 above Android gesture navigation and iOS home-indicator areas.
+
+Switching between transcript entry and review resets the keyboard-avoidance layout.
+Review has no keyboard avoidance and must size its scroll area around the Apply
+footer, without carrying the transcript editor's measured height.

@@ -62,6 +62,12 @@ The editor coordinates photo/publication busy states and reports actual queue
 pauses. Native type/lifecycle checks and exports pass; fresh device interaction
 acceptance remains required, including recording, denial and background recovery.
 
+Native cold-reopen acceptance found an Expo sealed-data constructor mismatch:
+Android requires bytes even though the TypeScript API accepts a base64 string.
+The recovery adapter now decodes bounded canonical ciphertext without resetting
+existing keys or journals. The previously failing encrypted draft reopens after
+process restart; real AES-GCM round-trip tests and structural gates pass.
+
 The inventory domain now derives exact manual/voice sources for changed fields
 and a mixed history source when both occur in one revision. Unknown, duplicate,
 protected and unchanged-field labels fail closed; uniform commands retain their

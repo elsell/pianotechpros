@@ -278,3 +278,10 @@ for (const specifier of ['$app/env/private', '@sveltejs/kit/env']) {
   result = check({'apps/web/src/routes/+page.ts': `import * as env from '${specifier}'; export const value = env;`});
   assert.notEqual(result.status, 0, 'environment capabilities remain scoped to configuration');
 }
+
+result=check({'apps/mobile/src/inventory/recovery-bytes.ts':'const bytes=new Uint8Array(28);'});
+assert.equal(result.status,0,'reviewed ciphertext decoder may allocate bounded byte arrays');
+for(const source of ["fetch('/private');", "globalThis.fetch('/private');", "new WebSocket('wss://example.invalid');"]){
+ result=check({'apps/mobile/src/inventory/recovery-bytes.ts':source});
+ assert.notEqual(result.status,0,'ciphertext decoder must not bypass network policy');
+}

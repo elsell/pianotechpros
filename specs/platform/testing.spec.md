@@ -754,3 +754,13 @@ app on the development launcher, discarding that URL. Preserve explicit process
 termination between create and restore journeys. Unsupported simulator versions
 must fail, never skip the interaction gate. The third hosted run reached the
 launcher but not Sign in; this is failed interaction evidence, not acceptance.
+
+## Persisted photo management
+
+Use a separate real photo-first journey with a second uploaded photo, paced in
+its own audit window before the longer publication/editing journey. Verify cover
+selection, earlier/later ordering and description persistence through independent
+API reads. Open and dismiss preview with the keyboard and verify focus returns
+to its trigger. Cancel removal without changing stored photos, then confirm it
+and prove the removed private image is inaccessible while the retained photo
+remains readable. Do not replace HTTP responses or suppress revisions.

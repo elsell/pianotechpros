@@ -105,7 +105,8 @@ real-catalog acceptance or the whole website complete.
    robots, localized discovery and sitemap removal after unpublishing passed.
 4. Separate photo-management and complete publication journeys passed locally
    in Chromium, Firefox 151 and Linux WebKit 26.5 against isolated real services.
-   Photo-management recurring CI is pending in PR #75. The one-off Firefox/WebKit
+   Photo-management acceptance and both native builds passed run `40221559445`
+   at `e3c90f4a6283a3d90492f0be7cc1d84787f34435`; PR #75 merged. The one-off Firefox/WebKit
    checks are not Safari or native iOS acceptance. A local real-browser inventory
    check also passed stock/title/make/model search, featured ordering, exact
    30+1 pagination without duplicates and sold-filter exclusion using 31 synthetic

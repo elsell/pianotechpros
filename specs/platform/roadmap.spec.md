@@ -39,10 +39,16 @@ permissions and expired/revoked sessions. Dedicated schema names preserve custom
 composition. The shared typed client now snapshots commands, validates bounded
 profile/rule responses and preserves current sessions after retired-token failures.
 Real HTTP fixtures cover malformed replies, cancellation and credential rotation.
-Protected editors, web/native interfaces and their interaction acceptance remain
+The shared form model now preserves incomplete numeric/time/date input and
+stable weekly rules with confirmed removal and catalog validation. Protected
+editors, web/native interfaces and their interaction acceptance remain
 unfinished; neither technician parity item is complete.
 
-Customer profile parity (CU-01) is the active implementation slice. The legacy
+Customer profile implementation merged in PR #63 at
+`4431aaaad3810a6894bcbb66167d146559a3c378` after Android, iOS and acceptance passed.
+Verification reported only the reviewed node-forge advisory; its backport
+regressions passed on that exact commit. CU-01 remains incomplete pending the
+remaining interaction acceptance below. The legacy
 contract now specifies private personal/business details, stable locations and
 owned pianos, injected timezone validation and optimistic revisions. Domain tests
 cover validation, nested defensive copies, stale saves, no-ops and clock/revision

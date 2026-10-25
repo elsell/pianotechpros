@@ -59,12 +59,15 @@ ordering, immutable retries, edits during saves, explicit conflict choices and
 scope-loss suppression. Review corrected mailbox parity and observer-triggered
 reads after disposal. A separate API/user-bound recovery journal and workspace
 now validate checkpoints, authorize before restore, retain writes across navigation
-and share platform vault cleanup. Review identified required integration follow-ups:
-exclusive ownership across concurrent workspaces. Large aggregate recovery now
+and share platform vault cleanup. Exclusive API/user ownership now spans opening,
+editing, pending writes and denial cleanup. Web Locks enforce two-tab exclusion
+and recover after tab closure; the native runtime registry survives module reload.
+Failed protection retains ownership and failed deletion permits cleanup retry.
+Review corrected mutable opening scope by freezing one canonical identity.
+Large aggregate recovery now
 uses a shared 4 MiB vault/customer bound while inventory stays at 1 MiB; encrypted
 restart and actual browser reload tests preserve full pending checkpoints. Native
-codec tests cover large ciphertext and precise size rejection. Screens must not
-consume this foundation until exclusive ownership is implemented and tested.
+codec tests cover large ciphertext and precise size rejection.
 Protected recovery integration, web/native composition and
 interaction acceptance remain unfinished; this foundation is not CU-01 completion.
 Technician profile parity follows and remains required.

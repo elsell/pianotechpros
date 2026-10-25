@@ -522,3 +522,11 @@ proving runtime DELETE denial, immutable ownership/revision guards, corruption
 rejection, and rejection of previously committed audit proof. This exception
 allows testing database enforcement beneath the repository. Production customer
 persistence uses typed GORM operations; the exception does not cover product code.
+
+Customer editor ownership is confined to the exact hash-protected adapters
+`apps/web/src/lib/customer/ownership.ts` and
+`apps/mobile/src/customer/ownership.ts`. The web adapter holds a conditional
+exclusive Web Lock until its lease releases; the native adapter shares one
+registry across module reloads in the UI runtime. Neither grants network or
+storage capabilities to callers. Review and regenerate hashes when changing
+these files; do not broadly permit browser globals or runtime registries.

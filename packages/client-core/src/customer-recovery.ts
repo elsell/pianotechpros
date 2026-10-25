@@ -7,11 +7,15 @@ const ttl=7*24*60*60*1000,limit=protectedRecoveryMaxBytes;
 const unavailable=()=>new Error('customer_recovery_unavailable');
 const object=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v);
 const bounded=(v:string)=>v.length<=limit&&new TextEncoder().encode(v).length<=limit;
-export function createCustomerRecoveryJournal(port:{scope:CustomerRecoveryScope;storage:ProtectedCustomerDraftStorage;zones:ReadonlySet<string>;now():number;active?():boolean}){
+export function customerRecoveryIdentity(input:CustomerRecoveryScope):{scope:CustomerRecoveryScope;key:string}{
  let scope:CustomerRecoveryScope;
- try{const url=new URL(port.scope.apiBaseURL);if(!['http:','https:'].includes(url.protocol)||url.username||url.password||url.search||url.hash||port.scope.apiBaseURL.length>2048||!/^[A-Za-z0-9_-]{1,128}$/.test(port.scope.userID))throw unavailable();scope={userID:port.scope.userID,apiBaseURL:url.origin+url.pathname.replace(/\/+$/,'')};}catch{throw unavailable();}
+ try{const url=new URL(input.apiBaseURL);if(!['http:','https:'].includes(url.protocol)||url.username||url.password||url.search||url.hash||input.apiBaseURL.length>2048||!/^[A-Za-z0-9_-]{1,128}$/.test(input.userID))throw unavailable();scope={userID:input.userID,apiBaseURL:url.origin+url.pathname.replace(/\/+$/,'')};}catch{throw unavailable();}
  const key=JSON.stringify(['customer-profile-recovery',1,scope.apiBaseURL,scope.userID]);
  if(key.length>2048)throw unavailable();
+ return {scope:Object.freeze(scope),key};
+}
+export function createCustomerRecoveryJournal(port:{scope:CustomerRecoveryScope;storage:ProtectedCustomerDraftStorage;zones:ReadonlySet<string>;now():number;active?():boolean}){
+ const {scope,key}=customerRecoveryIdentity(port.scope);
  let closed=false;let tail:Promise<unknown>=Promise.resolve();
  const active=()=>!closed&&(port.active?.()??true);
  function queue<T>(work:()=>Promise<T>):Promise<T>{const next=tail.then(work);tail=next.catch(()=>{});return next;}
@@ -41,5 +45,6 @@ export function createCustomerRecoveryJournal(port:{scope:CustomerRecoveryScope;
   },
   async discard():Promise<void>{closed=true;return queue(async()=>{try{await port.storage.remove(key);}catch{throw unavailable();}});},
   close(){closed=true;},
+  async drain(){for(;;){const current=tail;await current;if(current===tail)return;}},
  });
 }

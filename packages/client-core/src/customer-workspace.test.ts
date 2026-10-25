@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {openCustomerWorkspace} from './customer-workspace.js';
+import {createCustomerOwnershipRegistry} from './customer-ownership.js';
 import {createCustomerRecoveryJournal} from './customer-recovery.js';
 import {emptyCustomerForm,customerFormFromAttributes,type CustomerWireAttributes} from './customer-form.js';
 const scope={userID:'user',apiBaseURL:'https://api.example.test'};
@@ -9,7 +10,7 @@ function fixture(){
  const values=new Map<string,string>(),events:string[]=[];let active=true,exists=true,denied=false;
  let value={id:'profile',revision:1,attributes:attrs()};
  const storage={async read(k:string){events.push('read');return values.get(k)??null;},async write(k:string,v:string){events.push('write');values.set(k,v);},async remove(k:string){events.push('remove');values.delete(k);}};
- const port={scope,now:()=>1000,active:()=>active,draft:emptyCustomerForm(),key:()=> 'stable-customer-key',storage:async()=>{events.push('storage');return storage;},isMissing:(e:unknown)=>e==='missing',classify:(e:unknown)=>e==='denied'?'denied' as const:'uncertain' as const,
+ const port={scope,ownership:createCustomerOwnershipRegistry(),now:()=>1000,active:()=>active,draft:emptyCustomerForm(),key:()=> 'stable-customer-key',storage:async()=>{events.push('storage');return storage;},isMissing:(e:unknown)=>e==='missing',classify:(e:unknown)=>e==='denied'?'denied' as const:'uncertain' as const,
  api:{get:async()=>{events.push('get');if(denied)throw 'denied';if(!exists)throw 'missing';return value;},timezones:async()=>{events.push('zones');return ['UTC'];},create:async(a:CustomerWireAttributes,key:string)=>{events.push('create:'+key);value={id:'profile',revision:1,attributes:a};exists=true;return value;},save:async(id:string,a:CustomerWireAttributes,revision:number)=>{events.push('save');if(denied)throw 'denied';value={id,revision:revision+1,attributes:a};return value;}}};
  return {port,storage,events,values,missing:()=>{exists=false;},deny:()=>{denied=true;},inactive:()=>{active=false;},server:(next:typeof value)=>{value=next;}};
 }
@@ -34,8 +35,40 @@ test('customer workspace stops after scope loss before any storage disclosure',a
 });
 
 test('failed customer protection keeps the draft open and newer queued writes delay close',async()=>{
- const f=fixture();const write=f.storage.write;f.storage.write=async()=>{throw Error('PRIVATE');};const w=(await openCustomerWorkspace(f.port))!;await w.editor.edit({...w.editor.snapshot()!.draft,name:'Retain'});assert.equal(await w.protect(),false);assert.equal(await w.close(),false);assert.equal(w.editor.snapshot()!.draft.name,'Retain');f.storage.write=write;await w.editor.edit(w.editor.snapshot()!.draft);assert.equal(await w.close(),true);
+ const f=fixture();const write=f.storage.write;f.storage.write=async()=>{throw Error('PRIVATE');};const w=(await openCustomerWorkspace(f.port))!;await w.editor.edit({...w.editor.snapshot()!.draft,name:'Retain'});assert.equal(await w.protect(),false);assert.equal(await w.close(),false);await assert.rejects(openCustomerWorkspace(f.port),e=>e instanceof Error&&e.message==='customer_workspace_busy');assert.equal(w.editor.snapshot()!.draft.name,'Retain');f.storage.write=write;await w.editor.edit(w.editor.snapshot()!.draft);assert.equal(await w.close(),true);
  const g=fixture();let first!:()=>void,second!:()=>void;const gates=[new Promise<void>(r=>{first=r;}),new Promise<void>(r=>{second=r;})];const original=g.storage.write;let writes=0;g.storage.write=async(k,v)=>{await gates[writes++];await original(k,v);};
  const v=(await openCustomerWorkspace(g.port))!;const edit1=v.editor.edit({...v.editor.snapshot()!.draft,name:'First'});await new Promise(r=>setImmediate(r));let protectedDraft=false;const protecting=v.protect().then(ok=>{protectedDraft=ok;});const edit2=v.editor.edit({...v.editor.snapshot()!.draft,name:'Second'});first();await new Promise(r=>setImmediate(r));assert.equal(protectedDraft,false);second();await Promise.all([edit1,edit2,protecting]);assert.equal(protectedDraft,true);
- const reopened=(await openCustomerWorkspace(g.port))!;assert.equal(reopened.editor.snapshot()!.draft.name,'Second');
+ await v.close();const reopened=(await openCustomerWorkspace(g.port))!;assert.equal(reopened.editor.snapshot()!.draft.name,'Second');
+});
+
+test('customer ownership rejects concurrent open and releases after failed opening',async()=>{
+ const f=fixture();const w=(await openCustomerWorkspace(f.port))!;f.events.length=0;
+ await assert.rejects(openCustomerWorkspace(f.port),e=>e instanceof Error&&e.message==='customer_workspace_busy');assert.deepEqual(f.events,[]);
+ await w.close();f.deny();await assert.rejects(openCustomerWorkspace(f.port));await assert.rejects(openCustomerWorkspace(f.port),e=>e instanceof Error&&e.message==='customer_workspace_access');
+});
+test('customer ownership remains held through delayed discard and retries failed cleanup',async()=>{
+ const f=fixture();const w=(await openCustomerWorkspace(f.port))!;await w.editor.edit({...w.editor.snapshot()!.draft,name:'Draft'});
+ const remove=f.storage.remove;let release!:()=>void;const gate=new Promise<void>(r=>{release=r;});let fail=true;f.storage.remove=async key=>{await gate;if(fail)throw Error('PRIVATE');await remove(key);};
+ f.deny();await w.editor.save();await assert.rejects(openCustomerWorkspace(f.port),e=>e instanceof Error&&e.message==='customer_workspace_busy');release();await assert.rejects(w.cleanup());
+ await assert.rejects(openCustomerWorkspace(f.port),e=>e instanceof Error&&e.message==='customer_workspace_busy');fail=false;await w.cleanup();assert.equal(f.values.size,0);
+ await assert.rejects(openCustomerWorkspace(f.port),e=>e instanceof Error&&e.message==='customer_workspace_access');
+});
+
+test('customer disposal holds ownership until in-flight storage drains',async()=>{
+ const f=fixture();let release!:()=>void;const gate=new Promise<void>(r=>{release=r;});const write=f.storage.write;
+ f.storage.write=async(k,v)=>{await gate;await write(k,v);};
+ const w=(await openCustomerWorkspace(f.port))!;const edit=w.editor.edit({...w.editor.snapshot()!.draft,name:'Protected'});
+ await new Promise(r=>setImmediate(r));w.dispose();
+ await assert.rejects(openCustomerWorkspace(f.port),e=>e instanceof Error&&e.message==='customer_workspace_busy');
+ release();await edit;await w.cleanup();const next=(await openCustomerWorkspace(f.port))!;assert.equal(next.editor.snapshot()!.draft.name,'Protected');await next.close();
+});
+
+test('customer opening snapshots ownership and journal scope before asynchronous callbacks',async()=>{
+ const f=fixture();f.port.scope={...scope};const initial={...f.port.scope};const storage=f.port.storage;
+ f.port.storage=async()=>{f.port.scope.userID='changed-user';return storage();};
+ const w=(await openCustomerWorkspace(f.port))!;await w.editor.edit({...w.editor.snapshot()!.draft,name:'Original owner'});
+ const original=createCustomerRecoveryJournal({scope:initial,storage:f.storage,zones:new Set(['UTC']),now:f.port.now});
+ assert.equal((await original.load()).checkpoint?.draft.name,'Original owner');
+ const changed=createCustomerRecoveryJournal({scope:f.port.scope,storage:f.storage,zones:new Set(['UTC']),now:f.port.now});assert.equal((await changed.load()).checkpoint,null);
+ await w.close();
 });

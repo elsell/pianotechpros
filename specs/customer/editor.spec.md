@@ -77,13 +77,12 @@ must honor a failed protection/close result rather than silently navigating.
 
 ## Required before UI integration
 
-The initial journal/workspace is not yet safe for concurrent consumers. Add an
-exclusive API/user-scoped lease spanning load, editing, pending writes and final
-cleanup, or an equivalent persisted CAS protocol. Two instances must not overwrite
+Every workspace requires an exclusive API/user-scoped lease spanning load,
+editing, pending writes and final cleanup. Two instances must not overwrite
 one another's pending creation command or delete a newer checkpoint during expiry
 or denial cleanup. Test concurrent tabs/workspaces and lease release after failed
-opening, denial, storage failure and close. Until this exists, screens must not
-consume the workspace; exported foundations alone do not establish recovery.
+opening, denial, storage failure and close. Screens must supply the platform ownership capability; exported foundations
+alone do not establish completed UI recovery.
 
 ### Aggregate capacity implementation
 
@@ -96,3 +95,25 @@ Native decoders validate decoded size as well as canonical base64 length, and
 web ciphertext limits include the authentication tag. Test encrypted restart with
 a valid large customer checkpoint, oversized Unicode rejection, and unchanged
 inventory bounds. Multi-workspace ownership remains required before UI use.
+
+### Exclusive workspace ownership implementation
+
+Opening requires an injected exclusive ownership capability keyed by the same
+canonical API/user identity as the journal. Acquire before API reads and hold
+through storage opening, editing and draining. A competing open fails with a
+machine-only busy reason. Failed opening and inactive scope release ownership;
+normal close retains ownership if protection fails. Disposal suppresses late
+responses, drains queued journal work, then releases. Denial deletes the journal
+before release; failed deletion holds ownership and cleanup can retry.
+
+Web uses an exclusive Web Lock with conditional acquisition, no stealing and no
+fallback to a tab-local lock. Release waits for the browser's released promise.
+Native uses an HMR-stable singleton registry in the app's single JS runtime; no
+headless/background or additional JS runtime may access customer recovery. Any
+future multi-runtime writer requires persisted cross-runtime arbitration first.
+Lease tokens are idempotent and an old release cannot release a newer owner.
+The small platform capability adapters are hash-protected by the structural gate.
+Test two workspaces sharing a vault, cleanup ordering, opening failures and an
+actual browser two-tab acquisition/release/closed-tab recovery sequence.
+Snapshot the canonical identity once before awaiting acquisition and use the same
+frozen scope for the journal; caller mutation must not redirect protected storage.

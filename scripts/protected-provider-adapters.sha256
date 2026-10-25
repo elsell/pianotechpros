@@ -4,3 +4,5 @@ fd9ceb4dbaa46a8fbf42ee431d1e62a42989afa81bc1db4361dc7a959ad7d58f  apps/mobile/sr
 bfff42d47060dc960d5a69893cc6f068d0403b2ea1f99a7cf381235b1a6f9074  apps/web/src/lib/browser-events.ts
 69d49a247c6b044d0642cd42f4939ed7d4016d16f585e72cc3440ef8bfb9b12e  apps/web/src/lib/inquiry/turnstile.ts
 54fe0cc490fc422c2fab8e3d1d99077192ce61a994aaa6aa898d5fb018cc5398  apps/web/src/lib/inventory/voice-recorder.ts
+ab5c36d3499d061dd199e9010fbdde05f8b1ead3e5523b90b00fc1984807eb35  apps/web/src/lib/customer/ownership.ts
+13dc3c854ebf24a43207e7f57c85b65eeee48872c83409954e361ba28707e7f4  apps/mobile/src/customer/ownership.ts

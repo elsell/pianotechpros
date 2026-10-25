@@ -104,3 +104,19 @@ a retired-token 401 cannot reject a rotated session. Expired credentials block
 dispatch. The workspace hook checks account, API and session expiry throughout
 its lifecycle, uses the protected vault, and maps failures to shared locale keys.
 Neither hook nor storage wiring proves native screen interaction acceptance.
+
+## Web editor presentation
+
+Expose the private editor at `/technician` from the authenticated home screen.
+Use an overview with contact, service area, work preferences and availability
+sections; edit one weekly rule at a time. Keep text-based local time/date inputs
+so incomplete values survive, with explicit format hints. Search timezone choices
+without losing the selected value. Show localized weekdays and choice labels.
+Validation opens the appropriate section and focuses its first invalid control.
+Removal uses a controlled dialog naming the weekday; denial closes the dialog
+and clears its private context. Navigation awaits protected writes.
+
+Conflict review lists differing fields, including selections and stable-key weekly
+rules, with separate current/yours values and explicit keep/use-latest actions.
+Never display raw JSON, internal rule keys or machine field codes. New/deleted
+rules have localized absent values. Group comparison rows by localized weekday.

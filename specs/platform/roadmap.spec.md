@@ -51,8 +51,12 @@ before opening another editor. Platform adapters now share encrypted vault/logou
 and presentation singletons, and web cross-tab locks. Native request/workspace
 hooks bind current account/API/session and normalize retired-token failures.
 Encrypted restart/sign-out, native module refresh and real two-tab lock journeys
-pass. Web/native interfaces and their interaction acceptance remain
-unfinished; neither technician parity item is complete.
+pass. The web editor now offers focused contact/origin/work/rule sections,
+localized field-level conflict comparisons and confirmed weekday removal. Its
+built-browser journey passes partial draft recovery, exact retries, validation
+focus, origin/rule independence, conflicts, competing tabs, token rotation,
+Spanish removal and denial cleanup/exit. Native UI and device interaction
+acceptance remain unfinished; neither technician parity item is complete.
 
 Customer profile implementation merged in PR #63 at
 `4431aaaad3810a6894bcbb66167d146559a3c378` after Android, iOS and acceptance passed.

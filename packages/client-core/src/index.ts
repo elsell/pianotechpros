@@ -279,3 +279,4 @@ export * from './technician-recovery';
 export * from './technician-workspace';
 export * from './technician-ownership';
 export * from './technician-presentation';
+export * from './technician-comparison';

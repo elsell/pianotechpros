@@ -576,3 +576,9 @@ recovery tests cover incomplete technician rules through restart, foreign
 API/user isolation and invalidation of old handles after sign-out. These do not
 replace mounted screen and device acceptance.
 The technician native ownership module-reload regression runs in `make check`.
+
+Technician persistence and policy/HTTP PostgreSQL integration tests run in the
+isolated acceptance database, with the typed SpiceDB runtime proxy. The built-web
+technician journey runs after the web build and covers creation, incomplete rule
+recovery, exact pending retry, independent origin/rule zones, conflict decisions,
+competing tabs, localized removal, rotated sessions and denial exit/cleanup.

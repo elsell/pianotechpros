@@ -41,7 +41,11 @@ serialized revision saves, completed local grant readiness, SpiceDB permissions
 and audited retries. The 598-name pinned IANA catalog supports regional names
 and legacy aliases. Real PostgreSQL/SpiceDB/runtime-proxy integration covers
 creation, reads, updates, no-ops, replay and revocation without regranting access.
-Product HTTP/bootstrap, API contracts, recoverable web/native editing and
+The product HTTP adapter now has explicit nested DTOs, owner-free responses,
+bounded strict inputs and no-store responses. Transport tests cover closed policy,
+injected ownership fields, body limits, revision errors and child mapping. The
+reviewed nickname requirement is reflected in its schema. Runtime bootstrap,
+real HTTP/session integration, generated contracts, recoverable web/native editing and
 interaction acceptance remain unfinished; this foundation is not CU-01 completion.
 Technician profile parity follows and remains required.
 

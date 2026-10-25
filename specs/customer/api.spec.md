@@ -48,3 +48,15 @@ create/read/save/no-op/replay, wrong scope, unavailable dependencies, cross-owne
 repository results, revoked/missing grants, pending delivery, missing outbox,
 audit failure, rate limiting, invalid input and stale revision. HTTP/session
 integration and real SpiceDB tests remain required before enabling product routes.
+
+## Wire contract
+
+POST accepts `{attributes: {...}}`; PUT accepts `{expectedRevision, attributes}`.
+Attributes and nested location/piano fields use camelCase. Optional text fields
+may be omitted and normalize to empty strings; manufacturedYear is nullable.
+Locations and pianos are required arrays (including an empty pianos array).
+Responses wrap `{id, revision, createdAt, updatedAt, attributes}` in `data`.
+Timezone responses wrap `{names: [...]}` in `data`. Revisions are positive safe
+integers. Stale writes return HTTP 409 with `conflict`, distinct from
+`idempotency_conflict`. Unknown properties at every nesting level are rejected.
+All four routes return Cache-Control: no-store and Referrer-Policy: no-referrer.

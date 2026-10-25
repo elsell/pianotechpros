@@ -43,11 +43,11 @@ const observed=async(predicate)=>{for(let i=0;i<100;i++){if(predicate())return;a
 try{
  for(let i=0;i<100;i++){if(web.exitCode!==null)throw Error(log);try{if((await fetch(webURL)).ok)break;}catch{}if(i===99)throw Error(log);await new Promise(r=>setTimeout(r,200));}
  browser=await chromium.launch({headless:true});const context=await browser.newContext();await context.addInitScript(()=>{if(!sessionStorage.getItem('pianotechpros_application_session'))sessionStorage.setItem('pianotechpros_application_session',JSON.stringify({token:'rotation-session-0',expiresAt:new Date(Date.now()+3600000).toISOString()}));});
- const page=await context.newPage();page.setDefaultTimeout(15000);await page.clock.install();await page.goto(webURL);
+ const page=await context.newPage();page.setDefaultTimeout(15000);await page.clock.install();await page.clock.pauseAt(new Date(Date.now()+1000));await page.goto(webURL);
  const button=name=>page.getByRole('button',{name,exact:true});
  const rotate=async number=>{const delay=await page.evaluate(()=>Date.parse(JSON.parse(sessionStorage.getItem('pianotechpros_application_session')).expiresAt)-Date.now()-300000+1000);assert.ok(delay>0);const ready=page.waitForResponse(response=>response.url().endsWith('/v1/me')&&response.request().headers().authorization==='Bearer rotation-session-'+number);await page.clock.fastForward(delay);await ready;await page.waitForFunction(token=>JSON.parse(sessionStorage.getItem('pianotechpros_application_session')).token===token,'rotation-session-'+number);};
  const open=async()=>{await button('Rotation Workshop').click();await button('Browse inventory').click();await button(record.attributes.title).click();await page.getByLabel('Display title',{exact:true}).waitFor();};
- await open();await page.getByLabel('Display title',{exact:true}).fill('First edit');await button('Save now').click();await observed(()=>!!releaseEdit);
+ await open();await page.getByLabel('Display title',{exact:true}).fill('First edit');await new Promise(resolve=>setTimeout(resolve,1000));assert.equal(edits.length,0,'Autosave dispatched before manual save');await button('Save now').click();await observed(()=>!!releaseEdit);
  await page.getByLabel('Display title',{exact:true}).fill('Newer draft');await rotate(1);releaseEdit();
  await page.getByText('The last save could not be confirmed. Check its status before continuing.',{exact:true}).waitFor();assert.equal(await page.getByLabel('Display title',{exact:true}).inputValue(),'Newer draft');
  await page.reload();await open();await page.getByText('Recovered changes are ready to review. Saving is paused until you continue.',{exact:true}).waitFor();assert.equal(await page.getByLabel('Display title',{exact:true}).inputValue(),'Newer draft');

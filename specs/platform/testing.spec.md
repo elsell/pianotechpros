@@ -582,3 +582,9 @@ isolated acceptance database, with the typed SpiceDB runtime proxy. The built-we
 technician journey runs after the web build and covers creation, incomplete rule
 recovery, exact pending retry, independent origin/rule zones, conflict decisions,
 competing tabs, localized removal, rotated sessions and denial exit/cleanup.
+
+The browser session-rotation journey owns virtual time: pause its installed clock
+before entering the editor and advance only at explicit rotation steps. A real
+scheduler delay before manual save must not allow autosave to dispatch the held
+request first. This keeps manual-save/rotation assertions deterministic without
+weakening autosave behavior or extending interaction timeouts.

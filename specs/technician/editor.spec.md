@@ -89,3 +89,18 @@ lifetime drains retired work before opening a successor. Pending creation retrie
 retain their original key even when the server committed before interruption.
 Platform adapters must share ownership and presentation instances across screens;
 web cross-tab arbitration and encrypted platform vault wiring remain required.
+
+## Platform integration
+
+Reuse each platform's existing per-account encrypted recovery vault and sign-out
+cleanup under the technician journal namespace. Web ownership holds a Web Locks
+exclusive conditional request until cleanup completes; unavailable locks fail
+closed. Native ownership and presentation lifetimes are runtime singletons that
+survive module refresh, with no background writer. The exact adapters are
+hash-protected by the client transport gate and confer no network capability.
+
+The native request hook captures the current opaque session for each request;
+a retired-token 401 cannot reject a rotated session. Expired credentials block
+dispatch. The workspace hook checks account, API and session expiry throughout
+its lifecycle, uses the protected vault, and maps failures to shared locale keys.
+Neither hook nor storage wiring proves native screen interaction acceptance.

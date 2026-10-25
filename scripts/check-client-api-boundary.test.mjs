@@ -7,6 +7,10 @@ import { spawnSync } from 'node:child_process';
 
 const checker = resolve('scripts/check-client-api-boundary.mjs');
 const protectedPaths = [
+  'apps/web/src/lib/technician/ownership.ts',
+  'apps/mobile/src/technician/ownership.ts',
+  'apps/mobile/src/technician/presentation.ts',
+
   'apps/web/src/lib/customer/ownership.ts',
   'apps/mobile/src/customer/ownership.ts',
   'apps/mobile/src/customer/presentation.ts',
@@ -309,7 +313,7 @@ assert.notEqual(result.status,0);
 result=check({'apps/mobile/src/inventory/scan-camera.tsx':"fetch('/unreviewed');"});
 assert.notEqual(result.status,0);
 
-for (const path of ["apps/web/src/lib/customer/ownership.ts", "apps/mobile/src/customer/ownership.ts", "apps/mobile/src/customer/presentation.ts"]) {
+for (const path of ["apps/web/src/lib/technician/ownership.ts","apps/mobile/src/technician/ownership.ts","apps/mobile/src/technician/presentation.ts","apps/web/src/lib/customer/ownership.ts", "apps/mobile/src/customer/ownership.ts", "apps/mobile/src/customer/presentation.ts"]) {
  const result=check({[path]:protectedBaseline[path]+"\nfetch('/bypass');\n"});
  assert.notEqual(result.status,0);assert.ok(result.stderr.includes(path));
 }

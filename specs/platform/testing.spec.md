@@ -564,3 +564,15 @@ private content. Typed API-client tests exercise delayed real HTTP failures for
 dealer, inventory, inquiry, voice and customer families; 403/404 and unrelated
 failures are not changed by rotation. These checks do not substitute for native
 device acceptance.
+
+Technician editor ownership and native presentation use the corresponding exact
+hash-protected `technician/ownership.ts` web/native adapters and native
+`technician/presentation.ts`. Their exceptions permit only reviewed Web Locks
+and runtime singleton access, never network transport. Tampering tests append
+unauthorized fetch to each adapter and must fail. The native singleton test
+re-evaluates the module, and the browser ownership journey exercises actual
+two-tab exclusion, independent identities and tab-close recovery. Encrypted
+recovery tests cover incomplete technician rules through restart, foreign
+API/user isolation and invalidation of old handles after sign-out. These do not
+replace mounted screen and device acceptance.
+The technician native ownership module-reload regression runs in `make check`.

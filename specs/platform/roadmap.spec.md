@@ -47,8 +47,11 @@ expires entries and serializes discard; full baselines are required while drafts
 may remain incomplete. The shared workspace now authorizes before draft restore,
 freezes canonical account/API scope and holds exclusive ownership until pending
 writes and denied cleanup finish. Presentation restarts retry retained cleanup
-before opening another editor. Platform singleton/cross-tab ownership and vault
-wiring, web/native interfaces and their interaction acceptance remain
+before opening another editor. Platform adapters now share encrypted vault/logout cleanup, native ownership
+and presentation singletons, and web cross-tab locks. Native request/workspace
+hooks bind current account/API/session and normalize retired-token failures.
+Encrypted restart/sign-out, native module refresh and real two-tab lock journeys
+pass. Web/native interfaces and their interaction acceptance remain
 unfinished; neither technician parity item is complete.
 
 Customer profile implementation merged in PR #63 at

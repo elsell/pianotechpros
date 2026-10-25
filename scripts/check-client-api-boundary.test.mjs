@@ -298,3 +298,10 @@ result=check({'apps/web/src/lib/cancellable-view.ts':'const request=new AbortCon
 assert.equal(result.status,0,'cancellation does not grant network transport');
 result=check({'apps/web/src/lib/cancellable-view.ts':"const request=new AbortController();fetch('/private',{signal:request.signal});"});
 assert.notEqual(result.status,0,'cancellation cannot bypass generated transport');
+
+result=check({'apps/mobile/src/inventory/scan-camera.tsx':"import {CameraView,useCameraPermissions} from 'expo-camera'; export {CameraView,useCameraPermissions};"});
+assert.equal(result.status,0,result.stderr);
+result=check({'apps/mobile/app/scan.tsx':"import {CameraView} from 'expo-camera'; export {CameraView};"});
+assert.notEqual(result.status,0);
+result=check({'apps/mobile/src/inventory/scan-camera.tsx':"fetch('/unreviewed');"});
+assert.notEqual(result.status,0);

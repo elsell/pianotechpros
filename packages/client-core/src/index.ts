@@ -230,3 +230,7 @@ export * from "./inventory-scan-label";
 export * from "./inventory-scan-view";
 
 export * from "./inventory-scan-continuation";
+
+export * from "./inventory-scan-entry";
+
+export * from "./inventory-scan-camera";

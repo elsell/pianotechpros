@@ -634,3 +634,14 @@ title/photo edits must leave the public snapshot unchanged until publication or
 unpublication is explicitly confirmed. Verify anonymous disappearance after
 unpublishing. This complements controlled failure tests without substituting for
 real speech-provider, accessibility or native-device acceptance.
+
+## Separate web server API addressing
+
+Server-rendered showroom, media and crawler routes use a validated private
+`PIANOTECHPROS_SERVER_API_URL` override, falling back to the configured browser API
+URL. Never serialize this override in layout data. Development Compose uses
+`http://api:8080` for server requests and keeps the browser-facing localhost URL.
+Production preserves the existing HTTPS/nonlocal endpoint constraints; credentials,
+queries, fragments and non-HTTP(S) URLs are rejected in every environment.
+Exercise the split address in composed browser acceptance and cover invalid
+configuration and production fallback in behavioral configuration tests.

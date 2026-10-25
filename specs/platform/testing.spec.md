@@ -106,6 +106,22 @@ Regression coverage resolves both legacy EAS and modern Expo glob consumers,
 preserves their matching behavior and verifies bounded nesting through the real
 patched package. Run the complete audit, age gate, web build/browser journey,
 repository/contract tests, Expo compatibility/Doctor and native build gates.
+The web runtime must use SvelteKit 3.0.1 and adapter-node 6.0.0 to remove
+GHSA-pfhg-q3qv-9q6r and GHSA-27mw-82g8-phjj. Pin compatible Svelte 5.57.2,
+TypeScript 6.0.3, svelte-check 4.7.6 and cookie 2.0.1 for SvelteKit;
+preserve cookie 0.7.2 only for legacy major-zero consumers; validate their dependency ages. Move
+configuration into the Vite plugin, preserving nonce CSP and server-only runtime
+configuration through declared private runtime environment inputs. Keep EAS
+tooling on its supported TypeScript 5.9.3 peer independently of the web compiler.
+Replace the implicit `$lib` alias with explicit `#lib` package
+imports, keeping the client boundary gate's source containment checks. Browser
+acceptance must preserve showroom SSR, filtering, gallery navigation, localized
+errors, and dealer inventory interactions. Production build and runtime security
+headers must pass. CSP may allow only the exact SHA-256 style attributes of
+the static display-contents wrapper and SvelteKit screen-reader announcer, using
+`style-src-attr` hashes; arbitrary inline styles and scripts remain forbidden.
+Browser checks must verify the announcer remains visually hidden. Do not weaken audit gates to accommodate the migration.
+
 The Metro image metadata parser must use image-size 2.0.3 (released 2026-09-14)
 to remediate GHSA-5p2g-fcmc-qvqq and GHSA-w3rx-r6r6-pgpr. Verify the actual
 Metro asset-size boundary still reads valid PNG/JPEG dimensions. Malformed ICNS,

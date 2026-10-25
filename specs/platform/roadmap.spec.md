@@ -2,6 +2,25 @@
 
 ## Current milestone: feature-complete product
 
+The web upgrade to SvelteKit 3.0.1/adapter-node 6.0.0 removes the two remaining
+SvelteKit advisories. Compatible Svelte, web TypeScript and checker pins pass the
+age gate; EAS retains its supported TypeScript 5 peer. Explicit package aliases
+preserve import containment, and declared private runtime environment inputs
+still use shared configuration validation. Cookie overrides preserve major
+versions. Production CSP permits only exact hashes for the static wrapper and
+screen-reader announcer styles, with nonce-protected scripts unchanged.
+Full repository/contract/age checks, Expo compatibility/Doctor (19/19), review,
+production showroom browser acceptance, real Dex PKCE/restoration/sign-out and
+dealer capture/photo/edit/publication/staff journeys pass. CI now also exercises
+the built Node adapter showroom. The npm audit reports one high node-forge
+finding; it and the recorded compiler-image findings remain unresolved release
+blockers. Hosted validation for this change remains pending.
+
+PR #15 merged as ee7f9ada after Android/iOS native builds and real-service
+acceptance passed. PR #16 contains the URI/Zod follow-ups; native builds remain
+pending and its verification failure is the three dependency advisories at that
+commit. Neither change modifies legacy deployment or GitOps.
+
 fast-uri 3.1.9 fixes four URI normalization advisories in the actual EAS/AJV
 consumer. Regression coverage rejects encoded schemes and ambiguous authorities,
 preserves relative-reference meaning, prevents suffix serialization from creating
@@ -9,7 +28,7 @@ active schemes, and verifies legitimate AJV references. Full repository/contract
 checks, dependency-age validation, both mobile exports, clean native prebuild,
 Expo compatibility/Doctor (19/19), and required review pass. The exact security
 release has a documented dependency-age exception. Hosted native validation is
-still required. The current npm audit reports three findings: node-forge (high)
+still required. The npm audit at that change reported three findings: node-forge (high)
 and two SvelteKit findings (low); security release gates remain failing.
 
 Zod 4.6.6 now covers all Expo CLI, EAS CLI and EAS build-job consumers.

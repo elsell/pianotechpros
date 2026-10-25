@@ -1,7 +1,7 @@
 <script lang="ts">
  import {onMount} from 'svelte';
  import {createTranslator,type MessageKey} from '@pianotechpros/i18n';
- import ShowroomFrame from '$lib/showroom/ShowroomFrame.svelte';
+ import ShowroomFrame from '#lib/showroom/ShowroomFrame.svelte';
  import type {PageData} from './$types';
  export let data:PageData;
  let selected=0;

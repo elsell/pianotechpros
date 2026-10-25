@@ -1,6 +1,6 @@
-import type { Handle } from '@sveltejs/kit';
+import type { Handle } from '@sveltejs/kit/hooks';
 import { selectLocale } from '@pianotechpros/i18n';
-import { webConfig } from '$lib/server/config';
+import { webConfig } from '#lib/server/config.js';
 
 export const handle: Handle = async ({ event, resolve }) => {
   const { apiURL, oidcIssuer } = webConfig;

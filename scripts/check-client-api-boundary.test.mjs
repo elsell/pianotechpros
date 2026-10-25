@@ -76,9 +76,9 @@ const bypasses = {
   'apps/mobile/src/same-dir.mjs': "export const send = (url) => fetch(url);",
   'apps/mobile/src/import-cjs.ts': "import { send } from './transport.cjs'; send('/v1/me');",
   'apps/mobile/src/transport.cjs': "exports.send = (url) => fetch(url);",
-  'apps/web/src/lib/alias-cts.ts': "import { send } from '$lib/transport.cts'; send('/v1/me');",
+  'apps/web/src/lib/alias-cts.ts': "import { send } from '#lib/transport.cts'; send('/v1/me');",
   'apps/web/src/lib/transport.cts': "export const send = (url) => fetch(url);",
-  'apps/web/src/lib/missing-alias.ts': "import { send } from '$lib/missing'; send('/v1/me');",
+  'apps/web/src/lib/missing-alias.ts': "import { send } from '#lib/missing'; send('/v1/me');",
 };
 let result = check(bypasses);
 assert.notEqual(result.status, 0, result.stderr);
@@ -251,4 +251,27 @@ assert.equal(result.status, 0, result.stderr);
 for (const source of ["fetch('/private');", "new WebSocket('wss://example.invalid');", "globalThis.fetch('/private');"]) {
   result = check({'apps/web/src/routes/showrooms/+server.ts': source});
   assert.notEqual(result.status, 0, 'response construction does not authorize network transport');
+}
+
+result = check({
+  'apps/web/src/routes/+page.ts': "import { title } from '#lib/title.js'; export { title };",
+  'apps/web/src/lib/title.ts': "export const title = 'fixture';",
+});
+assert.equal(result.status, 0, result.stderr);
+for (const specifier of ['#lib/missing.js', '#lib/../../shared/outside.js']) {
+  result = check({
+    'apps/web/src/routes/+page.ts': `import { title } from '${specifier}'; export { title };`,
+    'apps/shared/outside.ts': "export const title = 'fixture';",
+  });
+  assert.notEqual(result.status, 0, 'package aliases must resolve inside approved web source');
+}
+
+result = check({
+  'apps/web/src/env.ts': "import { defineEnvVars } from '@sveltejs/kit/env'; export const variables = defineEnvVars({VALUE: {}});",
+  'apps/web/src/lib/server/config.ts': "import * as env from '$app/env/private'; export const configured = env.VALUE;",
+});
+assert.equal(result.status, 0, result.stderr);
+for (const specifier of ['$app/env/private', '@sveltejs/kit/env']) {
+  result = check({'apps/web/src/routes/+page.ts': `import * as env from '${specifier}'; export const value = env;`});
+  assert.notEqual(result.status, 0, 'environment capabilities remain scoped to configuration');
 }

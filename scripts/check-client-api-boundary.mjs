@@ -17,7 +17,7 @@ const runtimeSourceSubstitutions = new Map([
 const approvedSourceRoots = sourceRoots.map((sourceRoot) => path.join(root, sourceRoot));
 const webLibRoot = path.join(root, 'apps/web/src/lib');
 const approvedExternalImports = new Set([
-  '@sveltejs/kit', '$app/state', 'expo-auth-session', 'expo-constants', 'expo-crypto',
+  '@sveltejs/kit', '@sveltejs/kit/hooks', '$app/state', 'expo-auth-session', 'expo-constants', 'expo-crypto',
   'expo-localization', 'expo-router', 'expo-secure-store', 'expo-web-browser',
   'node:assert/strict', 'node:test', 'oidc-client-ts', 'react', 'react-native',
   'svelte', 'react-native-safe-area-context', '@react-navigation/native',
@@ -248,10 +248,11 @@ function resolveRelativeImport(importer, specifier) {
 }
 
 function importAllowed(specifier, relative, file) {
-  if (specifier === '$env/dynamic/private') return relative === 'apps/web/src/lib/server/config.ts';
-  if (specifier === '$lib' || specifier.startsWith('$lib/')) {
+  if (specifier === '@sveltejs/kit/env') return relative === 'apps/web/src/env.ts';
+  if (specifier === '$app/env/private') return relative === 'apps/web/src/lib/server/config.ts';
+  if (specifier === '#lib' || specifier.startsWith('#lib/')) {
     if (!relative.startsWith('apps/web/src/')) return false;
-    const suffix = specifier === '$lib' ? '' : specifier.slice('$lib/'.length);
+    const suffix = specifier === '#lib' ? '' : specifier.slice('#lib/'.length);
     const imported = resolveImportBase(path.join(webLibRoot, suffix));
     return Boolean(imported && belowRoot(imported, webLibRoot));
   }

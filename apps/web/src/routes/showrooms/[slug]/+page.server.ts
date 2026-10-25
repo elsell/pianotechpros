@@ -2,8 +2,8 @@ import {error} from '@sveltejs/kit';
 import {createShowroomApiClient} from '@pianotechpros/api-client';
 import {showroomFilters,type ShowroomFilterFields} from '@pianotechpros/client-core';
 import {createTranslator} from '@pianotechpros/i18n';
-import {webConfig} from '$lib/server/config';
-import {publicFailure} from '$lib/showroom/server';
+import {webConfig} from '#lib/server/config.js';
+import {publicFailure} from '#lib/showroom/server.js';
 import type {PageServerLoad} from './$types';
 
 export const load:PageServerLoad=async({params,url,locals,setHeaders,request})=>{

@@ -271,3 +271,7 @@ export {customerComparison,type CustomerComparison} from './customer-comparison'
 export {createCustomerPresentationLifetime} from './customer-presentation';
 
 export * from './technician-form';
+
+export * from './technician-editor';
+
+export * from './technician-recovery';

@@ -40,8 +40,12 @@ composition. The shared typed client now snapshots commands, validates bounded
 profile/rule responses and preserves current sessions after retired-token failures.
 Real HTTP fixtures cover malformed replies, cancellation and credential rotation.
 The shared form model now preserves incomplete numeric/time/date input and
-stable weekly rules with confirmed removal and catalog validation. Protected
-editors, web/native interfaces and their interaction acceptance remain
+stable weekly rules with confirmed removal and catalog validation. The shared
+controller now durably snapshots exact retries, preserves newer edits and requires
+explicit conflict review. Its API/user-bound journal validates checkpoints,
+expires entries and serializes discard; full baselines are required while drafts
+may remain incomplete. Exclusive workspace/platform-vault integration, web/native
+interfaces and their interaction acceptance remain
 unfinished; neither technician parity item is complete.
 
 Customer profile implementation merged in PR #63 at

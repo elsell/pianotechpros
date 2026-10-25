@@ -25,9 +25,51 @@ confirmation names the affected weekday and clears on loss of private scope.
 Form-shape recovery validates exact fields and bounded strings/arrays while
 allowing incomplete input; invalid draft values must not be silently discarded.
 
-The forthcoming controller and protected journal must durably snapshot commands
+The controller and protected journal must durably snapshot commands
 before dispatch, preserve newer edits across exact uncertain retries, enforce
 revision conflict review and exclusive API/user ownership, and hide/clear private
 state on denial. Native and web adapters own validation focus, platform dialogs,
 localized presentation and keyboard/Back behavior. Form tests alone do not prove
 protected recovery or native interaction acceptance.
+
+## Controller checkpoint and conflict contract
+
+A stored baseline must pass full form validation; only the draft may retain
+incomplete values. A versioned checkpoint contains baseline, incomplete draft, immutable pending
+create/save command and conflict state. Create uses an injected idempotency key;
+save captures profile identity and expected revision. Persist the checkpoint
+before dispatch; failure leaves edits available and prevents the request.
+Serialize writes so a late checkpoint cannot overwrite newer edits. An uncertain
+result retains exactly the original command across retries and restoration, even
+when local weekly rules or contact fields have since changed.
+
+Accept only valid, same-resource save responses at the submitted revision or its
+immediate successor. A malformed or mismatched response stays uncertain. On
+success, advance baseline and retain newer edits. A definitive rejection clears
+pending state; a conflict retains draft and requires fetching current state plus
+an explicit keep-edits/use-latest choice. Never accept a regressing reviewed
+revision or silently overwrite remote changes. Restored baselines must match the
+currently authorized profile; older server reads cannot roll them backward.
+
+An injected active-scope predicate hides snapshots and suppresses late replies.
+Recheck scope after observer callbacks before reads/writes. Denial closes private
+presentation; owning workspace cleanup remains mandatory before releasing its
+lease. Copies isolate snapshots and ports from mutable form arrays/rules. Tests
+must cover delayed replies, interrupted exact retries with newer weekly edits,
+storage failure, conflict choices, corrupt checkpoints and scope loss.
+
+## Protected journal
+
+Use a dedicated versioned technician namespace bound to canonical API origin/path
+and immutable user ID. Inject the platform's per-user encrypted storage; never
+substitute inventory or customer resource identities. Validate exact envelopes,
+checkpoint state and API/user binding, bound serialized UTF-8 to the shared
+4 MiB protected-storage limit, and expire after seven days with an injected clock.
+Remove invalid/expired entries and return only a machine recovery notice. Errors
+must not expose stored text, keys, tokens or underlying storage causes.
+
+Serialize storage operations. Capture a defensive checkpoint before asynchronous
+writes; disposal blocks queued writes, discard waits for already-active writes
+and then removes the entry. Reads completed after scope loss reveal nothing.
+Actual platform-vault wiring, authorization-before-restore and exclusive lease
+ownership remain workspace integration requirements, not journal assumptions.

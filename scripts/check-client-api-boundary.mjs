@@ -53,6 +53,7 @@ const browserGlobalReferences = new Set([
 ]);
 const windowProxyMembers = new Set(['contentWindow', 'defaultView', 'view']);
 const protectedProviderAdapters = new Set([
+  'apps/web/src/lib/inquiry/turnstile.ts',
   'apps/web/src/lib/browser-events.ts',
   'apps/mobile/src/provider-auth.ts',
   'apps/mobile/src/provider-auth-state.ts',
@@ -269,7 +270,7 @@ function importAllowed(specifier, relative, file) {
 }
 
 function inspectSource(relative, file, source, index) {
-  if (relative === 'apps/web/src/lib/browser-events.ts') return false;
+  if (relative === 'apps/web/src/lib/browser-events.ts' || relative === 'apps/web/src/lib/inquiry/turnstile.ts') return false;
 
   const kind = relative.endsWith('.tsx') || relative.endsWith('.jsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
   const scriptName = relative.endsWith('.svelte') ? `${relative}.script-${index}.ts` : relative;

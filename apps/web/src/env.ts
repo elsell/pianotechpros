@@ -4,6 +4,8 @@ import { defineEnvVars } from '@sveltejs/kit/env';
 const optional = { schema: (value: string | undefined) => value };
 export const variables = defineEnvVars({
   PIANOTECHPROS_APP_ENV: optional,
+  PIANOTECHPROS_INQUIRY_CHALLENGE_POLICY: optional,
+  PIANOTECHPROS_TURNSTILE_SITE_KEY: optional,
   PIANOTECHPROS_API_URL: optional,
   PIANOTECHPROS_OIDC_ISSUER: optional,
   PIANOTECHPROS_WEB_OIDC_CLIENT_ID: optional,

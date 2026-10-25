@@ -160,3 +160,18 @@ serializes submission, retains contact fields after failure, consumes challenge
 tokens per attempt, and clears contact data only after confirmed success or
 disposal. Navigation/disposal aborts pending transport and ignores late results;
 aborting is not represented as proof that the server did not receive a message.
+
+The web runtime exposes only challenge policy and the public Turnstile site key.
+`PIANOTECHPROS_TURNSTILE_SITE_KEY` is required with enabled policy; absent policy
+keeps the form unavailable, and partial/unknown configuration fails startup.
+Disabled policy is an explicit operator choice, never inferred from missing keys.
+The enabled widget loads Cloudflare's official explicit-render script directly,
+with only its HTTPS origin permitted for scripts and frames. This provider-owned
+runtime script is a reviewed exception to immutable asset pinning: proxying or
+caching it is unsupported by the provider. No contact fields are passed to it.
+Tokens are cleared after each submission attempt and on widget expiry/failure.
+Provider load failure leaves submission disabled and offers a localized retry.
+The form provides a live delivery status and warns that a network failure may
+have occurred after receipt, so retry is always a deliberate buyer action.
+The integration follows the [explicit rendering guide](https://developers.cloudflare.com/turnstile/get-started/client-side-rendering/)
+and [provider CSP guidance](https://developers.cloudflare.com/turnstile/reference/content-security-policy/).

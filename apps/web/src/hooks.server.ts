@@ -1,6 +1,6 @@
 import type { Handle } from '@sveltejs/kit/hooks';
 import { selectLocale } from '@pianotechpros/i18n';
-import { webConfig } from '#lib/server/config.js';
+import { webConfig, inquiryConfig } from '#lib/server/config.js';
 
 export const handle: Handle = async ({ event, resolve }) => {
   const { apiURL, oidcIssuer } = webConfig;
@@ -28,10 +28,12 @@ export const handle: Handle = async ({ event, resolve }) => {
   const connectOrigins = new Set<string>(["'self'"]);
   for (const configured of [apiURL, oidcIssuer]) connectOrigins.add(new URL(configured).origin);
   const generatedCSP = response.headers.get('Content-Security-Policy');
-  response.headers.set(
-    'Content-Security-Policy',
-    generatedCSP?.replace(/connect-src [^;]+/, ['connect-src', ...connectOrigins].join(' ')) ?? "default-src 'none'"
-  );
+  let csp = generatedCSP?.replace(/connect-src [^;]+/, ['connect-src', ...connectOrigins].join(' ')) ?? "default-src 'none'";
+  if (generatedCSP && inquiryConfig.policy === 'enabled') {
+    csp = csp.replace(/script-src ([^;]+)/, 'script-src $1 https://challenges.cloudflare.com');
+    csp += '; frame-src https://challenges.cloudflare.com';
+  }
+  response.headers.set('Content-Security-Policy', csp);
   response.headers.set('Referrer-Policy', 'no-referrer');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('X-Frame-Options', 'DENY');

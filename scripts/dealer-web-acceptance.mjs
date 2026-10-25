@@ -19,6 +19,7 @@ let inventoryMode = 'normal';
 let editorMode = 'normal';
 const captureIntents = new Map();const capturedRecords = new Map();let captureCreates = 0;let loseCapture = true;
 let editorWrites = 0;let editorVoiceFields=[];
+let historyMode='normal';let historyReads=0;
 let voiceMode='normal';let voiceCalls=0;let audioCalls=0;
 let inquiryDenied=false;let inquiryWrites=0;let inquiryRead=false;
 const inquiryPiano={id:'concert',dealer_id:'created-shop',publication_revision:2,status:'available',stock_number:'PT-1',title:'Historical grand',featured:false,form:'grand',player_system:false,condition:'used',make:'',model:'',manufactured:null,size:'',finish:'',description:'Published description',price:null,photos:[{id:'photo',alt_text:''}]};
@@ -51,6 +52,13 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   const chunks=[];for await(const chunk of req)chunks.push(chunk);const rawBytes=Buffer.concat(chunks);const raw=rawBytes.toString();
   const body=rawBytes.length&&req.headers['content-type']?.includes('application/json')?JSON.parse(rawBytes.toString()):{};
+  if(url.pathname.endsWith('/history')){
+    historyReads++;
+    if(historyMode==='denied')return send(404,{code:'not_found'});
+    if(historyMode==='failure')return send(503,{code:'unavailable'});
+    const older=url.searchParams.has('cursor');
+    return send(200,{data:[older?{revision:1,actor_id:'test-owner',kind:'created',source:'manual',fields:[],field_sources:null,occurred_at:'2026-10-25T00:00:00Z'}:{revision:2,actor_id:'test-owner',kind:'attributes',source:'voice',fields:['make'],field_sources:{make:'voice'},occurred_at:'2026-10-25T00:01:00Z'}],meta:older?{}:{nextCursor:'history-older'}});
+  }
   if(url.pathname.endsWith('/voice/transcribe')){
     audioCalls++;assert.ok(rawBytes.length>0&&rawBytes.length<=6*1024*1024);assert.match(req.headers['content-type'],/^audio\//);
     if(Number(url.searchParams.get('expectedRevision'))!==editorRecord.revision)return send(409,{code:'conflict'});
@@ -287,6 +295,25 @@ try {
   await page.getByText('No se pudo cargar el inventario. Inténtalo de nuevo.', { exact: true }).waitFor({ state: 'detached' });
   await page.getByRole('button', { name: 'Concert Grand', exact: true }).click();
   await page.getByLabel('Marca', { exact: true }).waitFor();
+  await page.locator('#year').fill('19x');
+  await page.getByRole('button',{name:'Ver historial',exact:true}).click();
+  const historyPanel=page.locator('section.history');
+  await historyPanel.getByText('Marca — Sugerencia de voz',{exact:true}).waitFor();
+  historyMode='failure';await historyPanel.getByRole('button',{name:'Cambios anteriores',exact:true}).click();
+  await historyPanel.getByText('No se pudo cargar el historial. Inténtalo de nuevo.',{exact:true}).waitFor();
+  assert.equal(await historyPanel.getByText('Marca — Sugerencia de voz',{exact:true}).count(),1);
+  historyMode='normal';await historyPanel.getByRole('button',{name:'Intentar de nuevo',exact:true}).click();
+  await historyPanel.getByText('Borrador creado',{exact:true}).waitFor();
+  assert.equal(await historyPanel.getByText('Detalles actualizados',{exact:true}).count(),0);
+  await historyPanel.getByRole('button',{name:'Historial más reciente',exact:true}).click();
+  await historyPanel.getByText('Marca — Sugerencia de voz',{exact:true}).waitFor();
+  await historyPanel.screenshot({path:'/tmp/piano-history-web-spanish.png'});
+  historyMode='denied';await historyPanel.getByRole('button',{name:'Historial más reciente',exact:true}).click();
+  await historyPanel.getByText('Marca — Sugerencia de voz',{exact:true}).waitFor({state:'detached'});
+  await historyPanel.getByRole('button',{name:'Cerrar historial',exact:true}).click();
+  assert.equal(await page.locator('#year').inputValue(),'19x');
+  assert.equal(await page.getByRole('button',{name:'Ver historial',exact:true}).evaluate(element=>element===document.activeElement),true);
+  assert.equal(historyReads,5);historyMode='normal';await page.locator('#year').fill('');
   const voicePanel=page.getByRole('region',{name:'Notas de voz'});
   await voicePanel.getByLabel('Transcripción',{exact:true}).fill('Steinway Model B');
   const beforeVoice=editorWrites;

@@ -32,3 +32,13 @@ test('currency review preserves exact safe minor units and currency precision',(
  assert.equal(en.money(1200,'JPY'),'¥1,200');assert.equal(en.money(0,'USD'),'$0.00');
  for(const amount of [-1,NaN,9007199254740992])assert.throws(()=>en.money(amount,'USD'));
 });
+
+test('history copy interpolates revisions and origins in each supported locale',()=>{
+ for(const locale of ['en','es']){
+  const i18n=createTranslator([locale]);
+  assert.ok(i18n.t('history.revision',{number:'17'}).includes('17'));
+  const origin=i18n.t('history.fieldOrigin',{field:'Steinway',origin:'voice'});
+  assert.ok(origin.includes('Steinway')&&origin.includes('voice'));
+  assert.ok(!/[{}]/.test(origin));
+ }
+});

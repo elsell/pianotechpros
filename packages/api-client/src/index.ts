@@ -21,3 +21,4 @@ export { createInventoryPhotoApiClient, type InventoryPhoto, type InventoryPhoto
 export { createInventoryPublicationApiClient, InventoryPublicationError, type InventoryPublicationState, type PublicationReadinessField } from './inventory-publication';
 export {createPublicInquiryApiClient,createInquiryInboxApiClient,InquiryClientError,type InquiryErrorCode,type InquirySubmission,type BuyerContact,type InboxInquiry,type InquiryPage} from './inquiry';
 export {createInventoryVoiceApiClient,VoiceClientError,type VoiceErrorCode,type VoiceProposal,type VoiceTranscript} from './inventory-voice';
+export {createInventoryHistoryApiClient,type InventoryHistoryEntry,type InventoryHistoryPage} from './inventory-history';

@@ -62,3 +62,4 @@ export function createTranslator(candidates: readonly (string | null | undefined
     date: (value, options) => new Intl.DateTimeFormat(locale, options).format(value)
   };
 }
+export {inventoryHistoryFieldKey} from './inventory-history';

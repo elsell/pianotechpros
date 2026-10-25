@@ -14,6 +14,7 @@ import {claimMobileInventoryCapture,claimMobileInventoryPhotos} from '../../src/
 import {openMobileInventoryRecovery} from '../../src/inventory/recovery-storage';
 import {InventoryPublication} from '../../src/inventory/InventoryPublication';
 import {InventoryPhotos} from '../../src/inventory/InventoryPhotos';
+import {InventoryHistory} from '../../src/inventory/InventoryHistory';
 import {InventoryVoice} from '../../src/inventory/InventoryVoice';
 import {mobilePhotoDigest} from '../../src/inventory/photo-media';
 type Choice='form'|'condition'|'asking_currency'|'cost_currency';
@@ -37,6 +38,7 @@ function Editor({userID,dealerID,recordID:routeRecordID}:{userID:string;dealerID
   return()=>{active=false;unsubscribe();current?.dispose();if(workspace.current===current)workspace.current=null;};
  },[userID,dealerID,recordID,request,attempt]);
  usePreventRemove(publicationBusy||photoBusy||voiceBusy||!!state&&!state.denied&&state.recovery!=='ready',({data})=>{if(publicationBusy||photoBusy||voiceBusy)return;void (async()=>{if(await workspace.current?.flush())navigation.dispatch(data.action);})();});
+ const historyKey=[userID,dealerID,workspace.current?.recordID()].join(':');
  const draft=state?.draft;const errors=draft?inventoryFormErrors(draft).filter(field=>state?.baseline||field!=='stock_number'):[];
  const label=(field:InventoryFormField)=>i18n.t(`inventory.field.${field}` as MessageKey);
  function change(field:InventoryFormField,value:string|boolean){const latest=workspace.current?.snapshot().draft;if(latest)workspace.current?.change({...latest,[field]:value});}
@@ -64,6 +66,7 @@ function Editor({userID,dealerID,recordID:routeRecordID}:{userID:string;dealerID
  {state.conflict||state.uncertain?<Button title={i18n.t('inventory.edit.review')} color={theme.accent} disabled={state.busy} onPress={()=>{void workspace.current?.recover();}} />:null}
  {state.latest?<View style={{gap:16}}>{(Object.keys(draft) as (keyof InventoryForm)[]).filter((key):key is InventoryFormField=>key!=='decimal').filter(key=>state.latest!.attributes[key]!==draft[key]).map(key=><View key={key} style={{gap:6}}><Text accessibilityRole="header" style={{...copyStyle,fontWeight:'600'}}>{label(key)}</Text><Text style={{color:theme.secondary}}>{i18n.t('inventory.edit.current')}</Text><Text style={copyStyle}>{display(state.latest!.attributes,key)}</Text><Text style={{color:theme.secondary}}>{i18n.t('inventory.edit.yours')}</Text><Text style={copyStyle}>{display(draft,key)}</Text></View>)}<Button title={i18n.t('inventory.edit.keep')} color={theme.accent} onPress={()=>workspace.current?.keepEdits()} /><Button title={i18n.t('inventory.edit.useLatest')} color={theme.accent} onPress={()=>workspace.current?.useLatest()} /></View>:null}
  <Button title={i18n.t('inventory.edit.save')} color={theme.accent} disabled={publicationBusy||photoBusy||voiceBusy||state.busy||state.conflict} onPress={()=>{Keyboard.dismiss();void workspace.current?.save();}} />
+ {workspace.current&&state.baseline&&!state.denied?<InventoryHistory key={historyKey} userID={userID} dealerID={dealerID} recordID={workspace.current.recordID()} />:null}
  {workspace.current&&state.baseline?<InventoryPublication key={workspace.current.recordID()} workspace={workspace.current} userID={userID} dealerID={dealerID} recordID={workspace.current.recordID()} publishReady={!state.restored&&!state.invalid&&!state.conflict&&!state.uncertain} otherBusy={photoBusy||voiceBusy} onBusy={setPublicationBusy} />:null}
  </>:null}
  </ScrollView></KeyboardAvoidingView>

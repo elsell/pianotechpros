@@ -122,3 +122,25 @@ Both clients expose history from record detail with localized event/field labels
 loading/retry/empty states and explicit older-page loading, without hiding or
 resetting unsaved edits. Visible history remains incomplete until the endpoint,
 client views and real interaction evidence exist.
+
+### Client history interaction
+
+Open history deliberately from saved record detail. History does not pause,
+flush, replace or mutate the editor workspace. Explain that it contains saved
+changes only. Web uses an expandable section; native uses a dismissible read-only
+sheet with a stable close action and platform-safe scrolling. Closing restores
+the existing editor rather than navigating to a new editing workspace.
+
+Show localized operation, revision/time, actor (You for the signed-in actor,
+otherwise its immutable ID), changed field labels and recorded origins. Unknown
+older per-field origins remain visibly unknown. Lifecycle status, sale price and
+reason remain private and use shared localized formatting. All labels, accessible
+text, loading/error/retry/empty states and controls are in both catalogs.
+
+The generated-contract adapter validates bounded typed history responses and
+sanitizes failures. Shared orchestration holds one page of at most 20 entries,
+loads older pages explicitly and returns to latest explicitly; it never loads
+unbounded history into memory. Failed older-page requests retain the current
+page and retry that same operation. Access denial clears private entries;
+network/rate/service failure retains the displayed page. Scope disposal aborts
+requests and ignores late completions. Native backgrounding closes/clears history.

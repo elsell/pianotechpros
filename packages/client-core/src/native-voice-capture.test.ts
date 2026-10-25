@@ -46,3 +46,13 @@ test('a stopping observer cannot overlap cleanup with a second acquisition',asyn
  f.handle.stop=()=>closing.promise;f.port.changed=state=>{if(state.phase==='stopping'){void c.cancel();void c.start();}};
  c=createNativeVoiceCapture(f.port);await c.start();const done=c.stop();assert.equal(f.events.filter(e=>e==='permission').length,1);assert.equal(c.snapshot().busy,true);closing.resolve();await done;assert.equal(f.audio.length,0);assert.equal(c.snapshot().busy,false);
 });
+
+test('input level follows only the live recording and clears on stop, cancellation and stale callbacks',async()=>{
+ const f=setup();const samples:((db:number|undefined)=>void)[]=[];
+ f.port.prepare=async(_ended,level)=>{samples.push(level);level(-10);return f.handle;};
+ const c=createNativeVoiceCapture(f.port);await c.start();assert.equal(c.snapshot().level,null);
+ samples[0]!(-30);assert.equal(c.snapshot().level,50);samples[0]!(undefined);assert.equal(c.snapshot().level,null);
+ samples[0]!(-20);await c.stop();assert.equal(c.snapshot().level,null);samples[0]!(-1);assert.equal(c.snapshot().level,null);
+ await c.start();samples[0]!(-1);assert.equal(c.snapshot().level,null);samples[1]!(-60);assert.equal(c.snapshot().level,0);
+ await c.cancel();samples[1]!(-1);assert.equal(c.snapshot().level,null);await c.dispose();samples[1]!(-1);assert.equal(c.snapshot().level,null);
+});

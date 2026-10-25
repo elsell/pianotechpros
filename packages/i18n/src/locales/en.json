@@ -473,5 +473,7 @@
   "voice.capture.preparing": "Preparing the microphone…",
   "voice.nativePermissionDenied": "Microphone access was denied. You can enable it in Settings or type a transcript.",
   "voice.nativeCleanupFailed": "The recording could not be cleared safely. Cancel to retry cleanup before recording again.",
-  "voice.retryCleanup": "Retry recording cleanup"
+  "voice.retryCleanup": "Retry recording cleanup",
+  "voice.inputLevel": "Microphone input level",
+  "voice.levelUnavailable": "Microphone level unavailable"
 }

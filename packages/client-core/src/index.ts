@@ -217,3 +217,5 @@ export * from './native-voice-capture';
 export * from './inventory-voice-workspace';
 
 export * from './native-voice-cleanup';
+
+export * from './voice-input-level';

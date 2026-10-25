@@ -26,3 +26,22 @@ explicit stop, cancellation, disposal, pagehide cleanup and denied permission.
 This is browser API acceptance, not real-microphone or Safari device acceptance.
 
 References: MDN MediaRecorder and MediaDevices.getUserMedia documentation.
+
+## Microphone input feedback
+
+While recording, show a compact input-level meter derived from the active
+microphone, never a decorative animation or playback. Normalize measured decibels
+to a bounded 0–100 display with a -60 dB floor; missing or invalid measurements
+show a localized unavailable state without stopping a valid recording. Silence
+is zero. Refresh at most eight times per second; do not announce every change
+through a screen-reader live region. Give the meter a localized accessible name
+and current bounded value. Stop, cancellation, interruption and disposal clear
+the level and stop sampling; late callbacks cannot revive it. Measurements and
+waveform buffers remain transient and never enter API requests, logs or recovery.
+Browser analysis must not connect the microphone to speakers, and failed analysis
+must not prevent recording. Release the audio context and nodes with capture.
+
+Only the reviewed `voice-input-meter.ts` adapter may construct AudioContext and
+Float32Array for local analysis. The structural transport gate still rejects
+fetch, sockets, workers and arbitrary transport imports in this adapter. The
+recorder's protected source digest must be reviewed when its wiring changes.

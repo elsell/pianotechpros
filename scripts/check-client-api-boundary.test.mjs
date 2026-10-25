@@ -285,3 +285,11 @@ for(const source of ["fetch('/private');", "globalThis.fetch('/private');", "new
  result=check({'apps/mobile/src/inventory/recovery-bytes.ts':source});
  assert.notEqual(result.status,0,'ciphertext decoder must not bypass network policy');
 }
+
+result=check({'apps/web/src/lib/inventory/voice-input-meter.ts':'const context=new AudioContext();const samples=new Float32Array(2048);void context;void samples;'});
+assert.equal(result.status,0,'reviewed input meter may construct local audio analysis capabilities');
+for(const source of ["fetch('/private');", "new WebSocket('wss://example.invalid');", "globalThis.fetch('/private');"]){
+ result=check({'apps/web/src/lib/inventory/voice-input-meter.ts':source});assert.notEqual(result.status,0,'input meter does not acquire network transport');
+}
+result=check({'apps/web/src/lib/unreviewed-meter.ts':'new AudioContext();new Float32Array(2048);'});
+assert.notEqual(result.status,0,'audio analysis capabilities remain scoped to the reviewed adapter');

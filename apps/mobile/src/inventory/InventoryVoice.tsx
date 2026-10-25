@@ -9,7 +9,7 @@ import {useMobileSession} from '../session-provider';
 import {useNativeTheme} from '../native-theme';
 import {useInventoryVoiceRequest} from '../use-inventory-request';
 import {createMobileVoiceCapture} from './voice-media';
-const idle:NativeVoiceState={phase:'idle',issue:null,busy:false};
+const idle:NativeVoiceState={phase:'idle',issue:null,busy:false,level:null};
 export function InventoryVoice({workspace,userID,dealerID,otherBusy,onBusy,onPaused}:{workspace:InventoryFormWorkspace;userID:string;dealerID:string;otherBusy:boolean;onBusy:(busy:boolean)=>void;onPaused:(paused:boolean)=>void}){
  const {i18n}=useMobileSession();const theme=useNativeTheme();const request=useInventoryVoiceRequest();const focused=useIsFocused();
  const model=useRef<{coordinator:ReturnType<typeof createInventoryVoiceWorkspace>;capture:ReturnType<typeof createMobileVoiceCapture>;active():boolean}|null>(null);
@@ -68,7 +68,7 @@ export function InventoryVoice({workspace,userID,dealerID,otherBusy,onBusy,onPau
  <View style={{paddingHorizontal:16,paddingVertical:8,borderBottomWidth:1,borderColor:theme.border}}>{button('cancel',cancel)}<Text accessibilityRole="header" style={{...text,fontSize:24,fontWeight:'600'}}>{t(reviewing?'review':'title')}</Text></View>
  <KeyboardAvoidingView key={reviewing?'review':'capture'} style={{flex:1}} enabled={Platform.OS==='android'&&!reviewing} behavior="height"><ScrollView ref={scroll} contentInsetAdjustmentBehavior="automatic" automaticallyAdjustKeyboardInsets keyboardDismissMode="interactive" keyboardShouldPersistTaps="handled" contentContainerStyle={{padding:20,gap:16,paddingBottom:40}}>
  {feedback}
- {capture.busy?<><Text accessibilityLiveRegion="polite" style={text}>{t(`capture.${capture.phase==='preparing'?'preparing':capture.phase==='idle'||capture.phase==='failed'?'stopping':capture.phase}`)}</Text>{capture.phase==='recording'?button('stop',()=>{void model.current?.capture.stop();}):null}</>:null}
+ {capture.busy?<><Text accessibilityLiveRegion="polite" style={text}>{t(`capture.${capture.phase==='preparing'?'preparing':capture.phase==='idle'||capture.phase==='failed'?'stopping':capture.phase}`)}</Text>{capture.phase==='recording'?<>{capture.level===null?<Text style={text}>{t('levelUnavailable')}</Text>:<View accessible accessibilityRole="progressbar" accessibilityLabel={t('inputLevel')} accessibilityValue={{min:0,max:100,now:capture.level}} style={{gap:8}}><Text style={text}>{t('inputLevel')}</Text><View style={{height:10,borderRadius:5,backgroundColor:theme.border,overflow:'hidden'}}><View style={{height:10,width:`${capture.level}%`,backgroundColor:theme.accent}} /></View></View>}{button('stop',()=>{void model.current?.capture.stop();})}</>:null}</>:null}
  {capture.issue?<Text accessibilityRole="alert" style={text}>{t(capture.issue==='permission'?'nativePermissionDenied':capture.issue==='cleanup'?'nativeCleanupFailed':`captureError.${capture.issue}`)}</Text>:null}
  {reviewing&&voice.proposal&&voice.reviewed?<>
  {button(showTranscript?'hideTranscript':'showTranscript',()=>setShowTranscript(v=>!v))}{showTranscript?<Text selectable style={text}>{voice.transcript}</Text>:null}

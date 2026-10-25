@@ -7,7 +7,7 @@
  import {createBrowserVoiceRecorder,type VoiceCaptureState,type BrowserVoiceAudio} from './voice-recorder';
  export let workspace:InventoryFormWorkspace;export let accountId:string;export let dealerID:string;export let apiURL:string;export let credential:SessionCredential;export let i18n:Translator;export let onSessionRejected:()=>void;export let onBusy:(busy:boolean)=>void;export let onPaused:(paused:boolean)=>void;export let otherBusy=false;
  let active=false,working=false,denied=false;let transcript='',failure='';let selected:InventoryVoiceField[]=[];
- let capture:VoiceCaptureState={phase:'idle',issue:null};let voice:InventoryVoiceState|null=null;let heading:HTMLHeadingElement;
+ let capture:VoiceCaptureState={phase:'idle',issue:null,level:null};let voice:InventoryVoiceState|null=null;let heading:HTMLHeadingElement;
  let recorder:ReturnType<typeof createBrowserVoiceRecorder>|null=null;let workflow:ReturnType<typeof createInventoryVoiceWorkspace>|null=null;
  let unsubscribe=()=>{};
  $: capturing=['requesting','recording','stopping'].includes(capture.phase);
@@ -58,7 +58,7 @@
  <h3>{i18n.t('voice.title')}</h3><p class="hint">{i18n.t('voice.hint')}</p>
  {#if capturing}
   <p role="status">{i18n.t(`voice.capture.${capture.phase}` as MessageKey)}</p>
-  {#if capture.phase==='recording'}<button type="button" onclick={()=>recorder?.stop()}>{i18n.t('voice.stop')}</button>{/if}
+  {#if capture.phase==='recording'}{#if capture.level===null}<p>{i18n.t('voice.levelUnavailable')}</p>{:else}<label>{i18n.t('voice.inputLevel')}<meter min="0" max="100" value={capture.level} aria-label={i18n.t('voice.inputLevel')}></meter></label>{/if}<button type="button" onclick={()=>recorder?.stop()}>{i18n.t('voice.stop')}</button>{/if}
  {:else if !working}
   <button type="button" disabled={otherBusy||denied} onclick={()=>{failure='';void recorder?.start();}}>{i18n.t('voice.record')}</button>
  {/if}

@@ -473,5 +473,7 @@
   "voice.capture.preparing": "Preparando el micrófono…",
   "voice.nativePermissionDenied": "Se denegó el acceso al micrófono. Puedes activarlo en Ajustes o escribir una transcripción.",
   "voice.nativeCleanupFailed": "No se pudo eliminar la grabación de forma segura. Cancela para volver a intentar eliminarla antes de grabar de nuevo.",
-  "voice.retryCleanup": "Reintentar eliminar la grabación"
+  "voice.retryCleanup": "Reintentar eliminar la grabación",
+  "voice.inputLevel": "Nivel de entrada del micrófono",
+  "voice.levelUnavailable": "Nivel del micrófono no disponible"
 }

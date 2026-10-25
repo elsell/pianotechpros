@@ -5,6 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
+  zod: 4.6.6
   decode-uri-component: 0.5.0
   image-size: 2.0.3
   moment: 2.31.0
@@ -5010,11 +5011,8 @@ packages:
   zimmerframe@1.1.4:
     resolution: {integrity: sha512-B58NGBEoc8Y9MWWCQGl/gq9xBCe4IiKM0a2x7GZdQKOW5Exr8S1W24J6OgM1njK8xCRGvAJIL/MxXHf6SkmQKQ==}
 
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
-
-  zod@4.4.3:
-    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
+  zod@4.6.6:
+    resolution: {integrity: sha512-4UmzQUF5fxvfcYHlbjBmejU+w+hbDnWFx4aS8kBx7nPBHcO2SqPbpAG8snbdg+Xse4pRefR98hgjFgIMCI/UhA==}
 
 snapshots:
 
@@ -5798,7 +5796,7 @@ snapshots:
       toqr: 0.1.1
       wrap-ansi: 7.0.0
       ws: 8.21.0
-      zod: 3.25.76
+      zod: 4.6.6
     optionalDependencies:
       expo-router: 55.0.18(@expo/log-box@55.0.13)(@expo/metro-runtime@55.0.12)(@types/react@19.2.17)(expo-constants@55.0.17)(expo-font@55.0.8)(expo-linking@55.0.17)(expo@55.0.32)(react-dom@19.2.0(react@19.2.0))(react-native-safe-area-context@5.6.2(react-native@0.83.10(@babel/core@7.29.7)(@types/react@19.2.17)(react@19.2.0))(react@19.2.0))(react-native-screens@4.23.0(patch_hash=860a71748751cc4caef98ed82700c7c723851e103a92c565b1ae98e3382d99a4)(react-native@0.83.10(@babel/core@7.29.7)(@types/react@19.2.17)(react@19.2.0))(react@19.2.0))(react-native@0.83.10(@babel/core@7.29.7)(@types/react@19.2.17)(react@19.2.0))(react@19.2.0)
       react-native: 0.83.10(@babel/core@7.29.7)(@types/react@19.2.17)(react@19.2.0)
@@ -5887,7 +5885,7 @@ snapshots:
       '@expo/turtle-spawn': 21.0.0
       joi: 17.13.8
       semver: 7.8.2
-      zod: 4.4.3
+      zod: 4.6.6
 
   '@expo/eas-json@21.0.2':
     dependencies:
@@ -7832,7 +7830,7 @@ snapshots:
       uuid: 11.1.1
       wrap-ansi: 7.0.0
       yaml: 2.9.0
-      zod: 4.4.3
+      zod: 4.6.6
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
@@ -10354,6 +10352,4 @@ snapshots:
 
   zimmerframe@1.1.4: {}
 
-  zod@3.25.76: {}
-
-  zod@4.4.3: {}
+  zod@4.6.6: {}

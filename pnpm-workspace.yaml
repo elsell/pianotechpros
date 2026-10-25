@@ -9,6 +9,7 @@ packages:
 ignoreScripts: true
 
 overrides:
+  zod: '4.6.6'
   decode-uri-component: '0.5.0'
   image-size: '2.0.3'
   moment: '2.31.0'

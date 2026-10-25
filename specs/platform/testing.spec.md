@@ -125,6 +125,18 @@ adversarial subprocess execution and preserve non-throwing malformed-input
 behavior without executing any decoded content. Run compatibility, exports,
 contracts, full tests, age and native integration gates before release.
 
+Zod must use the exact 4.6.6 security release for both EAS and Expo CLI
+consumers (GHSA-mrhx-c7xc-m3w5). Test that leading array/set size limits reject
+oversized input before visiting elements, while valid input and invalid elements
+within the limit retain validation. Exercise Expo's actual plugin/output and MCP
+command schemas and EAS job schemas to validate the v3-to-v4 compatibility change.
+Unbounded schemas remain unbounded upstream; do not describe this upgrade as
+limiting all possible validation input. The 2026-10-11T16:18:23.878Z package has
+an exact dependency-age exception for this high-severity fix before its fourteen
+day anniversary. Compensating verification includes installed-consumer behavior,
+full repository/contract gates, Expo compatibility/Doctor, exports, EAS startup,
+audit, review and hosted native builds before release.
+
 Migration acceptance applies the prior released migration set first, then runs
 the current migrator and verifies preserved baseline data and new schema objects.
 Every prior-release up and down migration is frozen by a checked-in SHA-256

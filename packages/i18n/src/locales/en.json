@@ -521,5 +521,6 @@
   "scan.view.failed": "The piano could not be loaded. Try again.",
   "scan.view.cancel": "Close scan",
   "scan.view.editor": "Open full editor",
-  "scan.view.refresh": "Refresh piano"
+  "scan.view.refresh": "Refresh piano",
+  "scan.view.actionDenied": "This action was denied. Your access to this piano has been checked again."
 }

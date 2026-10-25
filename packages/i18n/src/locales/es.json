@@ -521,5 +521,6 @@
   "scan.view.failed": "No se pudo cargar el piano. Inténtalo de nuevo.",
   "scan.view.cancel": "Cerrar escaneo",
   "scan.view.editor": "Abrir editor completo",
-  "scan.view.refresh": "Actualizar piano"
+  "scan.view.refresh": "Actualizar piano",
+  "scan.view.actionDenied": "Se denegó esta acción. Se ha vuelto a comprobar tu acceso a este piano."
 }

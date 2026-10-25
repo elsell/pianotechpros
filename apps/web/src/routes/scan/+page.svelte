@@ -7,10 +7,10 @@
  import {browserScanContinuation} from '#lib/scan-continuation.js';
  import {consumeInventoryScanLocation,observeInventoryScanLocation} from '#lib/browser-events.js';
  export let data:{locale:SupportedLocale;config:ClientRuntimeConfig};
- let ready=false;let validEntry=false;let link:string|null=null;
+ let entry=0;let ready=false;let validEntry=false;let link:string|null=null;
  $: i18n=createTranslator([data.locale]);
  function cancel(){browserScanContinuation().clear();link=null;window.location.replace('/');}
- function capture(){try{const incoming=consumeInventoryScanLocation();const continuation=browserScanContinuation();link=incoming??continuation.take();continuation.clear();if(link)parseInventoryScanLink(window.location.origin,link);}catch{browserScanContinuation().clear();link=null;}finally{ready=true;validEntry=link!==null;}}
+ function capture(){entry++;try{const incoming=consumeInventoryScanLocation();const continuation=browserScanContinuation();link=incoming??continuation.take();continuation.clear();if(link)parseInventoryScanLink(window.location.origin,link);}catch{browserScanContinuation().clear();link=null;}finally{ready=true;validEntry=link!==null;}}
  onMount(()=>{capture();return observeInventoryScanLocation(capture);});
  function discard(){browserScanContinuation().clear();link=null;}
 
@@ -18,7 +18,7 @@
 </script>
 <svelte:head><meta name="robots" content="noindex,nofollow"/></svelte:head>
 {#if ready}
- {#if validEntry}<SessionShell {data} beforeSignIn={continueSignIn} onSignInFailure={()=>browserScanContinuation().clear()} onSignOut={discard} onSignedOut={cancel} let:accountId let:apiURL let:credential let:i18n let:onSessionRejected>{#if link}{#key link}<InventoryScanView {link} {accountId} {apiURL} {credential} {i18n} {onSessionRejected}/>{/key}{/if}</SessionShell>
+ {#if validEntry}<SessionShell {data} beforeSignIn={continueSignIn} onSignInFailure={()=>browserScanContinuation().clear()} onSignOut={discard} onSignedOut={cancel} let:accountId let:apiURL let:credential let:i18n let:onSessionRejected>{#if link}{#key entry}<InventoryScanView {link} {accountId} {apiURL} {credential} {i18n} {onSessionRejected}/>{/key}{/if}</SessionShell>
  {:else}<main class="invalid-scan"><h1>{i18n.t('scan.view.title')}</h1><p role="alert">{i18n.t('scan.view.invalid')}</p></main>{/if}
  <div class="scan-exit"><button onclick={cancel}>{i18n.t('scan.view.cancel')}</button></div>
 {:else}<p>{i18n.t('common.loading')}</p>{/if}

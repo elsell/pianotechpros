@@ -1,9 +1,8 @@
 # Technician persistence and transport
 
 Follow [profile.spec.md](profile.spec.md) for the required atomic aggregate,
-revision, idempotency, authorization and audit guarantees. The repository implements aggregate persistence; generated flat DTOs remain
-temporary extension points. Product policy remains disabled until its complete
-transport, authorization and adversarial endpoint tests are in place.
+revision, idempotency, authorization and audit guarantees. The repository implements aggregate persistence. Dedicated profile DTOs and
+bootstrap compose the reviewed policy; the generated generic routes stay closed.
 
 ## Aggregate storage
 

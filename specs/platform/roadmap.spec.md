@@ -26,6 +26,19 @@ checks and critic review pass, including Unicode-control sanitization. Hosted
 verification reported only the previously reviewed node-forge advisory. Customer/technician
 profiles and broader native/device acceptance remain required parity work.
 
+Technician profile and weekly availability parity (TE-01/TE-02) now has a
+reviewed legacy-derived contract, validated versioned domain and owner-scoped
+aggregate persistence. Real PostgreSQL race tests cover creation/edit races,
+atomic audit/outbox rollback, strict stored-field validation and runtime guards.
+Application policy uses completed grant readiness and serialized SpiceDB checks;
+revoked retries cannot regrant ownership. Real runtime-proxy tests establish
+independence from customer/dealer permissions. The explicit HTTP profile surface
+and shared timezone catalog are composed in server/OpenAPI bootstrap. Real-session
+HTTP integration covers create/update/replay, stale edits, foreign users, revoked
+permissions and expired/revoked sessions. Dedicated schema names preserve customer
+composition. Shared clients, protected editors, web/native interfaces and their
+interaction acceptance remain unfinished; neither technician parity item is complete.
+
 Customer profile parity (CU-01) is the active implementation slice. The legacy
 contract now specifies private personal/business details, stable locations and
 owned pianos, injected timezone validation and optimistic revisions. Domain tests

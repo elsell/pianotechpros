@@ -44,8 +44,11 @@ stable weekly rules with confirmed removal and catalog validation. The shared
 controller now durably snapshots exact retries, preserves newer edits and requires
 explicit conflict review. Its API/user-bound journal validates checkpoints,
 expires entries and serializes discard; full baselines are required while drafts
-may remain incomplete. Exclusive workspace/platform-vault integration, web/native
-interfaces and their interaction acceptance remain
+may remain incomplete. The shared workspace now authorizes before draft restore,
+freezes canonical account/API scope and holds exclusive ownership until pending
+writes and denied cleanup finish. Presentation restarts retry retained cleanup
+before opening another editor. Platform singleton/cross-tab ownership and vault
+wiring, web/native interfaces and their interaction acceptance remain
 unfinished; neither technician parity item is complete.
 
 Customer profile implementation merged in PR #63 at

@@ -73,3 +73,19 @@ writes; disposal blocks queued writes, discard waits for already-active writes
 and then removes the entry. Reads completed after scope loss reveal nothing.
 Actual platform-vault wiring, authorization-before-restore and exclusive lease
 ownership remain workspace integration requirements, not journal assumptions.
+
+## Workspace ownership and presentation lifecycle
+
+Acquire exclusive ownership for the canonical API/user journal identity before
+any network or storage work. Authorize the current profile and load the validated
+timezone catalog before opening protected storage. A missing profile permits a
+new draft, but a cached baseline for a missing or different profile is discarded.
+Snapshot scope before asynchronous callbacks and suppress all late scope results.
+
+Keep ownership through pending writes and denied-access discard. Failed protection
+keeps the editor open; failed cleanup retains ownership and can be retried. Route
+unmount retires the workspace immediately, and a runtime-scoped presentation
+lifetime drains retired work before opening a successor. Pending creation retries
+retain their original key even when the server committed before interruption.
+Platform adapters must share ownership and presentation instances across screens;
+web cross-tab arbitration and encrypted platform vault wiring remain required.

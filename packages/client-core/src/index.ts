@@ -275,3 +275,7 @@ export * from './technician-form';
 export * from './technician-editor';
 
 export * from './technician-recovery';
+
+export * from './technician-workspace';
+export * from './technician-ownership';
+export * from './technician-presentation';

@@ -18,7 +18,7 @@ let staffConflict = true;
 let inventoryMode = 'normal';
 let editorMode = 'normal';
 const captureIntents = new Map();const capturedRecords = new Map();let captureCreates = 0;let loseCapture = true;
-let editorWrites = 0;
+let editorWrites = 0;let editorVoiceFields=[];
 let voiceMode='normal';let voiceCalls=0;let audioCalls=0;
 let inquiryDenied=false;let inquiryWrites=0;let inquiryRead=false;
 const inquiryPiano={id:'concert',dealer_id:'created-shop',publication_revision:2,status:'available',stock_number:'PT-1',title:'Historical grand',featured:false,form:'grand',player_system:false,condition:'used',make:'',model:'',manufactured:null,size:'',finish:'',description:'Published description',price:null,photos:[{id:'photo',alt_text:''}]};
@@ -115,7 +115,7 @@ const server = createServer(async (req, res) => {
   if (url.pathname === '/v1/dealers/created-shop/inventory/concert') {
     if (editorMode === 'denied') return send(404, { code: 'not_found' });
     if (req.method === 'PUT') {
-      editorWrites++;
+      editorWrites++;editorVoiceFields=[...(body.voiceFields??[])];
       if (body.expectedRevision !== editorRecord.revision) return send(409, { code: 'conflict' });
       editorRecord = { ...editorRecord, revision: editorRecord.revision + 1, attributes: body.attributes };
       // Model a gateway losing the upstream acknowledgement after a commit.
@@ -303,10 +303,10 @@ try {
   await voicePanel.getByRole('checkbox',{name:'Aplicar Marca',exact:true}).check();
   await voicePanel.getByRole('button',{name:'Aplicar campos seleccionados',exact:true}).click();
   await page.getByText('Guardado',{exact:true}).waitFor();
-  assert.equal(editorRecord.attributes.make,'Steinway');assert.equal(editorRecord.attributes.model,'');
+  assert.equal(editorRecord.attributes.make,'Steinway');assert.equal(editorRecord.attributes.model,'');assert.deepEqual(editorVoiceFields,['make']);
   await voicePanel.getByRole('button',{name:'Deshacer sugerencias',exact:true}).click();
   await page.getByText('Guardado',{exact:true}).waitFor();
-  assert.equal(editorRecord.attributes.make,'Manual correction');
+  assert.equal(editorRecord.attributes.make,'Manual correction');assert.deepEqual(editorVoiceFields,[]);
   voiceMode='failure';await voicePanel.getByLabel('Transcripción',{exact:true}).fill('Steinway Model B');
   await voicePanel.getByRole('button',{name:'Revisar sugerencias',exact:true}).click();
   await voicePanel.getByText('El servicio de voz no está disponible. Puedes volver a intentarlo.',{exact:true}).waitFor();
@@ -314,7 +314,7 @@ try {
   voiceMode='normal';await voicePanel.getByRole('button',{name:'Revisar sugerencias',exact:true}).click();
   await voicePanel.getByText('Elige los campos que quieres aplicar.',{exact:true}).waitFor();
   await voicePanel.getByRole('button',{name:'Cancelar voz',exact:true}).click();
-  await page.getByText('Guardado',{exact:true}).waitFor();assert.equal(editorRecord.attributes.make,'Manual correction');
+  await page.getByText('Guardado',{exact:true}).waitFor();assert.equal(editorRecord.attributes.make,'Manual correction');assert.deepEqual(editorVoiceFields,[]);
   assert.equal(await voicePanel.getByLabel('Transcripción',{exact:true}).inputValue(),'');
   assert.equal(voiceCalls,3);
   await voicePanel.getByRole('button',{name:'Grabar nota de voz',exact:true}).click();

@@ -12,8 +12,7 @@ inputs. Transcript extraction now has an application boundary that checks write
 authority, scoped audited context and revision before and after provider work,
 validates untrusted candidates/currency, and suppresses cancelled or revoked
 results. Controlled provider tests verify denial, stale revisions and sanitized
-failures without saving inventory. Production provider/HTTP composition remains
-unfinished. A server-only Gemini REST adapter now translates bounded transient
+failures without saving inventory. A server-only Gemini REST adapter translates bounded transient
 audio and transcripts with explicit model configuration, fixed-origin credentials,
 no redirects/retries, strict candidate decoding and independent domain validation.
 Transcription has the same pre/post authority and revision checks as extraction;
@@ -42,14 +41,14 @@ evidence. Processing/review holds the workspace queue while locally protecting
 manual edits; Apply/Cancel releases it. Transcript correction and conditional Undo
 preserve work. Controlled HTTP/browser journeys cover recording, no pre-Apply
 mutation, intervening edits, re-review, Undo, failure/retry and cancellation. Voice
-provenance in persistence and native review remain unfinished; real microphone
-and Safari interaction are not yet verified. The native capture adapter now
+provenance and native review evidence are recorded below; physical-device
+microphone and Safari interaction are not yet verified. The native capture adapter now
 bounds foreground AAC recording, serializes cancellation and resource cleanup,
 and delivers bytes only after owned cache-file deletion. Controlled tests cover
 late permission/preparation, interruption, cleanup failure and reentrancy. Clean
 prebuild checks verify localized microphone purpose strings and no background
-audio capabilities; Expo exports pass. Fresh native compilation and device
-recording/permission/interruption acceptance remain required before delivery.
+audio capabilities; Expo exports and native builds pass. Remaining device
+interaction acceptance is recorded below.
 Voice processing now shares editor queue coordination across clients: preparation
 does not claim saving is paused, explicit review holds the queue, cancellation
 waits for pending acquisition/provider work to settle, and Undo remains available
@@ -59,8 +58,8 @@ transcript correction, unselected field switches, current/proposed comparisons,
 evidence and confidence, Apply and conditional Undo. Background/focus loss clears
 transient work; retired recorder ownership preserves cleanup retry across unmount.
 The editor coordinates photo/publication busy states and reports actual queue
-pauses. Native type/lifecycle checks and exports pass; fresh device interaction
-acceptance remains required, including recording, denial and background recovery.
+pauses. Native type/lifecycle checks and exports pass; Android emulator evidence
+and remaining interaction acceptance are recorded below.
 
 Native cold-reopen acceptance found an Expo sealed-data constructor mismatch:
 Android requires bytes even though the TypeScript API accepts a base64 string.
@@ -94,8 +93,20 @@ attribution now has generic editor/workspace support: current and pending field
 labels persist independently, manual correction clears only touched origins, and
 restart, conflict choice, lost acknowledgements and reverting to an old baseline
 during pending writes preserve correct attribution. Nine behavioral regressions
-and full structural/contract checks pass. Form/capture adapters and connecting
-accepted suggestions to autosave remain unfinished.
+and full structural/contract checks pass. Form/capture adapters now preserve the
+labels through protected recovery and autosave on web and mobile. Raw manual
+changes clear atomic money/date origins; normalized unchanged attributes are not
+labelled. Apply forwards only actual changed fields and Undo stays manual. Shared
+behavior tests, web/mobile type checks, structural/contract checks and the browser
+journey pass, including observed Apply and Undo HTTP attribution. Android emulator
+acceptance now also uses the current real API and an isolated synthetic PostgreSQL
+database: Make-only Apply commits a voice history field and matching audit; Undo
+commits a manual field and matching audit. Model and title remain unchanged, and
+cold reopening preserves the undone value without a spurious revision. Speech
+responses were controlled, so live provider quality and iOS interaction remain
+unverified. A separate uninterrupted Android recording stops automatically at the
+one-minute limit, delivers 517,722 bytes of AAC audio and leaves its owned audio
+cache empty before review. Recording-level presentation is still outstanding.
 
 Buyer inquiry foundations now implement canonical contact validation, immutable
 public snapshot context and first-read domain state. Submission orchestration

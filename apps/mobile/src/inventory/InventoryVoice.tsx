@@ -19,7 +19,7 @@ export function InventoryVoice({workspace,userID,dealerID,otherBusy,onBusy,onPau
  useEffect(()=>{
   let alive=true,denied=false;
   const active=()=>alive&&focused&&!denied&&AppState.currentState!=='background'&&!workspace.snapshot().denied&&!!workspace.snapshot().draft;
-  const coordinator=createInventoryVoiceWorkspace({accountID:userID,dealerID,active,snapshot:()=>workspace.snapshot(),change:form=>workspace.change(form),withMutation:work=>workspace.withMediaMutation(work),
+  const coordinator=createInventoryVoiceWorkspace({accountID:userID,dealerID,active,snapshot:()=>workspace.snapshot(),change:(form,fields)=>workspace.change(form,fields),withMutation:work=>workspace.withMediaMutation(work),
    ...('ensureRecord'in workspace?{ensureRecord:()=> (workspace.ensureRecord as ()=>Promise<string|null>)()}:{}),
    transcribe:(id,revision,bytes,mime,signal)=>request(api=>api.transcribe(dealerID,id,revision,bytes,mime,signal)),extract:(id,revision,text,signal)=>request(api=>api.extract(dealerID,id,revision,text,signal)),
    classify:nativeVoiceFailure,

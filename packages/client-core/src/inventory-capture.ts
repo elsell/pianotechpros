@@ -1,3 +1,4 @@
+import type {InventoryAttributeField} from './inventory-form-attribution';
 import {createSelectedMediaStore} from './selected-media';
 import {photoUploadExpired,type PhotoSelectionImport} from './photo-upload-ledger';
 import {createInventoryRecoveryJournal,type ProtectedInventoryDraftStorage} from './inventory-recovery';
@@ -10,7 +11,7 @@ export async function openInventoryCapture(port:{
  media?:{sha256(bytes:Uint8Array):Promise<string>;handoff(recordID:string,selection:PhotoSelectionImport):Promise<void>;discard?(recordID:string,selection:PhotoSelectionImport):Promise<void>};
  userID:string;dealerID:string;decimal:'.'|',';active():boolean;now():number;key():string;
  authorize():Promise<void>;lease():Promise<()=>void>;storage():Promise<ProtectedInventoryDraftStorage>;
- create(key:string):Promise<RecordData>;get(id:string):Promise<RecordData>;edit(id:string,attributes:InventoryWireAttributes,revision:number):Promise<RecordData>;
+ create(key:string):Promise<RecordData>;get(id:string):Promise<RecordData>;edit(id:string,attributes:InventoryWireAttributes,revision:number,voiceFields?:readonly InventoryAttributeField[]):Promise<RecordData>;
  classify(error:unknown):'denied'|'conflict'|'rejected'|'uncertain';schedule(run:()=>void):()=>void;onCreated(id:string):void;
 }):Promise<InventoryCaptureWorkspace|null>{
  await port.authorize();if(!port.active())return null;
@@ -64,7 +65,7 @@ if(!port.active()){unlock();return null;}
   async function attachRecord(currentCapture:boolean){
    const baseline=intent.record!;const id=baseline.id;
    const initial={...intent.form,stock_number:intent.form.stock_number||baseline.attributes.stock_number};
-   const opened=await openInventoryFormWorkspace({scope:{userID:port.userID,dealerID:port.dealerID,recordID:id},decimal:initial.decimal,active:()=>!disposed&&port.active(),now:port.now,storage:async()=>storage,get:()=>port.get(id),edit:(a,r)=>port.edit(id,a,r),classify:port.classify,schedule:run=>migrated?port.schedule(run):()=>{},fallbackRecovery:{version:1,baseline,draft:initial,pending:null,conflict:false}});
+   const opened=await openInventoryFormWorkspace({scope:{userID:port.userID,dealerID:port.dealerID,recordID:id},decimal:initial.decimal,active:()=>!disposed&&port.active(),now:port.now,storage:async()=>storage,get:()=>port.get(id),edit:(a,r,fields)=>port.edit(id,a,r,fields),classify:port.classify,schedule:run=>migrated?port.schedule(run):()=>{},fallbackRecovery:{version:1,baseline,draft:initial,pending:null,conflict:false}});
    if(!opened)return;
    if(disposed){opened.dispose();return;}
    // Changes entered while the remote record/recovery journal was opening win locally.
@@ -117,7 +118,7 @@ if(!port.active()){unlock();return null;}
   const result:InventoryCaptureWorkspace=Object.freeze({
    snapshot,
    subscribe(listener){if(!disposed)listeners.add(listener);listener(snapshot());return()=>{listeners.delete(listener);};},
-   change(form){if(disposed||denied||!port.active())return;if(editor){editor.change(form);return;}intent={...intent,form:{...form}};dirty=true;failure=null;persist();},
+   change(form,fields=[]){if(disposed||denied||!port.active())return;if(editor){editor.change(form,fields);return;}if(fields.length)throw Error('inventory_voice_requires_record');intent={...intent,form:{...form}};dirty=true;failure=null;persist();},
    save,stagePhoto,
    async pickerTarget(){
     if(disposed||denied||!port.active())return null;

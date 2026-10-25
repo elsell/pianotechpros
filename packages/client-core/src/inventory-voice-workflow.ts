@@ -7,7 +7,7 @@ export type InventoryVoiceState={phase:'idle'|'transcribing'|'extracting'|'revie
 export interface InventoryVoiceWorkflowPort{
  scope:InventoryVoiceScope;
  current():InventoryVoiceContext|null;
- change(form:InventoryForm):boolean;
+ change(form:InventoryForm,voiceFields?:readonly InventoryVoiceField[]):boolean;
  transcribe(revision:number,audio:Uint8Array,mime:string,signal:AbortSignal):Promise<{revision:number;transcript:string}>;
  extract(revision:number,transcript:string,signal:AbortSignal):Promise<unknown>;
  classify(error:unknown):InventoryVoiceIssue;
@@ -26,7 +26,7 @@ export function createInventoryVoiceWorkflow(port:InventoryVoiceWorkflowPort){
   if(!c||!scope.accountID||!scope.dealerID||!scope.recordID||c.accountID!==scope.accountID||c.dealerID!==scope.dealerID||c.recordID!==scope.recordID||!Number.isSafeInteger(c.revision)||c.revision<1||!isInventoryForm(c.form)){clear();return null;}
   return {...c,form:{...c.form}};
  }
- function change(form:InventoryForm){try{return port.change(form)===true;}catch{return false;}}
+ function change(form:InventoryForm,fields?:readonly InventoryVoiceField[]){try{return port.change(form,fields)===true;}catch{return false;}}
  function snapshot(){if(!current())return initial();return {...copy(state),busy:inFlight};}
  function emit(){if(!disposed)for(const listener of listeners)listener(snapshot());}
  function live(ticket:number,revision?:number){const c=current();if(!c||ticket!==generation)return null;if(revision!==undefined&&c.revision!==revision)throw new WorkflowFailure('conflict');return c;}
@@ -74,7 +74,7 @@ export function createInventoryVoiceWorkflow(port:InventoryVoiceWorkflowPort){
    try{
     const result=applyInventoryVoiceProposal(state.proposal,state.reviewed,c.form,selection);
     if(!result.change){state={...state,conflicts:result.conflicts,issue:'conflict'};emit();return;}
-    const ticket=generation,accepted=change(result.change.after());if(!live(ticket))return;if(!accepted){state={...state,issue:'unavailable'};emit();return;}
+    const ticket=generation,accepted=change(result.change.after(),result.change.fields());if(!live(ticket))return;if(!accepted){state={...state,issue:'unavailable'};emit();return;}
     undo=result.change;state={...state,phase:'applied',proposal:null,reviewed:null,conflicts:[],issue:null,canUndo:undo.fields().length>0};emit();
    }catch{if(current()){state={...state,issue:'invalid_input'};emit();}}
   },

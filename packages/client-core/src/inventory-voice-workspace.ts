@@ -1,10 +1,11 @@
+import type {InventoryVoiceField} from './inventory-voice';
 import type {InventoryForm} from './inventory-form';
 import type {InventoryFormRecord} from './inventory-form-workspace';
 import {createInventoryVoiceWorkflow,type InventoryVoiceIssue,type InventoryVoiceState} from './inventory-voice-workflow';
 export interface InventoryVoiceWorkspacePort {
  accountID:string;dealerID:string;active():boolean;
  snapshot():{baseline:InventoryFormRecord|null;draft:InventoryForm|null;denied:boolean};
- change(form:InventoryForm):void;
+ change(form:InventoryForm,fields?:readonly InventoryVoiceField[]):void;
  ensureRecord?():Promise<string|null>;
  withMutation(work:(baseline:InventoryFormRecord)=>Promise<void>):Promise<unknown>;
  transcribe(recordID:string,revision:number,audio:Uint8Array,mime:string,signal:AbortSignal):Promise<{revision:number;transcript:string}>;
@@ -36,7 +37,7 @@ export function createInventoryVoiceWorkspace(port:InventoryVoiceWorkspacePort){
     const current=()=>{const s=port.snapshot();return live()&&s.draft&&s.baseline&&s.baseline.id===baseline.id&&s.baseline.dealer_id===port.dealerID?{accountID:port.accountID,dealerID:port.dealerID,recordID:baseline.id,revision:s.baseline.revision,form:s.draft}:null;};
     const request=async<T>(work:()=>Promise<T>):Promise<T>=>{try{return await work();}catch(error){if(live()&&port.classify(error)==='denied'){clear();issue='denied';emit();}throw error;}};
     workflow=createInventoryVoiceWorkflow({scope:{accountID:port.accountID,dealerID:port.dealerID,recordID:baseline.id},current,
-     change:form=>{if(!current())return false;port.change(form);const value=current()?.form;return !!value&&Object.keys(form).every(key=>value[key as keyof InventoryForm]===form[key as keyof InventoryForm]);},
+     change:(form,fields)=>{if(!current())return false;port.change(form,fields);const value=current()?.form;return !!value&&Object.keys(form).every(key=>value[key as keyof InventoryForm]===form[key as keyof InventoryForm]);},
      transcribe:(revision,bytes,type,signal)=>request(()=>port.transcribe(baseline.id,revision,bytes,type,signal)),
      extract:(revision,transcript,signal)=>request(()=>port.extract(baseline.id,revision,transcript,signal)),classify:port.classify,
     });

@@ -48,3 +48,12 @@ test('cancel clears private state but holds the pipeline until the aborted provi
  const second=w.process(new Uint8Array([2]),'audio/wav');await w.extractTranscript('Grand piano');assert.equal(calls,1);assert.equal(f.extracts,0);await second;
  pending.resolve({revision:1,transcript:'Grand piano'});await first;await w.process(new Uint8Array([3]),'audio/wav');assert.equal(calls,2);assert.equal(f.extracts,1);
 });
+
+test('Apply attributes only actual changes and Undo uses manual input',async()=>{
+ const f=fixture();const fields:(readonly string[]|undefined)[]=[];
+ const w=createInventoryVoiceWorkflow({...f.port,change:(form,voiceFields)=>{fields.push(voiceFields);return f.port.change(form);}});
+ await w.extractTranscript('Grand piano');w.apply(['title']);w.undo();
+ assert.deepEqual(fields,[['title'],undefined]);
+ f.current.form.title='Grand piano';await w.extractTranscript('Grand piano');w.apply(['title']);
+ assert.deepEqual(fields[2],[]);assert.equal(w.snapshot().canUndo,false);
+});

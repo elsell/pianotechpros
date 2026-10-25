@@ -176,3 +176,12 @@ test('native selection cancellation stays lazy; accepted photo creates and uploa
  await session.consume();assert.equal(f.counts().creates,1);assert.equal(uploads,1);assert.equal(session.snapshot().held,false);assert.equal(photos.snapshot().entries.length,0);assert.equal(photos.snapshot().photos[0]?.id,'photo-one');
  await session.restore();assert.equal(uploads,1);assert.equal(capture.snapshot().dirty,false);await session.dispose();await photos.dispose();capture.dispose();
 });
+
+test('capture requires a record before voice attribution and forwards accepted origins after attachment',async()=>{
+ const f=fixture();const sent:string[][]=[];
+ const c=await openInventoryCapture({...f.port,edit:async(id,a,r,fields)=>{sent.push([...(fields??[])]);return f.port.edit(id,a,r);}});assert.ok(c);
+ assert.throws(()=>c.change({...c.snapshot().draft!,make:'Steinway'},['make']),/inventory_voice_requires_record/);
+ assert.equal(c.snapshot().draft?.make,'');assert.equal(f.counts().creates,0);
+ assert.equal(await c.ensureRecord(),'piano');c.change({...c.snapshot().draft!,make:'Steinway'},['make']);
+ await c.save();assert.deepEqual(sent,[['make']]);assert.equal(f.record()?.attributes.make,'Steinway');c.dispose();
+});

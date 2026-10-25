@@ -9,12 +9,13 @@
  $: profile=data.page.profile;
  $: base='/showrooms/'+encodeURIComponent(profile.slug);
  $: filtered=Object.entries(data.fields).some(([key,value])=>key!=='cursor'&&!!value);
+ $: showFilters=filtered||!!data.fields.cursor||!!data.nextHref||data.page.pianos.length>1;
 </script>
 <svelte:head><title>{profile.name} · {i18n.t('showroom.inventory')}</title><meta name="description" content={profile.tagline||profile.description.slice(0,160)} /></svelte:head>
 <DiscoveryMetadata metadata={data.metadata} />
 <ShowroomFrame {profile} {i18n}>
  <section class="intro"><p class="eyebrow">{i18n.t('showroom.title')}</p><h1>{profile.tagline||i18n.t('showroom.inventory')}</h1>{#if profile.description}<p class="description">{profile.description}</p>{/if}</section>
- <details class="filters" open={filtered}><summary>{i18n.t('showroom.filters')}</summary>
+ {#if showFilters}<details class="filters" open={filtered}><summary>{i18n.t('showroom.filters')}</summary>
   <form method="GET" action={base}>
    <label class="search">{i18n.t('showroom.search')}<input name="search" type="search" maxlength="120" value={data.fields.search??''} /></label>
    <label>{i18n.t('showroom.form')}<select aria-label={i18n.t('showroom.form')} name="form" value={data.fields.form??''}><option value="">{i18n.t('showroom.anyType')}</option>{#each inventoryForms.filter(Boolean) as form}<option value={form}>{i18n.t(('inventory.form.'+form) as MessageKey)}</option>{/each}</select></label>
@@ -24,9 +25,9 @@
    <label>{i18n.t('showroom.maximum')}<input name="maximum" inputmode="decimal" maxlength="24" value={data.fields.maximum??''} aria-describedby="price-help" /></label>
    <p id="price-help">{i18n.t('showroom.priceHelp')}</p><div class="actions"><button type="submit">{i18n.t('showroom.apply')}</button><a href={base}>{i18n.t('showroom.clear')}</a></div>
   </form>
- </details>
+ </details>{:else}<p><a href={base+'?availability=all'}>{i18n.t('showroom.all')}</a></p>{/if}
  <section aria-label={i18n.t('showroom.inventory')}>
-  {#if data.page.pianos.length===0}<p class="empty">{i18n.t('showroom.empty')}</p><a href={base}>{i18n.t('showroom.clear')}</a>{:else}
+  {#if data.page.pianos.length===0}<p class="empty">{i18n.t('showroom.empty')}</p>{#if filtered||data.fields.cursor}<a href={base}>{i18n.t('showroom.clear')}</a>{/if}{:else}
    <div class="grid">{#each data.page.pianos as piano,index}<article><a href={publicPianoPath(profile.slug,piano)}>
     <div class="cover"><img src={base+'/pianos/'+encodeURIComponent(piano.id)+'/photos/'+encodeURIComponent(piano.photos[0].id)} alt={piano.photos[0].alt_text||i18n.t('showroom.photo',{title:piano.title,number:1})} loading={index===0?'eager':'lazy'} /></div>
     <div class="card-copy"><span class="status">{i18n.t(('inventory.status.'+piano.status) as MessageKey)}</span><h2>{piano.title}</h2><p class="price">{piano.price?i18n.money(piano.price.minor_units,piano.price.currency):i18n.t('showroom.requestPrice')}</p><p class="kind">{i18n.t(('inventory.form.'+piano.form) as MessageKey)}</p></div>

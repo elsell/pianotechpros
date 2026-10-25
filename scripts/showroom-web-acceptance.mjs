@@ -10,7 +10,7 @@ const piano={id:'grand',dealer_id:'atelier',publication_revision:2,status:'avail
 const upright={...piano,id:'upright',title:'Studio upright',featured:false,form:'studio_upright',stock_number:'PT-2',price:null};
 const aliasPiano={...piano,id:'12345678-1234-4234-8234-123456789abc'};
 const image=readFileSync(new URL('./fixtures/showroom.jpg',import.meta.url));
-let published=true,relatedFailure=false;const requests=[];
+let published=true,relatedFailure=false,catalogSize=2,nextPage=false,hasSold=false;const requests=[];
 const api=createServer((req,res)=>{
  assert.equal(req.headers.authorization,undefined);assert.equal(req.headers.cookie,undefined);requests.push(req.url);
  res.setHeader('Cache-Control','no-store');res.setHeader('Content-Type','application/json');
@@ -21,11 +21,11 @@ const api=createServer((req,res)=>{
  if(url.pathname.includes('/photos/')||url.pathname==='/v1/showrooms/atelier/banner/current'){res.setHeader('Content-Type','image/jpeg');res.end(image);return;}
  if(url.pathname==='/v1/showrooms/atelier/pianos'){
   if(relatedFailure&&url.searchParams.get('limit')==='4')return send(503,{code:'unavailable'});
-  let pianos=[piano,upright];if(url.searchParams.get('search'))pianos=pianos.filter(p=>p.title.toLowerCase().includes(url.searchParams.get('search').toLowerCase()));
+  let pianos=[piano,upright].slice(0,catalogSize);if(hasSold&&url.searchParams.get('availability')==='all')pianos.push({...piano,id:'sold',status:'sold',title:'Sold studio'});if(url.searchParams.get('search'))pianos=pianos.filter(p=>p.title.toLowerCase().includes(url.searchParams.get('search').toLowerCase()));
   if(url.searchParams.get('form'))pianos=pianos.filter(p=>p.form===url.searchParams.get('form'));
   if(url.searchParams.get('currency'))pianos=pianos.filter(p=>p.price?.currency===url.searchParams.get('currency'));
   if(url.searchParams.has('maxPrice'))pianos=pianos.filter(p=>p.price&&p.price.minor_units<=Number(url.searchParams.get('maxPrice')));
-  return send(200,{data:{profile,pianos},meta:{}});
+  return send(200,{data:{profile,pianos},meta:nextPage?{nextCursor:'another-page'}:{}});
  }
  const id=url.pathname.split('/').at(-1);const found=[piano,upright,aliasPiano].find(p=>p.id===id);return found?send(200,{data:{profile,piano:found}}):send(404,{code:'not_found'});
 });
@@ -55,6 +55,12 @@ try{
  const html=await fetch(webURL+'/showrooms/atelier');assert.equal(html.headers.get('cache-control'),'no-store');
  const csp=html.headers.get('content-security-policy');assert.match(csp,/default-src 'self'/);assert.match(csp,/frame-ancestors 'none'/);assert.match(csp,/object-src 'none'/);assert.match(csp,/script-src[^;]*'nonce-[^']+'/);assert.equal(html.headers.get('x-content-type-options'),'nosniff');assert.equal(html.headers.get('referrer-policy'),'no-referrer');
  const source=await html.text();assert.ok(source.includes('Walnut baby grand'));assert.ok(!source.includes('PRIVATE'));
+ catalogSize=0;await page.goto(webURL+'/showrooms/atelier');assert.equal(await page.locator('details.filters').count(),0);assert.equal(await page.getByRole('link',{name:'Clear filters',exact:true}).count(),0);
+ catalogSize=1;await page.goto(webURL+'/showrooms/atelier');await page.getByRole('heading',{name:'Walnut baby grand'}).waitFor();assert.equal(await page.locator('details.filters').count(),0);
+ await page.screenshot({path:'/tmp/piano-showroom-single.png',fullPage:true});hasSold=true;await page.getByRole('link',{name:'Include sold pianos',exact:true}).click();await page.getByRole('heading',{name:'Sold studio',exact:true}).waitFor();assert.equal(await page.locator('details.filters[open]').count(),1);hasSold=false;
+ await page.goto(webURL+'/showrooms/atelier?search=unmatched');assert.equal(await page.locator('details.filters[open]').count(),1);await page.getByRole('button',{name:'Show pianos',exact:true}).waitFor();assert.ok(await page.getByRole('link',{name:'Clear filters',exact:true}).count()>0);
+ await page.goto(webURL+'/showrooms/atelier?cursor=previous-page');assert.equal(await page.locator('details.filters').count(),1);
+ nextPage=true;await page.goto(webURL+'/showrooms/atelier');assert.equal(await page.locator('details.filters').count(),1);nextPage=false;catalogSize=2;
  await page.goto(webURL+'/showrooms/atelier');await page.getByRole('heading',{name:'Walnut baby grand'}).waitFor();
  await page.getByRole('img',{name:'Atelier Pianos showroom',exact:true}).waitFor();
  await page.waitForFunction(()=>{const image=document.querySelector('.banner img');return image?.complete&&image.naturalWidth>0;});

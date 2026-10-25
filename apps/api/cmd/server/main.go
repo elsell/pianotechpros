@@ -11,6 +11,7 @@ import (
 	"github.com/elsell/pianotechpros/apps/api/internal/adapters/sessionauth"
 	spice "github.com/elsell/pianotechpros/apps/api/internal/adapters/spicedb"
 	"github.com/elsell/pianotechpros/apps/api/internal/app"
+	"github.com/elsell/pianotechpros/apps/api/internal/bootstrap/inquiry"
 	"github.com/elsell/pianotechpros/apps/api/internal/bootstrap/inventoryphotos"
 	"github.com/elsell/pianotechpros/apps/api/internal/bootstrap/showroom"
 	"github.com/elsell/pianotechpros/apps/api/internal/config"
@@ -96,7 +97,11 @@ func main() {
 	application := app.App{Auth: sessions, IdentityVerifier: verifier, Sessions: sessions, SessionTTL: time.Duration(cfg.SessionTTLMinutes) * time.Minute, SessionAbsoluteTTL: time.Duration(cfg.SessionAbsoluteTTLMinutes) * time.Minute, AuthorizationMaxAttempts: cfg.AuthorizationMaxAttempts, AllowAccountProvisioning: cfg.AccountProvisioningMode == "open", InvitedEmails: invitedEmails, InvitationAdmins: invitationAdmins, InvitationAdminUsers: invitationAdminUsers, Invitations: store, AllowAccountDeactivation: cfg.AccountSelfDeactivationEnabled, Users: store, Authorizer: authorizer, Resources: store, Audits: store, AuditRateLimiter: auditLimiter, AuthorizationOutbox: store, AuthorizationSerializer: store, Clock: clock, Dependencies: []ports.HealthChecker{store, authorizer}, CursorSigningKey: []byte(cfg.CursorSigningKey), Probe: probe}
 	go reconcile(ctx, application, uuid.NewString())
 	domainDependencies := generated.Dependencies{DB: store.DB, Auth: sessions, Authorizer: authorizer, AuthorizationOutbox: store, AuthorizationSerializer: store, Audits: store, AuditRateLimiter: auditLimiter, Clock: clock, Probe: probe, NewID: uuid.NewString, AuthorizationWorker: uuid.NewString(), AuthorizationLease: 30 * time.Second, CursorSigningKey: []byte(cfg.CursorSigningKey)}
-	registrations := append(generated.Registrations(domainDependencies), inventoryphotos.Registration(domainDependencies, photoprocessor.New()), showroom.Registration(store.DB, probe, []byte(cfg.CursorSigningKey)))
+	inquiryRegistration, err := inquiry.Registration(store.DB, cfg, clock, uuid.NewString, probe)
+	if err != nil {
+		panic(err)
+	}
+	registrations := append(generated.Registrations(domainDependencies), inventoryphotos.Registration(domainDependencies, photoprocessor.New()), showroom.Registration(store.DB, probe, []byte(cfg.CursorSigningKey)), inquiryRegistration)
 	handler, _ := httpserver.New(application, generated.Domains, httpserver.Options{OIDCIssuer: cfg.OIDCIssuer, OIDCDiscoveryURL: discoveryURL, OIDCAuthorizationURL: authorizationURL, OIDCTokenURL: tokenURL, OIDCDocsClientID: cfg.OIDCDocsClientID, OIDCDocsRedirectURI: cfg.OIDCDocsRedirectURI, PublicBaseURL: cfg.PublicBaseURL, CORSAllowedOrigins: cfg.CORSAllowedOrigins, TrustedProxyCIDRs: cfg.TrustedProxyCIDRs, DisableDocs: cfg.ScalarDocsDisabled, RequestRateLimiter: requestLimiter, Clock: clock, Probe: probe, MetricsHandler: metrics, DomainRegistrations: registrations})
 	server := &http.Server{Addr: cfg.HTTPAddr, Handler: handler, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 20}
 	go func() {

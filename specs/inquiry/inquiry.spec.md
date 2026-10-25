@@ -38,6 +38,36 @@ an enabled verifier or disabled policy; a missing verifier is never disabled.
 When enabled, absent/invalid challenge or verifier outage fails closed. Tokens
 are bounded, consumed only for verification, and never stored, audited or logged.
 
+The HTTP submission route is `POST /v1/showrooms/{slug}/pianos/{id}/inquiries`.
+It returns 204 with no response body after durable acceptance (or honeypot
+suppression). It sets no-store and never reflects contact input in errors.
+The request limiter attaches its normalized, trusted-proxy-aware source to a
+server-owned context value only after allowing a request. Routes cannot derive
+this identity from headers or JSON, and fail closed without that evidence.
+Malformed input returns 400/422, hidden or missing publication returns 404,
+exhausted source quota returns 429, rejected CAPTCHA returns 400 with stable
+`inquiry_challenge_rejected` code, and dependency failure returns 503. Request
+bodies are bounded to 32 KiB, including honeypot and challenge fields.
+
+The enabled challenge adapter uses Cloudflare Turnstile Siteverify over HTTPS.
+It requires exact configured hostname and `inquiry` action, a successful response
+with no provider errors, and a challenge timestamp no more than five minutes old
+(at most 30 seconds of future clock skew). It sends no buyer fields or source IP.
+Verification has a five-second deadline, rejects redirects, bounds responses to
+16 KiB, and hides provider/transport details. No automatic verification retry is
+performed because tokens are single-use. Deployment credentials remain external.
+Provider behavior follows the [Turnstile server validation contract](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/).
+
+Bootstrap reads `PIANOTECHPROS_INQUIRY_CHALLENGE_POLICY` (`enabled` or explicit
+`disabled`), `PIANOTECHPROS_TURNSTILE_SECRET`, and
+`PIANOTECHPROS_TURNSTILE_HOSTNAME`. An unset policy leaves submission unavailable;
+it never bypasses verification. Invalid or partial configuration fails startup.
+Enabled policy requires secret and exact lowercase hostname; disabled policy
+rejects leftover verifier settings. Deployment acceptance requires an explicit
+policy. A dedicated five-submissions-per-minute source budget uses the existing
+coordinated PostgreSQL request scope with `inquiry:`-prefixed source identities,
+separate from general request counters while sharing bounded source capacity.
+
 The application repository command accepts validated contact input, server ID
 and time plus exact showroom slug/piano lookup. The adapter must recheck current
 publication and showroom visibility inside the insert transaction, so unpublish

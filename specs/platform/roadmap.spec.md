@@ -10,10 +10,17 @@ migration 25 and its adapter capture current visibility/snapshot in the same
 transaction; independent insert guards reject substituted snapshots, and runtime
 credentials cannot rewrite/delete buyer messages. Real PostgreSQL tests observe
 lock waits behind showroom/piano unpublish and reject the newly hidden listing.
-Full repository/contract checks, domain/application race tests, isolated database
-integration and required review pass. No public route is exposed by this slice.
-HTTP composition, configured challenge adapter, authorized/audited inbox and
-web/native user journeys remain required for IQ-01 through IQ-03 completion.
+The submission HTTP adapter now carries the request middleware's trusted source
+identity, bounds request bodies, redacts private validation details and returns
+empty durable acknowledgments. Its own coordinated five-per-minute budget is
+separate from general request counts. Turnstile verification checks exact hostname,
+action and age, rejects redirects, and fails closed on provider failures. An
+explicit configuration policy enables submission; absent policy leaves it
+unavailable. Real PostgreSQL/HTTP tests verify durable success and rejection after
+unpublish, and concurrent budget tests verify coordination. Authorized/audited
+inbox and web/native user journeys remain required for IQ-01 through IQ-03
+completion. Full repository/contract checks, affected HTTP/adapter race tests,
+isolated PostgreSQL checks and required read-only review pass.
 
 The node-forge 1.4.0 mitigation backports the exact RSA nested-DigestAlgorithm
 validation from unmerged upstream PR 1152, with license, source and installed

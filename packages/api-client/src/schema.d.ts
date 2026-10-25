@@ -55,6 +55,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list-customers"];
+        put?: never;
+        post: operations["create-customer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get-customer"];
+        put: operations["update-customer"];
+        post?: never;
+        delete: operations["delete-customer"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/dealers": {
         parameters: {
             query?: never;
@@ -892,6 +924,59 @@ export interface components {
             readonly $schema?: string;
             data: components["schemas"]["PublicCollectionData"];
             meta: components["schemas"]["MetaStruct"];
+        };
+        CustomerCreate: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/CustomerCreate.json
+             */
+            readonly $schema?: string;
+            business_name: string;
+            email: string;
+            is_business: boolean;
+            name: string;
+            phone: string;
+        };
+        CustomerItem: {
+            business_name: string;
+            email: string;
+            id: string;
+            is_business: boolean;
+            name: string;
+            phone: string;
+        };
+        CustomerItemOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/CustomerItemOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["CustomerItem"];
+        };
+        CustomerListOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/CustomerListOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["CustomerItem"][];
+            meta: components["schemas"]["MetaStruct"];
+        };
+        CustomerUpdate: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/CustomerUpdate.json
+             */
+            readonly $schema?: string;
+            business_name: string;
+            email: string;
+            is_business: boolean;
+            name: string;
+            phone: string;
         };
         DataStruct: {
             /** Format: date-time */
@@ -1762,6 +1847,177 @@ export interface operations {
         };
     };
     "requeue-authorization-dead-letter": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "list-customers": {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                Authorization?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerListOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "create-customer": {
+        parameters: {
+            query?: never;
+            header: {
+                Authorization?: string;
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerCreate"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerItemOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "get-customer": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerItemOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "update-customer": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerUpdate"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerItemOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "delete-customer": {
         parameters: {
             query?: never;
             header?: {

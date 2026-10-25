@@ -12,7 +12,7 @@ compilation. Android interaction confirms a private title edit never enters the
 share sheet. iOS interaction remains unverified. Verification reports only the
 previously reviewed node-forge advisory; no security threshold was weakened.
 
-Crawler discovery (SH-05) is the active slice. Dedicated anonymous directory and
+Crawler discovery (SH-05) is awaiting hosted native checks in PR #62. Dedicated anonymous directory and
 catalog ports return minimal public projections with bounded batch reads and
 publication visibility locks. Isolated PostgreSQL tests cover private edits,
 sold publications, unpublication, corrupted snapshots, capacity overflow, failures
@@ -24,6 +24,15 @@ crawlers and fails before API reads. Development and production browser acceptan
 checks and critic review pass, including Unicode-control sanitization. Hosted
 checks and merge remain pending. Customer/technician
 profiles and broader native/device acceptance remain required parity work.
+
+Customer profile parity (CU-01) is the active implementation slice. The legacy
+contract now specifies private personal/business details, stable locations and
+owned pianos, injected timezone validation and optimistic revisions. Domain tests
+cover validation, nested defensive copies, stale saves, no-ops and clock/revision
+bounds. The generated authenticated application remains fail-closed. Aggregate
+persistence, authorization, API contracts, recoverable web/native editing and
+interaction acceptance remain unfinished; this foundation is not CU-01 completion.
+Technician profile parity follows and remains required.
 
 QR scan parity (QR-01) is implemented with remaining device acceptance below.
 The legacy scan flow has been rechecked read-only: stable label, authenticated

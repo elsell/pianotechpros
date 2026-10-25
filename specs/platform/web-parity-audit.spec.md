@@ -101,8 +101,11 @@ real-catalog acceptance or the whole website complete.
    preservation after republish, history 20+5 pagination with unsaved edits, and
    private scan continuation/sale/sign-out. The new combined CI wiring still needs
    a fresh single-pass result; live Turnstile remains separate.
-3. Close the dealer/inventory/publication/photo/showroom composed browser gaps
-   with owner and anonymous contexts against the same isolated persistent data.
+3. The photo-first publication browser journey now exercises real image storage,
+   lazy single-record creation, exact money/partial-date reload, reviewed publication,
+   private snapshot separation and explicit unpublishing. Local execution passed;
+   recurring CI wiring needs fresh evidence. Complete the remaining dealer, staff,
+   complete-field editing, conflict and broader showroom journeys.
 4. Exercise the real speech and challenge adapters with explicit non-production
    configuration. Missing access is an integration blocker, not completed work;
    never borrow legacy production credentials.

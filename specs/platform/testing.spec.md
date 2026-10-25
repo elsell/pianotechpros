@@ -620,3 +620,17 @@ The disposable acceptance Compose override explicitly disables the external
 challenge on both API and web, with empty verifier credentials. This configuration
 is confined to synthetic local acceptance; production defaults stay fail closed.
 Live Turnstile composition remains a separate unproven provider gate.
+
+## Composed photo-first web publication journey
+
+Use the synthetic dealer created by recurring API acceptance, and create a new
+piano through the web's New action with a selected image before entering required
+publication fields. Assert that New alone sends no create command and that photo
+selection creates exactly one private record. Use normal PKCE login and actual
+image processing/storage. Save exact money and partial manufacturing dates,
+reload, then publish through review/confirmation. An anonymous context must see
+the saved public snapshot and processed image, never private notes. Later private
+title/photo edits must leave the public snapshot unchanged until publication or
+unpublication is explicitly confirmed. Verify anonymous disappearance after
+unpublishing. This complements controlled failure tests without substituting for
+real speech-provider, accessibility or native-device acceptance.

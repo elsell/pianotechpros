@@ -3,95 +3,87 @@ package customerstore
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
-	"github.com/elsell/pianotechpros/apps/api/internal/domain/audit"
-	domain "github.com/elsell/pianotechpros/apps/api/internal/domain/customer"
-	"github.com/elsell/pianotechpros/apps/api/internal/domain/identity"
-	"github.com/elsell/pianotechpros/apps/api/internal/ports"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/elsell/pianotechpros/apps/api/internal/domain/audit"
+	domain "github.com/elsell/pianotechpros/apps/api/internal/domain/customer"
+	"github.com/elsell/pianotechpros/apps/api/internal/ports"
 )
 
 var databaseDSN = flag.String("database-dsn", "", "PostgreSQL integration test DSN")
 
-func TestPersistenceMappingPreservesDomainIdentityAndTime(t *testing.T) {
-	now := time.Date(2026, 7, 17, 12, 0, 0, 0, time.UTC)
-	entity := domain.Entity{ID: "id", OwnerUserID: "owner", Attributes: domain.Attributes{Name: "value", IsBusiness: true, BusinessName: "value", Email: "value", Phone: "value"}, CreatedAt: now, UpdatedAt: now}
-	if got := toEntity(*fromEntity(entity)); !reflect.DeepEqual(got, entity) {
-		t.Fatalf("mapping drifted: got %+v want %+v", got, entity)
-	}
-}
+type zoneSet map[string]bool
 
-func TestCreateAndDeletePersistRequiredPlatformRowsAtomically(t *testing.T) {
-	if *databaseDSN == "" {
-		t.Skip("-database-dsn is required for PostgreSQL integration")
-	}
-	db, err := gorm.Open(postgres.Open(*databaseDSN), &gorm.Config{})
+func (z zoneSet) Contains(s string) bool { return z[s] }
+
+var catalog = zoneSet{"UTC": true}
+var now = time.Date(2026, 10, 25, 12, 0, 0, 0, time.UTC)
+
+func profile(t *testing.T) domain.Entity {
+	t.Helper()
+	year := 1990
+	e, err := domain.New("profile", "owner", domain.Attributes{Name: "Customer", Email: "customer@example.com", Locations: []domain.Location{{Key: "home", Label: "Home", Street1: "1 Example Street", City: "Example", Region: "NY", PostalCode: "10001", Timezone: "UTC"}}, Pianos: []domain.Piano{{Key: "piano", LocationKey: "home", Nickname: "Family piano", Form: "grand", ManufacturedYear: &year}}}, catalog, now)
 	if err != nil {
 		t.Fatal(err)
 	}
-	tx := db.Begin()
-	if tx.Error != nil {
-		t.Fatal(tx.Error)
-	}
-	t.Cleanup(func() { _ = tx.Rollback().Error })
-	now := time.Now().UTC()
-	type userRow struct {
-		ID                   string `gorm:"primaryKey"`
-		Email, DisplayName   string
-		Status               identity.Status
-		CreatedAt, UpdatedAt time.Time
-	}
-	if err := tx.Table("user_models").Create(&userRow{ID: "customer-owner", Status: identity.StatusActive, CreatedAt: now, UpdatedAt: now}).Error; err != nil {
+	return e
+}
+func TestStoragePreservesCompleteAggregate(t *testing.T) {
+	want := profile(t)
+	row, err := fromEntity(want, catalog)
+	if err != nil {
 		t.Fatal(err)
 	}
-	repository := New(tx)
-	entity := domain.Entity{ID: "entity", OwnerUserID: "customer-owner", Attributes: domain.Attributes{Name: "value", IsBusiness: true, BusinessName: "value", Email: "value", Phone: "value"}, CreatedAt: now, UpdatedAt: now}
-	createdEvent := audit.Event{ID: "customer-created-audit", OwnerUserID: entity.OwnerUserID, ActorUserID: entity.OwnerUserID, Action: audit.ResourceCreated, TargetType: "customer", TargetID: string(entity.ID), Outcome: audit.Succeeded, CorrelationID: "request", OccurredAt: now}
-	createChange := ports.AuthorizationChange{ID: "customer-touch", ResourceType: "resource", ResourceID: "customer/" + string(entity.ID), Relation: "owner", SubjectType: "user", SubjectID: entity.OwnerUserID, OwnerUserID: entity.OwnerUserID, ActorUserID: createdEvent.ActorUserID, Operation: ports.AuthorizationTouch, LockedBy: "worker", Lease: time.Minute}
-	missingContext := createChange
-	missingContext.OwnerUserID = ""
-	if _, _, err := repository.Create(context.Background(), entity, missingContext, ports.Idempotency{PrincipalID: entity.OwnerUserID, Operation: "customer.create", Key: "invalid-domain-create-key-0001", RequestHash: make([]byte, 32)}, createdEvent); !errors.Is(err, ports.ErrInvalidArgument) {
-		t.Fatalf("missing authorization owner was accepted: %v", err)
+	got, err := toEntity(*row, catalog)
+	if err != nil || !reflect.DeepEqual(got, want) {
+		t.Fatalf("round trip: %+v %v", got, err)
 	}
-	created, replayed, err := repository.Create(context.Background(), entity, createChange, ports.Idempotency{PrincipalID: entity.OwnerUserID, Operation: "customer.create", Key: "domain-create-key-0001", RequestHash: make([]byte, 32)}, createdEvent)
-	if err != nil || replayed || created.ID != entity.ID {
-		t.Fatalf("domain create failed: created=%+v replayed=%v err=%v", created, replayed, err)
-	}
-	if _, _, err := repository.Create(context.Background(), entity, createChange, ports.Idempotency{PrincipalID: entity.OwnerUserID, Operation: "customer.create", Key: "domain-create-key-0001", RequestHash: bytes.Repeat([]byte{1}, 32)}, createdEvent); !errors.Is(err, ports.ErrIdempotencyConflict) {
-		t.Fatalf("conflicting idempotency replay returned %v, want ErrIdempotencyConflict", err)
-	}
-	var reservation idempotencyModel
-	if err := tx.Where("resource_id = ?", entity.ID).First(&reservation).Error; err != nil || reservation.CreatedAt.IsZero() {
-		t.Fatalf("required idempotency timestamp missing: %+v %v", reservation, err)
-	}
-	var outbox authorizationOutboxModel
-	if err := tx.Where("id = ?", createChange.ID).First(&outbox).Error; err != nil || outbox.CreatedAt.IsZero() || outbox.OwnerUserID != entity.OwnerUserID || outbox.ActorUserID != createdEvent.ActorUserID {
-		t.Fatalf("required outbox context missing: %+v %v", outbox, err)
-	}
-	deletedEvent := createdEvent
-	deletedEvent.ID, deletedEvent.Action = "customer-deleted-audit", audit.ResourceDeleted
-	deleteChange := createChange
-	deleteChange.ID, deleteChange.Operation = "customer-delete", ports.AuthorizationDelete
-	if err := repository.Delete(context.Background(), entity.OwnerUserID, entity.ID, deleteChange, deletedEvent); err != nil {
+	want.Pianos = nil
+	row, err = fromEntity(want, catalog)
+	if err != nil {
 		t.Fatal(err)
 	}
-	outbox = authorizationOutboxModel{}
-	if err := tx.Where("id = ?", deleteChange.ID).First(&outbox).Error; err != nil || outbox.Operation != ports.AuthorizationDelete || outbox.OwnerUserID != entity.OwnerUserID || outbox.ActorUserID != deletedEvent.ActorUserID {
-		t.Fatalf("delete authorization cleanup missing: %+v %v", outbox, err)
+	if string(row.Pianos) != "[]" {
+		t.Fatalf("empty pianos must store an array: %s", row.Pianos)
 	}
 }
-
-func TestTransactionalModelsCarryRequiredCreationTime(t *testing.T) {
-	now := time.Date(2026, 7, 17, 12, 0, 0, 0, time.UTC)
-	if got := (idempotencyModel{CreatedAt: now}).CreatedAt; got != now {
-		t.Fatalf("idempotency creation time drifted: %v", got)
+func TestStorageRejectsCorruptAggregates(t *testing.T) {
+	cases := map[string]func(*model){
+		"null locations": func(r *model) { r.Locations = json.RawMessage("null") },
+		"null pianos":    func(r *model) { r.Pianos = json.RawMessage("null") },
+		"unknown field": func(r *model) {
+			r.Locations = bytes.Replace(r.Locations, []byte(`"Key":`), []byte(`"Private":"unexpected","Key":`), 1)
+		},
+		"foreign reference": func(r *model) { r.Pianos = bytes.ReplaceAll(r.Pianos, []byte(`"home"`), []byte(`"foreign"`)) },
+		"trailing document": func(r *model) { r.Pianos = append(r.Pianos, []byte(` []`)...) },
+		"oversize":          func(r *model) { r.Locations = bytes.Repeat([]byte(" "), maxStoredAggregateBytes+1) },
+		"revision":          func(r *model) { r.Revision = 0 },
+		"clock":             func(r *model) { r.UpdatedAt = r.CreatedAt.Add(-time.Second) },
 	}
-	if got := (authorizationOutboxModel{CreatedAt: now}).CreatedAt; got != now {
-		t.Fatalf("authorization outbox creation time drifted: %v", got)
+	for name, change := range cases {
+		t.Run(name, func(t *testing.T) {
+			r, err := fromEntity(profile(t), catalog)
+			if err != nil {
+				t.Fatal(err)
+			}
+			change(r)
+			if got, err := toEntity(*r, catalog); err == nil || got.ID != "" {
+				t.Fatalf("corruption returned data: %+v %v", got, err)
+			}
+		})
+	}
+}
+func TestRepositoryRejectsUnscopedInputsBeforeDatabaseAccess(t *testing.T) {
+	r := New(nil, catalog)
+	if _, err := r.Get(context.Background(), "", "profile"); !errors.Is(err, ports.ErrInvalidArgument) {
+		t.Fatal(err)
+	}
+	if _, _, err := r.Save(context.Background(), "", "profile", 1, profile(t).Attributes, now, audit.Event{}); !errors.Is(err, ports.ErrInvalidArgument) {
+		t.Fatal(err)
 	}
 }

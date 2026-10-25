@@ -515,3 +515,10 @@ continues rejecting fetch, browser-global transport and alternate clients even
 when an AbortController signal is provided.
 
 Native QR camera access is confined to `apps/mobile/src/inventory/scan-camera.tsx`. The structural gate permits `expo-camera` only there, rejects direct imports from presentation and still rejects network primitives inside that adapter. The adapter exposes QR-only preview and camera permission, not media recording or alternate API transport.
+
+The exact file `apps/api/internal/adapters/gormstore/customer/postgres_test.go`
+may execute SQL for controlled PostgreSQL fixtures and adversarial schema tests:
+proving runtime DELETE denial, immutable ownership/revision guards, corruption
+rejection, and rejection of previously committed audit proof. This exception
+allows testing database enforcement beneath the repository. Production customer
+persistence uses typed GORM operations; the exception does not cover product code.

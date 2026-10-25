@@ -12,7 +12,8 @@ compilation. Android interaction confirms a private title edit never enters the
 share sheet. iOS interaction remains unverified. Verification reports only the
 previously reviewed node-forge advisory; no security threshold was weakened.
 
-Crawler discovery (SH-05) is awaiting hosted native checks in PR #62. Dedicated anonymous directory and
+Crawler discovery (SH-05) merged in PR #62 at
+`e730017ef309acab45e184795ffbcf05aba36182` after acceptance and both native builds passed. Dedicated anonymous directory and
 catalog ports return minimal public projections with bounded batch reads and
 publication visibility locks. Isolated PostgreSQL tests cover private edits,
 sold publications, unpublication, corrupted snapshots, capacity overflow, failures
@@ -22,15 +23,20 @@ fields. Root-level sitemap files preserve protocol URL scope. Robots and localiz
 public discovery text use only the configured origin; absent configuration blocks
 crawlers and fails before API reads. Development and production browser acceptance, full project/contract
 checks and critic review pass, including Unicode-control sanitization. Hosted
-checks and merge remain pending. Customer/technician
+verification reported only the previously reviewed node-forge advisory. Customer/technician
 profiles and broader native/device acceptance remain required parity work.
 
 Customer profile parity (CU-01) is the active implementation slice. The legacy
 contract now specifies private personal/business details, stable locations and
 owned pianos, injected timezone validation and optimistic revisions. Domain tests
 cover validation, nested defensive copies, stale saves, no-ops and clock/revision
-bounds. The generated authenticated application remains fail-closed. Aggregate
-persistence, authorization, API contracts, recoverable web/native editing and
+bounds. Aggregate storage now preserves nested keys, scopes owner reads, serializes
+revision saves and commits audits/outbox/idempotency atomically. Real PostgreSQL
+race tests cover runtime privileges, rollback, duplicate creation, competing edits,
+corrupt rows and rejection of previously committed audit proof. Review corrected
+production-translated duplicate errors and same-transaction audit validation;
+no confirmed persistence blockers remain. The generated authenticated application
+remains fail-closed. Authorization, API contracts, recoverable web/native editing and
 interaction acceptance remain unfinished; this foundation is not CU-01 completion.
 Technician profile parity follows and remains required.
 

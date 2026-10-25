@@ -212,3 +212,30 @@ usable with a localized unavailable notice and an ordinary showroom link; it
 must never synthesize candidates from private inventory or cached editor data.
 Cards use publication-derived readable links and scoped public thumbnails. All
 copy and photo accessibility labels use the shared catalog.
+
+## Structured discovery metadata
+
+Public metadata is derived only from validated public showroom/listing DTOs.
+It includes an absolute canonical URL, social title/description/image and escaped
+JSON-LD for the showroom business and listing Product. Use only existing public
+contact/address/stock fields. Never emit serial, private notes, cost, sale price,
+QR tokens, draft values, fabricated ratings/reviews or a fake zero price. Offers
+are present only when the publication exposes a price; amounts preserve exact
+currency minor-unit precision. Availability reflects current public lifecycle
+status. Reserved and sold records must not claim ordinary in-stock availability.
+
+Absolute metadata URLs use an explicitly configured public web origin, never
+Host/Forwarded headers, the API URL or an internal service address. Missing public
+origin omits absolute discovery metadata while ordinary browsing remains usable;
+production publication requires configuring the intended public HTTPS origin.
+Invalid supplied origins fail startup validation. Local HTTP origins are allowed
+only in explicit development mode. Canonical paths never copy query parameters.
+JSON-LD serialization escapes HTML-significant characters so public text cannot
+close a script element. Hero imagery loads eagerly; secondary images remain lazy.
+
+References reviewed: Google Search Central's product-snippet guidance
+(https://developers.google.com/search/docs/appearance/structured-data/product-snippet)
+and canonical URL guidance
+(https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls).
+Metadata does not promise rich-result eligibility or invent an offer when the
+seller requests contact for pricing.

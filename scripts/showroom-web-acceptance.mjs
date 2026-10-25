@@ -30,7 +30,7 @@ const api=createServer((req,res)=>{
 api.listen(0,'127.0.0.1');await once(api,'listening');const port=api.address().port;
 const webURL='http://127.0.0.1:5187';let log='';
 const built=process.env.WEB_ACCEPTANCE_BUILT==='1';
-const web=spawn(built?process.execPath:'pnpm',built?['apps/web/build/index.js']:['--dir','apps/web','dev','--port','5187','--strictPort'],{env:{...process.env,HOST:'127.0.0.1',PORT:'5187',PIANOTECHPROS_APP_ENV:'development',PIANOTECHPROS_API_URL:`http://127.0.0.1:${port}`},stdio:['ignore','pipe','pipe'],detached:true});web.stdout.on('data',d=>log+=d);web.stderr.on('data',d=>log+=d);
+const web=spawn(built?process.execPath:'pnpm',built?['apps/web/build/index.js']:['--dir','apps/web','dev','--port','5187','--strictPort'],{env:{...process.env,HOST:'127.0.0.1',PORT:'5187',PIANOTECHPROS_APP_ENV:'development',PIANOTECHPROS_PUBLIC_WEB_ORIGIN:'https://pianos.example',PIANOTECHPROS_API_URL:`http://127.0.0.1:${port}`},stdio:['ignore','pipe','pipe'],detached:true});web.stdout.on('data',d=>log+=d);web.stderr.on('data',d=>log+=d);
 let browser;let evidencePage;const errors=[];
 try{
  for(let i=0;i<100;i++){if(web.exitCode!==null)throw Error(log);try{const response=await fetch(webURL);if(response.ok)break;}catch{}if(i===99)throw Error(log);await new Promise(r=>setTimeout(r,200));}
@@ -56,6 +56,18 @@ try{
  assert.equal(await page.getByRole('heading',{name:'Studio upright'}).count(),1);
  await page.locator('summary').click();await page.getByLabel('Piano type',{exact:true}).selectOption('studio_upright');await page.getByRole('button',{name:'Show pianos',exact:true}).click();await page.waitForURL(/form=studio_upright/);assert.equal(await page.getByRole('heading',{name:'Walnut baby grand'}).count(),0);
  await page.getByRole('link',{name:'Clear filters',exact:true}).click();await page.getByRole('heading',{name:'Walnut baby grand'}).click();await page.getByRole('heading',{level:1,name:'Walnut baby grand'}).waitFor();
+ assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'),'https://pianos.example/showrooms/atelier/pianos/grand');
+ const structured=JSON.parse(await page.locator('script[data-public-discovery]').textContent());
+ assert.equal(structured['@type'],'Product');assert.equal(structured.offers.price,'12500.00');assert.equal(structured.offers.availability,'https://schema.org/InStock');
+ assert.equal(structured.serial,undefined);assert.equal(structured.review,undefined);
+ const originalDescription=piano.description;
+ piano.description='</script><script>globalThis.injected=true</script>';
+ const inertHTML=await (await fetch(webURL+'/showrooms/atelier/pianos/grand')).text();
+ const inertJSON=JSON.parse(inertHTML.match(/<script type="application\/ld\+json" data-public-discovery>(.*?)<\/script>/s)[1]);
+ assert.equal(inertJSON.description,piano.description);assert.equal(inertHTML.includes('<script>globalThis.injected=true</script>'),false);
+ piano.description=originalDescription;
+ const hiddenPriceHTML=await (await fetch(webURL+'/showrooms/atelier/pianos/upright')).text();
+ const hiddenPriceJSON=JSON.parse(hiddenPriceHTML.match(/<script type="application\/ld\+json" data-public-discovery>(.*?)<\/script>/s)[1]);assert.equal(hiddenPriceJSON.offers,undefined);
  await page.waitForFunction(()=>!document.querySelector('.gallery-controls button')?.disabled);await page.getByRole('button',{name:'Next photo',exact:true}).focus();await page.keyboard.press('Enter');await page.getByText('Photo 2 of 2',{exact:true}).waitFor();assert.ok(await page.locator('.hero img').evaluate(img=>img.complete&&img.naturalWidth>0));
  await page.getByRole('button',{name:'Previous photo',exact:true}).click();await page.getByText('Photo 1 of 2',{exact:true}).waitFor();
  assert.equal(await page.getByRole('link',{name:'Call the showroom',exact:true}).first().getAttribute('href'),'tel:+15550100');

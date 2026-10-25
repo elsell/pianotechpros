@@ -11,8 +11,11 @@ related-piano queries prefer the same form and fall back to available showroom
 stock, excluding the current piano. Optional related-content failure preserves
 the main listing with localized feedback. Pure policy tests, browser acceptance,
 workspace checks and i18n checks pass; narrow layout was inspected and the
-project critic found no blockers. These changes remain unmerged. Structured
-metadata, public sharing and crawler discovery remain open.
+project critic found no blockers. These changes remain unmerged. Publication-only canonical/social metadata and
+escaped JSON-LD are now implemented behind an explicit validated public origin.
+Tests preserve exact prices, omit hidden offers and reject script termination;
+workspace/browser checks and critic review pass. Production-build and final gates
+are running. Public sharing and crawler discovery remain open.
 
 QR scan parity (QR-01) is the next implementation slice after the history client.
 The legacy scan flow has been rechecked read-only: stable label, authenticated

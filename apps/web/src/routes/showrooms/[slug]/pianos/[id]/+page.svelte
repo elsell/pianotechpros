@@ -3,6 +3,7 @@
  import {onMount} from 'svelte';
  import {createTranslator,type MessageKey} from '@pianotechpros/i18n';
  import InquiryForm from '#lib/inquiry/InquiryForm.svelte';
+ import DiscoveryMetadata from '#lib/showroom/DiscoveryMetadata.svelte';
  import ShowroomFrame from '#lib/showroom/ShowroomFrame.svelte';
  import type {PageData} from './$types';
  export let data:PageData;
@@ -19,10 +20,11 @@
  function move(delta:number){selected=(selected+delta+piano.photos.length)%piano.photos.length;}
 </script>
 <svelte:head><title>{piano.title} · {profile.name}</title><meta name="description" content={piano.description.slice(0,160)||piano.title} /></svelte:head>
+<DiscoveryMetadata metadata={data.metadata} />
 <ShowroomFrame {profile} {i18n}>
  <a class="back" href={base}><span aria-hidden="true">← </span>{i18n.t('showroom.back')}</a>
  <div class="listing"><section class="gallery" aria-label={i18n.t('showroom.photoPosition',{number:selected+1,total:piano.photos.length})}>
-  <div class="hero"><img src={photoBase+encodeURIComponent(piano.photos[selected].id)} alt={piano.photos[selected].alt_text||i18n.t('showroom.photo',{title:piano.title,number:selected+1})} /></div>
+  <div class="hero"><img loading="eager" fetchpriority="high" src={photoBase+encodeURIComponent(piano.photos[selected].id)} alt={piano.photos[selected].alt_text||i18n.t('showroom.photo',{title:piano.title,number:selected+1})} /></div>
   {#if piano.photos.length>1}<div class="gallery-controls"><button disabled={!ready} on:click={()=>move(-1)} aria-label={i18n.t('showroom.previousPhoto')}>←</button><p aria-live="polite">{i18n.t('showroom.photoPosition',{number:selected+1,total:piano.photos.length})}</p><button disabled={!ready} on:click={()=>move(1)} aria-label={i18n.t('showroom.nextPhoto')}>→</button></div>
    <div class="thumbnails">{#each piano.photos as photo,index}<button disabled={!ready} on:click={()=>selected=index} aria-pressed={selected===index} aria-label={i18n.t('showroom.photo',{title:piano.title,number:index+1})}><img src={photoBase+encodeURIComponent(photo.id)} alt="" loading="lazy" /></button>{/each}</div>
   {/if}

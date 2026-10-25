@@ -1,8 +1,8 @@
 import {redirect,error} from '@sveltejs/kit';
 import {createShowroomApiClient} from '@pianotechpros/api-client';
-import {publicPianoID,publicPianoPath,relatedPublicPianos} from '@pianotechpros/client-core';
+import {publicPianoID,publicPianoPath,relatedPublicPianos,pianoMetadata} from '@pianotechpros/client-core';
 import {createTranslator} from '@pianotechpros/i18n';
-import {webConfig} from '#lib/server/config.js';
+import {webConfig,publicWebOrigin} from '#lib/server/config.js';
 import {publicFailure} from '#lib/showroom/server.js';
 import type {PageServerLoad} from './$types';
 export const load:PageServerLoad=async({params,locals,setHeaders,request,url})=>{
@@ -15,5 +15,5 @@ export const load:PageServerLoad=async({params,locals,setHeaders,request,url})=>
  if(url.pathname!==canonicalPath)redirect(307,canonicalPath);
  let related:typeof result.piano[]=[],relatedUnavailable=false;
  try{related=await relatedPublicPianos(result.piano,query=>createShowroomApiClient(webConfig.apiURL).list(params.slug,query,request.signal));}catch{relatedUnavailable=true;}
- return {...result,canonicalPath,related,relatedUnavailable};
+ return {...result,canonicalPath,related,relatedUnavailable,metadata:pianoMetadata(publicWebOrigin,result.profile,result.piano)};
 };

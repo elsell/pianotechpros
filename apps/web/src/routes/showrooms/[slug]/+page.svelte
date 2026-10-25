@@ -1,6 +1,7 @@
 <script lang="ts">
  import {createTranslator,type MessageKey} from '@pianotechpros/i18n';
  import {inventoryForms,inventoryCurrencies,publicPianoPath} from '@pianotechpros/client-core';
+ import DiscoveryMetadata from '#lib/showroom/DiscoveryMetadata.svelte';
  import ShowroomFrame from '#lib/showroom/ShowroomFrame.svelte';
  import type {PageData} from './$types';
  export let data:PageData;
@@ -10,6 +11,7 @@
  $: filtered=Object.entries(data.fields).some(([key,value])=>key!=='cursor'&&!!value);
 </script>
 <svelte:head><title>{profile.name} · {i18n.t('showroom.inventory')}</title><meta name="description" content={profile.tagline||profile.description.slice(0,160)} /></svelte:head>
+<DiscoveryMetadata metadata={data.metadata} />
 <ShowroomFrame {profile} {i18n}>
  <section class="intro"><p class="eyebrow">{i18n.t('showroom.title')}</p><h1>{profile.tagline||i18n.t('showroom.inventory')}</h1>{#if profile.description}<p class="description">{profile.description}</p>{/if}</section>
  <details class="filters" open={filtered}><summary>{i18n.t('showroom.filters')}</summary>

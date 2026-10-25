@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	platformstore "github.com/elsell/pianotechpros/apps/api/internal/adapters/gormstore"
 	"github.com/elsell/pianotechpros/apps/api/internal/domain/audit"
 	domain "github.com/elsell/pianotechpros/apps/api/internal/domain/customer"
 	"github.com/elsell/pianotechpros/apps/api/internal/ports"
@@ -58,6 +59,14 @@ func fixture(t *testing.T, db *gorm.DB, suffix string) (*Repository, domain.Enti
 	idem := ports.Idempotency{PrincipalID: e.OwnerUserID, Operation: "customer.create", Key: id, RequestHash: make([]byte, 32)}
 	return New(db, catalog), e, change, idem, event
 }
+func finishGrant(t *testing.T, db *gorm.DB, change ports.AuthorizationChange, event audit.Event) {
+	t.Helper()
+	event.ID += "-applied"
+	event.Action = audit.AuthorizationApplied
+	if err := (&platformstore.Store{DB: db}).CompleteAuthorizationChangeWithAudit(context.Background(), change.ID, change.LockedBy, event); err != nil {
+		t.Fatal(err)
+	}
+}
 func TestPostgresCustomerAtomicLifecycle(t *testing.T) {
 	db := database(t)
 	tx := db
@@ -67,6 +76,22 @@ func TestPostgresCustomerAtomicLifecycle(t *testing.T) {
 	created, replayed, err := r.Create(ctx, e, change, idem, event)
 	if err != nil || replayed || created.Revision != 1 {
 		t.Fatalf("create: %+v %v", created, err)
+	}
+	if ready, err := r.AuthorizationReady(ctx, e.OwnerUserID, e.ID); err != nil || ready {
+		t.Fatalf("pending grant ready: %v %v", ready, err)
+	}
+	if _, _, err := r.Save(ctx, e.OwnerUserID, e.ID, 1, e.Attributes, now, audit.Event{ID: string(e.ID) + "-early", OwnerUserID: e.OwnerUserID, ActorUserID: e.OwnerUserID, Action: audit.ResourceUpdated, TargetType: "customer", TargetID: string(e.ID), Outcome: audit.Succeeded, CorrelationID: "fixture", OccurredAt: now}); !errors.Is(err, ports.ErrAuthorizationPending) {
+		t.Fatalf("pending save: %v", err)
+	}
+	finishGrant(t, r.DB, change, event)
+	if ready, err := r.AuthorizationReady(ctx, e.OwnerUserID, e.ID); err != nil || !ready {
+		t.Fatalf("completed grant not ready: %v %v", ready, err)
+	}
+	if own, err := r.GetOwn(ctx, e.OwnerUserID); err != nil || own.ID != e.ID {
+		t.Fatalf("own lookup: %+v %v", own, err)
+	}
+	if own, err := r.GetOwn(ctx, "foreign-owner"); !errors.Is(err, ports.ErrNotFound) || own.ID != "" {
+		t.Fatalf("foreign own lookup: %+v %v", own, err)
 	}
 	var outbox authorizationOutboxModel
 	if err := tx.First(&outbox, "id=?", change.ID).Error; err != nil || outbox.CreatedAt.Before(now) {
@@ -272,6 +297,7 @@ func TestPostgresCustomerConcurrentEdits(t *testing.T) {
 	if _, _, err := r.Create(ctx, e, c, i, a); err != nil {
 		t.Fatal(err)
 	}
+	finishGrant(t, db, c, a)
 	var wg sync.WaitGroup
 	errs := make(chan error, 2)
 	for n := range 2 {
@@ -320,6 +346,7 @@ func TestPostgresCustomerRejectsPreviouslyCommittedAuditProof(t *testing.T) {
 	if _, _, err := r.Create(ctx, e, c, i, a); err != nil {
 		t.Fatal(err)
 	}
+	finishGrant(t, db, c, a)
 	noop := a
 	noop.ID += "-noop"
 	noop.Action = audit.ResourceUpdated

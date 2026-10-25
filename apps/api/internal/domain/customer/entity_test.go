@@ -180,3 +180,11 @@ func TestRestoreRejectsCorruptMetadataAndPreservesAcceptedState(t *testing.T) {
 		t.Fatalf("corrupt references: %v", err)
 	}
 }
+
+func TestProfileAcceptsCataloguedIANAAlias(t *testing.T) {
+	attrs := validAttributes()
+	attrs.Locations[0].Timezone = "CET"
+	if _, err := New("profile", "owner", attrs, zoneSet{"CET": true}, instant); err != nil {
+		t.Fatalf("supported IANA alias rejected: %v", err)
+	}
+}

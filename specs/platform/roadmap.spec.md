@@ -36,7 +36,12 @@ race tests cover runtime privileges, rollback, duplicate creation, competing edi
 corrupt rows and rejection of previously committed audit proof. Review corrected
 production-translated duplicate errors and same-transaction audit validation;
 no confirmed persistence blockers remain. The generated authenticated application
-remains fail-closed. Authorization, API contracts, recoverable web/native editing and
+remains fail-closed. The product application policy now enforces owned reads,
+serialized revision saves, completed local grant readiness, SpiceDB permissions
+and audited retries. The 598-name pinned IANA catalog supports regional names
+and legacy aliases. Real PostgreSQL/SpiceDB/runtime-proxy integration covers
+creation, reads, updates, no-ops, replay and revocation without regranting access.
+Product HTTP/bootstrap, API contracts, recoverable web/native editing and
 interaction acceptance remain unfinished; this foundation is not CU-01 completion.
 Technician profile parity follows and remains required.
 

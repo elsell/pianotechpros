@@ -164,7 +164,7 @@ func zoneName(s string) bool {
 	if s == "UTC" {
 		return true
 	}
-	if !strings.Contains(s, "/") {
+	if s == "Local" || s == "localtime" {
 		return false
 	}
 	for _, part := range strings.Split(s, "/") {

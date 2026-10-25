@@ -161,6 +161,35 @@ func (r *Repository) Get(ctx context.Context, owner string, id domain.ID) (domai
 	return toEntity(row, r.Zones)
 }
 
+func (r *Repository) GetOwn(ctx context.Context, owner string) (domain.Entity, error) {
+	if strings.TrimSpace(owner) == "" {
+		return domain.Entity{}, ports.ErrInvalidArgument
+	}
+	if err := r.ready(); err != nil {
+		return domain.Entity{}, err
+	}
+	var row model
+	active := r.DB.WithContext(ctx).Table("user_models").Select("1").Where("id=customer_models.owner_user_id AND status='active'")
+	if err := r.DB.WithContext(ctx).Where("owner_user_id=? AND EXISTS (?)", owner, active).First(&row).Error; err != nil {
+		return domain.Entity{}, translateError(err)
+	}
+	return toEntity(row, r.Zones)
+}
+
+func (r *Repository) AuthorizationReady(ctx context.Context, owner string, id domain.ID) (bool, error) {
+	if strings.TrimSpace(owner) == "" || id == "" {
+		return false, ports.ErrInvalidArgument
+	}
+	if err := r.ready(); err != nil {
+		return false, err
+	}
+	pending := r.DB.WithContext(ctx).Model(&authorizationOutboxModel{}).Select("1").Where("resource_type='customer' AND resource_id=? AND completed_at IS NULL", id)
+	completed := r.DB.WithContext(ctx).Model(&authorizationOutboxModel{}).Select("1").Where("resource_type='customer' AND resource_id=? AND relation='owner' AND subject_type='user' AND subject_id=? AND owner_user_id=? AND actor_user_id=? AND operation='touch' AND completed_at IS NOT NULL", id, owner, owner, owner)
+	var count int64
+	err := r.DB.WithContext(ctx).Model(&model{}).Where("owner_user_id=? AND id=?", owner, id).Where("EXISTS (?) AND NOT EXISTS (?)", completed, pending).Count(&count).Error
+	return count == 1, err
+}
+
 func (r *Repository) Save(ctx context.Context, owner string, id domain.ID, expected int64, attributes domain.Attributes, now time.Time, event audit.Event) (domain.Entity, bool, error) {
 	if !validEvent(event, audit.ResourceUpdated, owner, id) || expected < 1 || expected > domain.MaxRevision || now.IsZero() || !event.OccurredAt.Equal(now) || now.Nanosecond()%1000 != 0 {
 		return domain.Entity{}, false, ports.ErrInvalidArgument
@@ -181,6 +210,13 @@ func (r *Repository) Save(ctx context.Context, owner string, id domain.ID, expec
 		current, err := toEntity(stored, r.Zones)
 		if err != nil {
 			return err
+		}
+		ready, err := New(tx, r.Zones).AuthorizationReady(ctx, owner, id)
+		if err != nil {
+			return err
+		}
+		if !ready {
+			return ports.ErrAuthorizationPending
 		}
 		result, changed, err = domain.Revise(current, expected, attributes, r.Zones, now)
 		if err != nil {

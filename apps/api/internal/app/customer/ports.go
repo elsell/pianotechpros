@@ -23,5 +23,7 @@ type Page struct {
 type Repository interface {
 	Create(context.Context, domain.Entity, ports.AuthorizationChange, ports.Idempotency, audit.Event) (domain.Entity, bool, error)
 	Get(context.Context, string, domain.ID) (domain.Entity, error)
+	GetOwn(context.Context, string) (domain.Entity, error)
+	AuthorizationReady(context.Context, string, domain.ID) (bool, error)
 	Save(context.Context, string, domain.ID, int64, domain.Attributes, time.Time, audit.Event) (domain.Entity, bool, error)
 }

@@ -17,3 +17,9 @@ definition dealer {
   permission publish_inventory = owner + editor
   permission manage_inquiries = owner + editor
 }
+
+definition customer {
+  relation owner: user
+  permission view = owner
+  permission update = owner
+}

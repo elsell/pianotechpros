@@ -50,3 +50,10 @@ No product create/read/update/delete capability is enabled by generation. The
 final product route contract replaces generic CRUD semantics before opening
 policy; profile deletion is not exposed. The API credential receives only typed
 customer permissions through the existing capability proxy.
+
+Authorization readiness is an owner-scoped query over the profile and its outbox:
+require at least one completed owner touch for that owner and no incomplete
+resource changes. GetOwn resolves only the authenticated active owner's row.
+Save rechecks readiness inside its transaction; the application holds the resource
+authorization serializer throughout permission checking and Save. Repository
+methods do not reacquire that serializer's lock through another connection.

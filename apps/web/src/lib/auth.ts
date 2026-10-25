@@ -1,3 +1,4 @@
+import {browserScanContinuation} from './scan-continuation';
 import { clearBrowserInventoryRecovery } from './inventory/recovery-storage';
 import { createSessionApiClient } from '@pianotechpros/api-client';
 import { refreshSessionCredential, sessionCredentialFromResponse, type ClientRuntimeConfig } from '@pianotechpros/client-core';
@@ -33,6 +34,7 @@ export async function refreshApplicationSession(config: ClientRuntimeConfig): Pr
   );
 }
 export async function revokeApplicationSession(config: ClientRuntimeConfig): Promise<void> {
+  browserScanContinuation().clear();
 	const session = applicationSession();
 	clearApplicationSession();
   const cleanup = clearBrowserInventoryRecovery().then(() => null, () => new Error("inventory_storage_unavailable"));

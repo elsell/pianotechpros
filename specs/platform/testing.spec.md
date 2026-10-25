@@ -508,3 +508,8 @@ to the local development web origin. The script submits through the anonymous
 form, performs real PKCE login, reads and marks the message through the inbox,
 and verifies the exact persisted receipt after reload. It requires explicit
 local disabled challenge policy; separate provider gates verify CAPTCHA.
+
+Client presentation may construct an AbortController to cancel generated-client
+requests. It supplies only cancellation state, not transport. The structural gate
+continues rejecting fetch, browser-global transport and alternate clients even
+when an AbortController signal is provided.

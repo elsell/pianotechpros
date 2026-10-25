@@ -515,5 +515,11 @@
   "scan.label.image": "Scannable code for this piano",
   "scan.label.failed": "The label could not be loaded. Try again.",
   "scan.label.saved": "This label uses the saved stock number and title.",
-  "scan.label.shareFailed": "The link could not be shared. Try again."
+  "scan.label.shareFailed": "The link could not be shared. Try again.",
+  "scan.view.title": "Scanned piano",
+  "scan.view.invalid": "This piano link is invalid or has expired. Scan the label again.",
+  "scan.view.failed": "The piano could not be loaded. Try again.",
+  "scan.view.cancel": "Close scan",
+  "scan.view.editor": "Open full editor",
+  "scan.view.refresh": "Refresh piano"
 }

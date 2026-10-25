@@ -14,4 +14,4 @@ export function createInventoryScanLabel(port:{origin:string;dealerID:string;loa
  },dispose(){disposed=true;request?.abort();request=null;publish({busy:false,issue:null,value:null});listeners.clear();}};
 }
 
-export function inventoryScanLabelTitle(saved:{title:string;make:string;model:string;stock_number:string}):string{return saved.title||[saved.make,saved.model].filter(Boolean).join(' ')||saved.stock_number;}
+export function inventoryScanLabelTitle(saved:{title?:string;make?:string;model?:string;stock_number?:string}):string{return saved.title||[saved.make,saved.model].filter(Boolean).join(' ')||saved.stock_number||'';}

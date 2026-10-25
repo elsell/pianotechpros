@@ -17,10 +17,17 @@ separate from general request counts. Turnstile verification checks exact hostna
 action and age, rejects redirects, and fails closed on provider failures. An
 explicit configuration policy enables submission; absent policy leaves it
 unavailable. Real PostgreSQL/HTTP tests verify durable success and rejection after
-unpublish, and concurrent budget tests verify coordination. Authorized/audited
-inbox and web/native user journeys remain required for IQ-01 through IQ-03
-completion. Full repository/contract checks, affected HTTP/adapter race tests,
-isolated PostgreSQL checks and required read-only review pass.
+unpublish, and concurrent budget tests verify coordination. The authenticated
+inbox now composes owner/editor membership with SpiceDB manage_inquiries and
+transactional scoped rechecks for list/detail/read acknowledgment. Migration 26
+retains append-only first-reader receipts and requires their matching audit to
+originate in the same transaction. Current-revision repeats preserve the first
+receipt; stale revisions conflict. Actor/dealer-bound encrypted cursors preserve
+bounded pagination. Fresh PostgreSQL tests cover authority changes, audit failure,
+concurrency, historical visibility and receipt immutability/rollback refusal.
+Full repository/contract checks, affected race tests and required read-only review
+pass. Buyer form, web/native inbox presentation and complete user journeys remain
+required for IQ-01 through IQ-03 completion.
 
 The node-forge 1.4.0 mitigation backports the exact RSA nested-DigestAlgorithm
 validation from unmerged upstream PR 1152, with license, source and installed

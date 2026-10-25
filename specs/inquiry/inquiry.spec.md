@@ -99,6 +99,42 @@ precede receipt. Audit events contain identifiers/actions only, never contact,
 message, CAPTCHA token or unrestricted metadata. Cross-user/dealer and revoked
 membership tests are required for every inbox path.
 
+Inbox preflight authenticates a rotating application session with `api:user`
+scope, charges the configured principal audit limiter, and reads active persisted
+dealer membership by actor and dealer. Both the local `manage_inquiries` role
+capability (including fully applied grant revision) and SpiceDB's exact
+`dealer:<id>#manage_inquiries` decision must allow access. An owner role must
+match the persisted founding owner; editor access does not depend on email or
+platform administrator status. Denied decisions emit a generic inquiry-boundary
+audit event owned by the actor, without exposing a requested resource ID or PII.
+Audit failure overrides a denied result. The returned access context is
+request-local; repositories must still recheck persisted authority under locks.
+
+Inbox lists default to 30 and accept 1–100 entries, ordered by received timestamp
+then inquiry ID descending. A cursor binds the actor, dealer, initial snapshot
+time and last `(receivedAt, id)` tuple using authenticated encryption and a
+domain-specific key context. New submissions after the initial snapshot do not
+enter later pages. Cursor tuples must be complete, valid and no later than the
+snapshot; malformed or cross-actor/dealer cursors fail before a repository read.
+
+Read acknowledgments use a separate append-only row keyed by inquiry ID, with
+dealer ID, first reader, read time and audit ID. The insert guard requires current
+active owner/editor membership, a matching successful update audit already in the
+same transaction, and a read time at or after receipt. Audit ID is retained as a
+reference without a foreign key so bounded audit retention remains independent.
+Repeated mark-read at the current revision emits a read audit and preserves the
+original acknowledgment; a stale expected revision returns conflict. Rollback
+refuses to remove retained acknowledgments. Inbox reads remain available after
+unpublishing the listing; historical public-photo references grant no extra access.
+
+Authenticated HTTP routes are `GET /v1/dealers/{dealerID}/inquiries`,
+`GET /v1/dealers/{dealerID}/inquiries/{id}` and
+`POST /v1/dealers/{dealerID}/inquiries/{id}/read` with an expected `revision`.
+They use the normal application-session boundary, no-store responses, the shared
+data envelope and `meta.nextCursor` pagination. Private inquiry DTOs include
+canonical contact fields, captured dealer name/slug/public piano, received time,
+revision and optional first-reader/time. They never include source or CAPTCHA.
+
 ## Delivery and acceptance
 
 The public web form uses shared localized copy, persistent input on retryable

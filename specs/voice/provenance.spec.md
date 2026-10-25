@@ -74,3 +74,28 @@ input, and existing clients that omit it retain manual behavior.
 The shared generated-contract client snapshots the optional field list together
 with attributes and expected revision before asynchronous credential lookup.
 Later caller mutations cannot change the attribution sent for that revision.
+
+## Editor checkpoint ownership
+
+The editor checkpoint stores optional voice-field lists for the current draft and
+for a pending write separately. Missing lists in version-1 checkpoints mean
+manual work. Lists contain only unique allowed attribute names; invalid metadata
+fails recovery validation rather than being silently dropped. Copies returned to
+callers never share mutable lists with editor state.
+
+An injected field-difference policy identifies actual changed fields. Manual
+changes clear voice labels only for those changed fields. Explicit voice Apply
+may label only fields it changes. The save attempt snapshots both attributes and
+attribution before durable attempt persistence; later typing cannot alter either.
+Retries after uncertain delivery use that original pair. Acknowledging a save or
+resolving its lost acknowledgement removes labels for values now equal to the
+new baseline, while preserving attribution for later unsaved changes. Keeping
+local conflict edits retains their input-method labels; choosing the server
+version clears them. Account denial and disposal clear all in-memory attribution.
+The form adapter may normalize valid values when computing save-field differences;
+raw input changes still clear attribution even if normalization erases the change.
+
+While a write is pending, a later accepted voice value may equal the old baseline
+but differ from the pending value. Retain that origin relative to either baseline
+until the pending outcome is resolved; otherwise a retry or recovered commit would
+incorrectly turn the later voice edit into a manual edit.

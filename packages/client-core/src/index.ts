@@ -234,3 +234,5 @@ export * from "./inventory-scan-continuation";
 export * from "./inventory-scan-entry";
 
 export * from "./inventory-scan-camera";
+
+export * from "./publication-sale-defaults";

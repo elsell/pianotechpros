@@ -197,3 +197,16 @@ Android Back, iOS modal cancellation, keyboard avoidance, screen-reader focus,
 large text, rotation, phone/tablet layout, interruptions and backend journeys on
 native builds before marking parity complete. Modal pattern reference:
 https://developer.apple.com/design/human-interface-guidelines/sheets
+
+## Sale-entry defaults
+
+The first selection of Sold in a private record's current action entry seeds the
+sale amount and currency from its saved asking price, including a hidden public
+asking price. This is a private convenience, not publication or a sale command.
+Use exact minor units and the client's decimal separator, including zero-decimal
+JPY and an explicit zero price. An absent or invalid asking price leaves amount
+blank; it must never manufacture a zero sale. Manual amount/currency edits,
+including clearing the amount, survive switching statuses and cancelled reviews.
+Do not overwrite them after a refresh or a changed list price. Confirmed change,
+access denial or disposal resets this entry state. Explicit sale review and
+confirmation remain mandatory, and the selected sale price stays private history.

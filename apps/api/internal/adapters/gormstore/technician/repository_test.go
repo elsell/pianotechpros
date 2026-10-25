@@ -11,6 +11,7 @@ import (
 	"github.com/elsell/pianotechpros/apps/api/internal/ports"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -20,7 +21,7 @@ var databaseDSN = flag.String("database-dsn", "", "PostgreSQL integration test D
 func TestPersistenceMappingPreservesDomainIdentityAndTime(t *testing.T) {
 	now := time.Date(2026, 7, 17, 12, 0, 0, 0, time.UTC)
 	entity := domain.Entity{ID: "id", OwnerUserID: "owner", Attributes: domain.Attributes{Name: "value", BusinessName: "value", Email: "value", Phone: "value", Biography: "value", Searchable: true, AcceptsRequestsWithoutAvailability: true}, CreatedAt: now, UpdatedAt: now}
-	if got := toEntity(*fromEntity(entity)); got != entity {
+	if got := toEntity(*fromEntity(entity)); !reflect.DeepEqual(got, entity) {
 		t.Fatalf("mapping drifted: got %+v want %+v", got, entity)
 	}
 }

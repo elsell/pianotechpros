@@ -33,7 +33,7 @@ type ProfileSaveInput struct {
 		Attributes       dto.ProfileAttributes `json:"attributes"`
 	}
 }
-type ProfileOutput struct {
+type CustomerProfileOutput struct {
 	Body struct {
 		Data dto.ProfileItem `json:"data"`
 	}
@@ -47,14 +47,14 @@ type ProfileTimezonesOutput struct {
 	}
 }
 
-func profileResult(e domain.Entity, err error) (*ProfileOutput, error) {
+func profileResult(e domain.Entity, err error) (*CustomerProfileOutput, error) {
 	if err != nil {
 		if errors.Is(err, domain.ErrRevisionConflict) {
 			err = ports.ErrConflict
 		}
 		return nil, shared.MapError(err, true)
 	}
-	out := &ProfileOutput{}
+	out := &CustomerProfileOutput{}
 	out.Body.Data = mapper.ProfileItem(e)
 	return out, nil
 }
@@ -68,13 +68,13 @@ func RegisterProfiles(api huma.API, service ProfileService) {
 	}
 	create := operation("create-customer-profile", http.MethodPost, "/v1/customer-profile")
 	create.DefaultStatus = http.StatusCreated
-	huma.Register(api, create, func(ctx context.Context, in *ProfileCreateInput) (*ProfileOutput, error) {
+	huma.Register(api, create, func(ctx context.Context, in *ProfileCreateInput) (*CustomerProfileOutput, error) {
 		return profileResult(service.CreateProfile(ctx, in.Authorization, in.IdempotencyKey, mapper.ProfileAttributes(in.Body.Attributes)))
 	})
-	huma.Register(api, operation("get-customer-profile", http.MethodGet, "/v1/customer-profile"), func(ctx context.Context, in *CustomerAuthorizationInput) (*ProfileOutput, error) {
+	huma.Register(api, operation("get-customer-profile", http.MethodGet, "/v1/customer-profile"), func(ctx context.Context, in *CustomerAuthorizationInput) (*CustomerProfileOutput, error) {
 		return profileResult(service.GetProfile(ctx, in.Authorization))
 	})
-	huma.Register(api, operation("save-customer-profile", http.MethodPut, "/v1/customer-profile"), func(ctx context.Context, in *ProfileSaveInput) (*ProfileOutput, error) {
+	huma.Register(api, operation("save-customer-profile", http.MethodPut, "/v1/customer-profile"), func(ctx context.Context, in *ProfileSaveInput) (*CustomerProfileOutput, error) {
 		return profileResult(service.SaveProfile(ctx, in.Authorization, in.Body.ExpectedRevision, mapper.ProfileAttributes(in.Body.Attributes)))
 	})
 	huma.Register(api, operation("customer-profile-timezones", http.MethodGet, "/v1/customer-profile/timezones"), func(ctx context.Context, in *CustomerAuthorizationInput) (*ProfileTimezonesOutput, error) {

@@ -60,3 +60,12 @@ Timezone responses wrap `{names: [...]}` in `data`. Revisions are positive safe
 integers. Stale writes return HTTP 409 with `conflict`, distinct from
 `idempotency_conflict`. Unknown properties at every nesting level are rejected.
 All four routes return Cache-Control: no-store and Referrer-Policy: no-referrer.
+
+Product bootstrap constructs one verified embedded timezone catalog and injects
+that same instance into both application and persistence adapters. Catalog
+integrity failures abort bootstrap before listeners start. Server and OpenAPI
+commands compose the same product registration without modifying the generated
+legacy registry. Runtime authentication is the rotating opaque session manager;
+provider JWTs cannot authenticate these routes. Integration acceptance traverses
+HTTP, that session manager, runtime-role PostgreSQL and the SpiceDB capability
+proxy, including expired/revoked sessions, stale edits and cross-user isolation.

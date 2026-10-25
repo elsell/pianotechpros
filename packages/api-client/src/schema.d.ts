@@ -55,6 +55,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer-profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get-customer-profile"];
+        put: operations["save-customer-profile"];
+        post: operations["create-customer-profile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer-profile/timezones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customer-profile-timezones"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/customers": {
         parameters: {
             query?: never;
@@ -965,6 +997,15 @@ export interface components {
             data: components["schemas"]["CustomerItem"][];
             meta: components["schemas"]["MetaStruct"];
         };
+        CustomerProfileOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/CustomerProfileOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["ProfileItem"];
+        };
         CustomerUpdate: {
             /**
              * Format: uri
@@ -1412,6 +1453,45 @@ export interface components {
             data: components["schemas"]["PhotoState"];
             meta: components["schemas"]["PhotoUploadMeta"];
         };
+        ProfileAttributes: {
+            businessName?: string;
+            email: string;
+            isBusiness: boolean;
+            locations: components["schemas"]["ProfileLocation"][];
+            name: string;
+            phone?: string;
+            pianos: components["schemas"]["ProfilePiano"][];
+        };
+        ProfileCreateInputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/ProfileCreateInputBody.json
+             */
+            readonly $schema?: string;
+            attributes: components["schemas"]["ProfileAttributes"];
+        };
+        ProfileItem: {
+            attributes: components["schemas"]["ProfileAttributes"];
+            /** Format: date-time */
+            createdAt: string;
+            id: string;
+            /** Format: int64 */
+            revision: number;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        ProfileLocation: {
+            city: string;
+            key: string;
+            label: string;
+            notes?: string;
+            postalCode: string;
+            region: string;
+            street1: string;
+            street2?: string;
+            timezone: string;
+        };
         ProfileOutputBody: {
             /**
              * Format: uri
@@ -1420,6 +1500,42 @@ export interface components {
              */
             readonly $schema?: string;
             data: components["schemas"]["PublicShowroomProfile"];
+        };
+        ProfilePiano: {
+            form: string;
+            key: string;
+            locationKey: string;
+            make?: string;
+            /** Format: int64 */
+            manufacturedYear?: number;
+            model?: string;
+            nickname: string;
+            notes?: string;
+            player: boolean;
+            serial?: string;
+        };
+        ProfileSaveInputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/ProfileSaveInputBody.json
+             */
+            readonly $schema?: string;
+            attributes: components["schemas"]["ProfileAttributes"];
+            /** Format: int64 */
+            expectedRevision: number;
+        };
+        ProfileTimezoneChoices: {
+            names: string[];
+        };
+        ProfileTimezonesOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/ProfileTimezonesOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["ProfileTimezoneChoices"];
         };
         PublicCollectionData: {
             pianos: components["schemas"]["PublicListing"][];
@@ -1865,6 +1981,139 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "get-customer-profile": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerProfileOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "save-customer-profile": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileSaveInputBody"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerProfileOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "create-customer-profile": {
+        parameters: {
+            query?: never;
+            header: {
+                Authorization?: string;
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileCreateInputBody"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerProfileOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "customer-profile-timezones": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileTimezonesOutputBody"];
+                };
             };
             /** @description Error */
             default: {

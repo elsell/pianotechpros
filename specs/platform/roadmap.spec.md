@@ -62,6 +62,12 @@ The editor coordinates photo/publication busy states and reports actual queue
 pauses. Native type/lifecycle checks and exports pass; fresh device interaction
 acceptance remains required, including recording, denial and background recovery.
 
+The inventory domain now derives exact manual/voice sources for changed fields
+and a mixed history source when both occur in one revision. Unknown, duplicate,
+protected and unchanged-field labels fail closed; uniform commands retain their
+source restrictions. Domain race tests and repository/contract gates pass.
+Persistence, transport and recovery-journal attribution remain unfinished.
+
 Buyer inquiry foundations now implement canonical contact validation, immutable
 public snapshot context and first-read domain state. Submission orchestration
 requires an explicit CAPTCHA policy and coordinated limiter, limits honeypots

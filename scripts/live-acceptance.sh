@@ -38,6 +38,7 @@ for _ in $(seq 1 180); do curl -fsS http://localhost:5173 >/dev/null 2>&1 && bre
 curl -fsS http://localhost:5173 >/dev/null
 
 node scripts/web-browser-acceptance.mjs
+node scripts/profile-persisted-browser-acceptance.mjs
 node scripts/scalar-browser-acceptance.mjs
 node scripts/showroom-web-acceptance.mjs
 node scripts/crawler-no-origin-acceptance.mjs

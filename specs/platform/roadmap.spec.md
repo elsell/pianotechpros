@@ -36,9 +36,14 @@ rejected local changes cannot claim success. A local browser microphone adapter
 now bounds recording, releases tracks on cancellation/disposal/pagehide, and
 suppresses late permission grants. Real Chromium synthetic-microphone acceptance
 covers encoded audio, Stop, cancellation, permission denial, duration, device-loss
-events and observer reentrancy. Editor integration (including microphone policy),
-review/clarification UI, voice-aware autosave/Undo and native microphone acceptance
-remain unfinished; real microphone and Safari interaction are not yet verified.
+events and observer reentrancy. The web editor now connects recording and typed
+transcripts to explicit field selection, current/proposed values, confidence and
+evidence. Processing/review holds the workspace queue while locally protecting
+manual edits; Apply/Cancel releases it. Transcript correction and conditional Undo
+preserve work. Controlled HTTP/browser journeys cover recording, no pre-Apply
+mutation, intervening edits, re-review, Undo, failure/retry and cancellation. Voice
+provenance in persistence and native recording/review remain unfinished; real
+microphone and Safari interaction are not yet verified.
 
 Buyer inquiry foundations now implement canonical contact validation, immutable
 public snapshot context and first-read domain state. Submission orchestration

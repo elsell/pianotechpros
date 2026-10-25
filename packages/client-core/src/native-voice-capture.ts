@@ -1,5 +1,6 @@
+import {voiceInputLevel} from './voice-input-level';
 export type NativeVoiceIssue='permission'|'capture'|'size_limit'|'cleanup';
-export type NativeVoiceState={phase:'idle'|'requesting'|'preparing'|'recording'|'stopping'|'failed';issue:NativeVoiceIssue|null;busy:boolean};
+export type NativeVoiceState={phase:'idle'|'requesting'|'preparing'|'recording'|'stopping'|'failed';issue:NativeVoiceIssue|null;busy:boolean;level:number|null};
 export interface NativeVoiceHandle{
  record(seconds:number):void;
  stop():Promise<void>;
@@ -11,17 +12,17 @@ export interface NativeVoiceCapturePort{
  active():boolean;
  recover?():Promise<boolean>;
  permission():Promise<boolean>;
- prepare(ended:(failed:boolean)=>void):Promise<NativeVoiceHandle>;
+ prepare(ended:(failed:boolean)=>void,level:(decibels:number|undefined)=>void):Promise<NativeVoiceHandle>;
  changed(state:NativeVoiceState):void;
  completed(bytes:Uint8Array):void;
 }
 export function createNativeVoiceCapture(port:NativeVoiceCapturePort){
- let phase:NativeVoiceState['phase']='idle',issue:NativeVoiceIssue|null=null;
+ let phase:NativeVoiceState['phase']='idle',issue:NativeVoiceIssue|null=null,level:number|null=null;
  let generation=0,disposed=false,acquiring=false,releasing=false,handle:NativeVoiceHandle|null=null;
  let pending:Promise<void>|null=null,closing:Promise<void>|null=null;
- const snapshot=():NativeVoiceState=>({phase:disposed?'idle':phase,issue:disposed?null:issue,busy:acquiring||releasing||!!handle||!!closing});
+ const snapshot=():NativeVoiceState=>({phase:disposed?'idle':phase,issue:disposed?null:issue,level:disposed?null:level,busy:acquiring||releasing||!!handle||!!closing});
  const emit=()=>{if(!disposed)try{port.changed(snapshot());}catch{/* Observer failure cannot retain native resources. */}};
- const set=(next:NativeVoiceState['phase'],error:NativeVoiceIssue|null=null)=>{phase=next;issue=error;emit();};
+ const set=(next:NativeVoiceState['phase'],error:NativeVoiceIssue|null=null)=>{phase=next;issue=error;if(next!=='recording')level=null;emit();};
  const live=(ticket:number)=>!disposed&&ticket===generation&&port.active();
  function close(deliver:boolean,reason:NativeVoiceIssue|null=null):Promise<void>{
   if(closing)return closing;
@@ -59,7 +60,7 @@ export function createNativeVoiceCapture(port:NativeVoiceCapturePort){
     handle=await port.prepare(failed=>{
      if(!live(ticket))return;
      if(failed){generation++;void close(false,'capture');}else void close(true);
-    });
+    },decibels=>{if(!live(ticket)||phase!=='recording'||!handle)return;const value=voiceInputLevel(decibels);if(value!==level){level=value;emit();}});
     if(!live(ticket)){await close(false);return;}
     handle.record(60);if(live(ticket)&&handle)set('recording');
    }catch{if(handle)await close(false,'capture');else if(live(ticket))set('failed','capture');}

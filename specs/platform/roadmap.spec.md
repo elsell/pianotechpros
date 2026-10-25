@@ -106,7 +106,13 @@ cold reopening preserves the undone value without a spurious revision. Speech
 responses were controlled, so live provider quality and iOS interaction remain
 unverified. A separate uninterrupted Android recording stops automatically at the
 one-minute limit, delivers 517,722 bytes of AAC audio and leaves its owned audio
-cache empty before review. Recording-level presentation is still outstanding.
+cache empty before review. Recording now presents a transient, measured input-level
+meter on web and native, with localized unavailable feedback and no playback or
+per-sample live announcements. Controlled native tests reject stale samples;
+real browser audio analysis covers signal, silence, context cleanup and failure.
+The Android emulator shows the silent-input meter and cancellation clears its
+owned audio cache. Type, structural, locale and contract gates pass. Physical
+microphone level behavior and iOS interaction remain unverified.
 
 Buyer inquiry foundations now implement canonical contact validation, immutable
 public snapshot context and first-read domain state. Submission orchestration

@@ -319,6 +319,7 @@ try {
   assert.equal(voiceCalls,3);
   await voicePanel.getByRole('button',{name:'Grabar nota de voz',exact:true}).click();
   await voicePanel.getByRole('button',{name:'Detener y revisar',exact:true}).waitFor();
+  await voicePanel.getByRole('meter',{name:'Nivel de entrada del micrófono',exact:true}).waitFor();
   await page.getByLabel('Marca',{exact:true}).fill('Recording correction');
   await page.getByText('Guardado',{exact:true}).waitFor();assert.equal(editorRecord.attributes.make,'Recording correction');
   assert.equal(await page.getByText('La revisión de voz está abierta. Los cambios se protegen en este dispositivo; el guardado en el servidor está en pausa.',{exact:true}).count(),0);

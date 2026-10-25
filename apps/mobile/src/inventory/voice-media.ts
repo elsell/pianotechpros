@@ -13,7 +13,7 @@ function ownedFile(uri:string){if(!ownedVoiceCachePath(Paths.cache.uri,uri))thro
 function removeOldAudio(){
  for(const name of ['Audio','ExpoAudio']){const directory=new Directory(Paths.cache,name);if(directory.exists)for(const entry of directory.list())if(entry instanceof File&&ownedVoiceCachePath(Paths.cache.uri,entry.uri))entry.delete();}
 }
-async function prepare(ended:(failed:boolean)=>void,clock:VoiceClock):Promise<NativeVoiceHandle>{
+async function prepare(ended:(failed:boolean)=>void,level:(decibels:number|undefined)=>void,clock:VoiceClock):Promise<NativeVoiceHandle>{
  if(held)throw Error('native_voice_busy');held=true;
  let recorder:AudioRecorder|null=null,uri:string|null=null,released=false,modeReset=false,failed=false;
  let subscription:{remove():void}|null=null;
@@ -21,7 +21,7 @@ async function prepare(ended:(failed:boolean)=>void,clock:VoiceClock):Promise<Na
  const unwatch=()=>{cancelWatch?.();cancelWatch=null;};
  const watch=(stopped=false)=>{cancelWatch=clock.after(200,()=>{
   if(released||finished||!recorder)return;
-  try{if(!recorder.getStatus().isRecording){if(stopped){finished=true;ended(true);}else watch(true);}else watch();}catch{finished=true;ended(true);}
+  try{const status=recorder.getStatus();if(!status.isRecording){if(stopped){finished=true;ended(true);}else watch(true);}else {level(status.metering);if(!released&&!finished)watch();}}catch{finished=true;ended(true);}
  });};
  const remember=()=>{if(!released&&recorder?.uri)uri=recorder.uri;};
  const handle:NativeVoiceHandle={
@@ -49,7 +49,7 @@ async function prepare(ended:(failed:boolean)=>void,clock:VoiceClock):Promise<Na
   await setIsAudioActiveAsync(true);
   await setAudioModeAsync({allowsRecording:true,playsInSilentMode:true,allowsBackgroundRecording:false,shouldPlayInBackground:false,interruptionMode:'doNotMix'});
   const preset=RecordingPresets.HIGH_QUALITY;
-  const options={...preset,...(Platform.OS==='ios'?preset.ios:preset.android),numberOfChannels:1,sampleRate:44100,bitRate:64000,isMeteringEnabled:false,maxFileSize:6*1024*1024};
+  const options={...preset,...(Platform.OS==='ios'?preset.ios:preset.android),numberOfChannels:1,sampleRate:44100,bitRate:64000,isMeteringEnabled:true,maxFileSize:6*1024*1024};
   recorder=new AudioModule.AudioRecorder(options);remember();
   subscription=recorder.addListener('recordingStatusUpdate',status=>{if(status.isFinished||status.hasError||status.mediaServicesDidReset){finished=true;unwatch();ended(status.hasError||!!status.mediaServicesDidReset);}});
   await recorder.prepareToRecordAsync();remember();
@@ -67,7 +67,7 @@ export function createMobileVoiceCapture(options:{active():boolean;changed(state
    resume:()=>voicePermissionResume({active:()=>AppState.currentState==='active',subscribe:changed=>{const listener=AppState.addEventListener('change',changed);return()=>listener.remove();},after:(options.clock??systemClock).after}),
    backgrounded:options.backgrounded,
   });
- },prepare:ended=>prepare(ended,options.clock??systemClock)});
+ },prepare:(ended,level)=>prepare(ended,level,options.clock??systemClock)});
  const listener=AppState.addEventListener('change',state=>{
   if(state==='background'&&controller.snapshot().phase!=='requesting'||state==='inactive'&&controller.snapshot().phase==='recording')void controller.cancel();
  });

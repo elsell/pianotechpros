@@ -1,6 +1,7 @@
+import {createBrowserVoiceMeter} from './voice-input-meter';
 /** Local microphone capability. No network, storage or application credentials. */
 export type VoiceCaptureIssue = 'unsupported' | 'permission' | 'device' | 'capture' | 'size_limit';
-export type VoiceCaptureState = {phase:'idle'|'requesting'|'recording'|'stopping'|'failed';issue:VoiceCaptureIssue|null};
+export type VoiceCaptureState = {phase:'idle'|'requesting'|'recording'|'stopping'|'failed';issue:VoiceCaptureIssue|null;level:number|null};
 export type BrowserVoiceAudio = {bytes:Uint8Array;mimeType:string};
 export interface VoiceCaptureClock {after(milliseconds:number,callback:()=>void):()=>void}
 type Options = {
@@ -13,15 +14,17 @@ const MAX_BYTES=6*1024*1024;
 const FORMATS=['audio/webm;codecs=opus','audio/ogg;codecs=opus','audio/mp4;codecs=mp4a.40.2','audio/mp4'];
 
 export function createBrowserVoiceRecorder(options:Options){
- let state:VoiceCaptureState={phase:'idle',issue:null};
+ let state:VoiceCaptureState={phase:'idle',issue:null,level:null};
  let generation=0,disposed=false,requesting=false;
  let stream:MediaStream|null=null,recorder:MediaRecorder|null=null;
+ let stopMeter:(()=>void)|null=null;
  let chunks:Blob[]=[],size=0,cancelTimer:(()=>void)|null=null;
  const clock=options.clock??{after:(ms:number,callback:()=>void)=>{const timer=setTimeout(callback,ms);return()=>clearTimeout(timer);}};
  const emit=(phase:VoiceCaptureState['phase'],issue:VoiceCaptureIssue|null=null)=>{
-  state={phase,issue};try{options.changed({...state});}catch{/* Observers cannot retain microphone access. */}
+  state={phase,issue,level:null};try{options.changed({...state});}catch{/* Observers cannot retain microphone access. */}
  };
  const release=()=>{
+  stopMeter?.();stopMeter=null;
   cancelTimer?.();cancelTimer=null;
   const old=recorder;recorder=null;
   if(old){old.ondataavailable=null;old.onstop=null;old.onerror=null;try{if(old.state!=='inactive')old.stop();}catch{/* Tracks still stop below. */}}
@@ -33,7 +36,7 @@ export function createBrowserVoiceRecorder(options:Options){
  const fail=(issue:VoiceCaptureIssue)=>{generation++;release();emit('failed',issue);};
  const stop=()=>{
   if(state.phase!=='recording'||!recorder)return;
-  const current=recorder;emit('stopping');
+  const current=recorder;stopMeter?.();stopMeter=null;emit('stopping');
   if(recorder!==current)return;
   cancelTimer?.();cancelTimer=null;
   try{current.stop();}catch{fail('capture');}
@@ -77,6 +80,10 @@ export function createBrowserVoiceRecorder(options:Options){
     }catch{if(own===generation&&!disposed)fail('capture');}
    }
    active.start(250);emit('recording');
+   if(own===generation&&!disposed&&state.phase==='recording')stopMeter=createBrowserVoiceMeter(acquired,level=>{
+    if(own!==generation||disposed||state.phase!=='recording'||state.level===level)return;
+    state={...state,level};try{options.changed({...state});}catch{}
+   });
    if(own===generation&&!disposed&&state.phase==='recording')cancelTimer=clock.after(60_000,stop);
   }catch(error){
    if(own!==generation||disposed)return;

@@ -11,6 +11,7 @@ import (
 )
 
 type Config struct {
+	GeminiAPIKey, VoiceTranscriptionModel, VoiceExtractionModel                                                                                                                           string
 	InquiryChallengePolicy, TurnstileSecret, TurnstileHostname                                                                                                                            string
 	HTTPAddr, PublicBaseURL, DatabaseDSN, CursorSigningKey, OIDCIssuer, OIDCBackchannelURL, OIDCDocsClientID, OIDCDocsRedirectURI, SpiceDBEndpoint, SpiceDBToken, AccountProvisioningMode string
 	MetricsBearerToken                                                                                                                                                                    string
@@ -37,6 +38,9 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 	c := Config{
+		GeminiAPIKey:                   os.Getenv("PIANOTECHPROS_GEMINI_API_KEY"),
+		VoiceTranscriptionModel:        os.Getenv("PIANOTECHPROS_VOICE_TRANSCRIPTION_MODEL"),
+		VoiceExtractionModel:           os.Getenv("PIANOTECHPROS_VOICE_EXTRACTION_MODEL"),
 		InquiryChallengePolicy:         os.Getenv("PIANOTECHPROS_INQUIRY_CHALLENGE_POLICY"),
 		TurnstileSecret:                os.Getenv("PIANOTECHPROS_TURNSTILE_SECRET"),
 		TurnstileHostname:              os.Getenv("PIANOTECHPROS_TURNSTILE_HOSTNAME"),
@@ -123,6 +127,9 @@ func validateRawEnvironment() error {
 }
 
 func (c Config) validate() error {
+	if err := c.ValidateVoice(); err != nil {
+		return err
+	}
 	if err := c.validateInquiry(); err != nil {
 		return err
 	}

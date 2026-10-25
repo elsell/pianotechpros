@@ -1,6 +1,7 @@
 package inventory
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	inventorydomain "github.com/elsell/pianotechpros/apps/api/internal/domain/inventory"
@@ -188,7 +189,7 @@ func TestVoiceTranscriptionAuthorityAndTransientOutput(t *testing.T) {
 					cancel()
 				}
 			}
-			result, err := c.TranscribeVoice(ctx, token, "dealer", r.ID, 1, audio, "audio/wav")
+			result, err := c.TranscribeVoice(ctx, token, "dealer", r.ID, 1, bytes.NewReader(audio), "audio/wav")
 			if kind == "success" {
 				if err != nil || result.Transcript != "Grand piano" || result.Revision != 1 || len(m.events) != 3 || m.rows[r.ID].Revision != 1 {
 					t.Fatalf("%+v %v", result, err)

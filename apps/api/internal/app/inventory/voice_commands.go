@@ -2,7 +2,7 @@ package inventory
 
 import (
 	"context"
-	"errors"
+	"io"
 	"strings"
 	"unicode/utf8"
 
@@ -11,17 +11,14 @@ import (
 	"github.com/elsell/pianotechpros/apps/api/internal/ports"
 )
 
-var ErrVoiceUnavailable = errors.New("voice_unavailable")
+var ErrVoiceUnavailable = voice.ErrUnavailable
 
 // VoiceExtractor receives no authorization credential or stored record data.
 // Candidates remain untrusted until validated by the application/domain boundary.
 type VoiceExtractor interface {
 	Extract(context.Context, string) ([]voice.Candidate, error)
 }
-type VoiceResult struct {
-	Revision int64
-	Proposal voice.Proposal
-}
+type VoiceResult = voice.ExtractionResult
 
 func (c *Commands) voiceRecord(ctx context.Context, credential, dealerID, id string, expected int64) (Access, error) {
 	access, err := c.require(ctx, credential, dealerID, Write)
@@ -93,12 +90,9 @@ func (c *Commands) ExtractVoice(ctx context.Context, credential, dealerID, id st
 type VoiceTranscriber interface {
 	Transcribe(context.Context, []byte, string) (string, error)
 }
-type TranscriptionResult struct {
-	Revision   int64
-	Transcript string
-}
+type TranscriptionResult = voice.TranscriptionResult
 
-func (c *Commands) TranscribeVoice(ctx context.Context, credential, dealerID, id string, expected int64, audio []byte, mimeType string) (TranscriptionResult, error) {
+func (c *Commands) TranscribeVoice(ctx context.Context, credential, dealerID, id string, expected int64, source io.Reader, mimeType string) (TranscriptionResult, error) {
 	if err := ctx.Err(); err != nil {
 		return TranscriptionResult{}, err
 	}
@@ -112,7 +106,14 @@ func (c *Commands) TranscribeVoice(ctx context.Context, credential, dealerID, id
 	if c.dependencies.VoiceTranscriber == nil {
 		return TranscriptionResult{}, ErrVoiceUnavailable
 	}
-	if len(audio) == 0 || len(audio) > 6*1024*1024 || len(mimeType) > 128 {
+	if source == nil || len(mimeType) > 128 {
+		return TranscriptionResult{}, ports.ErrInvalidArgument
+	}
+	audio, err := io.ReadAll(io.LimitReader(source, 6*1024*1024+1))
+	if len(audio) > 6*1024*1024 {
+		return TranscriptionResult{}, voice.ErrAudioLimit
+	}
+	if err != nil || len(audio) == 0 {
 		return TranscriptionResult{}, ports.ErrInvalidArgument
 	}
 	transcript, err := c.dependencies.VoiceTranscriber.Transcribe(ctx, audio, mimeType)

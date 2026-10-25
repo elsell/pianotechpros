@@ -8,7 +8,11 @@ import (
 )
 
 func Profile(p domain.Profile) dto.PublicShowroomProfile {
-	return dto.PublicShowroomProfile{ID: p.ID, Name: p.Name, Slug: p.Slug, Email: p.Email, Phone: p.Phone, WebsiteURL: p.WebsiteURL, Tagline: p.Tagline, Description: p.Description, StreetAddress1: p.StreetAddress1, StreetAddress2: p.StreetAddress2, City: p.City, Region: p.Region, PostalCode: p.PostalCode, AppointmentNote: p.AppointmentNote, DeliveryNote: p.DeliveryNote, WarrantyNote: p.WarrantyNote, ServiceNote: p.ServiceNote, BannerAltText: p.BannerAltText, AccentColor: p.AccentColor}
+	out := dto.PublicShowroomProfile{ID: p.ID, Name: p.Name, Slug: p.Slug, Email: p.Email, Phone: p.Phone, WebsiteURL: p.WebsiteURL, Tagline: p.Tagline, Description: p.Description, StreetAddress1: p.StreetAddress1, StreetAddress2: p.StreetAddress2, City: p.City, Region: p.Region, PostalCode: p.PostalCode, AppointmentNote: p.AppointmentNote, DeliveryNote: p.DeliveryNote, WarrantyNote: p.WarrantyNote, ServiceNote: p.ServiceNote, BannerAltText: p.BannerAltText, AccentColor: p.AccentColor}
+	if p.Banner != nil {
+		out.Banner = &dto.PublicShowroomBanner{ID: p.Banner.ID, Width: p.Banner.Width, Height: p.Banner.Height}
+	}
+	return out
 }
 
 func Listing(value app.Listing) dto.PublicShowroomListing {

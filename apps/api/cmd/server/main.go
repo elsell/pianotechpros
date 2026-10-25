@@ -12,6 +12,7 @@ import (
 	"github.com/elsell/pianotechpros/apps/api/internal/adapters/sessionauth"
 	spice "github.com/elsell/pianotechpros/apps/api/internal/adapters/spicedb"
 	"github.com/elsell/pianotechpros/apps/api/internal/app"
+	"github.com/elsell/pianotechpros/apps/api/internal/bootstrap/dealerbanner"
 	"github.com/elsell/pianotechpros/apps/api/internal/bootstrap/inquiry"
 	"github.com/elsell/pianotechpros/apps/api/internal/bootstrap/inventoryphotos"
 	"github.com/elsell/pianotechpros/apps/api/internal/bootstrap/inventoryscan"
@@ -108,7 +109,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	registrations := append(generated.Registrations(domainDependencies), inventoryphotos.Registration(domainDependencies, photoprocessor.New()), showroom.Registration(store.DB, probe, []byte(cfg.CursorSigningKey)), inquiryRegistration, inquiry.InboxRegistration(domainDependencies), voiceRegistration, inventoryscan.Registration(domainDependencies, scantokens.System()))
+	imageProcessor := photoprocessor.New()
+	registrations := append(generated.Registrations(domainDependencies), inventoryphotos.Registration(domainDependencies, imageProcessor), dealerbanner.Registration(domainDependencies, imageProcessor.Banner()), showroom.Registration(store.DB, probe, []byte(cfg.CursorSigningKey)), inquiryRegistration, inquiry.InboxRegistration(domainDependencies), voiceRegistration, inventoryscan.Registration(domainDependencies, scantokens.System()))
 	handler, _ := httpserver.New(application, generated.Domains, httpserver.Options{OIDCIssuer: cfg.OIDCIssuer, OIDCDiscoveryURL: discoveryURL, OIDCAuthorizationURL: authorizationURL, OIDCTokenURL: tokenURL, OIDCDocsClientID: cfg.OIDCDocsClientID, OIDCDocsRedirectURI: cfg.OIDCDocsRedirectURI, PublicBaseURL: cfg.PublicBaseURL, CORSAllowedOrigins: cfg.CORSAllowedOrigins, TrustedProxyCIDRs: cfg.TrustedProxyCIDRs, DisableDocs: cfg.ScalarDocsDisabled, RequestRateLimiter: requestLimiter, Clock: clock, Probe: probe, MetricsHandler: metrics, DomainRegistrations: registrations})
 	server := &http.Server{Addr: cfg.HTTPAddr, Handler: handler, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 20}
 	go func() {

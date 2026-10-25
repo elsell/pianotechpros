@@ -199,3 +199,38 @@ func TestPhotoRequiresCurrentSnapshotMembership(t *testing.T) {
 		t.Fatal("old snapshot photo exposed after republish")
 	}
 }
+
+func TestBannerProjectionIsScopedAndDetached(t *testing.T) {
+	s, err := showroom.New(dealerFixture(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := dealer.NewBanner("dealer", "banner", 1200, 600, strings.Repeat("a", 64), time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	enriched, err := s.WithBanner(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	original, _ := s.Profile()
+	if original.Banner != nil {
+		t.Fatal("modified original showroom")
+	}
+	p, _ := enriched.Profile()
+	if p.Banner == nil || p.Banner.ID != "banner" || p.Banner.Width != 1200 {
+		t.Fatal("missing public banner")
+	}
+	p.Banner.ID = "consumer-change"
+	again, _ := enriched.Profile()
+	if again.Banner.ID != "banner" {
+		t.Fatal("mutable banner escaped")
+	}
+	b.DealerID = "foreign"
+	if _, err := s.WithBanner(b); !errors.Is(err, showroom.ErrInvalidProfile) {
+		t.Fatal("accepted foreign banner", err)
+	}
+	if _, err := (showroom.Showroom{}).WithBanner(b); !errors.Is(err, showroom.ErrUnavailable) {
+		t.Fatal("zero showroom accepted banner", err)
+	}
+}

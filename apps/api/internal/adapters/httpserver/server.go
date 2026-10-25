@@ -442,6 +442,9 @@ func withSecurity(next http.Handler) http.Handler {
 		w.Header().Set("Referrer-Policy", "no-referrer")
 		limit := int64(1 << 20)
 		parts := strings.Split(r.URL.Path, "/")
+		if r.Method == http.MethodPost && len(parts) == 5 && parts[0] == "" && parts[1] == "v1" && parts[2] == "dealers" && parts[3] != "" && parts[4] == "banner" {
+			limit = 20 << 20
+		}
 		if r.Method == http.MethodPost && len(parts) == 7 && parts[0] == "" && parts[1] == "v1" && parts[2] == "dealers" && parts[3] != "" && parts[4] == "inventory" && parts[5] != "" && parts[6] == "photos" {
 			limit = 20 << 20
 		}

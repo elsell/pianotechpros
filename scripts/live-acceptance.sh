@@ -39,6 +39,7 @@ node scripts/showroom-web-acceptance.mjs
 pnpm --dir apps/web build
 WEB_ACCEPTANCE_BUILT=1 node scripts/showroom-web-acceptance.mjs
 WEB_ACCEPTANCE_BUILT=1 node scripts/inquiry-web-acceptance.mjs
+WEB_ACCEPTANCE_BUILT=1 node scripts/banner-web-acceptance.mjs
 node scripts/voice-recorder-acceptance.mjs
 node scripts/dealer-web-suite.mjs
 WEB_ACCEPTANCE_BUILT=1 INQUIRY_TEST_TURNSTILE_FAILURE=1 node scripts/inquiry-web-acceptance.mjs

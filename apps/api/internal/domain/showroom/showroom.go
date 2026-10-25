@@ -16,6 +16,7 @@ var ErrInvalidProfile = errors.New("invalid_public_dealer_profile")
 // Profile contains only deliberately public business information. It must not
 // embed dealer.Entity or dealer.Attributes: additions there are private by default.
 type Profile struct {
+	Banner                                   *dealer.PublicBanner
 	ID, Name, Slug, Email, Phone, WebsiteURL string
 	Tagline, Description                     string
 	StreetAddress1, StreetAddress2           string
@@ -58,7 +59,12 @@ func (s Showroom) Profile() (Profile, error) {
 	if s.profile.ID == "" {
 		return Profile{}, ErrUnavailable
 	}
-	return s.profile, nil
+	profile := s.profile
+	if profile.Banner != nil {
+		banner := *profile.Banner
+		profile.Banner = &banner
+	}
+	return profile, nil
 }
 
 func (s Showroom) Listing(publication inventory.Publication) (inventory.PublicListing, error) {
@@ -82,4 +88,17 @@ func (s Showroom) Photo(publication inventory.Publication, photoID string) (inve
 		}
 	}
 	return inventory.PublicPhoto{}, ErrUnavailable
+}
+
+// WithBanner attaches only current, scoped evidence from the same repository read.
+func (s Showroom) WithBanner(banner dealer.Banner) (Showroom, error) {
+	if s.profile.ID == "" {
+		return Showroom{}, ErrUnavailable
+	}
+	if !banner.ValidFor(dealer.ID(s.profile.ID)) {
+		return Showroom{}, ErrInvalidProfile
+	}
+	public := banner.Public()
+	s.profile.Banner = &public
+	return s, nil
 }

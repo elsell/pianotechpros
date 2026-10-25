@@ -63,6 +63,34 @@ func readOrientation(raw []byte, format string) (int, error) {
 		orientation, err = exifOrientation(payload)
 		return err
 	}
+	if format == "webp" {
+		if len(raw) < 12 || string(raw[:4]) != "RIFF" || string(raw[8:12]) != "WEBP" || uint64(binary.LittleEndian.Uint32(raw[4:8])) != uint64(len(raw)-8) {
+			return 0, ports.ErrInvalidPhoto
+		}
+		for offset := 12; offset < len(raw); {
+			if len(raw)-offset < 8 {
+				return 0, ports.ErrInvalidPhoto
+			}
+			kind := string(raw[offset : offset+4])
+			length := uint64(binary.LittleEndian.Uint32(raw[offset+4 : offset+8]))
+			padded := length + length%2
+			if padded > uint64(len(raw)-offset-8) {
+				return 0, ports.ErrInvalidPhoto
+			}
+			payload := raw[offset+8 : offset+8+int(length)]
+			if kind == "ANIM" || kind == "ANMF" || (kind == "VP8X" && (len(payload) != 10 || payload[0]&2 != 0)) {
+				return 0, ports.ErrInvalidPhoto
+			}
+			if kind == "EXIF" {
+				payload = bytes.TrimPrefix(payload, []byte{'E', 'x', 'i', 'f', 0, 0})
+				if err := consume(payload); err != nil {
+					return 0, err
+				}
+			}
+			offset += 8 + int(padded)
+		}
+		return orientation, nil
+	}
 	if format == "png" {
 		for offset := 8; offset < len(raw); {
 			if len(raw)-offset < 12 {

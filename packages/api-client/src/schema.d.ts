@@ -375,6 +375,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/dealers/{id}/banner": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get-dealer-banner"];
+        put?: never;
+        post: operations["upload-dealer-banner"];
+        delete: operations["remove-dealer-banner"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dealers/{id}/banner/{bannerID}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["read-dealer-banner"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/dealers/{id}/staff": {
         parameters: {
             query?: never;
@@ -604,6 +636,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/showrooms/{slug}/banner/{bannerID}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["read-public-showroom-banner"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/showrooms/{slug}/pianos": {
         parameters: {
             query?: never;
@@ -772,6 +820,29 @@ export interface components {
             data: components["schemas"]["AuthorizationDeadLetterDTO"][];
             meta: components["schemas"]["PaginationMeta"];
         };
+        BannerOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/BannerOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["DealerBannerState"];
+        };
+        BannerUploadMeta: {
+            bannerID: string;
+            replay: boolean;
+        };
+        BannerUploadOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/BannerUploadOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["DealerBannerState"];
+            meta: components["schemas"]["BannerUploadMeta"];
+        };
         BuyerContact: {
             email: string;
             message: string;
@@ -794,6 +865,17 @@ export interface components {
             /** Format: date-time */
             expiresAt: string;
             token: string;
+        };
+        DealerBanner: {
+            /** Format: int64 */
+            height: number;
+            id: string;
+            /** Format: int64 */
+            width: number;
+        };
+        DealerBannerState: {
+            banner: components["schemas"]["DealerBanner"] | null;
+            profile: components["schemas"]["DealerItem"];
         };
         DealerCreate: {
             /**
@@ -1216,6 +1298,13 @@ export interface components {
             alt_text: string;
             id: string;
         };
+        PublicShowroomBanner: {
+            /** Format: int64 */
+            height: number;
+            id: string;
+            /** Format: int64 */
+            width: number;
+        };
         PublicShowroomListing: {
             piano: components["schemas"]["PublicListing"];
             profile: components["schemas"]["PublicShowroomProfile"];
@@ -1223,6 +1312,7 @@ export interface components {
         PublicShowroomProfile: {
             accent_color: string;
             appointment_note: string;
+            banner: components["schemas"]["PublicShowroomBanner"] | null;
             banner_alt_text: string;
             city: string;
             delivery_note: string;
@@ -2880,6 +2970,149 @@ export interface operations {
             };
         };
     };
+    "get-dealer-banner": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BannerOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "upload-dealer-banner": {
+        parameters: {
+            query: {
+                expectedRevision: number;
+            };
+            header: {
+                Authorization?: string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BannerUploadOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "remove-dealer-banner": {
+        parameters: {
+            query: {
+                expectedRevision: number;
+            };
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BannerOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "read-dealer-banner": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                id: string;
+                bannerID: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Authorized normalized JPEG */
+            200: {
+                headers: {
+                    "Content-Type"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/jpeg": string;
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
     "list-dealer-staff": {
         parameters: {
             query?: {
@@ -3445,6 +3678,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProfileOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "read-public-showroom-banner": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                bannerID: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current published showroom JPEG */
+            200: {
+                headers: {
+                    "Content-Type"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/jpeg": string;
                 };
             };
             /** @description Error */

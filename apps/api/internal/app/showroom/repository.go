@@ -31,6 +31,7 @@ type CollectionRepository interface {
 // Private user-owned repository methods must never implement these by omission
 // of their actor scope, membership, authorization or audit arguments.
 type Repository interface {
+	ReadPublicBanner(context.Context, string, string) (ports.ProcessedPhoto, error)
 	ReadPublicProfile(context.Context, string) (domain.Profile, error)
 	ReadPublicListing(context.Context, string, string) (Listing, error)
 	ReadPublicPhoto(context.Context, string, string, string) (ports.ProcessedPhoto, error)

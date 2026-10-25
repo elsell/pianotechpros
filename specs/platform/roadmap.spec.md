@@ -2,6 +2,19 @@
 
 ## Current milestone: feature-complete product
 
+Buyer inquiry foundations now implement canonical contact validation, immutable
+public snapshot context and first-read domain state. Submission orchestration
+requires an explicit CAPTCHA policy and coordinated limiter, limits honeypots
+before discarding them, and never persists challenge/source data. PostgreSQL
+migration 25 and its adapter capture current visibility/snapshot in the same
+transaction; independent insert guards reject substituted snapshots, and runtime
+credentials cannot rewrite/delete buyer messages. Real PostgreSQL tests observe
+lock waits behind showroom/piano unpublish and reject the newly hidden listing.
+Full repository/contract checks, domain/application race tests, isolated database
+integration and required review pass. No public route is exposed by this slice.
+HTTP composition, configured challenge adapter, authorized/audited inbox and
+web/native user journeys remain required for IQ-01 through IQ-03 completion.
+
 The node-forge 1.4.0 mitigation backports the exact RSA nested-DigestAlgorithm
 validation from unmerged upstream PR 1152, with license, source and installed
 hashes recorded. The old parser accepted malformed nested encodings through both

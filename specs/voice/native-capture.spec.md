@@ -86,3 +86,7 @@ capture registry retains failed disposal and retries it before another microphon
 permission/acquisition attempt. Active captures are never reclaimed by that
 registry. A failed retry reports cleanup failure; successful retry removes the
 retired owner. This registry holds resource handles, never transcript or audio.
+
+The native modal owns a SafeAreaProvider so its insets reflect its own window,
+not the underlying navigation screen. The Apply footer must remain completely
+above Android gesture navigation and iOS home-indicator areas.

@@ -8,8 +8,11 @@ dealer-scoped resolution, piano identification and confirmed status actions.
 The new scan contract keeps the identifier in a consumed URL fragment and
 requires scoped, audited resolution. Initial domain/token-source tests cover
 canonical 256-bit identifiers, redacted formatting, stored timestamp precision
-and entropy failure without fallback. Storage, routes, QR rendering/scanning
-and client acceptance are not implemented yet; QR-01 remains incomplete.
+and entropy failure without fallback. Scoped PostgreSQL storage now provisions one immutable association and audits
+creation, repeat reads and resolution atomically. Real database race tests cover
+concurrent creation, viewer access, denied scope/revocation, audit rollback,
+collision sanitization and runtime/trigger immutability. Routes, QR rendering/
+scanning and client acceptance are not implemented yet; QR-01 remains incomplete.
 
 Private inventory history (LC-02) now has domain, storage and client slices. The initial
 pure domain projection reconstructs changed attribute fields from adjacent

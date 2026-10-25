@@ -67,3 +67,24 @@ Initial domain/token-source implementation is not a delivered QR workflow.
 Persistence, policy/HTTP integration, QR rendering/decoding and web/native
 interaction evidence remain required before QR-01 is complete. The existing
 legacy labels/deployment are untouched; no production data or secrets are copied.
+
+## Transactional storage
+
+Migration 28 stores the canonical token as a private uniquely indexed value, one
+row per inventory record with a composite dealer/record foreign key. Inserts
+require the current transaction's matching creation audit, active confirmed
+view-capable membership, matching founding-owner identity and an existing record.
+The API runtime has SELECT/INSERT only. Triggers reject update, delete and truncate;
+rollback refuses to drop retained labels. Audit retention does not cascade into
+labels or invalidate them.
+
+Ensure receives a validated candidate plus a creation audit template. It locks
+current dealer authority, loads the record, then returns the existing association
+or inserts the candidate. Existing labels receive a fresh viewed audit instead of
+a duplicate creation event; competing requests serialize on the dealer lock.
+Candidate creation time must equal the audit time and cannot predate the record.
+Resolve receives actor/dealer scope and a parsed token, plus a read audit template
+whose initial target is the dealer. After scoped resolution it records only the
+resolved record ID as its inventory_scan audit target. Neither operation releases
+results on transaction/audit failure. Database error details are sanitized at this
+boundary so token values from constraint errors cannot enter diagnostics.

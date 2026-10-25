@@ -584,10 +584,11 @@ recovery, exact pending retry, independent origin/rule zones, conflict decisions
 competing tabs, localized removal, rotated sessions and denial exit/cleanup.
 
 The browser session-rotation journey owns virtual time: pause its installed clock
-before entering the editor and advance only at explicit rotation steps. A real
-scheduler delay before manual save must not allow autosave to dispatch the held
-request first. This keeps manual-save/rotation assertions deterministic without
-weakening autosave behavior or extending interaction timeouts.
+before entering the editor, then explicitly advance through the autosave debounce
+to dispatch the first held edit. Wait for that request before rotating the session.
+Do not race a manual click against autosave or assert wall-clock scheduler timing.
+Preserve pending-command replay, newer-draft recovery and current-token rejection
+assertions without extending interaction timeouts.
 
 ## Persisted web profile acceptance
 

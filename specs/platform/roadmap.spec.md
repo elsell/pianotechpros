@@ -50,6 +50,12 @@ late permission/preparation, interruption, cleanup failure and reentrancy. Clean
 prebuild checks verify localized microphone purpose strings and no background
 audio capabilities; Expo exports pass. Fresh native compilation and device
 recording/permission/interruption acceptance remain required before delivery.
+Voice processing now shares editor queue coordination across clients: preparation
+does not claim saving is paused, explicit review holds the queue, cancellation
+waits for pending acquisition/provider work to settle, and Undo remains available
+after release. The web editor exercises this coordinator; controlled lifecycle
+tests and full browser journeys cover the transition. Native presentation remains
+the next integration step.
 
 Buyer inquiry foundations now implement canonical contact validation, immutable
 public snapshot context and first-read domain state. Submission orchestration

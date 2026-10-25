@@ -213,3 +213,5 @@ export {validInventoryVoiceProposal,applyInventoryVoiceProposal,type InventoryVo
 export {createInventoryVoiceWorkflow,type InventoryVoiceWorkflowPort,type InventoryVoiceScope,type InventoryVoiceContext,type InventoryVoiceState,type InventoryVoiceIssue} from './inventory-voice-workflow';
 
 export * from './native-voice-capture';
+
+export * from './inventory-voice-workspace';

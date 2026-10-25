@@ -1,15 +1,15 @@
 <script lang="ts">
  import {onMount,tick} from 'svelte';
  import {createInventoryVoiceApiClient,VoiceClientError} from '@pianotechpros/api-client';
- import {createInventoryVoiceWorkflow,inventoryFormFromAttributes,type InventoryForm,type InventoryFormWorkspace,type InventoryVoiceCandidate,type InventoryVoiceField,type InventoryVoiceState,type SessionCredential} from '@pianotechpros/client-core';
+ import {createInventoryVoiceWorkspace,inventoryFormFromAttributes,type InventoryForm,type InventoryFormWorkspace,type InventoryVoiceCandidate,type InventoryVoiceField,type InventoryVoiceState,type SessionCredential} from '@pianotechpros/client-core';
  import type {Translator,MessageKey} from '@pianotechpros/i18n';
  import {browserEvents} from '../browser-events';
  import {createBrowserVoiceRecorder,type VoiceCaptureState,type BrowserVoiceAudio} from './voice-recorder';
  export let workspace:InventoryFormWorkspace;export let accountId:string;export let dealerID:string;export let apiURL:string;export let credential:SessionCredential;export let i18n:Translator;export let onSessionRejected:()=>void;export let onBusy:(busy:boolean)=>void;export let onPaused:(paused:boolean)=>void;export let otherBusy=false;
  let active=false,working=false,denied=false;let transcript='',failure='';let selected:InventoryVoiceField[]=[];
  let capture:VoiceCaptureState={phase:'idle',issue:null};let voice:InventoryVoiceState|null=null;let heading:HTMLHeadingElement;
- let recorder:ReturnType<typeof createBrowserVoiceRecorder>|null=null;let workflow:ReturnType<typeof createInventoryVoiceWorkflow>|null=null;
- let unsubscribe=()=>{};let releaseReview:(()=>void)|null=null;let generation=0;
+ let recorder:ReturnType<typeof createBrowserVoiceRecorder>|null=null;let workflow:ReturnType<typeof createInventoryVoiceWorkspace>|null=null;
+ let unsubscribe=()=>{};
  $: capturing=['requesting','recording','stopping'].includes(capture.phase);
  $: busy=working||capturing;
  $: onBusy(busy);
@@ -23,7 +23,7 @@
   return field==='form'||field==='condition'?i18n.t(`inventory.${field}.${v}` as MessageKey):v;
  }
  function proposed(c:InventoryVoiceCandidate){const v=c.value;return value(inventoryFormFromAttributes({stock_number:'', [c.field]:v.text??v.boolean??v.money??v.date},voice?.reviewed?.decimal??'.'),c.field);}
- function clear(){generation++;recorder?.cancel();workflow?.dispose();workflow=null;unsubscribe();unsubscribe=()=>{};releaseReview?.();releaseReview=null;voice=null;selected=[];transcript='';failure='';}
+ function clear(){recorder?.cancel();workflow?.cancel();voice=null;selected=[];transcript='';failure='';}
  async function request<T>(run:(client:ReturnType<typeof createInventoryVoiceApiClient>)=>Promise<T>){
   const session=credential;
   try{return await run(createInventoryVoiceApiClient(apiURL,()=>Date.parse(session.expiresAt)>Date.now()?session.token:null));}
@@ -31,35 +31,26 @@
  }
  async function process(audio:BrowserVoiceAudio|null=null){
   if(!active||working||otherBusy||denied){audio?.bytes.fill(0);return;}
-  const text=transcript.trim();clear();transcript=text;working=true;const ticket=generation,owner=accountId,dealer=dealerID;
-  const live=()=>active&&ticket===generation&&owner===accountId&&dealer===dealerID&&!denied;
-  try{
-   if('ensureRecord'in workspace){const ensure=workspace.ensureRecord as ()=>Promise<string|null>;if(!await ensure())throw Error('voice_record_unavailable');if(!live())return;}
-   await workspace.withMediaMutation(async baseline=>{
-    if(!live())return;
-    onPaused(true);
-    workflow=createInventoryVoiceWorkflow({scope:{accountID:owner,dealerID:dealer,recordID:baseline.id},
-     current:()=>{const s=workspace.snapshot();return live()&&s.draft&&s.baseline&&!s.denied&&s.baseline.id===baseline.id&&s.baseline.dealer_id===dealer?{accountID:owner,dealerID:dealer,recordID:baseline.id,revision:s.baseline.revision,form:s.draft}:null;},
-     change:form=>{if(!live())return false;workspace.change(form);const current=workspace.snapshot().draft;return !!current&&Object.keys(form).every(key=>current[key as keyof InventoryForm]===form[key as keyof InventoryForm]);},
-     transcribe:(revision,bytes,mime,signal)=>request(client=>client.transcribe(dealer,baseline.id,revision,bytes,mime,signal)),
-     extract:(revision,text,signal)=>request(client=>client.extract(dealer,baseline.id,revision,text,signal)),
-     classify:error=>error instanceof VoiceClientError?error.code==='unauthenticated'||error.code==='not_found'?'denied':error.code==='cancelled'?'unavailable':error.code:'unavailable',
-    });
-    unsubscribe=workflow.subscribe(next=>{if(!live())return;const entered=next.phase==='review'&&voice?.phase!=='review';voice=next;if(next.transcript)transcript=next.transcript;if(entered){selected=[];void tick().then(()=>{if(live())heading?.focus();});}});
-    if(audio){try{await workflow.process(audio.bytes,audio.mimeType);}finally{audio.bytes.fill(0);}}else await workflow.extractTranscript(text);
-    if(live()&&workflow?.snapshot().phase==='review')await new Promise<void>(resolve=>{releaseReview=resolve;});
-   });
-  }catch{if(live())failure='unavailable';}
-  finally{audio?.bytes.fill(0);working=false;onPaused(false);if(active)onBusy(capturing);}
+  const text=transcript.trim();clear();transcript=text;
+  if(audio)await workflow?.process(audio.bytes,audio.mimeType);else await workflow?.extractTranscript(text);
  }
- function apply(){workflow?.apply(selected);if(workflow?.snapshot().phase==='applied'){releaseReview?.();releaseReview=null;transcript='';}}
+ function apply(){workflow?.apply(selected);if(workflow?.snapshot().voice?.phase==='applied')transcript='';}
  function editTranscript(){const text=voice?.transcript??transcript;clear();transcript=text;}
  function renew(){workflow?.refreshReview();selected=[];void tick().then(()=>heading?.focus());}
  onMount(()=>{
-  active=true;const events=browserEvents('pianotechpros.voice');const hidden=()=>{if(!events.visible())clear();};events.addVisibility(hidden);
+  active=true;
+  workflow=createInventoryVoiceWorkspace({accountID:accountId,dealerID,active:()=>active&&!denied,
+   snapshot:()=>workspace.snapshot(),change:form=>workspace.change(form),withMutation:work=>workspace.withMediaMutation(work),
+   ...('ensureRecord'in workspace?{ensureRecord:()=> (workspace.ensureRecord as ()=>Promise<string|null>)()}:{}),
+   transcribe:(recordID,revision,bytes,mime,signal)=>request(client=>client.transcribe(dealerID,recordID,revision,bytes,mime,signal)),
+   extract:(recordID,revision,text,signal)=>request(client=>client.extract(dealerID,recordID,revision,text,signal)),
+   classify:error=>error instanceof VoiceClientError?error.code==='unauthenticated'||error.code==='not_found'?'denied':error.code==='cancelled'?'unavailable':error.code:'unavailable',
+  });
+  unsubscribe=workflow.subscribe(next=>{if(!active)return;const entered=next.voice?.phase==='review'&&voice?.phase!=='review';voice=next.voice;working=next.busy;onPaused(next.paused);if(next.issue)failure=next.issue;if(voice?.transcript)transcript=voice.transcript;if(entered){selected=[];void tick().then(()=>{if(active)heading?.focus();});}});
+  const events=browserEvents('pianotechpros.voice');const hidden=()=>{if(!events.visible())clear();};events.addVisibility(hidden);
   recorder=createBrowserVoiceRecorder({changed:state=>{if(active)capture=state;},completed:audio=>{if(active)void process(audio);else audio.bytes.fill(0);}});
   const unwatch=workspace.subscribe(state=>{if(state.denied){clear();denied=true;failure='denied';}});
-  return()=>{active=false;clear();unwatch();recorder?.dispose();events.removeVisibility(hidden);onBusy(false);onPaused(false);};
+  return()=>{active=false;clear();unsubscribe();workflow?.dispose();unwatch();recorder?.dispose();events.removeVisibility(hidden);onBusy(false);onPaused(false);};
  });
 </script>
 

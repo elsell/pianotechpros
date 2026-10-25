@@ -464,6 +464,9 @@ try {
   await page.getByRole('button',{name:'Reintentar carga',exact:true}).click();
   await page.getByRole('heading',{name:'Cargas pendientes',exact:true}).waitFor({state:'detached'});
   assert.equal(photoUploads,3);assert.equal(recordPhotos.get('captured-1').length,2);
+  // A removed upload entry precedes the final gallery reload; inject the remote
+  // reorder only after that interaction is ready, so this tests a real conflict.
+  await page.waitForFunction(()=>[...document.querySelectorAll('button')].filter(button=>button.textContent==='Usar como portada')[1]?.disabled===false);
   const currentRecord=capturedRecords.get('captured-1');recordPhotos.set('captured-1',[...recordPhotos.get('captured-1')].reverse());capturedRecords.set('captured-1',{...currentRecord,revision:currentRecord.revision+1});
   await page.getByRole('button',{name:'Usar como portada',exact:true}).nth(1).click();
   await page.getByText('Las fotos cambiaron en otro lugar. Revisa la galería actualizada antes de repetir el cambio.',{exact:true}).waitFor();

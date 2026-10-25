@@ -33,3 +33,21 @@ size limits, interruption, observer cancellation and repeated start/stop.
 References: Expo SDK 55 audio documentation and Apple HIG privacy guidance.
 The platform adapter and permission configuration are foundations; native review
 presentation and real-device acceptance remain part of the full voice milestone.
+
+## Shared editor coordination
+
+Web and native presentation use a shared workspace coordinator for voice
+processing. It protects a new draft before obtaining an inventory identity,
+acquires the existing media mutation queue before processing, and holds that
+queue until explicit Apply, Cancel or transcript correction. The paused indicator
+means the queue is actually held, never merely that recording or preparation
+started. Manual changes remain journaled while review is open.
+
+Account, dealer and record scope are checked throughout processing. Cancellation,
+scope loss and disposal abort provider work, release review and suppress late
+results. They do not permit another operation to overlap a still-settling queue.
+Audio is zeroed after processing, including failed preparation and cancellation.
+Denied access clears private review state. Apply requires explicit selection;
+conditional Undo remains available after the queue releases and preserves later
+manual corrections. Presentation owns field selection and transcript entry;
+the shared coordinator owns queue lifetime and workflow orchestration.

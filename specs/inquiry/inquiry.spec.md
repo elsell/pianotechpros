@@ -175,3 +175,27 @@ The form provides a live delivery status and warns that a network failure may
 have occurred after receipt, so retry is always a deliberate buyer action.
 The integration follows the [explicit rendering guide](https://developers.cloudflare.com/turnstile/get-started/client-side-rendering/)
 and [provider CSP guidance](https://developers.cloudflare.com/turnstile/reference/content-security-policy/).
+
+## Inbox interaction state
+
+A shared framework-independent inbox workspace owns list, cursor, selection and
+explicit mark-read orchestration. Its scope is the immutable account/dealer pair;
+changing scope or leaving the surface aborts pending work, clears buyer data and
+ignores late results. It never persists inbox contents to device/browser storage.
+Only one list request and one mark-read request may be active. Refresh replaces
+pagination; loading more rejects repeated cursors or duplicate entries instead of
+silently hiding a broken page. Selection supersedes pending detail/mark work.
+Response identities must match the requested inquiry. Observer-triggered disposal
+must prevent dispatch as well as late presentation. Authentication rejection or
+loss of access clears all retained buyer details; transient errors permit an
+explicit retry. A mark-read conflict reloads current detail without replaying the
+mutation. Read acknowledgment is deliberate, with server-confirmed first-reader
+state; opening a message alone does not mark it read.
+
+Web uses a keyboard-accessible list/detail layout, with a focused detail heading
+and a compact back-to-list layout on narrow screens. Native uses pushed stack
+navigation, a large-title list, native pull-to-refresh and selectable contact and
+message text. No contact payload is placed in navigation parameters. Native
+surfaces clear memory on blur and reload authority on focus. Unread status is
+textual as well as typographic. Email and phone actions use encoded/sanitized
+scheme URLs; unavailable native handlers provide localized copy guidance.

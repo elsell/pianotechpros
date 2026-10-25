@@ -17,6 +17,9 @@ let inventoryMode = 'normal';
 let editorMode = 'normal';
 const captureIntents = new Map();const capturedRecords = new Map();let captureCreates = 0;let loseCapture = true;
 let editorWrites = 0;
+let inquiryDenied=false;let inquiryWrites=0;let inquiryRead=false;
+const inquiryPiano={id:'concert',dealer_id:'created-shop',publication_revision:2,status:'available',stock_number:'PT-1',title:'Historical grand',featured:false,form:'grand',player_system:false,condition:'used',make:'',model:'',manufactured:null,size:'',finish:'',description:'Published description',price:null,photos:[{id:'photo',alt_text:''}]};
+const inquiryEntry=()=>({id:'buyer-inquiry',dealerName:'My edited shop',dealerSlug:'my-shop',piano:inquiryPiano,contact:{name:'Synthetic buyer',email:'buyer@example.com',phone:'+1 555 0101',message:'Could I visit on Saturday?',preference:'email'},createdAt:'2026-10-25T00:00:00Z',revision:inquiryRead?2:1,...(inquiryRead?{readAt:'2026-10-25T00:01:00Z',readBy:'test-owner'}:{})});
 let editorRecord = { id: 'concert', dealer_id: 'created-shop', revision: 1, status: 'available', attributes: { stock_number: 'concert', title: 'Concert Grand', featured: true }, created_at: '2026-10-22T12:00:00Z', updated_at: '2026-10-22T12:00:00Z' };
 let denyStaff = false;
 let invitationAccepted = false;
@@ -45,6 +48,7 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   const chunks=[];for await(const chunk of req)chunks.push(chunk);const rawBytes=Buffer.concat(chunks);const raw=rawBytes.toString();
   const body=rawBytes.length&&req.headers['content-type']?.includes('application/json')?JSON.parse(rawBytes.toString()):{};
+  if(url.pathname.startsWith('/v1/dealers/created-shop/inquiries')){if(inquiryDenied)return send(404,{code:'not_found'});if(req.method==='POST'){inquiryWrites++;inquiryRead=true;return send(409,{code:'conflict'});}return send(200,url.pathname.endsWith('/inquiries')?{data:[inquiryEntry()],meta:{}}:{data:inquiryEntry()});}
   const publicationRoute=/^\/v1\/dealers\/created-shop\/inventory\/([^/]+)\/(publication|publish|unpublish|lifecycle)$/.exec(url.pathname);
   if(publicationRoute){
     const [,id,action]=publicationRoute;let record=id==='concert'?editorRecord:capturedRecords.get(id);if(!record)return send(404,{code:'not_found'});
@@ -235,6 +239,12 @@ try {
   await page.getByRole('button', { name: 'Guardar cambios', exact: true }).click();
   await page.getByRole('heading', { name: 'My edited shop', exact: true }).waitFor();
   assert.equal(shops.get('created-shop').revision, 3);
+  await page.getByRole('button',{name:'Consultas de compradores',exact:true}).click();await page.getByRole('button',{name:/Synthetic buyer/}).waitFor();await page.getByRole('button',{name:/Synthetic buyer/}).click();await page.getByText('Could I visit on Saturday?',{exact:true}).waitFor();assert.equal(inquiryWrites,0);
+  await page.getByRole('button',{name:'Marcar como leída',exact:true}).click();await page.getByText(/Primera lectura el/).waitFor();assert.equal(inquiryWrites,1);assert.equal(await page.getByText('Historical grand',{exact:true}).count(),2);assert.equal(await page.getByRole('link',{name:'Enviar correo al comprador',exact:true}).getAttribute('href'),'mailto:buyer%40example.com');
+  await page.setViewportSize({width:390,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await page.screenshot({path:'/tmp/piano-inbox-mobile.png',fullPage:true});
+  inquiryDenied=true;await page.getByRole('button',{name:'Actualizar consultas',exact:true}).click();await page.getByText('Ya no tienes acceso a estas consultas. Vuelve al vendedor para comprobar tu acceso.',{exact:true}).waitFor();assert.equal(await page.getByText('Could I visit on Saturday?',{exact:true}).count(),0);assert.equal(await page.getByText('buyer@example.com',{exact:true}).count(),0);
+  await page.getByRole('button',{name:'Volver al vendedor',exact:true}).click();await page.setViewportSize({width:1280,height:900});
+
   await page.getByRole('button', { name: 'Ver inventario', exact: true }).click();
   await page.getByRole('heading', { name: 'Concert Grand', exact: true }).waitFor();
   await page.getByRole('button', { name: 'Cargar más pianos', exact: true }).click();
@@ -551,5 +561,5 @@ try {
   releaseRefresh();
   assert.equal(await page.evaluate(() => window.refreshResult), 'discarded');
   assert.equal(await page.evaluate(() => sessionStorage.getItem('pianotechpros_application_session')), null);
-  console.log('Publication review/cancellation/Escape/private-field exclusion/restored-draft protection/stale revisions/acknowledgement with concurrent revision/sale snapshot preservation/uncertain unpublish refresh; Photo-first lost-create recovery, protected upload retry, private image preview, photo ordering conflict, description and removal confirmation; lazy New capture/idempotent retry/recovery/cross-tab exclusion and inventory editing/autosave/partial-input recovery/lost-response reconciliation/conflict/denial, browsing/filter/search/pagination/retry/denial and dealer web invitation preview/acceptance/pending/replay, staff permissions/conflicts/removal/invitation revocation, creation retry, conflict review, form retention through session outages, Spanish pagination, keyboard selection, responsive layout and sign-out isolation passed');
+  console.log('Inquiry list/detail/explicit read/conflict reconciliation/contact actions/mobile layout/access revocation clearing; Publication review/cancellation/Escape/private-field exclusion/restored-draft protection/stale revisions/acknowledgement with concurrent revision/sale snapshot preservation/uncertain unpublish refresh; Photo-first lost-create recovery, protected upload retry, private image preview, photo ordering conflict, description and removal confirmation; lazy New capture/idempotent retry/recovery/cross-tab exclusion and inventory editing/autosave/partial-input recovery/lost-response reconciliation/conflict/denial, browsing/filter/search/pagination/retry/denial and dealer web invitation preview/acceptance/pending/replay, staff permissions/conflicts/removal/invitation revocation, creation retry, conflict review, form retention through session outages, Spanish pagination, keyboard selection, responsive layout and sign-out isolation passed');
 } catch(error){if(evidencePage){await evidencePage.screenshot({path:'/tmp/piano-publication-failure.png',fullPage:true});console.error(await evidencePage.locator('body').innerText());}throw error;} finally { releaseRefresh(); releaseDetail(); await browser.close(); server.close(); }

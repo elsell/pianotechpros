@@ -27,6 +27,7 @@ function Profile({ id, accountId }: { id: string; accountId: string }) {
     {state.detailLoading ? <Text style={{ color: theme.secondary }}>{i18n.t('common.loading')}</Text> : null}
     {state.detailFailure ? <><Text accessibilityRole="alert" style={{ color: theme.text }}>{i18n.t('dealer.detailFailed')}</Text><Button title={i18n.t('dealer.retry')} color={theme.accent} onPress={() => { void directory.select(id); }} /></> : null}
     {shop ? <><Text accessibilityRole="header" style={{ color: theme.text, fontSize: 28, fontWeight: '600' }}>{shop.name}</Text><Button title={i18n.t('dealer.edit')} color={theme.accent} onPress={() => router.push({ pathname: '/dealers/form', params: { id } })} />
+      <Button title={i18n.t('inbox.heading')} color={theme.accent} onPress={()=>router.push({pathname:'/inquiries',params:{dealerID:id}})} />
       <Button title={i18n.t('inventory.browse')} color={theme.accent} onPress={() => router.push({ pathname: '/inventory', params: { dealerID: id } })} />
       <Button title={i18n.t('staff.manage')} color={theme.accent} onPress={() => router.push({ pathname: '/dealers/staff', params: { id } })} />
       {field('dealer.tagline', shop.tagline)}{field('dealer.description', shop.description)}{field('dealer.email', shop.email)}{field('dealer.phone', shop.phone)}{field('dealer.website', shop.website_url)}

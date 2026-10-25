@@ -114,6 +114,17 @@ bounded subprocess; never run potentially unbounded parser inputs in the test
 runner itself. Keep the package's supported named/default CommonJS exports;
 Metro consumes its default export and passes a buffer, not a filesystem path.
 
+Pin decode-uri-component 0.5.0 to replace the unbounded malformed-percent decoder
+used by React Navigation's query-string adapter (GHSA-vcc3-ghjq-m6fr). Its fixed
+scanner must remain upstream-identical. A minimal reviewed packaging patch may
+retain callable CommonJS consumption by query-string: change the package module
+type and default function export only, preserving the MIT license and recording
+provenance. Exercise the actual installed query-string parser with ordinary
+Unicode, plus/escaped-plus, duplicate keys and malformed percent input. Bound
+adversarial subprocess execution and preserve non-throwing malformed-input
+behavior without executing any decoded content. Run compatibility, exports,
+contracts, full tests, age and native integration gates before release.
+
 Migration acceptance applies the prior released migration set first, then runs
 the current migrator and verifies preserved baseline data and new schema objects.
 Every prior-release up and down migration is frozen by a checked-in SHA-256

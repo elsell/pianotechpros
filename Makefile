@@ -32,6 +32,7 @@ check:
 	node --test scripts/shell-quote-security.test.mjs
 	node --test scripts/brace-expansion-security.test.mjs
 	node --test scripts/image-size-security.test.mjs
+	node --test scripts/uri-decoder-security.test.mjs
 	node scripts/check-app-env.mjs
 	./scripts/plan-release_test.sh
 	./scripts/test-start-postgres-for-acceptance.sh

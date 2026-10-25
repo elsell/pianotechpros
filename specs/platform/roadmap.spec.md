@@ -2,6 +2,18 @@
 
 ## Current milestone: feature-complete product
 
+The navigation query decoder now pins decode-uri-component 0.5.0 with a
+packaging-only CommonJS patch for query-string. The upstream bounded scanner is
+unchanged; MIT provenance and installed-source hashes are verified. Its actual
+React Navigation consumer passes ordinary Unicode/plus/duplicate-key decoding
+and the long malformed-percent regression that fails on the prior release.
+Full repository/contract checks, dependency-age validation, both mobile exports,
+Expo compatibility/Doctor (19/19), required review and Android emulator session
+restoration plus shop/inventory navigation pass.
+The current audit has eight outstanding findings (two high, two moderate, four
+low); decode-uri-component is no longer reported. Exports are not native builds,
+and full native interaction acceptance remains pending.
+
 Hosted run 40015648853 passed Android Gradle, unsigned iOS Xcode and acceptance.
 The backported screens APK (source 374f169, merge ref d9d1ac56, SHA-256
 818703e056c3546f227dfe05e8e329271c676acdbc31007da740bc46f935ade6) completed ten

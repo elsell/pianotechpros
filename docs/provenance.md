@@ -39,3 +39,13 @@ comments and the public upstream PR URL. Reviewed patch and installed-source
 SHA-256 values are recorded in `patches/react-native-screens.json` and checked by
 the native compatibility gate. Retire the patch when the Expo-compatible release
 includes the fix, after repeat native acceptance.
+
+The decode-uri-component 0.5.0 packaging patch retains callable CommonJS for
+React Navigation's query-string consumer. Its source is the npm 0.5.0 release
+(2026-06-29), verified against the registry tarball's SHA-512 integrity. Only
+`package.json` module type and `index.js` export syntax change; the upstream
+bounded decoder is unchanged. The original MIT license is retained and copied
+to `patches/decode-uri-component.LICENSE`. Patch/source hashes are recorded in
+`patches/decode-uri-component.json` and checked by the installed-consumer test.
+The patch contains no credentials, private data or deployment configuration.
+Retire it when navigation's query-string consumer supports the fixed ESM decoder.

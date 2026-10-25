@@ -98,8 +98,15 @@ labels through protected recovery and autosave on web and mobile. Raw manual
 changes clear atomic money/date origins; normalized unchanged attributes are not
 labelled. Apply forwards only actual changed fields and Undo stays manual. Shared
 behavior tests, web/mobile type checks, structural/contract checks and the browser
-journey pass, including observed Apply and Undo HTTP attribution. Real native and
-full API/database acceptance of this connected path remain required.
+journey pass, including observed Apply and Undo HTTP attribution. Android emulator
+acceptance now also uses the current real API and an isolated synthetic PostgreSQL
+database: Make-only Apply commits a voice history field and matching audit; Undo
+commits a manual field and matching audit. Model and title remain unchanged, and
+cold reopening preserves the undone value without a spurious revision. Speech
+responses were controlled, so live provider quality and iOS interaction remain
+unverified. A separate uninterrupted Android recording stops automatically at the
+one-minute limit, delivers 517,722 bytes of AAC audio and leaves its owned audio
+cache empty before review. Recording-level presentation is still outstanding.
 
 Buyer inquiry foundations now implement canonical contact validation, immutable
 public snapshot context and first-read domain state. Submission orchestration

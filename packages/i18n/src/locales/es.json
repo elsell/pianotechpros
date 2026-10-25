@@ -579,5 +579,8 @@
   "showroom.sharing.copied": "Enlace público copiado.",
   "showroom.sharing.failed": "No se pudo completar la acción. Puedes seleccionar y copiar el enlace público a continuación.",
   "showroom.sharing.link": "Enlace público del piano",
-  "showroom.sharing.unavailable": "No se puede compartir en este momento."
+  "showroom.sharing.unavailable": "No se puede compartir en este momento.",
+  "showroom.discovery.introduction": "Explora los pianos publicados en salas de exposición públicas. Contacta con la sala para consultar la disponibilidad y los detalles.",
+  "showroom.discovery.sitemap": "Mapa completo del sitio público",
+  "showroom.discovery.showrooms": "Salas de exposición"
 }

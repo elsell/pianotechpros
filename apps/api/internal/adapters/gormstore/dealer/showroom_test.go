@@ -32,6 +32,13 @@ func publicFixture(t *testing.T) (*Repository, *gorm.DB, dealer.Entity, inventor
 		t.Fatal(err)
 	}
 	profile.Revision++
+	// Persistent fixtures retain audit history, but must leave public enumeration
+	// clean even when a test deliberately corrupts the profile below.
+	t.Cleanup(func() {
+		if err := admin.Model(&model{}).Where("id=?", profile.ID).Update("showroom_published", false).Error; err != nil {
+			t.Error(err)
+		}
+	})
 	attrs := photos.Record.Attributes
 	attrs.Title, attrs.Form, attrs.Condition = "Published piano", inventory.Grand, inventory.Used
 	attrs.Serial, attrs.PrivateNotes, attrs.Location = "PRIVATE-SERIAL", "PRIVATE-NOTES", "PRIVATE-LOCATION"

@@ -61,6 +61,18 @@ func readPublication(tx *gorm.DB, record domain.Record) (*domain.Publication, er
 	if err := tx.Where("record_id=? AND dealer_id=? AND revision=?", record.ID, record.DealerID, pointer.PublicationRevision).Take(&snapshot).Error; err != nil {
 		return nil, err
 	}
+	var references []publicationPhotoModel
+	if err := tx.Where("record_id=? AND dealer_id=? AND publication_revision=?", record.ID, record.DealerID, snapshot.Revision).Find(&references).Error; err != nil {
+		return nil, err
+	}
+	return restoreStoredPublication(record, pointer, snapshot, references)
+}
+
+// restoreStoredPublication validates identical evidence for individual and batched public reads.
+func restoreStoredPublication(record domain.Record, pointer publicationPointerModel, snapshot publicationSnapshotModel, references []publicationPhotoModel) (*domain.Publication, error) {
+	if pointer.RecordID != record.ID || pointer.DealerID != record.DealerID || pointer.AppliedRevision > record.Revision || pointer.Status != record.Status || snapshot.RecordID != record.ID || snapshot.DealerID != record.DealerID || snapshot.Revision != pointer.PublicationRevision {
+		return nil, ports.ErrInvalidArgument
+	}
 	var listing domain.PublicListing
 	// SQL collection ordering and the decoded continuation flag must agree.
 	// A missing/null bool otherwise decodes to false but sorts as SQL NULL.
@@ -90,10 +102,6 @@ func readPublication(tx *gorm.DB, record domain.Record) (*domain.Publication, er
 	}
 	// The immutable snapshot itself must describe a legitimate visible publication.
 	if _, err := domain.RestorePublication(domain.PublicationState{Snapshot: listing, Visible: true, AppliedRevision: snapshot.Revision}); err != nil {
-		return nil, err
-	}
-	var references []publicationPhotoModel
-	if err := tx.Where("record_id=? AND dealer_id=? AND publication_revision=?", record.ID, record.DealerID, snapshot.Revision).Find(&references).Error; err != nil {
 		return nil, err
 	}
 	ids := make(map[string]bool, len(references))

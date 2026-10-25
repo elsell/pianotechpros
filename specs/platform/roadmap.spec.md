@@ -4,25 +4,28 @@
 
 Dealer banner parity (DL-03) is merged in PR #60 after both native builds and acceptance passed. The read-only legacy review confirms upload/replacement/removal, alt text and public delivery. The new banner contract specifies owner-only audited media commands, revision-bound replacement, replay-safe uploads, scoped current-image delivery and native review before publication. The backend slice has scoped banner evidence, owner-authorized processing and transactional replacement/removal, current public-image lookup, and metadata-stripping WebP decoding through the shared concurrency budget. Domain/application/processor race tests and real PostgreSQL banner lifecycle/public-visibility tests pass; the project critic found no blocking issues in these boundaries. Private/public HTTP routes and generated contracts are now connected; public clients accept only explicit bounded banner metadata. HTTP lifecycle, denied-before-read, binary body limits and anonymous source-limit tests pass. Public web banner display now passes image-load, English/Spanish fallback text, narrow-layout and unpublished-image denial browser acceptance. The owner web workflow now uses shared immutable upload intents and explicit review/removal; development and built-runtime browser journeys cover cancellation, invalid previews, uncertain committed uploads, conflict refresh/review, replacement, uncertain removal, revocation clearing, Escape, Spanish and narrow layout. Its API adapter and controller pass the full client suites (196 and 377 tests). Native owner controls now use the protected system-picker broker and an explicit review sheet. Five picker lifecycle tests and all 382 client-core tests pass. Android emulator interaction with the isolated real API verifies picker cancellation, preview cancellation, confirmed upload, removal cancellation and confirmed removal. iOS device, screen-reader and broader interruption acceptance remain open. Dependency-age, Go vulnerability scanning, generated-contract checks and broad project checks pass; the broader security command reports only the previously reviewed node-forge advisory. The critic confirmed the corrected outer upload budget and found no remaining blockers in the backend/public-display boundaries. Its remaining device acceptance is not represented as complete.
 
-Public listing discovery (SH-03/SH-04) is the active implementation slice. Readable
-published-title aliases retain UUID fallback and canonicalize only after a scoped
-public read; malformed segments cannot extract an embedded identifier. Bounded
-related-piano queries prefer the same form and fall back to available showroom
-stock, excluding the current piano. Optional related-content failure preserves
-the main listing with localized feedback. Pure policy tests, browser acceptance,
-workspace checks and i18n checks pass; narrow layout was inspected and the
-project critic found no blockers. These changes remain unmerged. Publication-only canonical/social metadata and
-escaped JSON-LD are now implemented behind an explicit validated public origin.
-Tests preserve exact prices, omit hidden offers and reject script termination;
-workspace/browser checks and critic review pass. Production-build and final gates pass. Web sharing now uses the actual browser
-clipboard fallback or platform sheet; native sharing resolves an authorized shop
-and fresh anonymous publication before opening the system sheet. Android device
-acceptance verifies that a newly saved private title does not enter the shared
-public URL, and dismissal returns to the editor. Scope/cancellation tests and
-critic review pass; final sharing gates are running. iOS sharing interaction and
-crawler discovery remain open.
+Public listing discovery and sharing (SH-03/SH-04) merged in PR #61 at
+`71ecae553259eb21d1faab1c599cd96e4077181e`. Readable published-title aliases,
+bounded related listings, canonical/social metadata, escaped JSON-LD and web/native
+public-link sharing pass browser acceptance, Android compilation and unsigned iOS
+compilation. Android interaction confirms a private title edit never enters the
+share sheet. iOS interaction remains unverified. Verification reports only the
+previously reviewed node-forge advisory; no security threshold was weakened.
 
-QR scan parity (QR-01) is the next implementation slice after the history client.
+Crawler discovery (SH-05) is the active slice. Dedicated anonymous directory and
+catalog ports return minimal public projections with bounded batch reads and
+publication visibility locks. Isolated PostgreSQL tests cover private edits,
+sold publications, unpublication, corrupted snapshots, capacity overflow, failures
+and concurrent showroom/piano unpublication. HTTP and client tests cover source
+limits, missing policy, sanitized failures, foreign records, duplicates and private
+fields. Root-level sitemap files preserve protocol URL scope. Robots and localized
+public discovery text use only the configured origin; absent configuration blocks
+crawlers and fails before API reads. Development and production browser acceptance, full project/contract
+checks and critic review pass, including Unicode-control sanitization. Hosted
+checks and merge remain pending. Customer/technician
+profiles and broader native/device acceptance remain required parity work.
+
+QR scan parity (QR-01) is implemented with remaining device acceptance below.
 The legacy scan flow has been rechecked read-only: stable label, authenticated
 dealer-scoped resolution, piano identification and confirmed status actions.
 The new scan contract keeps the identifier in a consumed URL fragment and

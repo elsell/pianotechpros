@@ -620,6 +620,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/showroom-discovery": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list-public-showroom-discovery"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/showrooms/{slug}": {
         parameters: {
             query?: never;
@@ -644,6 +660,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["read-public-showroom-banner"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/showrooms/{slug}/discovery": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["read-public-showroom-discovery"];
         put?: never;
         post?: never;
         delete?: never;
@@ -975,6 +1007,41 @@ export interface components {
             tagline?: string;
             warranty_note?: string;
             website_url?: string;
+        };
+        DiscoveryCatalogData: {
+            pianos: components["schemas"]["DiscoveryPiano"][];
+            shop: components["schemas"]["DiscoveryShop"];
+        };
+        DiscoveryCatalogOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/DiscoveryCatalogOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["DiscoveryCatalogData"];
+        };
+        DiscoveryDirectoryData: {
+            shops: components["schemas"]["DiscoveryShop"][];
+        };
+        DiscoveryDirectoryOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/DiscoveryDirectoryOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["DiscoveryDirectoryData"];
+        };
+        DiscoveryPiano: {
+            dealer_id: string;
+            id: string;
+            title: string;
+        };
+        DiscoveryShop: {
+            id: string;
+            name: string;
+            slug: string;
         };
         ErrorDetail: {
             /** @description Where the error occurred, e.g. 'body.items[3].tags' or 'path.thing-id' */
@@ -3660,6 +3727,35 @@ export interface operations {
             };
         };
     };
+    "list-public-showroom-discovery": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiscoveryDirectoryOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
     "read-public-showroom": {
         parameters: {
             query?: never;
@@ -3711,6 +3807,37 @@ export interface operations {
                 };
                 content: {
                     "image/jpeg": string;
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "read-public-showroom-discovery": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiscoveryCatalogOutputBody"];
                 };
             };
             /** @description Error */

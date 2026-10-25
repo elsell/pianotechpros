@@ -445,6 +445,9 @@ func withSecurity(next http.Handler) http.Handler {
 		if r.Method == http.MethodPost && len(parts) == 7 && parts[0] == "" && parts[1] == "v1" && parts[2] == "dealers" && parts[3] != "" && parts[4] == "inventory" && parts[5] != "" && parts[6] == "photos" {
 			limit = 20 << 20
 		}
+		if r.Method == http.MethodPost && len(parts) == 8 && parts[0] == "" && parts[1] == "v1" && parts[2] == "dealers" && parts[3] != "" && parts[4] == "inventory" && parts[5] != "" && parts[6] == "voice" && parts[7] == "transcribe" {
+			limit = 6*1024*1024 + 1
+		}
 		r.Body = http.MaxBytesReader(w, r.Body, limit)
 		next.ServeHTTP(w, r)
 	})
@@ -454,6 +457,8 @@ type statusWriter struct {
 	http.ResponseWriter
 	status int
 }
+
+func (w *statusWriter) Unwrap() http.ResponseWriter { return w.ResponseWriter }
 
 func (w *statusWriter) WriteHeader(status int) {
 	w.status = status

@@ -18,7 +18,11 @@ audio and transcripts with explicit model configuration, fixed-origin credential
 no redirects/retries, strict candidate decoding and independent domain validation.
 Transcription has the same pre/post authority and revision checks as extraction;
 local HTTP/race tests cover transport failures and invalid output. Live speech
-quality and HTTP/bootstrap composition remain unverified. Recording, review/clarification UI,
+quality remains unverified. Authenticated transcription/extraction HTTP routes now
+compose the provider through optional all-or-none server configuration. Audio is
+read only after authority, bounded to 6 MiB, with scoped processing deadlines and
+private error/response handling. Generated contracts and HTTP security tests cover
+success, denial, stale/revoked access and unavailable processing. Recording, review/clarification UI,
 voice-aware autosave/Undo and native microphone acceptance remain unfinished.
 
 Buyer inquiry foundations now implement canonical contact validation, immutable

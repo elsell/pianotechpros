@@ -279,6 +279,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/dealers/{dealerID}/inventory/{id}/voice/extract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["extract-inventory-voice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dealers/{dealerID}/inventory/{id}/voice/transcribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["transcribe-inventory-voice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/dealers/{id}": {
         parameters: {
             query?: never;
@@ -1327,6 +1359,59 @@ export interface components {
             email: string;
             id: string;
         };
+        VoiceCandidate: {
+            /** @enum {string} */
+            confidence: "high" | "uncertain";
+            evidence: string;
+            field: string;
+            value: components["schemas"]["VoiceValue"];
+        };
+        VoiceExtraction: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/VoiceExtraction.json
+             */
+            readonly $schema?: string;
+            /** Format: int64 */
+            expectedRevision: number;
+            transcript: string;
+        };
+        VoiceProposal: {
+            candidates: components["schemas"]["VoiceCandidate"][];
+            /** Format: int64 */
+            revision: number;
+            transcript: string;
+        };
+        VoiceProposalOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/VoiceProposalOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["VoiceProposal"];
+        };
+        VoiceTranscript: {
+            /** Format: int64 */
+            revision: number;
+            transcript: string;
+        };
+        VoiceTranscriptOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/VoiceTranscriptOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["VoiceTranscript"];
+        };
+        VoiceValue: {
+            boolean?: boolean;
+            date?: components["schemas"]["ManufacturingDate"];
+            money?: components["schemas"]["Money"];
+            text?: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -2374,6 +2459,94 @@ export interface operations {
             };
             /** @description Service Unavailable */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "extract-inventory-voice": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                dealerID: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VoiceExtraction"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoiceProposalOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "transcribe-inventory-voice": {
+        parameters: {
+            query: {
+                expectedRevision: number;
+            };
+            header: {
+                Authorization?: string;
+                "Content-Type": string;
+            };
+            path: {
+                dealerID: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "audio/aac": string;
+                "audio/m4a": string;
+                "audio/mp3": string;
+                "audio/mp4": string;
+                "audio/mpeg": string;
+                "audio/ogg": string;
+                "audio/wav": string;
+                "audio/webm": string;
+                "audio/x-m4a": string;
+                "audio/x-wav": string;
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoiceTranscriptOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -94,3 +94,12 @@ above Android gesture navigation and iOS home-indicator areas.
 Switching between transcript entry and review resets the keyboard-avoidance layout.
 Review has no keyboard avoidance and must size its scroll area around the Apply
 footer, without carrying the transcript editor's measured height.
+
+Android permission requests may briefly report the app as backgrounded. Query an
+existing grant before opening a prompt. While the controller is requesting
+permission, defer background cleanup until the request resolves and the activity
+returns active (at most 1.5 seconds after resolution). No recording may start
+while backgrounded. If foreground does not resume, clear the sheet and cancel the
+request; cancellation or unmount must still suppress a late grant. Denial after
+normal prompt dismissal remains visible in the sheet. Genuine backgrounding at
+all other phases cancels immediately.

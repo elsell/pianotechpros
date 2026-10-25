@@ -3,6 +3,7 @@ import {AudioModule,RecordingPresets,setAudioModeAsync,setIsAudioActiveAsync,typ
 import {Directory,File,Paths} from 'expo-file-system';
 import {createNativeVoiceCapture,createNativeVoiceCleanup,type NativeVoiceHandle,type NativeVoiceState} from '@pianotechpros/client-core';
 import {ownedVoiceCachePath} from './voice-cache-path';
+import {voicePermissionResume,resolveVoicePermission} from './voice-permission-resume';
 
 let held=false;
 const retiredCaptures=createNativeVoiceCleanup();
@@ -57,10 +58,18 @@ async function prepare(ended:(failed:boolean)=>void,clock:VoiceClock):Promise<Na
  return handle;
 }
 
-export function createMobileVoiceCapture(options:{active():boolean;changed(state:NativeVoiceState):void;completed(bytes:Uint8Array):void;clock?:VoiceClock}){
- const controller=createNativeVoiceCapture({...options,recover:()=>retiredCaptures.retry(),active:()=>options.active()&&AppState.currentState!=='background',permission:async()=>{if(Platform.OS!=='ios'&&Platform.OS!=='android')return false;return(await AudioModule.requestRecordingPermissionsAsync()).granted;},prepare:ended=>prepare(ended,options.clock??systemClock)});
+export function createMobileVoiceCapture(options:{active():boolean;changed(state:NativeVoiceState):void;completed(bytes:Uint8Array):void;clock?:VoiceClock;backgrounded():void}){
+ const controller=createNativeVoiceCapture({...options,recover:()=>retiredCaptures.retry(),active:()=>options.active()&&AppState.currentState!=='background',permission:async()=>{
+  if(Platform.OS!=='ios'&&Platform.OS!=='android')return false;
+  return resolveVoicePermission({
+   granted:async()=>(await AudioModule.getRecordingPermissionsAsync()).granted,
+   request:async()=>(await AudioModule.requestRecordingPermissionsAsync()).granted,
+   resume:()=>voicePermissionResume({active:()=>AppState.currentState==='active',subscribe:changed=>{const listener=AppState.addEventListener('change',changed);return()=>listener.remove();},after:(options.clock??systemClock).after}),
+   backgrounded:options.backgrounded,
+  });
+ },prepare:ended=>prepare(ended,options.clock??systemClock)});
  const listener=AppState.addEventListener('change',state=>{
-  if(state==='background'||state==='inactive'&&controller.snapshot().phase==='recording')void controller.cancel();
+  if(state==='background'&&controller.snapshot().phase!=='requesting'||state==='inactive'&&controller.snapshot().phase==='recording')void controller.cancel();
  });
  return {...controller,dispose(){listener.remove();return retiredCaptures.retire(controller);}};
 }

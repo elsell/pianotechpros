@@ -68,6 +68,14 @@ The recovery adapter now decodes bounded canonical ciphertext without resetting
 existing keys or journals. The previously failing encrypted draft reopens after
 process restart; real AES-GCM round-trip tests and structural gates pass.
 
+Android emulator acceptance now covers typed review with initially unselected
+fields, Make-only Apply, conditional Undo, and an actual AAC recording reaching
+review through the controlled provider. The 141,040-byte audio/mp4 clip was
+processed after owned cache deletion. Device checks corrected a stale keyboard
+layout that clipped Apply and permission-prompt background transitions that hid
+denial feedback. Live speech quality, interruption/failure journeys and iOS
+interaction acceptance remain unfinished.
+
 The inventory domain now derives exact manual/voice sources for changed fields
 and a mixed history source when both occur in one revision. Unknown, duplicate,
 protected and unchanged-field labels fail closed; uniform commands retain their

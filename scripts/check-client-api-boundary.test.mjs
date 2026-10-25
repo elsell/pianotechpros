@@ -30,6 +30,7 @@ function check(files) {
 }
 
 const bypasses = {
+  'apps/mobile/src/voice-outside-adapter.ts': "import {AudioModule} from 'expo-audio'; export const audio=AudioModule;",
   'apps/web/src/lib/direct.ts': "fetch(apiURL + '/v1/me');",
   'apps/web/src/lib/computed.ts': "(globalThis as any)['fe' + 'tch'](apiURL + '/v1/me');",
   'apps/web/src/lib/window.ts': "window['fetch'](apiURL + '/v1/me');",

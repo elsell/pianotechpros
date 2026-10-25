@@ -465,5 +465,6 @@
   "voice.error.network": "The connection failed. Your transcript is here for another attempt.",
   "voice.error.protocol_error": "The suggestions could not be verified. Please try again.",
   "voice.editTranscript": "Edit transcript",
-  "voice.error.undoConflict": "Some fields were edited again and were not undone."
+  "voice.error.undoConflict": "Some fields were edited again and were not undone.",
+  "voice.microphonePermission": "Record a piano description to create suggestions you review before applying."
 }

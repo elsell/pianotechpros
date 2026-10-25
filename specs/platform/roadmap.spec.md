@@ -42,8 +42,14 @@ evidence. Processing/review holds the workspace queue while locally protecting
 manual edits; Apply/Cancel releases it. Transcript correction and conditional Undo
 preserve work. Controlled HTTP/browser journeys cover recording, no pre-Apply
 mutation, intervening edits, re-review, Undo, failure/retry and cancellation. Voice
-provenance in persistence and native recording/review remain unfinished; real
-microphone and Safari interaction are not yet verified.
+provenance in persistence and native review remain unfinished; real microphone
+and Safari interaction are not yet verified. The native capture adapter now
+bounds foreground AAC recording, serializes cancellation and resource cleanup,
+and delivers bytes only after owned cache-file deletion. Controlled tests cover
+late permission/preparation, interruption, cleanup failure and reentrancy. Clean
+prebuild checks verify localized microphone purpose strings and no background
+audio capabilities; Expo exports pass. Fresh native compilation and device
+recording/permission/interruption acceptance remain required before delivery.
 
 Buyer inquiry foundations now implement canonical contact validation, immutable
 public snapshot context and first-read domain state. Submission orchestration

@@ -531,6 +531,15 @@ registry across module reloads in the UI runtime. Neither grants network or
 storage capabilities to callers. Review and regenerate hashes when changing
 these files; do not broadly permit browser globals or runtime registries.
 
+The exact hash-protected native adapter
+`apps/mobile/src/customer/presentation.ts` retains the customer presentation
+lifetime across route remounts and module reloads. Controlled asynchronous tests
+verify retirement during opening and cleanup ordering. A real workspace test
+denies access, fails journal deletion, unmounts and retries through the retained
+lifetime; no replacement acquisition can bypass cleanup. This adapter grants no
+network or storage capability. Its hash and tampering checks follow the same
+review requirement as the ownership adapters.
+
 The built-web customer acceptance journey uses a stateful local HTTP fake behind
 the generated client and real browser Web Locks, IndexedDB and WebCrypto. It
 covers creation, immutable retry after lost response and reload, child validation

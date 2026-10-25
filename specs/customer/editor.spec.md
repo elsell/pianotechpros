@@ -169,3 +169,12 @@ The native lifetime is runtime-stable across actual route remounts and developme
 refreshes, retaining failed cleanup handles until successful retry. Denial hides
 picker options immediately with the editor, clears presentation-only copies,
 and allows Back after cleanup rather than treating disposal as draft failure.
+
+Native validation brings the first invalid field into view. For timezone,
+piano form and piano location it opens the corresponding searchable choice
+sheet instead of attempting to focus a nonexistent text input. Missing locations
+brings the Add location action into view without creating a row automatically.
+Choice sheets show localized empty-search feedback, preserve the current choice
+until explicit selection, and identify the field in their accessible controls.
+Changing sections resets scroll position; validation may then scroll to its
+target. A recoverable draft retains incomplete year input across Back/reopening.

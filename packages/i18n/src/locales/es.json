@@ -609,6 +609,7 @@
   "customer.select": "Elige una opción",
   "customer.searchTimezone": "Buscar zonas horarias",
   "customer.noTimezones": "No hay zonas horarias coincidentes.",
+  "customer.noChoices": "No hay opciones coincidentes. Prueba otra búsqueda.",
   "customer.savingDraft": "Protegiendo el borrador…",
   "customer.draftReady": "Cambios protegidos en este dispositivo. Guarda para actualizar el perfil.",
   "customer.saved": "Tu perfil está actualizado.",

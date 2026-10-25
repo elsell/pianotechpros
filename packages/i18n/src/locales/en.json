@@ -609,6 +609,7 @@
   "customer.select": "Choose an option",
   "customer.searchTimezone": "Search timezones",
   "customer.noTimezones": "No matching timezones.",
+  "customer.noChoices": "No matching options. Try a different search.",
   "customer.savingDraft": "Protecting your draft…",
   "customer.draftReady": "Changes protected on this device. Save to update your profile.",
   "customer.saved": "Your profile is up to date.",

@@ -74,9 +74,17 @@ removal and explicit conflict comparisons. Built-browser integration with a
 stateful HTTP fake passes creation, lost-response/reload retry preserving newer
 edits, two-tab exclusion, session rotation, denial cleanup, Spanish navigation
 and logout invalidation. Review corrected stale-token rejection handling and
-comparison of identically named locations. This is web integration evidence;
-native customer composition and real device acceptance remain unfinished, so
-CU-01 is not complete. Shared typed error normalization now protects remaining
+comparison of identically named locations. Native composition now provides the
+account entry, focused child editors, searchable choices, protected Back,
+conflict comparisons and confirmed removal. Android interaction with the isolated
+real API verifies contact/location creation, timezone selection, save/reopen,
+cold-start recovery of an unfinished piano, validation opening the type selector,
+empty-search feedback, piano type selection, invalid-year focus and recovery,
+section Back positioning, and cancelled/confirmed piano removal. Review fixed private picker
+retention after denial, Back after denial and cleanup ownership across remounts.
+The remaining native conflict/failure/recovery, accessibility and iOS interaction
+matrix is not yet accepted; CU-01 remains incomplete.
+Shared typed error normalization now protects remaining
 web domain request boundaries and native request hooks from delayed old-token
 401s. Built inventory/voice browser tests preserve pending commands, newer edits
 and transcripts across rotation; current-token rejection remains authoritative.

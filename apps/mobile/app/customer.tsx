@@ -35,7 +35,7 @@ function Editor({accountId,apiURL}:{accountId:string;apiURL:string}){
   if(navigating.current)return;navigating.current=true;
   try{
    if(workspace&&!workspace.editor.snapshot()){await workspace.cleanup();setLeaving(action);return;}
-   if(workspace&&!await workspace.protect()){setStorageFailure(true);return;}
+   if(workspace&&!await workspace.protect()){setStorageFailure(true);return;}setStorageFailure(false);
    if(section){setSection(null);setShowIssues(false);Keyboard.dismiss();return;}
    if(workspace&&!await workspace.close()){setStorageFailure(true);return;}
    setLeaving(action);
@@ -43,7 +43,7 @@ function Editor({accountId,apiURL}:{accountId:string;apiURL:string}){
  }
  async function edit(next:CustomerForm){if(!workspace||leaving)return;setEdited(true);setWrites(n=>n+1);try{await workspace.editor.edit(next);setStorageFailure(false);}finally{setWrites(n=>n-1);}}
  function change(field:string,value:string|boolean){if(!state)return;const next=state.draft;if(section){const row=next[section.kind].find(row=>row.key===section.key);if(row)Object.assign(row,{[field]:value});}else Object.assign(next,{[field]:value});void edit(next);}
- async function select(next:Section){if(workspace&&!await workspace.protect()){setStorageFailure(true);return;}Keyboard.dismiss();setSection(next);setShowIssues(false);}
+ async function select(next:Section){if(workspace&&!await workspace.protect()){setStorageFailure(true);return;}setStorageFailure(false);Keyboard.dismiss();setSection(next);setShowIssues(false);}
  async function add(kind:'locations'|'pianos'){if(!state)return;const next=kind==='locations'?addCustomerLocation(state.draft,randomUUID):addCustomerPiano(state.draft,state.draft.locations[0]?.key??'',randomUUID);if(next){await edit(next);await select({kind,key:next[kind].at(-1)!.key});}}
  function focusText(path:string){const y=positions.current[path];if(y!==undefined){scroll.current?.scrollTo({y:Math.max(0,y-16),animated:false});inputs.current[path]?.focus();setFocus(null);}}
  function choiceFor(path:string):Choice|null{
@@ -55,7 +55,7 @@ function Editor({accountId,apiURL}:{accountId:string;apiURL:string}){
   }return null;
  }
  function focusIssue(path:string){const parts=path.split('.');setSection(parts.length===3?{kind:parts[0] as 'locations'|'pianos',key:parts[1]}:null);setShowIssues(true);setFocus(path);}
- async function save(){if(!workspace||!state)return;setShowIssues(true);if(!state.pending&&state.issues.length){focusIssue(state.issues[0].path);return;}await workspace.editor.save();}
+ async function save(){if(!workspace||!state)return;setShowIssues(true);if(!state.pending&&state.issues.length){focusIssue(state.issues[0].path);return;}await workspace.editor.save();setStorageFailure(false);}
  function remove(){if(!section)return;const target={...section};Alert.alert(i18n.t('customer.removeTitle'),i18n.t('customer.removeHelp'),[{text:i18n.t('customer.cancel'),style:'cancel'},{text:i18n.t('customer.remove'),style:'destructive',onPress:()=>{const current=workspace?.editor.snapshot();if(!current)return;const next=target.kind==='locations'?removeCustomerLocation(current.draft,target.key,true):removeCustomerPiano(current.draft,target.key,true);if(next)void edit(next).then(()=>select(null));}}]);}
  const location=section?.kind==='locations'?state?.draft.locations.find(row=>row.key===section.key):undefined;
  const piano=section?.kind==='pianos'?state?.draft.pianos.find(row=>row.key===section.key):undefined;

@@ -178,3 +178,10 @@ Choice sheets show localized empty-search feedback, preserve the current choice
 until explicit selection, and identify the field in their accessible controls.
 Changing sections resets scroll position; validation may then scroll to its
 target. A recoverable draft retains incomplete year input across Back/reopening.
+
+After a completed save retry or successful navigation-protection attempt, clear
+the presentation-only storage warning from earlier failed navigation. Current
+editor storage failures remain authoritative and visible; a pending or failed
+write must never be reported as saved. Acceptance must hold a real native SQLite
+write lock, verify blocked Back/save and retained input, release it, then verify
+retry persistence and removal of the stale warning on the current/parent screen.

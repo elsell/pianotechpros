@@ -168,3 +168,21 @@ The paced real-service journey passed locally on 2026-10-25 for synthetic record
 `4b78e80e-ed4d-488e-8fe1-107e3823f68c`, including explicit unpublish independence,
 sale defaults/override, immutable correction history, all six lifecycle states,
 private-edit isolation and no silent republication. Recurring CI remains pending.
+
+## Persisted public listing interactions
+
+Use normal owner sign-in to create and explicitly publish a synthetic listing
+with two processed photos. Provision a reserved synthetic contact phone through
+the authorized real API after the parent fixture tests empty-phone behavior.
+In an anonymous browser verify keyboard and narrow
+viewport gallery navigation, exact canonical clipboard URL, contact links from
+persisted dealer data, related listing navigation and no horizontal overflow.
+Save a screenshot for visual inspection. Do not substitute API responses, launch
+phone/email applications or treat desktop Chromium as native device acceptance.
+
+Local real-service execution passed for synthetic record
+`ad64c5c3-d352-4df4-8654-f16afacdd5b6` on 2026-10-25. The 390px full-page
+screenshot was inspected: gallery controls, contact actions, inquiry form and
+related cards remain readable without horizontal overflow. Synthetic color-block
+photos establish processing and layout behavior, not photographic quality.
+Recurring CI and actual touch/device acceptance remain pending.

@@ -334,5 +334,19 @@
     "version": "1.26.10-1792719708@sha256:c8a592e35cf512e3469c0c4cac4ac01445f6185b9366c6a586e5d210e118a9e7",
     "reason": "Exact hardened compiler image for the Go 1.26.10 security migration; younger than fourteen days.",
     "compensatingVerification": "Exact release identity/digest signature verified using official Red Hat 63405576 public key; amd64/arm64 SBOM hashes verified. Catalog reports seven unresolved findings recorded in testing.spec.md. CGO-disabled build, HTTPS module proxy with checksums and no VCS fallback; only binaries enter separate static runtime. No vulnerability waiver."
+  },
+  {
+    "kind": "npm",
+    "name": "zod",
+    "version": "4.6.6",
+    "reason": "Exact high-severity GHSA-mrhx-c7xc-m3w5 fix released 2026-10-11T16:18:23.878Z, less than fourteen days old during 2026-10-25 validation. No version range exception.",
+    "compensatingVerification": "Installed Expo/EAS consumer regression tests, actual plugin/MCP/archive schemas, full repository/contracts, Expo compatibility/Doctor, mobile exports, EAS startup, package audit, required review and hosted native builds before release."
+  },
+  {
+    "kind": "npm",
+    "name": "fast-uri",
+    "version": "3.1.9",
+    "reason": "Exact 2026-10-19 security release correcting four scheme/authority/relative-reference advisories (GHSA-w74x-v6f9-j3xg, GHSA-wjr9-j795-jxcr, GHSA-xhq7-xmqj-769h, GHSA-333x-w4r6-6crp).",
+    "compensatingVerification": "Actual EAS AJV dependency regressions for all four advisories and legitimate schema references; full repository/contracts, age gate, EAS startup, Expo compatibility/Doctor, exports, clean prebuild, audit, code review and hosted native builds before release."
   }
 ]

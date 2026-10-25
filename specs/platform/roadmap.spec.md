@@ -2,6 +2,39 @@
 
 ## Current milestone: feature-complete product
 
+fast-uri 3.1.9 fixes four URI normalization advisories in the actual EAS/AJV
+consumer. Regression coverage rejects encoded schemes and ambiguous authorities,
+preserves relative-reference meaning, prevents suffix serialization from creating
+active schemes, and verifies legitimate AJV references. Full repository/contract
+checks, dependency-age validation, both mobile exports, clean native prebuild,
+Expo compatibility/Doctor (19/19), and required review pass. The exact security
+release has a documented dependency-age exception. Hosted native validation is
+still required. The current npm audit reports three findings: node-forge (high)
+and two SvelteKit findings (low); security release gates remain failing.
+
+Zod 4.6.6 now covers all Expo CLI, EAS CLI and EAS build-job consumers.
+Regression tests fail on the old versions and prove oversized bounded arrays
+and sets reject before element validation; actual Expo plugin/output/MCP command
+and EAS archive schemas retain valid/invalid behavior. Full repository/contract
+checks and the dependency-age gate pass. Both mobile exports, clean native prebuild with photo-permission checks, Expo compatibility/Doctor
+(19/19) and required review pass. The exact release has a documented age exception
+for the remaining hours before its fourteen-day anniversary; hosted native build
+validation remains required. Upstream unbounded-collection behavior is unchanged.
+The audit at that change reported seven findings (one high, two moderate, four low), covering
+node-forge, fast-uri and SvelteKit. Security release gates remain failing.
+
+The navigation query decoder now pins decode-uri-component 0.5.0 with a
+packaging-only CommonJS patch for query-string. The upstream bounded scanner is
+unchanged; MIT provenance and installed-source hashes are verified. Its actual
+React Navigation consumer passes ordinary Unicode/plus/duplicate-key decoding
+and the long malformed-percent regression that fails on the prior release.
+Full repository/contract checks, dependency-age validation, both mobile exports,
+Expo compatibility/Doctor (19/19), required review and Android emulator session
+restoration plus shop/inventory navigation pass.
+The audit at that change had eight outstanding findings (two high, two moderate, four
+low); decode-uri-component is no longer reported. Exports are not native builds,
+and full native interaction acceptance remains pending.
+
 Hosted run 40015648853 passed Android Gradle, unsigned iOS Xcode and acceptance.
 The backported screens APK (source 374f169, merge ref d9d1ac56, SHA-256
 818703e056c3546f227dfe05e8e329271c676acdbc31007da740bc46f935ade6) completed ten

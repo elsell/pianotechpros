@@ -114,6 +114,42 @@ bounded subprocess; never run potentially unbounded parser inputs in the test
 runner itself. Keep the package's supported named/default CommonJS exports;
 Metro consumes its default export and passes a buffer, not a filesystem path.
 
+Pin decode-uri-component 0.5.0 to replace the unbounded malformed-percent decoder
+used by React Navigation's query-string adapter (GHSA-vcc3-ghjq-m6fr). Its fixed
+scanner must remain upstream-identical. A minimal reviewed packaging patch may
+retain callable CommonJS consumption by query-string: change the package module
+type and default function export only, preserving the MIT license and recording
+provenance. Exercise the actual installed query-string parser with ordinary
+Unicode, plus/escaped-plus, duplicate keys and malformed percent input. Bound
+adversarial subprocess execution and preserve non-throwing malformed-input
+behavior without executing any decoded content. Run compatibility, exports,
+contracts, full tests, age and native integration gates before release.
+
+Zod must use the exact 4.6.6 security release for both EAS and Expo CLI
+consumers (GHSA-mrhx-c7xc-m3w5). Test that leading array/set size limits reject
+oversized input before visiting elements, while valid input and invalid elements
+within the limit retain validation. Exercise Expo's actual plugin/output and MCP
+command schemas and EAS job schemas to validate the v3-to-v4 compatibility change.
+Unbounded schemas remain unbounded upstream; do not describe this upgrade as
+limiting all possible validation input. The 2026-10-11T16:18:23.878Z package has
+an exact dependency-age exception for this high-severity fix before its fourteen
+day anniversary. Compensating verification includes installed-consumer behavior,
+full repository/contract gates, Expo compatibility/Doctor, exports, EAS startup,
+audit, review and hosted native builds before release.
+
+The exact fast-uri 3.1.9 pin remediates encoded-scheme spoofing, unchecked host
+canonicalization, relative path equivalence and suffix colon injection
+(GHSA-w74x-v6f9-j3xg, GHSA-wjr9-j795-jxcr, GHSA-xhq7-xmqj-769h and
+GHSA-333x-w4r6-6crp). Resolve the actual AJV dependency used by EAS in regression
+tests. Invalid authorities must report an error; encoded schemes must not become
+live schemes; normalization must preserve relative resolution; suffix output
+must not introduce a scheme. Preserve legitimate absolute/relative references
+and AJV schema reference validation. This exact 2026-10-19 release has a reviewed
+dependency-age exception for the four security fixes, with behavioral regressions,
+full checks/contracts, EAS startup, Expo compatibility/Doctor, clean prebuild,
+exports, audit and code review as compensating verification. Native CI remains
+required before release.
+
 Migration acceptance applies the prior released migration set first, then runs
 the current migrator and verifies preserved baseline data and new schema objects.
 Every prior-release up and down migration is frozen by a checked-in SHA-256

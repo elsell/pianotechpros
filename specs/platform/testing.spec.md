@@ -106,6 +106,14 @@ Regression coverage resolves both legacy EAS and modern Expo glob consumers,
 preserves their matching behavior and verifies bounded nesting through the real
 patched package. Run the complete audit, age gate, web build/browser journey,
 repository/contract tests, Expo compatibility/Doctor and native build gates.
+The Metro image metadata parser must use image-size 2.0.3 (released 2026-09-14)
+to remediate GHSA-5p2g-fcmc-qvqq and GHSA-w3rx-r6r6-pgpr. Verify the actual
+Metro asset-size boundary still reads valid PNG/JPEG dimensions. Malformed ICNS,
+JXL and HEIF buffers with zero-length boxes must terminate with rejection in a
+bounded subprocess; never run potentially unbounded parser inputs in the test
+runner itself. Keep the package's supported named/default CommonJS exports;
+Metro consumes its default export and passes a buffer, not a filesystem path.
+
 Migration acceptance applies the prior released migration set first, then runs
 the current migrator and verifies preserved baseline data and new schema objects.
 Every prior-release up and down migration is frozen by a checked-in SHA-256

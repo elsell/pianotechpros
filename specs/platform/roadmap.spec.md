@@ -2,6 +2,26 @@
 
 ## Current milestone: feature-complete product
 
+Hosted run 40015648853 passed Android Gradle, unsigned iOS Xcode and acceptance.
+The backported screens APK (source 374f169, merge ref d9d1ac56, SHA-256
+818703e056c3546f227dfe05e8e329271c676acdbc31007da740bc46f935ade6) completed ten
+cold launches on the Android API 36 emulator on 2026-10-25 with no observed
+native crash. Real Dex browser sign-in/callback, shop/inventory navigation and
+reopening the previously saved “Android recovery piano offline” draft also
+passed with the current Metro graph. This supports the mounting-listener fix;
+physical-device coverage, offline recovery and full native interaction acceptance
+remain pending.
+
+The Metro image-size consumer now pins 2.0.3. Bounded subprocess regressions
+cover zero-length ICNS/JXL/HEIF containers, and the actual React Native community
+CLI Metro adapter reads the fixture PNG/JPEG dimensions. The old ICNS/JXL
+parsers exhaust the subprocess heap; the new parser rejects those inputs.
+A fresh 2026-10-25 audit no longer reports either image-size advisory, but now
+reports nine findings (two high, three moderate, four low), including newly
+reported Zod, SvelteKit and fast-uri advisories as well as decode-uri-component
+and node-forge. Historical counts below describe their dated runs; security
+release gates remain unchanged and failing.
+
 The subsequent build-tool refresh reduces the npm audit to four findings: three
 high (image-size and node-forge) and one moderate (decode-uri-component). It
 updates eight compatible tooling dependencies and carries the existing callable

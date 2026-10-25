@@ -9,6 +9,7 @@ packages:
 ignoreScripts: true
 
 overrides:
+  image-size: '2.0.3'
   moment: '2.31.0'
   'joi@17': '17.13.8'
   '@xmldom/xmldom@0.8': '0.8.15'

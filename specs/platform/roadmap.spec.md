@@ -36,8 +36,11 @@ independence from customer/dealer permissions. The explicit HTTP profile surface
 and shared timezone catalog are composed in server/OpenAPI bootstrap. Real-session
 HTTP integration covers create/update/replay, stale edits, foreign users, revoked
 permissions and expired/revoked sessions. Dedicated schema names preserve customer
-composition. Shared clients, protected editors, web/native interfaces and their
-interaction acceptance remain unfinished; neither technician parity item is complete.
+composition. The shared typed client now snapshots commands, validates bounded
+profile/rule responses and preserves current sessions after retired-token failures.
+Real HTTP fixtures cover malformed replies, cancellation and credential rotation.
+Protected editors, web/native interfaces and their interaction acceptance remain
+unfinished; neither technician parity item is complete.
 
 Customer profile parity (CU-01) is the active implementation slice. The legacy
 contract now specifies private personal/business details, stable locations and

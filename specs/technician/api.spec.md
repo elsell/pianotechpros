@@ -92,3 +92,9 @@ never retain server detail, submitted personal data, credentials or raw causes.
 Network and malformed responses remain distinct errors. A save response must
 retain the expected profile ID and return either the submitted revision (no-op)
 or its immediate successor. Creation replay may return a later revision.
+
+Technician client failures participate in the shared credential-rotation guard.
+A 401 dispatched with a retired credential becomes a transient technician-family
+unavailable error only when a different current credential exists. Current-token
+401s and all 403/404 results retain their original meaning. Never automatically
+retry mutations or retain raw transport causes or private error details.

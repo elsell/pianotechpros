@@ -3,6 +3,8 @@ import { createServer } from 'node:http';
 import { once } from 'node:events';
 import { chromium } from 'playwright';
 
+async function bounded(promise){let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('controlled_request_not_observed')),15000);})]);}finally{clearTimeout(timer);}}
+
 const webURL = process.env.DEALER_WEB_URL || 'http://127.0.0.1:5179';
 const publications=new Map();let publicationCommands=0;let losePublication=false;let advanceAfterPublication=true;
 let imageBytes=Buffer.alloc(0);let photoUploads=0;let losePhoto=false;const recordPhotos=new Map();const photoIntents=new Map();
@@ -17,6 +19,7 @@ let inventoryMode = 'normal';
 let editorMode = 'normal';
 const captureIntents = new Map();const capturedRecords = new Map();let captureCreates = 0;let loseCapture = true;
 let editorWrites = 0;
+let voiceMode='normal';let voiceCalls=0;let audioCalls=0;
 let inquiryDenied=false;let inquiryWrites=0;let inquiryRead=false;
 const inquiryPiano={id:'concert',dealer_id:'created-shop',publication_revision:2,status:'available',stock_number:'PT-1',title:'Historical grand',featured:false,form:'grand',player_system:false,condition:'used',make:'',model:'',manufactured:null,size:'',finish:'',description:'Published description',price:null,photos:[{id:'photo',alt_text:''}]};
 const inquiryEntry=()=>({id:'buyer-inquiry',dealerName:'My edited shop',dealerSlug:'my-shop',piano:inquiryPiano,contact:{name:'Synthetic buyer',email:'buyer@example.com',phone:'+1 555 0101',message:'Could I visit on Saturday?',preference:'email'},createdAt:'2026-10-25T00:00:00Z',revision:inquiryRead?2:1,...(inquiryRead?{readAt:'2026-10-25T00:01:00Z',readBy:'test-owner'}:{})});
@@ -48,6 +51,19 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   const chunks=[];for await(const chunk of req)chunks.push(chunk);const rawBytes=Buffer.concat(chunks);const raw=rawBytes.toString();
   const body=rawBytes.length&&req.headers['content-type']?.includes('application/json')?JSON.parse(rawBytes.toString()):{};
+  if(url.pathname.endsWith('/voice/transcribe')){
+    audioCalls++;assert.ok(rawBytes.length>0&&rawBytes.length<=6*1024*1024);assert.match(req.headers['content-type'],/^audio\//);
+    if(Number(url.searchParams.get('expectedRevision'))!==editorRecord.revision)return send(409,{code:'conflict'});
+    return send(200,{data:{revision:editorRecord.revision,transcript:'Steinway Model B'}});
+  }
+  if(url.pathname.endsWith('/voice/extract')){
+    voiceCalls++;if(voiceMode==='failure')return send(503,{code:'unavailable'});
+    if(body.expectedRevision!==editorRecord.revision)return send(409,{code:'conflict'});
+    return send(200,{data:{revision:editorRecord.revision,transcript:body.transcript,candidates:[
+      {field:'make',value:{text:'Steinway'},confidence:'high',evidence:'Steinway'},
+      {field:'model',value:{text:'Model B'},confidence:'uncertain',evidence:'Model B'},
+    ]}});
+  }
   if(url.pathname.startsWith('/v1/dealers/created-shop/inquiries')){if(inquiryDenied)return send(404,{code:'not_found'});if(req.method==='POST'){inquiryWrites++;inquiryRead=true;return send(409,{code:'conflict'});}return send(200,url.pathname.endsWith('/inquiries')?{data:[inquiryEntry()],meta:{}}:{data:inquiryEntry()});}
   const publicationRoute=/^\/v1\/dealers\/created-shop\/inventory\/([^/]+)\/(publication|publish|unpublish|lifecycle)$/.exec(url.pathname);
   if(publicationRoute){
@@ -177,11 +193,11 @@ const server = createServer(async (req, res) => {
   const shop = shops.get(id);
   return send(shop ? 200 : 404, shop ? { data: shop } : { code: 'not_found' });
 });
-server.listen(8089, '127.0.0.1'); await once(server, 'listening');
-const browser = await chromium.launch({ headless: true });
+server.listen(Number(process.env.DEALER_ACCEPTANCE_API_PORT??8089), '127.0.0.1'); await once(server, 'listening');
+const browser = await chromium.launch({channel:'chromium',headless:true,args:['--use-fake-device-for-media-stream']});
 let evidencePage;
 try {
-  const context = await browser.newContext({ locale: 'es-ES' });
+  const context = await browser.newContext({locale:'es-ES',permissions:['microphone']});
   await context.addInitScript(() => window.sessionStorage.setItem('pianotechpros_application_session', JSON.stringify({ token: 'browser-test-session', expiresAt: new Date(Date.now() + 3600000).toISOString() })));
   await context.addInitScript(()=>{
     const create=URL.createObjectURL.bind(URL),revoke=URL.revokeObjectURL.bind(URL);window.photoURLs=new Set();
@@ -191,6 +207,7 @@ try {
   page.setDefaultTimeout(15000);
   await page.clock.install();
   const initialResponse=await page.goto(webURL);assert.match(initialResponse.headers()['content-security-policy'],/img-src 'self' blob:/);
+  assert.equal(initialResponse.headers()['permissions-policy'],'camera=(), microphone=(self), geolocation=()');
   await page.getByRole('heading', { name: 'Tus tiendas', exact: true }).waitFor();
   await page.getByRole('button', { name: 'Cargar más tiendas', exact: true }).waitFor();
   await page.getByRole('button', { name: 'Actualizar tiendas', exact: true }).click();
@@ -270,6 +287,58 @@ try {
   await page.getByText('No se pudo cargar el inventario. Inténtalo de nuevo.', { exact: true }).waitFor({ state: 'detached' });
   await page.getByRole('button', { name: 'Concert Grand', exact: true }).click();
   await page.getByLabel('Marca', { exact: true }).waitFor();
+  const voicePanel=page.getByRole('region',{name:'Notas de voz'});
+  await voicePanel.getByLabel('Transcripción',{exact:true}).fill('Steinway Model B');
+  const beforeVoice=editorWrites;
+  await voicePanel.getByRole('button',{name:'Revisar sugerencias',exact:true}).click();
+  await voicePanel.getByText('Elige los campos que quieres aplicar.',{exact:true}).waitFor();
+  assert.equal(editorWrites,beforeVoice);
+  assert.equal(await voicePanel.getByRole('button',{name:'Aplicar campos seleccionados',exact:true}).isDisabled(),true);
+  await voicePanel.getByRole('checkbox',{name:'Aplicar Marca',exact:true}).check();
+  await page.getByLabel('Marca',{exact:true}).fill('Manual correction');
+  await voicePanel.getByRole('button',{name:'Aplicar campos seleccionados',exact:true}).click();
+  await voicePanel.getByText('Los campos cambiaron. Revisa los valores actuales antes de aplicar.',{exact:true}).waitFor();
+  assert.equal(await page.getByLabel('Marca',{exact:true}).inputValue(),'Manual correction');
+  await voicePanel.getByRole('button',{name:'Revisar valores actuales',exact:true}).click();
+  await voicePanel.getByRole('checkbox',{name:'Aplicar Marca',exact:true}).check();
+  await voicePanel.getByRole('button',{name:'Aplicar campos seleccionados',exact:true}).click();
+  await page.getByText('Guardado',{exact:true}).waitFor();
+  assert.equal(editorRecord.attributes.make,'Steinway');assert.equal(editorRecord.attributes.model,'');
+  await voicePanel.getByRole('button',{name:'Deshacer sugerencias',exact:true}).click();
+  await page.getByText('Guardado',{exact:true}).waitFor();
+  assert.equal(editorRecord.attributes.make,'Manual correction');
+  voiceMode='failure';await voicePanel.getByLabel('Transcripción',{exact:true}).fill('Steinway Model B');
+  await voicePanel.getByRole('button',{name:'Revisar sugerencias',exact:true}).click();
+  await voicePanel.getByText('El servicio de voz no está disponible. Puedes volver a intentarlo.',{exact:true}).waitFor();
+  assert.equal(await voicePanel.getByLabel('Transcripción',{exact:true}).inputValue(),'Steinway Model B');
+  voiceMode='normal';await voicePanel.getByRole('button',{name:'Revisar sugerencias',exact:true}).click();
+  await voicePanel.getByText('Elige los campos que quieres aplicar.',{exact:true}).waitFor();
+  await voicePanel.getByRole('button',{name:'Cancelar voz',exact:true}).click();
+  await page.getByText('Guardado',{exact:true}).waitFor();assert.equal(editorRecord.attributes.make,'Manual correction');
+  assert.equal(await voicePanel.getByLabel('Transcripción',{exact:true}).inputValue(),'');
+  assert.equal(voiceCalls,3);
+  await voicePanel.getByRole('button',{name:'Grabar nota de voz',exact:true}).click();
+  await voicePanel.getByRole('button',{name:'Detener y revisar',exact:true}).waitFor();
+  await page.getByLabel('Marca',{exact:true}).fill('Recording correction');
+  await page.getByText('Guardado',{exact:true}).waitFor();assert.equal(editorRecord.attributes.make,'Recording correction');
+  assert.equal(await page.getByText('La revisión de voz está abierta. Los cambios se protegen en este dispositivo; el guardado en el servidor está en pausa.',{exact:true}).count(),0);
+  await new Promise(resolve=>setTimeout(resolve,350));
+  await voicePanel.getByRole('button',{name:'Detener y revisar',exact:true}).click();
+  await voicePanel.getByText('Elige los campos que quieres aplicar.',{exact:true}).waitFor();
+  assert.equal(audioCalls,1);assert.equal(voiceCalls,4);
+  await page.setViewportSize({width:390,height:844});
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  await voicePanel.screenshot({path:'/tmp/piano-voice-review-mobile.png'});
+  await voicePanel.getByRole('button',{name:'Editar transcripción',exact:true}).click();
+  await voicePanel.getByLabel('Transcripción',{exact:true}).waitFor();
+  assert.equal(await voicePanel.getByLabel('Transcripción',{exact:true}).inputValue(),'Steinway Model B');
+  await voicePanel.getByRole('button',{name:'Revisar sugerencias',exact:true}).click();
+  await voicePanel.getByText('Elige los campos que quieres aplicar.',{exact:true}).waitFor();
+  assert.equal(voiceCalls,5);
+  await voicePanel.getByRole('button',{name:'Cancelar voz',exact:true}).click();
+  await page.getByText('Guardado',{exact:true}).waitFor();
+  await page.setViewportSize({width:1280,height:900});
+
   await page.getByLabel('Marca', { exact: true }).fill('Yamaha');
   await page.getByLabel('Precio de venta', { exact: true }).fill('12,34');
   await page.getByLabel('Año', { exact: true }).fill('1920');
@@ -540,7 +609,7 @@ try {
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
   await page.screenshot({ path: '/tmp/piano-dealer-web-narrow.png', fullPage: true });
   await page.getByRole('button', { name: 'Atelier Pianos', exact: true }).click();
-  await requested;
+  await bounded(requested);
   assert.equal(await page.getByRole('heading', { name: 'Studio Pianos', exact: true }).count(), 0);
   const lateResponse = page.waitForResponse((response) => new URL(response.url()).pathname === '/v1/dealers/atelier');
   await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click();
@@ -551,15 +620,15 @@ try {
   assert.equal(await page.evaluate(() => sessionStorage.getItem('pianotechpros_application_session')), null);
   await page.screenshot({ path: '/tmp/piano-dealer-web-signed-out.png', fullPage: true });
   refreshMode = 'hold';
-  await page.evaluate(async () => {
+  await page.evaluate(async (apiURL) => {
     const auth = await import('/src/lib/auth.ts');
     sessionStorage.setItem('pianotechpros_application_session', JSON.stringify({ token: 'browser-test-session', expiresAt: new Date(Date.now() + 3600000).toISOString() }));
-    window.refreshResult = auth.refreshApplicationSession({ environment: 'development', apiURL: 'http://127.0.0.1:8089', oidcIssuer: 'http://localhost:5556/dex', oidcClientId: 'pianotechpros-web' }).then(() => 'restored', () => 'discarded');
-  });
-  await requestedRefresh;
+    window.refreshResult = auth.refreshApplicationSession({ environment: 'development', apiURL, oidcIssuer: 'http://localhost:5556/dex', oidcClientId: 'pianotechpros-web' }).then(() => 'restored', () => 'discarded');
+  }, `http://127.0.0.1:${server.address().port}`);
+  await bounded(requestedRefresh);
   await page.evaluate(() => sessionStorage.removeItem('pianotechpros_application_session'));
   releaseRefresh();
   assert.equal(await page.evaluate(() => window.refreshResult), 'discarded');
   assert.equal(await page.evaluate(() => sessionStorage.getItem('pianotechpros_application_session')), null);
-  console.log('Inquiry list/detail/explicit read/conflict reconciliation/contact actions/mobile layout/access revocation clearing; Publication review/cancellation/Escape/private-field exclusion/restored-draft protection/stale revisions/acknowledgement with concurrent revision/sale snapshot preservation/uncertain unpublish refresh; Photo-first lost-create recovery, protected upload retry, private image preview, photo ordering conflict, description and removal confirmation; lazy New capture/idempotent retry/recovery/cross-tab exclusion and inventory editing/autosave/partial-input recovery/lost-response reconciliation/conflict/denial, browsing/filter/search/pagination/retry/denial and dealer web invitation preview/acceptance/pending/replay, staff permissions/conflicts/removal/invitation revocation, creation retry, conflict review, form retention through session outages, Spanish pagination, keyboard selection, responsive layout and sign-out isolation passed');
+  console.log('Voice recorded audio/typed transcript/review/selection/intervening edit/re-review/Undo/retry/cancel/transcript correction/recording autosave; Inquiry list/detail/explicit read/conflict reconciliation/contact actions/mobile layout/access revocation clearing; Publication review/cancellation/Escape/private-field exclusion/restored-draft protection/stale revisions/acknowledgement with concurrent revision/sale snapshot preservation/uncertain unpublish refresh; Photo-first lost-create recovery, protected upload retry, private image preview, photo ordering conflict, description and removal confirmation; lazy New capture/idempotent retry/recovery/cross-tab exclusion and inventory editing/autosave/partial-input recovery/lost-response reconciliation/conflict/denial, browsing/filter/search/pagination/retry/denial and dealer web invitation preview/acceptance/pending/replay, staff permissions/conflicts/removal/invitation revocation, creation retry, conflict review, form retention through session outages, Spanish pagination, keyboard selection, responsive layout and sign-out isolation passed');
 } catch(error){if(evidencePage){await evidencePage.screenshot({path:'/tmp/piano-publication-failure.png',fullPage:true});console.error(await evidencePage.locator('body').innerText());}throw error;} finally { releaseRefresh(); releaseDetail(); await browser.close(); server.close(); }

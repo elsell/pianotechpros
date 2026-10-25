@@ -1,5 +1,6 @@
 <script lang="ts">
  import {onMount,tick} from 'svelte';
+ import InventoryVoice from './InventoryVoice.svelte';
  import InventoryPublication from './InventoryPublication.svelte';
  import InventoryPhotos from './InventoryPhotos.svelte';
  import {createInventoryApiClient, InventoryClientError} from '@pianotechpros/api-client';
@@ -9,7 +10,7 @@
  import {browserPhotoDigest} from './photo-media';
  import {openBrowserInventoryRecovery} from './recovery-storage';
  export let accountId:string;export let dealerID:string;export let recordID:string;export let credential:SessionCredential;export let apiURL:string;export let i18n:Translator;export let onBack:()=>void;export let onSessionRejected:()=>void;
- let publicationBusy=false;let photosBusy=false;let internal=false;let formElement:HTMLFormElement;
+ let voicePaused=false;let voiceBusy=false;let publicationBusy=false;let photosBusy=false;let internal=false;let formElement:HTMLFormElement;
  let active=true;let loading=true;let failed=false;let captureBusy=false;let denied=false;let heading:HTMLHeadingElement;let workspace:InventoryFormWorkspace|null=null;let unsubscribe=()=>{};
  let state:ReturnType<InventoryFormWorkspace['snapshot']>|null=null;
  async function focusError(field:InventoryFormField){internal=true;await tick();const element=formElement.elements.namedItem(field);if(element&&'focus' in element)(element as HTMLElement).focus();}
@@ -32,11 +33,11 @@
  }
  function change(key:InventoryFormField,value:string|boolean){if(state?.draft)workspace?.change({...state.draft,[key]:value});}
  function display(form:InventoryForm,key:InventoryFormField){const value=form[key];if(typeof value==='boolean')return i18n.t(value?'inventory.edit.yes':'inventory.edit.no');if(!value)return i18n.t('inventory.edit.unknown');if(key==='form'||key==='condition')return i18n.t(`inventory.${key}.${value}` as MessageKey);return value;}
- async function back(){if(photosBusy||publicationBusy)return;if(!workspace||await workspace.flush()||state?.denied)onBack();}
+ async function back(){if(photosBusy||publicationBusy||voiceBusy)return;if(!workspace||await workspace.flush()||state?.denied)onBack();}
  onMount(()=>{heading.focus();const unprotect=protectPendingNavigation(()=>!!state&&!state.denied&&state.recovery!=='ready');void load();return()=>{active=false;unprotect();unsubscribe();workspace?.dispose();};});
 </script>
 <section aria-labelledby="inventory-heading">
- <button type="button" disabled={photosBusy||publicationBusy} onclick={back}>{i18n.t('inventory.edit.backList')}</button>
+ <button type="button" disabled={photosBusy||publicationBusy||voiceBusy} onclick={back}>{i18n.t('inventory.edit.backList')}</button>
  <h2 id="inventory-heading" tabindex="-1" bind:this={heading}>{i18n.t(recordID==='new'&&!state?.baseline?'inventory.edit.new':'inventory.edit.editor')}</h2>
  {#if loading}<p role="status">{i18n.t('common.loading')}</p>{/if}
  {#if failed}<p role="alert">{i18n.t(denied?'inventory.denied':captureBusy?'inventory.edit.captureBusy':'inventory.edit.loadFailed')}</p><button disabled={loading} onclick={load}>{i18n.t('inventory.retry')}</button>{/if}
@@ -44,8 +45,9 @@
  {#if state?.draft}
   {@const draft=state.draft}
   <p class="hint">{i18n.t('inventory.edit.privateDraft')}</p>
-  <div class="save-state" role="status">{i18n.t(state.recovery==='failed'?'inventory.edit.storageFailed':state.recovery==='writing'?'inventory.edit.localSaving':state.busy?'inventory.edit.saving':state.restored?'inventory.edit.restored':state.conflict?'inventory.edit.conflict':state.uncertain?'inventory.edit.uncertain':state.failure?'inventory.edit.saveFailed':state.invalid?'inventory.edit.invalid':state.dirty?'inventory.edit.unsaved':!state.baseline?'inventory.edit.newReady':'inventory.edit.saved')}</div>
-  {#if workspace}<InventoryPhotos onBusy={value=>photosBusy=value} {workspace} {accountId} {dealerID} {apiURL} {credential} {i18n} {onSessionRejected} />{/if}
+  <div class="save-state" role="status">{i18n.t(voicePaused&&state.recovery==='ready'?'voice.paused':state.recovery==='failed'?'inventory.edit.storageFailed':state.recovery==='writing'?'inventory.edit.localSaving':state.busy?'inventory.edit.saving':state.restored?'inventory.edit.restored':state.conflict?'inventory.edit.conflict':state.uncertain?'inventory.edit.uncertain':state.failure?'inventory.edit.saveFailed':state.invalid?'inventory.edit.invalid':state.dirty?'inventory.edit.unsaved':!state.baseline?'inventory.edit.newReady':'inventory.edit.saved')}</div>
+  {#if workspace}<InventoryPhotos otherBusy={voiceBusy||publicationBusy} onBusy={value=>photosBusy=value} {workspace} {accountId} {dealerID} {apiURL} {credential} {i18n} {onSessionRejected} />{/if}
+  {#if workspace}<InventoryVoice {workspace} {accountId} {dealerID} {apiURL} {credential} {i18n} {onSessionRejected} otherBusy={photosBusy||publicationBusy} onBusy={value=>voiceBusy=value} onPaused={value=>voicePaused=value} />{/if}
   <form bind:this={formElement} onsubmit={(event)=>{event.preventDefault();void workspace?.save();}}>
    <fieldset><legend>{i18n.t('inventory.edit.identity')}</legend>
     {#each fields as key}<label for={key}>{label(key)}</label><input id={key} value={draft[key]} maxlength={inventoryTextFields[key]*2} aria-invalid={errors.includes(key)} oninput={event=>change(key,event.currentTarget.value)} />{/each}
@@ -74,7 +76,7 @@
    </section>{/if}
    <footer><button type="submit" disabled={state.busy||state.conflict}>{i18n.t('inventory.edit.save')}</button></footer>
   </form>
-  {#if workspace&&state.baseline}{#key workspace.recordID()}<InventoryPublication {workspace} {accountId} {dealerID} recordID={workspace.recordID()} {apiURL} {credential} {i18n} {onSessionRejected} otherBusy={photosBusy} publishReady={!state.restored&&!state.invalid&&!state.conflict&&!state.uncertain} onBusy={value=>publicationBusy=value} />{/key}{/if}
+  {#if workspace&&state.baseline}{#key workspace.recordID()}<InventoryPublication {workspace} {accountId} {dealerID} recordID={workspace.recordID()} {apiURL} {credential} {i18n} {onSessionRejected} otherBusy={photosBusy||voiceBusy} publishReady={!state.restored&&!state.invalid&&!state.conflict&&!state.uncertain} onBusy={value=>publicationBusy=value} />{/key}{/if}
  {/if}
 </section>
 <style>

@@ -8,7 +8,7 @@
  import {openBrowserInventoryRecovery} from './recovery-storage';
  import {browserPhotoDigest,readBrowserPhoto} from './photo-media';
  import PhotoImage from './PhotoImage.svelte';
- export let onBusy:(value:boolean)=>void=()=>{};export let workspace:InventoryFormWorkspace;export let accountId:string;export let dealerID:string;export let apiURL:string;export let credential:SessionCredential;export let i18n:Translator;export let onSessionRejected:()=>void;
+ export let otherBusy=false;export let onBusy:(value:boolean)=>void=()=>{};export let workspace:InventoryFormWorkspace;export let accountId:string;export let dealerID:string;export let apiURL:string;export let credential:SessionCredential;export let i18n:Translator;export let onSessionRejected:()=>void;
  let active=true;let selecting=false;let localError:MessageKey|null=null;let page=0;let preview:string|null=null;let removal:string|null=null;let altText='';let previewDialog:HTMLDialogElement;let removeDialog:HTMLDialogElement;
  async function request<T>(operation:(api:ReturnType<typeof createInventoryPhotoApiClient>)=>Promise<T>){const session=credential;try{return await operation(createInventoryPhotoApiClient(apiURL,()=>Date.parse(session.expiresAt)>Date.now()?session.token:null));}catch(error){if(active&&session.token===credential.token&&error instanceof InventoryClientError&&error.status===401)onSessionRejected();throw error;}}
  const capture='stagePhoto' in workspace?workspace as InventoryFormWorkspace & {stagePhoto(bytes:Uint8Array):Promise<string|null>;pendingPhoto():{id:string}|null;expiredPhoto():boolean;discardPhoto():Promise<void>}:null;
@@ -20,11 +20,12 @@
   reorder:(id,ids,revision)=>request(api=>api.reorder(dealerID,id,ids,revision)),describe:(id,photoID,alt,revision)=>request(api=>api.describe(dealerID,id,photoID,alt,revision)),remove:(id,photoID,revision)=>request(api=>api.remove(dealerID,id,photoID,revision)),
  });
  let state=controller.snapshot();let unsubscribe=()=>{};
- $: busy=selecting||state.busy;
- $: onBusy(busy);
+ $: ownBusy=selecting||state.busy;
+ $: busy=ownBusy||otherBusy;
+ $: onBusy(ownBusy);
  $: if(page>0&&page*6>=state.photos.length)page=Math.max(0,Math.ceil(state.photos.length/6)-1);
  $: current=state.photos.find(photo=>photo.id===preview);
- async function run(operation:()=>Promise<unknown>){localError=null;try{await operation();}catch{/* Controller exposes a fixed localized state. */}}
+ async function run(operation:()=>Promise<unknown>){if(otherBusy)return;localError=null;try{await operation();}catch{/* Controller exposes a fixed localized state. */}}
  async function choose(event:Event){const input=event.currentTarget as HTMLInputElement;const file=input.files?.[0];input.value='';if(!file||busy)return;selecting=true;localError=null;try{const bytes=await readBrowserPhoto(file);if(active)await controller.add(bytes);}catch(error){if(active)localError=error instanceof Error&&error.message==='photo_size'?'inventory.photos.size':error instanceof Error&&error.message==='photo_format'?'inventory.photos.format':'inventory.photos.failed';}finally{if(active)selecting=false;}}
  async function show(photoID:string){preview=photoID;altText=state.photos.find(p=>p.id===photoID)?.altText??'';await tick();previewDialog.showModal();}
  async function confirmRemove(photoID:string){removal=photoID;await tick();removeDialog.showModal();}

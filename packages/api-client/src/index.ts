@@ -19,3 +19,4 @@ export { createDealerApiClient, DealerClientError, type DealerProfile, type Deal
 export { createInventoryApiClient, InventoryClientError, type InventoryRecord, type InventoryListOptions, type InventoryPage, type InventoryAttributes, type InventoryErrorCode } from './inventory';
 export { createInventoryPhotoApiClient, type InventoryPhoto, type InventoryPhotoState, type InventoryPhotoUpload } from './inventory-photos';
 export { createInventoryPublicationApiClient, InventoryPublicationError, type InventoryPublicationState, type PublicationReadinessField } from './inventory-publication';
+export {createPublicInquiryApiClient,createInquiryInboxApiClient,InquiryClientError,type InquiryErrorCode,type InquirySubmission,type BuyerContact,type InboxInquiry,type InquiryPage} from './inquiry';

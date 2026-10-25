@@ -27,7 +27,12 @@ bounded pagination. Fresh PostgreSQL tests cover authority changes, audit failur
 concurrency, historical visibility and receipt immutability/rollback refusal.
 Full repository/contract checks, affected race tests and required read-only review
 pass. Buyer form, web/native inbox presentation and complete user journeys remain
-required for IQ-01 through IQ-03 completion.
+required for IQ-01 through IQ-03 completion. Shared inquiry clients now separate
+anonymous credential-free submission from rotating-session inbox access, validate
+private response scope and public snapshot shape, and never automatically retry
+delivery. The shared composer preserves failed input in memory, serializes sends,
+and clears private fields on confirmed delivery or disposal. Package tests and
+full repository/contract gates pass; presentation and device acceptance remain.
 
 The node-forge 1.4.0 mitigation backports the exact RSA nested-DigestAlgorithm
 validation from unmerged upstream PR 1152, with license, source and installed

@@ -1,6 +1,7 @@
 package ratelimit
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
@@ -47,14 +48,23 @@ func New(db *gorm.DB, scope string, limit int, window time.Duration, maxPrincipa
 }
 
 func (l *Limiter) Allow(principal string, now time.Time) bool {
+	allowed, err := l.AllowContext(context.Background(), principal, now)
+	return err == nil && allowed
+}
+
+// AllowContext preserves dependency failures and cancellation for application ports.
+func (l *Limiter) AllowContext(ctx context.Context, principal string, now time.Time) (bool, error) {
+	if err := ctx.Err(); err != nil {
+		return false, err
+	}
 	if principal == "" || now.IsZero() {
-		return false
+		return false, errors.New("invalid rate limit identity or time")
 	}
 	digest := sha256.Sum256([]byte(principal))
 	principalHash := hex.EncodeToString(digest[:])
 	shard := int(binary.BigEndian.Uint64(digest[:8]) % shardCount)
 	allowed := false
-	err := l.db.Transaction(func(tx *gorm.DB) error {
+	err := l.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var lock shardModel
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("scope = ? AND shard = ?", l.scope, shard).First(&lock).Error; err != nil {
 			return err
@@ -95,7 +105,7 @@ func (l *Limiter) Allow(principal string, now time.Time) bool {
 		allowed = true
 		return updateWindow(tx, &row, map[string]any{"request_count": row.RequestCount + 1, "updated_at": now.UTC()})
 	})
-	return err == nil && allowed
+	return err == nil && allowed, err
 }
 
 func updateWindow(tx *gorm.DB, row *windowModel, values map[string]any) error {

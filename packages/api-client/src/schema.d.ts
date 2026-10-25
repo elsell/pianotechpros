@@ -508,6 +508,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/showrooms/{slug}/pianos/{id}/inquiries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["submit-public-inquiry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/showrooms/{slug}/pianos/{id}/photos/{photoID}": {
         parameters: {
             query?: never;
@@ -539,7 +555,7 @@ export interface components {
              * @description Stable machine-readable error code
              * @enum {string}
              */
-            code: "inventory_not_ready" | "invalid_photo" | "photo_limit_exceeded" | "invalid_invitation" | "bad_request" | "unauthenticated" | "invalid_credential" | "forbidden" | "not_found" | "conflict" | "idempotency_conflict" | "validation_failed" | "rate_limited" | "authorization_pending" | "authorization_dead_lettered" | "authorization_policy_not_configured" | "unavailable" | "internal_error" | "request_failed" | "oidc_discovery_unavailable";
+            code: "inquiry_challenge_rejected" | "inventory_not_ready" | "invalid_photo" | "photo_limit_exceeded" | "invalid_invitation" | "bad_request" | "unauthenticated" | "invalid_credential" | "forbidden" | "not_found" | "conflict" | "idempotency_conflict" | "validation_failed" | "rate_limited" | "authorization_pending" | "authorization_dead_lettered" | "authorization_policy_not_configured" | "unavailable" | "internal_error" | "request_failed" | "oidc_discovery_unavailable";
             detail?: string;
             errors?: components["schemas"]["ErrorDetail"][] | null;
             /** @description Stable publication readiness field identifiers */
@@ -1180,6 +1196,21 @@ export interface components {
             expectedRevision: number;
             /** @enum {string} */
             role: "editor" | "viewer";
+        };
+        SubmissionInputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/SubmissionInputBody.json
+             */
+            readonly $schema?: string;
+            challenge?: string;
+            email?: string;
+            honeypot?: string;
+            message?: string;
+            name?: string;
+            phone?: string;
+            preference?: string;
         };
         Update: {
             /**
@@ -2884,6 +2915,40 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ListingOutputBody"];
                 };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "submit-public-inquiry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmissionInputBody"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Error */
             default: {

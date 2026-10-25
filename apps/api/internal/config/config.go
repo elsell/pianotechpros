@@ -11,6 +11,7 @@ import (
 )
 
 type Config struct {
+	InquiryChallengePolicy, TurnstileSecret, TurnstileHostname                                                                                                                            string
 	HTTPAddr, PublicBaseURL, DatabaseDSN, CursorSigningKey, OIDCIssuer, OIDCBackchannelURL, OIDCDocsClientID, OIDCDocsRedirectURI, SpiceDBEndpoint, SpiceDBToken, AccountProvisioningMode string
 	MetricsBearerToken                                                                                                                                                                    string
 	OTLPHTTPEndpoint, OTelServiceName                                                                                                                                                     string
@@ -36,6 +37,9 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 	c := Config{
+		InquiryChallengePolicy:         os.Getenv("PIANOTECHPROS_INQUIRY_CHALLENGE_POLICY"),
+		TurnstileSecret:                os.Getenv("PIANOTECHPROS_TURNSTILE_SECRET"),
+		TurnstileHostname:              os.Getenv("PIANOTECHPROS_TURNSTILE_HOSTNAME"),
 		HTTPAddr:                       value("PIANOTECHPROS_HTTP_ADDR", ":8080"),
 		PublicBaseURL:                  os.Getenv("PIANOTECHPROS_PUBLIC_BASE_URL"),
 		DatabaseDSN:                    os.Getenv("PIANOTECHPROS_DATABASE_DSN"),
@@ -119,6 +123,9 @@ func validateRawEnvironment() error {
 }
 
 func (c Config) validate() error {
+	if err := c.validateInquiry(); err != nil {
+		return err
+	}
 	if c.PublicBaseURL == "" || c.DatabaseDSN == "" || len(c.CursorSigningKey) < 32 || len(c.MetricsBearerToken) < 32 || c.OIDCIssuer == "" || len(c.OIDCAudiences) == 0 || c.SpiceDBEndpoint == "" {
 		return errors.New("database, OIDC audiences, and SpiceDB configuration is required")
 	}

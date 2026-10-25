@@ -24,6 +24,7 @@ docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U app_migrator -d postg
 docker compose run --rm -e PIANOTECHPROS_DATABASE_DSN='postgres://app_migrator:app_migrator@postgres:5432/dealer_acceptance?sslmode=disable' app-migrate
 bash scripts/dealer-grant-migration-sql.sh | docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U app_migrator -d dealer_acceptance
 (cd apps/api && go test ./internal/adapters/gormstore/dealer -database-dsn 'postgres://app_migrator:app_migrator@localhost:5432/dealer_acceptance?sslmode=disable')
+(cd apps/api && go test ./internal/bootstrap/inquiry -database-dsn 'postgres://app:app@localhost:5432/dealer_acceptance?sslmode=disable')
 docker compose up -d --build spicedb dex api web
 for _ in $(seq 1 180); do curl -fsS http://localhost:8080/readyz >/dev/null 2>&1 && curl -fsS http://localhost:5556/dex/.well-known/openid-configuration >/dev/null 2>&1 && break; sleep 1; done
 curl -fsS http://localhost:8080/healthz >/dev/null

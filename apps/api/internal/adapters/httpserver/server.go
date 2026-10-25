@@ -96,7 +96,7 @@ type APIError struct {
 	Type    string              `json:"type,omitempty" format:"uri" default:"about:blank"`
 	Title   string              `json:"title,omitempty"`
 	Status  int                 `json:"status,omitempty"`
-	Code    string              `json:"code" doc:"Stable machine-readable error code" enum:"inventory_not_ready,invalid_photo,photo_limit_exceeded,invalid_invitation,bad_request,unauthenticated,invalid_credential,forbidden,not_found,conflict,idempotency_conflict,validation_failed,rate_limited,authorization_pending,authorization_dead_lettered,authorization_policy_not_configured,unavailable,internal_error,request_failed,oidc_discovery_unavailable"`
+	Code    string              `json:"code" doc:"Stable machine-readable error code" enum:"inquiry_challenge_rejected,inventory_not_ready,invalid_photo,photo_limit_exceeded,invalid_invitation,bad_request,unauthenticated,invalid_credential,forbidden,not_found,conflict,idempotency_conflict,validation_failed,rate_limited,authorization_pending,authorization_dead_lettered,authorization_policy_not_configured,unavailable,internal_error,request_failed,oidc_discovery_unavailable"`
 	Detail  string              `json:"detail,omitempty"`
 	Errors  []*huma.ErrorDetail `json:"errors,omitempty"`
 }
@@ -560,7 +560,8 @@ func requestSource(r *http.Request, trusted []*net.IPNet) string {
 func withRequestRateLimit(next http.Handler, limiter ports.AuditRateLimiter, clock ports.Clock, trusted []*net.IPNet) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/v1/") || strings.HasPrefix(r.URL.Path, "/oidc/") {
-			if !limiter.Allow(requestSource(r, trusted), clock.Now().UTC()) {
+			source := requestSource(r, trusted)
+			if !limiter.Allow(source, clock.Now().UTC()) {
 				if r.URL.Path == "/oidc/token" {
 					writeOAuthProblem(w, http.StatusTooManyRequests, "rate_limited", "rate limit exceeded")
 				} else {
@@ -568,7 +569,7 @@ func withRequestRateLimit(next http.Handler, limiter ports.AuditRateLimiter, clo
 				}
 				return
 			}
-			r = r.WithContext(markRequestLimited(r.Context()))
+			r = r.WithContext(markRequestLimited(r.Context(), source))
 		}
 		next.ServeHTTP(w, r)
 	})

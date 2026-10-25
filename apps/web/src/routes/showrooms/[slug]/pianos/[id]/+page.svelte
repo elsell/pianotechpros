@@ -3,6 +3,7 @@
  import {onMount} from 'svelte';
  import {createTranslator,type MessageKey} from '@pianotechpros/i18n';
  import InquiryForm from '#lib/inquiry/InquiryForm.svelte';
+ import PublicListingShare from '#lib/showroom/PublicListingShare.svelte';
  import DiscoveryMetadata from '#lib/showroom/DiscoveryMetadata.svelte';
  import ShowroomFrame from '#lib/showroom/ShowroomFrame.svelte';
  import type {PageData} from './$types';
@@ -30,6 +31,7 @@
   {/if}
  </section><section class="summary"><p class="status">{i18n.t(('inventory.status.'+piano.status) as MessageKey)}</p><h1>{piano.title}</h1><p class="price">{piano.price?i18n.money(piano.price.minor_units,piano.price.currency):i18n.t('showroom.requestPrice')}</p><p class="form">{i18n.t(('inventory.form.'+piano.form) as MessageKey)}</p>
   <div class="contact">{#if profile.phone}<a class="primary" href={'tel:'+profile.phone.replace(/[^+0-9]/g,'')}>{i18n.t('showroom.call')}</a>{/if}<a class="secondary" href={'mailto:'+encodeURIComponent(profile.email)+'?subject='+encodeURIComponent(piano.title)}>{i18n.t('showroom.email')}</a></div>
+  {#key data.canonicalPath}<PublicListingShare url={data.metadata?.canonical??null} title={piano.title} {i18n} />{/key}
   <h2>{i18n.t('showroom.details')}</h2>{#if piano.description}<p class="description">{piano.description}</p>{/if}
   <dl>{#each [{key:'showroom.stock' as const,value:piano.stock_number},{key:'showroom.make' as const,value:piano.make},{key:'showroom.model' as const,value:piano.model},{key:'showroom.finish' as const,value:piano.finish},{key:'showroom.size' as const,value:piano.size}] as fact}{#if fact.value}<div><dt>{i18n.t(fact.key)}</dt><dd>{fact.value}</dd></div>{/if}{/each}</dl>
  </section></div>

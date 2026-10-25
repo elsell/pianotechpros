@@ -572,5 +572,12 @@
   "scan.native.torchOn": "Turn light on",
   "scan.native.torchOff": "Turn light off",
   "showroom.related": "More pianos to consider",
-  "showroom.relatedUnavailable": "Other pianos could not be loaded. Browse the showroom to see what is available."
+  "showroom.relatedUnavailable": "Other pianos could not be loaded. Browse the showroom to see what is available.",
+  "showroom.sharing.share": "Share this piano",
+  "showroom.sharing.copyLink": "Copy public link",
+  "showroom.sharing.shared": "The share sheet has closed.",
+  "showroom.sharing.copied": "Public link copied.",
+  "showroom.sharing.failed": "Sharing did not finish. You can select and copy the public link below.",
+  "showroom.sharing.link": "Public listing link",
+  "showroom.sharing.unavailable": "Sharing is unavailable right now."
 }

@@ -57,6 +57,10 @@ try{
  await page.locator('summary').click();await page.getByLabel('Piano type',{exact:true}).selectOption('studio_upright');await page.getByRole('button',{name:'Show pianos',exact:true}).click();await page.waitForURL(/form=studio_upright/);assert.equal(await page.getByRole('heading',{name:'Walnut baby grand'}).count(),0);
  await page.getByRole('link',{name:'Clear filters',exact:true}).click();await page.getByRole('heading',{name:'Walnut baby grand'}).click();await page.getByRole('heading',{level:1,name:'Walnut baby grand'}).waitFor();
  assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'),'https://pianos.example/showrooms/atelier/pianos/grand');
+ await page.context().grantPermissions(['clipboard-read','clipboard-write']);
+ await page.getByRole('button',{name:'Copy public link',exact:true}).click();
+ await page.getByText('Public link copied.',{exact:true}).waitFor();
+ assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),'https://pianos.example/showrooms/atelier/pianos/grand');
  const structured=JSON.parse(await page.locator('script[data-public-discovery]').textContent());
  assert.equal(structured['@type'],'Product');assert.equal(structured.offers.price,'12500.00');assert.equal(structured.offers.availability,'https://schema.org/InStock');
  assert.equal(structured.serial,undefined);assert.equal(structured.review,undefined);

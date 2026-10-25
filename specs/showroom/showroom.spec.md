@@ -239,3 +239,16 @@ and canonical URL guidance
 (https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls).
 Metadata does not promise rich-result eligibility or invent an offer when the
 seller requests contact for pricing.
+
+## Public link sharing
+
+The public listing offers the platform share sheet when supported, with clipboard
+copy as the desktop fallback. Share only the configured canonical public URL and
+published title; never the request query, current private editor values, scan
+tokens or credentials. Missing discovery origin reports sharing unavailable.
+Sharing is an explicit user action. Cancellation is neutral, and permission or
+clipboard failure offers a selectable public link without claiming success.
+Disable repeated actions while pending; ignore completions after navigation or a
+listing change. Native owner sharing must independently resolve the current
+public projection before presenting a platform sheet; implementation and device
+acceptance for that native entry point remain required.

@@ -54,8 +54,13 @@ Voice processing now shares editor queue coordination across clients: preparatio
 does not claim saving is paused, explicit review holds the queue, cancellation
 waits for pending acquisition/provider work to settle, and Undo remains available
 after release. The web editor exercises this coordinator; controlled lifecycle
-tests and full browser journeys cover the transition. Native presentation remains
-the next integration step.
+tests and full browser journeys cover the transition. The native editor now presents a dedicated voice sheet with explicit recording,
+transcript correction, unselected field switches, current/proposed comparisons,
+evidence and confidence, Apply and conditional Undo. Background/focus loss clears
+transient work; retired recorder ownership preserves cleanup retry across unmount.
+The editor coordinates photo/publication busy states and reports actual queue
+pauses. Native type/lifecycle checks and exports pass; fresh device interaction
+acceptance remains required, including recording, denial and background recovery.
 
 Buyer inquiry foundations now implement canonical contact validation, immutable
 public snapshot context and first-read domain state. Submission orchestration

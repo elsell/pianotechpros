@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { createInventoryApiClient, createInventoryPhotoApiClient, createInventoryPublicationApiClient, InventoryClientError } from '@pianotechpros/api-client';
+import { createInventoryApiClient, createInventoryPhotoApiClient, createInventoryPublicationApiClient, createInventoryVoiceApiClient, VoiceClientError, InventoryClientError } from '@pianotechpros/api-client';
 import { useMobileSession } from './session-provider';
 
 /** Mount within an account-keyed screen; only committed credentials are used. */
@@ -13,7 +13,7 @@ function useRequest<Client>(create:(baseURL:string,token:()=>string)=>Client) {
     if (!scope || !credential || Date.parse(credential.expiresAt) <= Date.now()) throw new InventoryClientError('unauthenticated', 401);
     try { return await operation(create(scope.apiURL, () => credential.token)); }
     catch (error) {
-      if (error instanceof InventoryClientError && error.status === 401 && current.current?.session?.token === credential.token) current.current.reject(credential.token);
+      if ((error instanceof InventoryClientError || error instanceof VoiceClientError) && error.status === 401 && current.current?.session?.token === credential.token) current.current.reject(credential.token);
       throw error;
     }
   });
@@ -24,3 +24,5 @@ export function useInventoryRequest(){return useRequest(createInventoryApiClient
 export function useInventoryPhotoRequest(){return useRequest(createInventoryPhotoApiClient);}
 
 export function useInventoryPublicationRequest(){return useRequest(createInventoryPublicationApiClient);}
+
+export function useInventoryVoiceRequest(){return useRequest(createInventoryVoiceApiClient);}

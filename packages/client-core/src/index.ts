@@ -215,3 +215,5 @@ export {createInventoryVoiceWorkflow,type InventoryVoiceWorkflowPort,type Invent
 export * from './native-voice-capture';
 
 export * from './inventory-voice-workspace';
+
+export * from './native-voice-cleanup';

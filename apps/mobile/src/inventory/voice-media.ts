@@ -1,10 +1,11 @@
 import {AppState,Platform} from 'react-native';
 import {AudioModule,RecordingPresets,setAudioModeAsync,setIsAudioActiveAsync,type AudioRecorder} from 'expo-audio';
 import {Directory,File,Paths} from 'expo-file-system';
-import {createNativeVoiceCapture,type NativeVoiceHandle,type NativeVoiceState} from '@pianotechpros/client-core';
+import {createNativeVoiceCapture,createNativeVoiceCleanup,type NativeVoiceHandle,type NativeVoiceState} from '@pianotechpros/client-core';
 import {ownedVoiceCachePath} from './voice-cache-path';
 
 let held=false;
+const retiredCaptures=createNativeVoiceCleanup();
 type VoiceClock={after(ms:number,work:()=>void):()=>void};
 const systemClock:VoiceClock={after:(ms,work)=>{const timer=setTimeout(work,ms);return()=>clearTimeout(timer);}};
 function ownedFile(uri:string){if(!ownedVoiceCachePath(Paths.cache.uri,uri))throw Error('native_voice_file');return new File(uri);}
@@ -57,9 +58,9 @@ async function prepare(ended:(failed:boolean)=>void,clock:VoiceClock):Promise<Na
 }
 
 export function createMobileVoiceCapture(options:{active():boolean;changed(state:NativeVoiceState):void;completed(bytes:Uint8Array):void;clock?:VoiceClock}){
- const controller=createNativeVoiceCapture({...options,active:()=>options.active()&&AppState.currentState!=='background',permission:async()=>{if(Platform.OS!=='ios'&&Platform.OS!=='android')return false;return(await AudioModule.requestRecordingPermissionsAsync()).granted;},prepare:ended=>prepare(ended,options.clock??systemClock)});
+ const controller=createNativeVoiceCapture({...options,recover:()=>retiredCaptures.retry(),active:()=>options.active()&&AppState.currentState!=='background',permission:async()=>{if(Platform.OS!=='ios'&&Platform.OS!=='android')return false;return(await AudioModule.requestRecordingPermissionsAsync()).granted;},prepare:ended=>prepare(ended,options.clock??systemClock)});
  const listener=AppState.addEventListener('change',state=>{
   if(state==='background'||state==='inactive'&&controller.snapshot().phase==='recording')void controller.cancel();
  });
- return {...controller,dispose(){listener.remove();return controller.dispose();}};
+ return {...controller,dispose(){listener.remove();return retiredCaptures.retire(controller);}};
 }

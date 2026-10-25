@@ -21,7 +21,7 @@ export function InventoryPhotoImage({dealerID,recordID,photoID,alt,inspect=false
  if(uri&&inspect)return <PhotoInspection uri={uri} alt={alt} onError={()=>{setURI(null);setFailed(true);}} />;
  return uri?<Image source={{uri}} accessibilityLabel={alt} accessible={!!alt} resizeMode="contain" style={{width:'100%',height:240}} onError={()=>{setURI(null);setFailed(true);}} />:<View style={{height:120,justifyContent:'center'}}><Text style={{color:theme.secondary}}>{i18n.t(failed?'inventory.photos.imageFailed':'common.loading')}</Text>{failed?<Button title={i18n.t('inventory.photos.retryImage')} onPress={()=>setAttempt(v=>v+1)} />:null}</View>;
 }
-export function InventoryPhotos({workspace,userID,dealerID,onBusy}:{workspace:InventoryFormWorkspace;userID:string;dealerID:string;onBusy:(busy:boolean)=>void}){
+export function InventoryPhotos({workspace,userID,dealerID,onBusy,otherBusy=false}:{workspace:InventoryFormWorkspace;userID:string;dealerID:string;onBusy:(busy:boolean)=>void;otherBusy?:boolean}){
  const {i18n}=useMobileSession();const theme=useNativeTheme();const request=useInventoryPhotoRequest();const inventory=useInventoryRequest();
  const model=useRef<{photos:Photos;picker:PickerSession;active():boolean}|null>(null);
  const [state,setState]=useState<ReturnType<Photos['snapshot']>|null>(null);const [pickerView,setPickerView]=useState<ReturnType<PickerSession['snapshot']>>({state:{status:'idle'},held:false,busy:false,error:null});const pickerState=pickerView.state;
@@ -49,11 +49,11 @@ export function InventoryPhotos({workspace,userID,dealerID,onBusy}:{workspace:In
   void (async()=>{try{await picker.restore();if(active())await photos.refresh();}catch{if(active())setError('inventory.photos.failed');}finally{if(alive){operation.current=false;setWorking(false);}}})();
   return()=>{alive=false;unsubscribe();unpick();void picker.dispose().then(()=>photos.dispose());if(model.current===current)model.current=null;};
  },[workspace,userID,dealerID,request,inventory]);
- const held=pickerView.held;const busy=working||pickerView.busy||!!state?.busy;
+ const held=pickerView.held;const ownBusy=working||pickerView.busy||!!state?.busy;const busy=ownBusy||otherBusy;
  const pickerError:MessageKey|null=pickerView.error==='other_target'?'inventory.photos.pickerOtherTarget':pickerView.error?'inventory.photos.failed':null;
- useEffect(()=>{onBusy(busy||held);return()=>onBusy(false);},[busy,held,onBusy]);
+ useEffect(()=>{onBusy(ownBusy||held);return()=>onBusy(false);},[ownBusy,held,onBusy]);
  useEffect(()=>{if(state&&page>0&&page*6>=state.photos.length)setPage(Math.max(0,Math.ceil(state.photos.length/6)-1));},[state,page]);
- async function run(work:(current:NonNullable<typeof model.current>)=>Promise<void>){const current=model.current;if(!current||operation.current||!current.active())return;operation.current=true;setWorking(true);setError(null);try{await work(current);}catch(failure){if(current.active())setError(failure instanceof Error&&failure.message==='native_picker_other_target'?'inventory.photos.pickerOtherTarget':'inventory.photos.failed');}finally{if(current.active()){operation.current=false;setWorking(false);}}}
+ async function run(work:(current:NonNullable<typeof model.current>)=>Promise<void>){const current=model.current;if(!current||operation.current||otherBusy||!current.active())return;operation.current=true;setWorking(true);setError(null);try{await work(current);}catch(failure){if(current.active())setError(failure instanceof Error&&failure.message==='native_picker_other_target'?'inventory.photos.pickerOtherTarget':'inventory.photos.failed');}finally{if(current.active()){operation.current=false;setWorking(false);}}}
  function choose(source:'camera'|'library'){void run(current=>current.picker.select(source));}
  function discard(){Alert.alert(i18n.t('inventory.photos.pickerDiscard'),i18n.t('inventory.photos.pickerDiscardHint'),[{text:i18n.t('inventory.photos.cancel'),style:'cancel'},{text:i18n.t('inventory.photos.pickerDiscard'),style:'destructive',onPress:()=>{void run(current=>current.picker.discard());}}]);}
  const text={color:theme.text,fontSize:17};const button=(key:MessageKey,action:()=>void,disabled=busy)=><Button title={i18n.t(key)} color={theme.accent} disabled={disabled} onPress={action} />;

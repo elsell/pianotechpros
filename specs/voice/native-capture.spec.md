@@ -51,3 +51,38 @@ Denied access clears private review state. Apply requires explicit selection;
 conditional Undo remains available after the queue releases and preserves later
 manual corrections. Presentation owns field selection and transcript entry;
 the shared coordinator owns queue lifetime and workflow orchestration.
+
+## Native review presentation
+
+The editor opens a dedicated native modal for voice entry. The first screen
+explains the one-minute limit and offers Record or an editable transcript;
+permission is requested only by the Record action. Recording has visible Stop
+and Cancel controls. Keyboard avoidance, safe areas, Dynamic Type, theme colors,
+accessible labels and at least 44-point touch targets apply throughout.
+
+After processing, review shows each field's current and proposed values, evidence
+and confidence, with no field selected automatically. Native switches select
+fields; Apply remains disabled until at least one selection is made. Transcript
+correction releases the old review before another extraction. Apply returns to
+the editor with an explicit Undo action; conflicts require renewed review and
+clear the selection. Back, accessibility escape and Cancel discard transient
+voice work without discarding the protected inventory draft. Backgrounding or
+leaving the editor cancels capture and processing and clears private transcript
+and review state. An OS permission prompt does not close the entry screen.
+
+Photo and publication actions cannot overlap an open voice flow. The save banner
+reports a pause only while the shared coordinator owns the mutation queue.
+Native compilation and export do not establish interaction acceptance: fresh
+build tests must cover typed transcript and actual microphone paths, permission
+denial, background cancellation, selected Apply and conditional Undo.
+
+Cleanup failure must retain a visible retry action even after the sheet closes;
+an inaccessible busy state cannot trap the editor. Explicit missing/expired
+application credentials are denied access, including rejection before transport,
+and clear transient transcript/review state.
+
+Unmount does not relinquish ownership of failed cleanup. A process-scoped retired
+capture registry retains failed disposal and retries it before another microphone
+permission/acquisition attempt. Active captures are never reclaimed by that
+registry. A failed retry reports cleanup failure; successful retry removes the
+retired owner. This registry holds resource handles, never transcript or audio.

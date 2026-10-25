@@ -620,3 +620,14 @@ The disposable acceptance Compose override explicitly disables the external
 challenge on both API and web, with empty verifier credentials. This configuration
 is confined to synthetic local acceptance; production defaults stay fail closed.
 Live Turnstile composition remains a separate unproven provider gate.
+
+## Separate web server API addressing
+
+Server-rendered showroom, media and crawler routes use a validated private
+`PIANOTECHPROS_SERVER_API_URL` override, falling back to the configured browser API
+URL. Never serialize this override in layout data. Development Compose uses
+`http://api:8080` for server requests and keeps the browser-facing localhost URL.
+Production preserves the existing HTTPS/nonlocal endpoint constraints; credentials,
+queries, fragments and non-HTTP(S) URLs are rejected in every environment.
+Exercise the split address in composed browser acceptance and cover invalid
+configuration and production fallback in behavioral configuration tests.

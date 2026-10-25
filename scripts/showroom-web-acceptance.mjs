@@ -32,7 +32,7 @@ const api=createServer((req,res)=>{
 api.listen(0,'127.0.0.1');await once(api,'listening');const port=api.address().port;
 const webURL='http://127.0.0.1:5187';let log='';
 const built=process.env.WEB_ACCEPTANCE_BUILT==='1';
-const web=spawn(built?process.execPath:'pnpm',built?['apps/web/build/index.js']:['--dir','apps/web','dev','--port','5187','--strictPort'],{env:{...process.env,HOST:'127.0.0.1',PORT:'5187',PIANOTECHPROS_APP_ENV:'development',PIANOTECHPROS_PUBLIC_WEB_ORIGIN:'https://pianos.example',PIANOTECHPROS_API_URL:`http://127.0.0.1:${port}`},stdio:['ignore','pipe','pipe'],detached:true});web.stdout.on('data',d=>log+=d);web.stderr.on('data',d=>log+=d);
+const web=spawn(built?process.execPath:'pnpm',built?['apps/web/build/index.js']:['--dir','apps/web','dev','--port','5187','--strictPort'],{env:{...process.env,HOST:'127.0.0.1',PORT:'5187',PIANOTECHPROS_APP_ENV:'development',PIANOTECHPROS_PUBLIC_WEB_ORIGIN:'https://pianos.example',PIANOTECHPROS_API_URL:'https://browser-api.example',PIANOTECHPROS_SERVER_API_URL:`http://127.0.0.1:${port}`},stdio:['ignore','pipe','pipe'],detached:true});web.stdout.on('data',d=>log+=d);web.stderr.on('data',d=>log+=d);
 let browser;let evidencePage;const errors=[];
 try{
  for(let i=0;i<100;i++){if(web.exitCode!==null)throw Error(log);try{const response=await fetch(webURL);if(response.ok)break;}catch{}if(i===99)throw Error(log);await new Promise(r=>setTimeout(r,200));}

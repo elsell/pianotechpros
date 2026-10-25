@@ -1,5 +1,5 @@
 import {createShowroomApiClient,ShowroomClientError} from '@pianotechpros/api-client';
-import {webConfig} from '$lib/server/config';
+import {webConfig} from '#lib/server/config.js';
 import type {RequestHandler} from './$types';
 export const GET:RequestHandler=async({params,request})=>{
  const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};

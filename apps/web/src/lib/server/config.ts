@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { parseWebConfig } from '$lib/config';
+import * as env from '$app/env/private';
+import { parseWebConfig } from '#lib/config.js';
 
 export function loadWebConfig() {
   return parseWebConfig({

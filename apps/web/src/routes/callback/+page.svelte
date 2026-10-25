@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import type { ClientRuntimeConfig } from '@pianotechpros/client-core';
   import { createTranslator, type MessageKey, type SupportedLocale, type Translator } from '@pianotechpros/i18n';
-  import { completeApplicationSignIn } from '$lib/auth';
+  import { completeApplicationSignIn } from '#lib/auth.js';
 
   export let data: { locale: SupportedLocale; config: ClientRuntimeConfig };
   let errorKey: MessageKey | null = null;

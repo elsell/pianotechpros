@@ -1,6 +1,6 @@
 import {createShowroomApiClient} from '@pianotechpros/api-client';
-import {webConfig} from '$lib/server/config';
-import {publicFailure} from '$lib/showroom/server';
+import {webConfig} from '#lib/server/config.js';
+import {publicFailure} from '#lib/showroom/server.js';
 import type {PageServerLoad} from './$types';
 export const load:PageServerLoad=async({params,locals,setHeaders,request})=>{
  setHeaders({'cache-control':'no-store'});

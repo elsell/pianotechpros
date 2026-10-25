@@ -3,10 +3,10 @@
   import { createSessionApiClient, sessionExpiryAdvanced, sessionRefreshDelay, sessionRefreshLeadMs } from '@pianotechpros/api-client';
   import { classifySessionFailure, isSessionFailure, retainedSessionExpiry, sessionRetryDelay, validateSessionCredential, type ClientRuntimeConfig, type SessionAccessState, type SessionFailure } from '@pianotechpros/client-core';
   import { createTranslator, type MessageKey, type SupportedLocale, type Translator } from '@pianotechpros/i18n';
-  import { applicationSession, beginApplicationSignIn, clearApplicationSession, refreshApplicationSession, revokeApplicationSession, type ApplicationSession } from '$lib/auth';
+  import { applicationSession, beginApplicationSignIn, clearApplicationSession, refreshApplicationSession, revokeApplicationSession, type ApplicationSession } from '#lib/auth.js';
 
-  import { clearBrowserInventoryRecovery } from '$lib/inventory/recovery-storage';
-  import DealerDirectory from '$lib/dealer/DealerDirectory.svelte';
+  import { clearBrowserInventoryRecovery } from '#lib/inventory/recovery-storage.js';
+  import DealerDirectory from '#lib/dealer/DealerDirectory.svelte';
 
   export let data: { locale: SupportedLocale; config: ClientRuntimeConfig };
   let profile: { id: string; email: string; displayName: string } | null = null;

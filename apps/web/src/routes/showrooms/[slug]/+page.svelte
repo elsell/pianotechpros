@@ -1,7 +1,7 @@
 <script lang="ts">
  import {createTranslator,type MessageKey} from '@pianotechpros/i18n';
  import {inventoryForms,inventoryCurrencies} from '@pianotechpros/client-core';
- import ShowroomFrame from '$lib/showroom/ShowroomFrame.svelte';
+ import ShowroomFrame from '#lib/showroom/ShowroomFrame.svelte';
  import type {PageData} from './$types';
  export let data:PageData;
  $: i18n=createTranslator([data.locale]);

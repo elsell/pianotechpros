@@ -4,5 +4,8 @@
   "license": "Apache-2.0",
   "dependencies": {
     "eas-cli": "21.0.2"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
   }
 }

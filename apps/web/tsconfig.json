@@ -1,2 +1,15 @@
-{"extends":"./.svelte-kit/tsconfig.json","compilerOptions":{"strict":true,"moduleResolution":"Bundler"}}
-
+{
+  "extends": "$app/tsconfig",
+  "include": [
+    "src",
+    "test",
+    "*"
+  ],
+  "exclude": [
+    "src/service-worker"
+  ],
+  "compilerOptions": {
+    "strict": true,
+    "moduleResolution": "Bundler"
+  }
+}

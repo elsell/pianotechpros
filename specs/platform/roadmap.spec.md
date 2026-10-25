@@ -29,7 +29,10 @@ preserves later corrections; tests cover all 18 fields and exact large prices.
 The shared generated-contract transport now snapshots binary audio before token
 lookup, rotates sessions, rejects redirects, propagates cancellation and validates
 revision/transcript identity plus every typed candidate before presentation.
-Controlled real HTTP tests cover all fields and failure paths. Recording, review/clarification UI,
+Controlled real HTTP tests cover all fields and failure paths. The account/dealer/
+record-bound workflow now coordinates transcription, extraction, explicit review,
+local Apply and conditional Undo; cancellation/scope loss suppress late work and
+rejected local changes cannot claim success. Recording, review/clarification UI,
 voice-aware autosave/Undo and native microphone acceptance remain unfinished.
 
 Buyer inquiry foundations now implement canonical contact validation, immutable

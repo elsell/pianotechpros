@@ -210,3 +210,4 @@ export {createInquiryComposer,validateInquiryContact,type InquiryContactFields,t
 export {inquiryChallengeConfig,type InquiryChallengeConfig} from './inquiry-config';
 export {createInquiryWorkspace,type InquiryWorkspacePort,type InquiryWorkspaceState,type InquiryWorkspaceIssue} from './inquiry-workspace';
 export {validInventoryVoiceProposal,applyInventoryVoiceProposal,type InventoryVoiceProposal,type InventoryVoiceCandidate,type InventoryVoiceField,type InventoryVoiceValue,type InventoryVoiceChange} from './inventory-voice';
+export {createInventoryVoiceWorkflow,type InventoryVoiceWorkflowPort,type InventoryVoiceScope,type InventoryVoiceContext,type InventoryVoiceState,type InventoryVoiceIssue} from './inventory-voice-workflow';

@@ -16,6 +16,9 @@ import (
 
 func TestProfileRoutesFailClosedAndRejectUnexpectedFields(t *testing.T) {
 	handler, api := shared.New(app.App{}, nil, shared.Options{DomainRegistrations: []func(huma.API){func(api huma.API) { RegisterProfiles(api, customerapp.NewProfiles(customerapp.Dependencies{}, nil)) }}})
+	if !api.OpenAPI().Components.Schemas.Map()["ProfilePiano"].Properties["manufacturedYear"].Nullable {
+		t.Fatal("unknown manufacturing year must be nullable")
+	}
 	if !slices.Contains(api.OpenAPI().Components.Schemas.Map()["ProfilePiano"].Required, "nickname") {
 		t.Fatal("piano nickname must be required in contract")
 	}
@@ -27,6 +30,7 @@ func TestProfileRoutesFailClosedAndRejectUnexpectedFields(t *testing.T) {
 		{"read", "GET", "/v1/customer-profile", "", 503},
 		{"catalog", "GET", "/v1/customer-profile/timezones", "", 503},
 		{"create", "POST", "/v1/customer-profile", `{"attributes":` + attrs + `}`, 503},
+		{"unknown year", "POST", "/v1/customer-profile", `{"attributes":` + strings.Replace(attrs, `"pianos":[]`, `"pianos":[{"key":"piano","locationKey":"home","nickname":"Studio","form":"grand","player":false,"manufacturedYear":null}]`, 1) + `}`, 503},
 		{"save", "PUT", "/v1/customer-profile", `{"expectedRevision":1,"attributes":` + attrs + `}`, 503},
 		{"owner injection", "POST", "/v1/customer-profile", `{"ownerUserID":"other","attributes":` + attrs + `}`, 422},
 		{"nested injection", "POST", "/v1/customer-profile", `{"attributes":` + strings.Replace(attrs, `"name":`, `"ownerUserID":"other","name":`, 1) + `}`, 422},

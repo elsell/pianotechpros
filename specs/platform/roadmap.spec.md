@@ -49,7 +49,11 @@ injects the verified catalog into both adapters and exposes matching generated
 contracts. Real HTTP/session/PostgreSQL/SpiceDB integration covers legitimate
 create/edit/read/replay, stale saves, cross-user access, revoked grants and expired
 or revoked sessions. Composition tests include the public showroom to prevent
-schema-name collisions. Recoverable web/native editing and
+schema-name collisions. The typed shared client now snapshots commands, validates
+profile identity/revisions and nested response shapes, and exposes safe machine
+errors. HTTP fixture tests cover current credentials, cancellation, stale and
+malformed replies and private-field rejection. The optional manufacturing-year
+schema now explicitly permits null. Recoverable web/native editing and
 interaction acceptance remain unfinished; this foundation is not CU-01 completion.
 Technician profile parity follows and remains required.
 

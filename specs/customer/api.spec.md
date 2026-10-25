@@ -69,3 +69,23 @@ legacy registry. Runtime authentication is the rotating opaque session manager;
 provider JWTs cannot authenticate these routes. Integration acceptance traverses
 HTTP, that session manager, runtime-role PostgreSQL and the SpiceDB capability
 proxy, including expired/revoked sessions, stale edits and cross-user isolation.
+
+## Client transport
+
+The shared typed client exposes get/create/save/timezones through generated
+OpenAPI fetch operations. It obtains the current session for each request and
+supports cancellation. Create sends its idempotency key only as a header; save
+sends expectedRevision in the JSON body. Neither operation accepts owner IDs.
+Snapshot nested attributes before asynchronous credential lookup so later UI
+edits cannot change an in-flight command. Reject malformed command shapes,
+unsafe revisions and invalid idempotency keys before network activity.
+
+Validate returned envelopes and full profile shapes before admitting data into
+editor state: bounded child arrays, unique keys, own-location references, known
+forms, optional bounded years, safe revisions, ordered UTC timestamps and no
+unexpected private fields. Timezone choices must be bounded, unique sorted names
+including UTC. Transport errors retain only recognized machine codes and status;
+never retain server detail, submitted personal data, credentials or raw causes.
+Network and malformed responses remain distinct errors. A save response must
+retain the expected profile ID and return either the submitted revision (no-op)
+or its immediate successor. Creation replay may return a later revision.

@@ -1507,7 +1507,7 @@ export interface components {
             locationKey: string;
             make?: string;
             /** Format: int64 */
-            manufacturedYear?: number;
+            manufacturedYear?: number | null;
             model?: string;
             nickname: string;
             notes?: string;

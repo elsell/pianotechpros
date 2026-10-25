@@ -22,7 +22,7 @@ type ProfilePiano struct {
 	Model            string `json:"model,omitempty"`
 	Serial           string `json:"serial,omitempty"`
 	Notes            string `json:"notes,omitempty"`
-	ManufacturedYear *int   `json:"manufacturedYear,omitempty"`
+	ManufacturedYear *int   `json:"manufacturedYear,omitempty" nullable:"true"`
 	Player           bool   `json:"player"`
 }
 type ProfileAttributes struct {

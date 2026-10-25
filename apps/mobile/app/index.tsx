@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Button, FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import { createDealerDirectory } from '@pianotechpros/client-core';
 import type { DealerProfile } from '@pianotechpros/api-client';
 import { useMobileSession } from '../src/session-provider';
@@ -30,13 +30,15 @@ function ShopList({ accountId }: { accountId: string }) {
     ListFooterComponent={<View style={{ gap: 12, paddingVertical: 16 }}>{state.listLoading ? <Text accessibilityLiveRegion="polite" style={{ color: theme.secondary }}>{i18n.t('common.loading')}</Text> : null}{state.listFailure ? <><Text accessibilityRole="alert" style={{ color: theme.text }}>{i18n.t('dealer.loadFailed')}</Text><Button title={i18n.t('dealer.retry')} color={theme.accent} onPress={() => { void (state.listFailureOperation === 'more' ? directory.loadMore() : directory.refresh()); }} /></> : null}{state.nextCursor ? <Button title={i18n.t('dealer.more')} color={theme.accent} disabled={state.listLoading} onPress={() => { void directory.loadMore(); }} /> : null}</View>} />;
 }
 export default function Home() {
-  const auth = useMobileSession(); const theme = useNativeTheme(); const { i18n } = auth;
+  const router=useRouter();const auth = useMobileSession(); const theme = useNativeTheme(); const { i18n } = auth;
+  if(auth.ready&&auth.profile&&auth.session&&auth.scanState.pending)return <Redirect href="/scan" />;
   return <View style={{ flex: 1, backgroundColor: theme.background }}>
     <View style={{ padding: 20, gap: 12 }}>
       <Text style={{ color: theme.secondary, fontSize: 17 }}>{!auth.ready ? i18n.t('common.loading') : auth.accessState === 'authenticated_offline' ? i18n.t('auth.offline') : auth.profile ? i18n.t('auth.signedInAs', { name: auth.profile.displayName || auth.profile.email }) : i18n.t('auth.ready')}</Text>
       {auth.errorKey ? <Text accessibilityRole="alert" style={{ color: theme.text }}>{i18n.t(auth.errorKey)}</Text> : null}
       <Button title={i18n.t(auth.session ? 'auth.signOut' : 'auth.signIn')} color={theme.accent} disabled={!auth.ready || (!auth.session && !auth.signInReady)} onPress={() => { void (auth.session ? auth.signOut() : auth.signIn()); }} />
     </View>
+    <Button title={i18n.t('scan.native.open')} color={theme.accent} disabled={!auth.ready} onPress={()=>router.push('/scan')} />
     {auth.ready && auth.profile && auth.session ? <ShopList key={auth.profile.id} accountId={auth.profile.id} /> : null}
   </View>;
 }

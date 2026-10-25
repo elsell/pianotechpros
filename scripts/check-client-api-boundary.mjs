@@ -263,6 +263,7 @@ function importAllowed(specifier, relative, file) {
     const imported = resolveRelativeImport(file, specifier);
     return Boolean(imported && belowApprovedSourceRoot(imported));
   }
+  if (specifier === 'expo-camera') return relative === 'apps/mobile/src/inventory/scan-camera.tsx';
   if (specifier === 'expo-audio') return relative === 'apps/mobile/src/inventory/voice-media.ts';
   if (specifier === 'expo-file-system') return ['apps/mobile/src/inventory/photo-media.ts','apps/mobile/src/inventory/voice-media.ts'].includes(relative);
   if (['expo-image-picker', 'expo-image-manipulator'].includes(specifier)) return relative === 'apps/mobile/src/inventory/photo-media.ts';

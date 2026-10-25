@@ -274,7 +274,7 @@
   "inventory.photos.refresh": "Actualizar fotos",
   "inventory.photos.localCleanup": "Termina de eliminar esta selección local. No hay una carga pendiente.",
   "inventory.photos.capturePending": "Hay una selección de foto pendiente para este nuevo borrador. Reintenta para terminar la creación y la carga. Si se interrumpió la protección, elige la misma foto otra vez o descártala.",
-  "inventory.photos.cameraPermission": "Toma fotos de pianos para tus borradores privados de inventario.",
+  "inventory.photos.cameraPermission": "Permite que PianoTechPros fotografíe el inventario y escanee etiquetas de pianos.",
   "inventory.photos.libraryPermission": "Elige fotos de pianos para añadirlas a tus borradores privados de inventario.",
   "inventory.photos.permissionDenied": "El acceso a la cámara está desactivado. Puedes elegir una foto de tu biblioteca o activar el acceso a la cámara en Ajustes.",
   "inventory.photos.pickerWaiting": "Se interrumpió la selección de una foto. Comprueba el resultado de la cámara o del selector de fotos antes de volver a intentarlo.",
@@ -522,5 +522,16 @@
   "scan.view.cancel": "Cerrar escaneo",
   "scan.view.editor": "Abrir editor completo",
   "scan.view.refresh": "Actualizar piano",
-  "scan.view.actionDenied": "Se denegó esta acción. Se ha vuelto a comprobar tu acceso a este piano."
+  "scan.view.actionDenied": "Se denegó esta acción. Se ha vuelto a comprobar tu acceso a este piano.",
+  "scan.native.open": "Escanear piano",
+  "scan.native.hint": "Apunta la cámara a una etiqueta de piano de PianoTechPros o pega su enlace.",
+  "scan.native.manual": "Enlace de la etiqueta del piano",
+  "scan.native.useLink": "Abrir enlace del piano",
+  "scan.native.camera": "Usar cámara",
+  "scan.native.denied": "No se puede acceder a la cámara. Puedes pegar el enlace del piano o cambiar el permiso de cámara en Ajustes.",
+  "scan.native.failed": "No se pudo iniciar la cámara. Inténtalo de nuevo o pega el enlace del piano.",
+  "scan.native.signIn": "Inicia sesión para identificar este piano.",
+  "scan.native.again": "Escanear otro piano",
+  "scan.native.torchOn": "Encender luz",
+  "scan.native.torchOff": "Apagar luz"
 }

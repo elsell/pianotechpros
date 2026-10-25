@@ -513,3 +513,5 @@ Client presentation may construct an AbortController to cancel generated-client
 requests. It supplies only cancellation state, not transport. The structural gate
 continues rejecting fetch, browser-global transport and alternate clients even
 when an AbortController signal is provided.
+
+Native QR camera access is confined to `apps/mobile/src/inventory/scan-camera.tsx`. The structural gate permits `expo-camera` only there, rejects direct imports from presentation and still rejects network primitives inside that adapter. The adapter exposes QR-only preview and camera permission, not media recording or alternate API transport.

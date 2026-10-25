@@ -4,7 +4,7 @@ import Constants from 'expo-constants';
 import { getLocales } from 'expo-localization';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { createSessionApiClient, sessionExpiryAdvanced, sessionRefreshDelay, sessionRefreshLeadMs } from '@pianotechpros/api-client';
-import { classifySessionFailure, isSessionFailure, refreshSessionCredential, sessionCredentialFromResponse, sessionRetryDelay, validateSessionCredential, type SessionAccessState, type SessionFailure } from '@pianotechpros/client-core';
+import { createInventoryScanEntry, classifySessionFailure, isSessionFailure, refreshSessionCredential, sessionCredentialFromResponse, sessionRetryDelay, validateSessionCredential, type SessionAccessState, type SessionFailure } from '@pianotechpros/client-core';
 import { type MessageKey } from '@pianotechpros/i18n';
 import { createDeviceTranslator } from './i18n';
 import { loadMobileConfig } from './config';
@@ -28,6 +28,10 @@ async function saveSession(session: Session | null) {
 function localizedFailure(cause: unknown, fallback: MessageKey): MessageKey { return cause instanceof LocalizedError ? cause.key : fallback; }
 
 function useSessionState() {
+  const [scanEntry] = useState(() => createInventoryScanEntry({origin:webURL,now:()=>Date.now()}));
+  const [scanState,setScanState] = useState(scanEntry.snapshot());
+  useEffect(()=>{const unsubscribe=scanEntry.subscribe(setScanState);return()=>{unsubscribe();scanEntry.clear();};},[scanEntry]);
+  useEffect(()=>{if(scanState.expiresAt===null)return;const timer=setTimeout(()=>scanEntry.clear(),Math.max(0,scanState.expiresAt-Date.now()));return()=>clearTimeout(timer);},[scanEntry,scanState.expiresAt]);
   const [lifecycle] = useState(() => createSessionLifecycle(saveSession));
   const [session, setSession] = useState<Session | null>(null);
   const [accessState, setAccessState] = useState<SessionAccessState>('authentication_required');
@@ -55,6 +59,7 @@ function useSessionState() {
       createSessionApiClient(apiURL, () => current.token).profile(),
     );
     if (!lease.current()) return;
+    scanEntry.bind(nextProfile.id);
     setProfile(nextProfile);
     setPrivateBlocked(false);
     setAccessState('authenticated_online');
@@ -62,6 +67,7 @@ function useSessionState() {
     setRetryAttempt(0);
   }
   async function clearSession(message: MessageKey | null = null, state: SessionAccessState = 'authentication_required') {
+    scanEntry.clear();
     const token = session?.token;
     const cleared = await dismissSession({
       block: () => { setPrivateBlocked(true); setReady(false); },
@@ -147,7 +153,7 @@ function useSessionState() {
     return () => clearTimeout(timer);
   }, [session?.token, session?.expiresAt, sessionRenewable, accessState, retryAttempt, privateBlocked]);
 
-  return { session, profile: privateBlocked ? null : profile, ready, accessState, errorKey, apiURL, webURL, i18n,
+  return { scanEntry, scanState, session, profile: privateBlocked ? null : profile, ready, accessState, errorKey, apiURL, webURL, i18n,
     signInReady: providerSignIn.ready,
     signIn: () => providerSignIn.begin(),
     signOut: () => clearSession(),

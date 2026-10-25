@@ -30,6 +30,9 @@ manifest = ET.parse(app / 'android/app/src/main/AndroidManifest.xml').getroot()
 android = '{http://schemas.android.com/apk/res/android}'
 tools = '{http://schemas.android.com/tools}'
 permissions = manifest.findall('uses-permission')
+assert any(node.get(android + 'name') == 'android.permission.CAMERA' and node.get(tools + 'node') != 'remove' for node in permissions), 'label scanning needs explicit camera permission'
+assert 'expo.camera.barcode-scanner-enabled=false' not in (app / 'android/gradle.properties').read_text()
+assert json.loads((app / 'ios/Podfile.properties.json').read_text()).get('expo.camera.barcode-scanner-enabled') != 'false'
 assert any(node.get(android + 'name') == 'android.permission.RECORD_AUDIO' and node.get(tools + 'node') != 'remove' for node in permissions), 'voice capture needs explicit microphone permission'
 assert not any(node.get(android + 'name') == 'android.permission.RECORD_AUDIO' and node.get(tools + 'node') == 'remove' for node in permissions), 'a photo-only exclusion must not disable voice capture'
 assert not any(node.get(android + 'name') in ('android.permission.FOREGROUND_SERVICE_MICROPHONE', 'android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK') and node.get(tools + 'node') != 'remove' for node in permissions)

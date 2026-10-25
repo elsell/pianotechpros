@@ -210,3 +210,37 @@ and synthetic local identity. It creates an isolated draft, provisions a stable
 label, signs in from a fresh browser context via the real provider, consumes the
 continuation once, and confirms lifecycle commands against persisted state. No
 scan token or application credential is printed or saved as evidence.
+
+## Native scan interaction
+
+Native home offers a dedicated Scan piano destination, including while signed
+out. The destination offers an explicit camera action and a manual link field.
+Camera permission is requested only after that action. Only QR codes are decoded;
+a recognized link is validated against the configured web origin before any
+network call. Camera preview is unmounted on blur, background, cancellation or
+first result; repeated callbacks cannot issue duplicate resolutions. Permission
+denial retains the manual alternative and never opens settings automatically.
+
+The destination keeps the candidate in memory for at most ten minutes, never in
+router parameters, provider redirects or persistent storage. A signed-out user
+may sign in and continue within that interval. Cancellation, explicit sign-out,
+account change and expiry clear the candidate. Private identification is disposed
+on background or route blur and freshly reauthorized on return. The focused
+result uses the saved cover/title/stock/status and offers the full editor without
+creating or flushing a draft. Focused lifecycle commands retain the same explicit
+review, sale details, revision checks and uncertain-outcome rules as web.
+
+Native camera pins Expo's SDK 55 compatible `expo-camera` 55.0.23, published
+2026-08-25. Its web-only barcode-detector dependency is pinned to 3.2.2 (2026-08-16)
+rather than the six-day-old 3.2.3; its zxing-wasm dependency remains the exact 3.1.3
+release. No dependency-age exception is granted. Native scanning uses platform
+camera decoding and does not load the web WASM scanner. Camera permission copy
+covers both inventory photography and piano-label scanning; microphone access
+remains the separate explicit voice flow. Source and API:
+https://docs.expo.dev/versions/v55.0.0/sdk/camera/ .
+
+Every native camera acquisition owns a generation ticket. Blur, background, account change, manual acceptance, cancellation and disposal invalidate it. Neither a delayed permission grant nor an old barcode callback can activate or consume a later camera acquisition. Native focused actions use standalone serialized publication review, not an artificial editor workspace; denial revalidation is bounded as on web.
+
+A pending OS permission dialog may temporarily make the app inactive. Its same acquisition waits up to 1.5 seconds for foreground after the permission result, using the established native permission-resume adapter; no preview opens while backgrounded or after ticket invalidation. Ordinary backgrounding stops a visible preview immediately. Read-only loading does not trap users behind disabled scan cancellation; open command review protects navigation while confirming.
+
+The installed camera source pins Android CameraX 1.5.1, ML Kit barcode scanning 17.3.0 and Play Services code scanner 16.1.0. Apple autolinking selects only `ios/ExpoCamera.podspec`; the optional ZXing formats provider is not linked by this package configuration. The lockfile records integrity for all six added JavaScript packages; the dependency-age gate passes without exceptions and the audit adds no advisory beyond the existing reviewed node-forge finding.

@@ -17,7 +17,7 @@ assert.equal(graph['@react-navigation/native'].manifest.version, pin, 'installed
 assert.equal(app.dependencies['@react-navigation/native'], graph['expo-router'].manifest.dependencies['@react-navigation/native'], 'direct range must match Router doctor metadata');
 console.log("Navigation dependencies and shared contexts satisfy installed manifest requirements");
 
-for (const name of ['expo-image-picker', 'expo-image-manipulator', 'expo-file-system', 'expo-audio', 'expo-asset']) {
+for (const name of ['expo-image-picker', 'expo-image-manipulator', 'expo-file-system', 'expo-audio', 'expo-asset', 'expo-camera']) {
   const pin = app.dependencies[name];
   assert.match(pin, /^\d+\.\d+\.\d+$/, `${name} must be pinned exactly`);
   assert.equal(bundled[name], `~${pin}`, `${name} must match the reviewed Expo native set`);

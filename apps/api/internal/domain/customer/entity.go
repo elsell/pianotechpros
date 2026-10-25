@@ -49,6 +49,20 @@ func New(id ID, owner string, attributes Attributes, zones TimezoneCatalog, now 
 	return Entity{ID: id, OwnerUserID: owner, Attributes: attrs, Revision: 1, CreatedAt: now, UpdatedAt: now}, nil
 }
 
+// Restore validates stored state without advancing its revision or clock.
+func Restore(id ID, owner string, attributes Attributes, revision int64, created, updated time.Time, zones TimezoneCatalog) (Entity, error) {
+	if revision < 1 || revision > MaxRevision || created.IsZero() || updated.IsZero() || updated.Before(created) || created.Nanosecond()%1000 != 0 || updated.Nanosecond()%1000 != 0 {
+		return Entity{}, ErrInvalidFields
+	}
+	entity, err := New(id, owner, attributes, zones, created)
+	if err != nil {
+		return Entity{}, err
+	}
+	entity.Revision = revision
+	entity.UpdatedAt = updated.UTC()
+	return entity, nil
+}
+
 // Revise retains aggregate identity and rejects stale writes, including stale no-ops.
 func Revise(current Entity, expected int64, attributes Attributes, zones TimezoneCatalog, now time.Time) (Entity, bool, error) {
 	if current.Revision < 1 || current.Revision > MaxRevision || current.CreatedAt.IsZero() || current.UpdatedAt.Before(current.CreatedAt) || !key(string(current.ID), 128) || !key(current.OwnerUserID, 128) || now.IsZero() {

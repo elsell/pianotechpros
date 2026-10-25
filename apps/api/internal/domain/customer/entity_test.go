@@ -150,3 +150,33 @@ func TestProfileRevisionCannotOverflow(t *testing.T) {
 		t.Fatalf("overflow: %v", err)
 	}
 }
+
+func TestRestoreRejectsCorruptMetadataAndPreservesAcceptedState(t *testing.T) {
+	created := instant.UTC().Truncate(time.Microsecond)
+	updated := created.Add(time.Hour)
+	input := validAttributes()
+	got, err := Restore("profile", "owner", input, 7, created, updated, zones)
+	if err != nil || got.Revision != 7 || !got.CreatedAt.Equal(created) || !got.UpdatedAt.Equal(updated) {
+		t.Fatalf("restore: %+v %v", got, err)
+	}
+	input.Locations[0].City = "changed"
+	*input.Pianos[0].ManufacturedYear = 2000
+	if got.Locations[0].City != "Example" || *got.Pianos[0].ManufacturedYear != 1990 {
+		t.Fatal("restore aliases input")
+	}
+	for _, revision := range []int64{0, -1, MaxRevision + 1} {
+		if _, err := Restore("profile", "owner", validAttributes(), revision, created, updated, zones); !errors.Is(err, ErrInvalidFields) {
+			t.Fatalf("revision %d: %v", revision, err)
+		}
+	}
+	for _, times := range [][2]time.Time{{{}, updated}, {created, {}}, {updated, created}, {created.Add(time.Nanosecond), updated}, {created, updated.Add(time.Nanosecond)}} {
+		if _, err := Restore("profile", "owner", validAttributes(), 1, times[0], times[1], zones); !errors.Is(err, ErrInvalidFields) {
+			t.Fatalf("corrupt timestamps: %v", err)
+		}
+	}
+	input = validAttributes()
+	input.Pianos[0].LocationKey = "foreign"
+	if _, err := Restore("profile", "owner", input, 1, created, updated, zones); !errors.Is(err, ErrInvalidFields) {
+		t.Fatalf("corrupt references: %v", err)
+	}
+}

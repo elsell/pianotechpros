@@ -9,6 +9,7 @@ export interface NativeVoiceHandle{
 }
 export interface NativeVoiceCapturePort{
  active():boolean;
+ recover?():Promise<boolean>;
  permission():Promise<boolean>;
  prepare(ended:(failed:boolean)=>void):Promise<NativeVoiceHandle>;
  changed(state:NativeVoiceState):void;
@@ -51,6 +52,8 @@ export function createNativeVoiceCapture(port:NativeVoiceCapturePort){
   pending=(async()=>{
    try{
     if(!live(ticket))return;
+    if(port.recover&&!await port.recover()){if(live(ticket))set('failed','cleanup');return;}
+    if(!live(ticket))return;
     if(!await port.permission()){if(live(ticket))set('failed','permission');return;}
     if(!live(ticket))return;set('preparing');if(!live(ticket))return;
     handle=await port.prepare(failed=>{
@@ -64,7 +67,14 @@ export function createNativeVoiceCapture(port:NativeVoiceCapturePort){
   await pending;
  }
  function cancel(){generation++;set('idle');if(handle&&!closing)void close(false);return Promise.resolve().then(drain);}
- return {snapshot,start,stop:()=>phase==='recording'?close(true):closing??Promise.resolve(),cancel,drain,
+ async function retryCleanup(){
+  await cancel();
+  if(disposed||snapshot().busy||!port.recover)return;
+  const ticket=++generation;acquiring=true;set('stopping');
+  pending=(async()=>{try{const clean=await port.recover!();if(live(ticket))set(clean?'idle':'failed',clean?null:'cleanup');}catch{if(live(ticket))set('failed','cleanup');}})().finally(()=>{acquiring=false;pending=null;emit();});
+  await pending;
+ }
+ return {snapshot,start,retryCleanup,stop:()=>phase==='recording'?close(true):closing??Promise.resolve(),cancel,drain,
   dispose(){disposed=true;return cancel();},
  };
 }

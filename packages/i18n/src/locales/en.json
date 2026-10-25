@@ -466,5 +466,12 @@
   "voice.error.protocol_error": "The suggestions could not be verified. Please try again.",
   "voice.editTranscript": "Edit transcript",
   "voice.error.undoConflict": "Some fields were edited again and were not undone.",
-  "voice.microphonePermission": "Record a piano description to create suggestions you review before applying."
+  "voice.microphonePermission": "Record a piano description to create suggestions you review before applying.",
+  "voice.open": "Add a voice note",
+  "voice.showTranscript": "Show transcript",
+  "voice.hideTranscript": "Hide transcript",
+  "voice.capture.preparing": "Preparing the microphone…",
+  "voice.nativePermissionDenied": "Microphone access was denied. You can enable it in Settings or type a transcript.",
+  "voice.nativeCleanupFailed": "The recording could not be cleared safely. Cancel to retry cleanup before recording again.",
+  "voice.retryCleanup": "Retry recording cleanup"
 }

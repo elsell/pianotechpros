@@ -466,5 +466,12 @@
   "voice.error.protocol_error": "No se pudieron verificar las sugerencias. Inténtalo de nuevo.",
   "voice.editTranscript": "Editar transcripción",
   "voice.error.undoConflict": "Algunos campos se editaron de nuevo y no se deshicieron.",
-  "voice.microphonePermission": "Graba una descripción del piano para crear sugerencias que revisarás antes de aplicarlas."
+  "voice.microphonePermission": "Graba una descripción del piano para crear sugerencias que revisarás antes de aplicarlas.",
+  "voice.open": "Añadir una nota de voz",
+  "voice.showTranscript": "Mostrar transcripción",
+  "voice.hideTranscript": "Ocultar transcripción",
+  "voice.capture.preparing": "Preparando el micrófono…",
+  "voice.nativePermissionDenied": "Se denegó el acceso al micrófono. Puedes activarlo en Ajustes o escribir una transcripción.",
+  "voice.nativeCleanupFailed": "No se pudo eliminar la grabación de forma segura. Cancela para volver a intentar eliminarla antes de grabar de nuevo.",
+  "voice.retryCleanup": "Reintentar eliminar la grabación"
 }

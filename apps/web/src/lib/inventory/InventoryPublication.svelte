@@ -1,13 +1,13 @@
 <script lang="ts">
  import {onMount,tick} from 'svelte';
  import {createInventoryPublicationApiClient,createInventoryPhotoApiClient,InventoryClientError,InventoryPublicationError,type InventoryPublicationState,type InventoryPhoto,type PublicationReadinessField} from '@pianotechpros/api-client';
- import {createInventoryPublicationWorkspace,inventoryCurrencies,inventoryMoneyFromInput,type PublicationCommand,type InventoryFormWorkspace,type SessionCredential} from '@pianotechpros/client-core';
+ import {publicationSaleDefaults,createInventoryPublicationWorkspace,inventoryCurrencies,inventoryMoneyFromInput,type PublicationCommand,type InventoryFormWorkspace,type SessionCredential} from '@pianotechpros/client-core';
  import type {Translator,MessageKey} from '@pianotechpros/i18n';
  import {protectPendingNavigation} from '../browser-events';
  import PhotoImage from './PhotoImage.svelte';
  export let workspace:InventoryFormWorkspace;export let accountId:string;export let dealerID:string;export let recordID:string;export let apiURL:string;export let credential:SessionCredential;export let i18n:Translator;export let onSessionRejected:()=>void;export let onBusy:(value:boolean)=>void=()=>{};export let otherBusy=false;export let publishReady=true;
  type ReviewState=InventoryPublicationState&{photos:InventoryPhoto[]};
- let previewPage=0;let active=true;let dialog:HTMLDialogElement;let reviewHeading:HTMLHeadingElement;let target:Extract<PublicationCommand,{kind:'transition'}>['status']='available';let amount='';let currency:string=inventoryCurrencies[0];let reason='';let invalid=false;let missing:readonly PublicationReadinessField[]=[];
+ let previewPage=0;let active=true;let dialog:HTMLDialogElement;let reviewHeading:HTMLHeadingElement;let target:Extract<PublicationCommand,{kind:'transition'}>['status']='available';let amount='';let saleSeeded=false;let currency:string=inventoryCurrencies[0];let reason='';let invalid=false;let missing:readonly PublicationReadinessField[]=[];
  const statuses=['draft','available','reserved','in_service','sold','archived'] as const;
  const t=(key:string)=>i18n.t(`inventory.publication.${key}` as MessageKey);
  const statusLabel=(value:string)=>i18n.t(`inventory.status.${value}` as MessageKey);
@@ -29,14 +29,15 @@
  async function run(work:()=>Promise<unknown>){missing=[];invalid=false;try{await work();}catch{/* Only localized, stable controller state is presented. */}}
  async function review(command:PublicationCommand){previewPage=0;await run(()=>controller.review(command));if(!active||!controller.snapshot().review)return;await tick();if(active){dialog.showModal();reviewHeading.focus({preventScroll:true});dialog.scrollTop=0;}}
  function cancel(){if(state.busy)return;controller.cancel();dialog.close();}
- async function confirm(){await run(()=>controller.confirm());if(active){dialog.close();if(controller.snapshot().outcome==='succeeded'){amount='';reason='';}}}
+ async function confirm(){await run(()=>controller.confirm());if(active){dialog.close();if(controller.snapshot().outcome==='succeeded'){amount='';reason='';saleSeeded=false;}}}
+ function chooseStatus(value:typeof target){target=value;if(value==='sold'&&!saleSeeded){saleSeeded=true;const defaults=publicationSaleDefaults(state.state?.record.attributes.asking_price,i18n.locale==='es'?',':'.');amount=defaults.amount;currency=defaults.currency;}}
  async function changeStatus(){
   invalid=false;let salePrice=null;
   try{if(target==='sold'){salePrice=inventoryMoneyFromInput(amount,currency,i18n.locale==='es'?',':'.');if(!salePrice)throw Error('invalid');}if([...reason.trim()].length>1000||((['sold','archived'].includes(state.state?.record.status??'')||target==='draft')&&!reason.trim()))throw Error('invalid');}
   catch{invalid=true;return;}
   await review({kind:'transition',status:target,salePrice,reason:reason.trim()});
  }
- onMount(()=>{const unprotect=protectPendingNavigation(()=>state.busy);const unsubscribe=controller.subscribe(value=>{state=value;if(value.failure==='denied'){amount='';reason='';}});void run(()=>controller.refresh());return()=>{active=false;unsubscribe();unprotect();controller.dispose();onBusy(false);};});
+ onMount(()=>{const unprotect=protectPendingNavigation(()=>state.busy);const unsubscribe=controller.subscribe(value=>{state=value;if(value.failure==='denied'){amount='';reason='';saleSeeded=false;}});void run(()=>controller.refresh());return()=>{active=false;unsubscribe();unprotect();controller.dispose();onBusy(false);};});
 </script>
 <section class="publication" aria-labelledby="publication-heading">
  <h3 id="publication-heading">{t('heading')}</h3>
@@ -47,8 +48,8 @@
  {#if !publishReady}<p class="hint">{t('saveFirst')}</p>{/if}
  <div class="actions"><button disabled={disabled||!publishReady} onclick={()=>review({kind:'publish'})}>{t('publish')}</button><button disabled={disabled||!state.state?.publication?.visible} onclick={()=>review({kind:'unpublish'})}>{t('unpublish')}</button><button disabled={state.busy||otherBusy} onclick={()=>run(()=>controller.refresh())}>{t('refresh')}</button></div>
  <details><summary>{t('target')}</summary><form onsubmit={event=>{event.preventDefault();void changeStatus();}}>
-  <label for="publication-status">{t('target')}</label><select id="publication-status" bind:value={target} disabled={disabled}>{#each statuses as status}<option value={status}>{statusLabel(status)}</option>{/each}</select>
-  {#if target==='sold'}<label for="publication-amount">{t('amount')}</label><input id="publication-amount" inputmode="decimal" maxlength="40" bind:value={amount} disabled={disabled} /><label for="publication-currency">{t('currency')}</label><select id="publication-currency" bind:value={currency} disabled={disabled}>{#each inventoryCurrencies as value}<option>{value}</option>{/each}</select>{/if}
+  <label for="publication-status">{t('target')}</label><select id="publication-status" bind:value={target} onchange={event=>chooseStatus(event.currentTarget.value as typeof target)} disabled={disabled}>{#each statuses as status}<option value={status}>{statusLabel(status)}</option>{/each}</select>
+  {#if target==='sold'}<label for="publication-amount">{t('amount')}</label><input id="publication-amount" inputmode="decimal" maxlength="40" bind:value={amount} oninput={()=>saleSeeded=true} disabled={disabled} /><label for="publication-currency">{t('currency')}</label><select id="publication-currency" bind:value={currency} onchange={()=>saleSeeded=true} disabled={disabled}>{#each inventoryCurrencies as value}<option>{value}</option>{/each}</select>{/if}
   <label for="publication-reason">{t('reason')}</label><textarea id="publication-reason" maxlength="2000" bind:value={reason} disabled={disabled}></textarea><p class="hint">{t('reasonHint')}</p>
   {#if invalid}<p role="alert">{t('invalid')}</p>{/if}<button type="submit" disabled={disabled}>{t('change')}</button>
  </form></details>

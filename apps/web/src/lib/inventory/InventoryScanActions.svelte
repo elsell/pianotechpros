@@ -1,12 +1,12 @@
 <script lang="ts">
  import {onMount,tick} from 'svelte';
  import {createInventoryPublicationApiClient,InventoryClientError,type InventoryPublicationState,type InventoryRecord} from '@pianotechpros/api-client';
- import {createInventoryPublicationWorkspace,inventoryCurrencies,inventoryMoneyFromInput,inventoryScanLabelTitle,type PublicationCommand,type SessionCredential} from '@pianotechpros/client-core';
+ import {publicationSaleDefaults,createInventoryPublicationWorkspace,inventoryCurrencies,inventoryMoneyFromInput,inventoryScanLabelTitle,type PublicationCommand,type SessionCredential} from '@pianotechpros/client-core';
  import type {Translator,MessageKey} from '@pianotechpros/i18n';
  import {protectPendingNavigation} from '../browser-events';
  export let accountId:string;export let dealerID:string;export let recordID:string;export let apiURL:string;export let credential:SessionCredential;export let i18n:Translator;export let onSessionRejected:()=>void;export let onChanged:()=>void;export let onObserved:(record:InventoryRecord)=>void;export let onIntent:()=>void;export let onDenied:()=>void;export let onBusy:(value:boolean)=>void;
  let active=true;const lifetime=new AbortController();let dialog:HTMLDialogElement;let heading:HTMLHeadingElement;let trigger:HTMLButtonElement|null=null;
- let target:Extract<PublicationCommand,{kind:'transition'}>['status']='available';let amount='';let currency:string=inventoryCurrencies[0];let reason='';let invalid=false;
+ let target:Extract<PublicationCommand,{kind:'transition'}>['status']='available';let amount='';let saleSeeded=false;let currency:string=inventoryCurrencies[0];let reason='';let invalid=false;
  const statuses=['draft','available','reserved','in_service','sold','archived'] as const;
  const t=(key:string)=>i18n.t(`inventory.publication.${key}` as MessageKey);
  const statusLabel=(value:string)=>i18n.t(`inventory.status.${value}` as MessageKey);
@@ -18,9 +18,10 @@
  async function run(work:()=>Promise<unknown>){try{await work();}catch{/* Controller exposes stable localized failure state. */}}
  async function review(command:PublicationCommand,button?:HTMLButtonElement){onIntent();invalid=false;trigger=button??trigger;await run(()=>model.review(command));if(!active||!model.snapshot().review)return;await tick();if(active){dialog.showModal();heading.focus();}}
  function cancel(){if(state.busy)return;model.cancel();dialog.close();trigger?.focus();}
- async function confirm(){await run(()=>model.confirm());if(!active)return;dialog.close();if(model.snapshot().outcome==='succeeded'){amount='';reason='';onChanged();}else trigger?.focus();}
+ async function confirm(){await run(()=>model.confirm());if(!active)return;dialog.close();if(model.snapshot().outcome==='succeeded'){amount='';reason='';saleSeeded=false;onChanged();}else trigger?.focus();}
+ function chooseStatus(value:typeof target){target=value;if(value==='sold'&&!saleSeeded){saleSeeded=true;const defaults=publicationSaleDefaults(state.state?.record.attributes.asking_price,i18n.locale==='es'?',':'.');amount=defaults.amount;currency=defaults.currency;}}
  async function changeStatus(button?:HTMLButtonElement){let salePrice=null;invalid=false;try{if(target==='sold'){salePrice=inventoryMoneyFromInput(amount,currency,i18n.locale==='es'?',':'.');if(!salePrice)throw Error('invalid');}if([...reason.trim()].length>1000||((['sold','archived'].includes(state.state?.record.status??'')||target==='draft')&&!reason.trim()))throw Error('invalid');}catch{invalid=true;return;}await review({kind:'transition',status:target,salePrice,reason:reason.trim()},button);}
- onMount(()=>{const unprotect=protectPendingNavigation(()=>state.busy);const unsubscribe=model.subscribe(value=>{state=value;if(value.state)onObserved(value.state.record);if(value.failure==='denied'){amount='';reason='';onDenied();}});void run(()=>model.refresh());return()=>{active=false;lifetime.abort();unsubscribe();unprotect();model.dispose();onBusy(false);};});
+ onMount(()=>{const unprotect=protectPendingNavigation(()=>state.busy);const unsubscribe=model.subscribe(value=>{state=value;if(value.state)onObserved(value.state.record);if(value.failure==='denied'){amount='';reason='';saleSeeded=false;onDenied();}});void run(()=>model.refresh());return()=>{active=false;lifetime.abort();unsubscribe();unprotect();model.dispose();onBusy(false);};});
 </script>
 <section class="scan-actions" aria-labelledby="scan-actions-heading">
  <h3 id="scan-actions-heading">{t('heading')}</h3>
@@ -29,8 +30,8 @@
  {#if state.outcome==='unknown'}<p role="alert">{t('unknown')}</p>{:else if state.failure}<p role="alert">{state.failure==='denied'?i18n.t('inventory.denied'):t(state.failure==='conflict'?'conflict':'failed')}</p>{/if}
  <button disabled={disabled||!state.state?.publication?.visible} onclick={event=>review({kind:'unpublish'},event.currentTarget)}>{t('unpublish')}</button>
  <form onsubmit={event=>{event.preventDefault();void changeStatus(event.submitter instanceof HTMLButtonElement?event.submitter:undefined);}}>
-  <label for="scan-status">{t('target')}</label><select id="scan-status" bind:value={target} disabled={disabled}>{#each statuses as status}<option value={status}>{statusLabel(status)}</option>{/each}</select>
-  {#if target==='sold'}<label for="scan-amount">{t('amount')}</label><input id="scan-amount" inputmode="decimal" maxlength="40" bind:value={amount} disabled={disabled}/><label for="scan-currency">{t('currency')}</label><select id="scan-currency" bind:value={currency} disabled={disabled}>{#each inventoryCurrencies as value}<option>{value}</option>{/each}</select>{/if}
+  <label for="scan-status">{t('target')}</label><select id="scan-status" bind:value={target} onchange={event=>chooseStatus(event.currentTarget.value as typeof target)} disabled={disabled}>{#each statuses as status}<option value={status}>{statusLabel(status)}</option>{/each}</select>
+  {#if target==='sold'}<label for="scan-amount">{t('amount')}</label><input id="scan-amount" inputmode="decimal" maxlength="40" bind:value={amount} oninput={()=>saleSeeded=true} disabled={disabled}/><label for="scan-currency">{t('currency')}</label><select id="scan-currency" bind:value={currency} onchange={()=>saleSeeded=true} disabled={disabled}>{#each inventoryCurrencies as value}<option>{value}</option>{/each}</select>{/if}
   <label for="scan-reason">{t('reason')}</label><textarea id="scan-reason" maxlength="2000" bind:value={reason} disabled={disabled}></textarea><p>{t('reasonHint')}</p>
   {#if invalid}<p role="alert">{t('invalid')}</p>{/if}<button type="submit" disabled={disabled}>{t('change')}</button>
  </form>

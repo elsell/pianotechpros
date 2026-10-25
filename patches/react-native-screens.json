@@ -1,0 +1,11 @@
+{
+  "version": "4.23.0",
+  "upstreamCommit": "b3badd012f83679b12f4e29f2e28eceaa4830efd",
+  "patchSHA256": "860a71748751cc4caef98ed82700c7c723851e103a92c565b1ae98e3382d99a4",
+  "files": {
+    "android/src/main/cpp/NativeProxy.cpp": "d1d006db671bf07d62dd8d486eac7d3027efa320cfe5cc25b8981e913ce019a9",
+    "android/src/main/cpp/NativeProxy.h": "31fa7da8d2d614a3000f461a51bfa3f120c11cb1909c2e029da72cf1c162edcc",
+    "cpp/RNSScreenRemovalListener.cpp": "8fce5565911f4241803f851a94e76ad94547e5f9ad4ed547d82971522c2b4613",
+    "cpp/RNSScreenRemovalListener.h": "a61f5280c833689328c23d7c99c42b840bd8c8492f0a89996e54f9c7c5f75485"
+  }
+}

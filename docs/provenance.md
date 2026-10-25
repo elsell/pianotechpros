@@ -24,3 +24,18 @@ an isolated checkout, preserving existing inventory domain/application work.
 The generated composition and manifest were retained; service, persistence and
 HTTP boundaries were adapted to the specified dealer-scoped record policy. No
 legacy source, configuration or data was imported for this slice.
+
+The Android mounting-listener backport in
+`patches/react-native-screens@4.23.0.patch` comes from Software Mansion's MIT
+licensed react-native-screens PR 4413, merge commit
+`b3badd012f83679b12f4e29f2e28eceaa4830efd` (2026-08-13):
+https://github.com/software-mansion/react-native-screens/pull/4413.
+Only the two `cpp/legacy/` paths were translated to 4.23.0's `cpp/` layout;
+the four source diffs apply without other changes. The installed package retains
+its upstream MIT license; a copy accompanies the patch in
+`patches/react-native-screens.LICENSE`. The patch was reviewed for credentials, personal data,
+internal hosts and deployment references; it contains only upstream C++ code,
+comments and the public upstream PR URL. Reviewed patch and installed-source
+SHA-256 values are recorded in `patches/react-native-screens.json` and checked by
+the native compatibility gate. Retire the patch when the Expo-compatible release
+includes the fix, after repeat native acceptance.

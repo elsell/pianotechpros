@@ -2,6 +2,19 @@
 
 ## Current milestone: feature-complete product
 
+Android acceptance reached the photo-first new-piano editor, cancelled the system
+photo picker without losing the draft, entered a title with the keyboard, and
+observed autosave. Restart then reproduced the native crash at the same binary
+instruction as the earlier failure. Exact-APK disassembly and upstream PR 4413
+identify the known mounting-listener initialization race as the leading cause.
+Its four-file fix is backported unchanged (with directory-path translation) to
+pinned screens 4.23.0; frozen installation, Expo compatibility, repository and
+contract checks, dependency-age validation and required review pass. Hash checks bind the installed native sources to the reviewed patch, and
+MIT provenance is retained. Native rebuild and repeated cold launches are required
+before calling the crash fixed. Draft recovery after process death and offline
+editing remain unverified; removing an adb reverse alone did not reliably cut an
+existing connection, so that attempt is not offline acceptance evidence.
+
 Android device acceptance found and fixed an authentication callback routing bug:
 Expo Router displayed an unmatched route and callback parameters after browser
 sign-in. Native-intent rewriting now sends only the exact callback target to the

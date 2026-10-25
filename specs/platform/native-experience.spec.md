@@ -2,6 +2,30 @@
 
 ## Android runtime build handoff
 
+### Android mounting-listener race backport
+
+The API 36 x86_64 development APK reproduced two cold-start SIGSEGVs at
+`MountingCoordinator::pullTransaction+706`; disassembly of its matching BuildId
+places the fault at the first override-delegate virtual dispatch. Installed
+react-native-screens 4.23.0 contains the unsynchronized lazy listener assignment
+described and fixed by upstream PR 4413, merged 2026-08-13 as
+`b3badd012f83679b12f4e29f2e28eceaa4830efd` (older than fourteen days).
+
+Backport those four C++ file changes with pnpm's hash-bound patch mechanism,
+retaining the Expo-compatible 4.23.0 pin. Only translate upstream's
+`cpp/legacy/` paths to this version's `cpp/` paths; document any additional
+adaptation. Record MIT provenance and inspect the patch for unrelated data.
+The process-lifetime listener, synchronized callback replacement and ownership
+token must remain intact. Do not disable Fabric, navigation, crash observation,
+or the native compatibility gate to work around the failure.
+
+Validate frozen installation, dependency age, Expo compatibility, repository
+checks and native Android compilation. Runtime acceptance must use the newly
+built APK, verify artifact identity, and count cold launches that actually reach
+the app, recording crashes separately from timeouts. Repeat authenticated stack
+navigation and draft recovery. Zero observed crashes is bounded evidence, not a
+proof of absence; iOS compilation and physical-device acceptance remain separate.
+
 Every selected, successful Android native CI build retains only the generated
 `app-debug.apk` as a commit-labelled artifact for seven days. A missing APK fails
 the job. Artifact upload uses a reviewed immutable action commit; v7.0.2 was

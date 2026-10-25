@@ -588,3 +588,15 @@ before entering the editor and advance only at explicit rotation steps. A real
 scheduler delay before manual save must not allow autosave to dispatch the held
 request first. This keeps manual-save/rotation assertions deterministic without
 weakening autosave behavior or extending interaction timeouts.
+
+## Persisted web profile acceptance
+
+The recurring isolated real-service acceptance must exercise customer and
+technician profiles through normal browser sign-in and UI saves, without replacing
+API routes or seeding application session storage. Use the synthetic second
+account and require absent profiles before creating fixtures; never overwrite
+existing profiles to make a test pass. Assert business/location/piano references,
+weekly timezone and effective dates, reload and a subsequent edit via independent
+real API reads. A separate signed-in user must not receive either profile.
+Keep fixture browser tests for controlled failures; this composed journey adds
+evidence and does not substitute for authorization or device acceptance.

@@ -24,6 +24,10 @@ does not complete a product journey. Platform-specific equivalents preserve the
 task, not identical markup. Public crawler endpoints apply to web; native clients
 must preserve sharing and public-listing navigation.
 
+The web-only source/coverage audit in `web-parity-audit.spec.md` separates
+website closure requirements from native and release gates. It does not promote
+any row to complete.
+
 ## Parity matrix
 
 All product rows are currently **incomplete** in the rebuild. Dealer profile and

@@ -66,7 +66,13 @@ The inventory domain now derives exact manual/voice sources for changed fields
 and a mixed history source when both occur in one revision. Unknown, duplicate,
 protected and unchanged-field labels fail closed; uniform commands retain their
 source restrictions. Domain race tests and repository/contract gates pass.
-Persistence, transport and recovery-journal attribution remain unfinished.
+Migration 27 now persists exact field sources with each immutable attribute
+revision. A database guard checks changed fields, aggregate source and the current
+record snapshot; historical rows remain untouched and downgrade refuses to discard
+recorded attribution. Both repository edit paths share scoped locking and atomic
+audit/history writes. Real PostgreSQL race tests cover mixed edits, cross-user
+denial, rollback, malformed source maps and runtime immutability; structural and
+contract gates pass. Transport and recovery-journal attribution remain unfinished.
 
 Buyer inquiry foundations now implement canonical contact validation, immutable
 public snapshot context and first-read domain state. Submission orchestration

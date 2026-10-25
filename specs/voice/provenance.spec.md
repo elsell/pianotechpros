@@ -40,3 +40,20 @@ its original source; it is never rewritten to fabricate field-level evidence.
 Source metadata stays out of public showroom DTOs. Client recovery, transport,
 persistence and adversarial boundary acceptance remain required after the domain
 contract is implemented.
+
+## PostgreSQL history guard
+
+Migration 27 adds nullable private `field_sources` metadata. Existing rows remain
+null and immutable. New attribute-history inserts require an exact source map for
+all actual changes against the preceding immutable record snapshot (including
+snapshots nested by photo/publication commands). The inserted attribute snapshot
+must match the current scoped inventory revision. Source values are manual or
+voice, and the aggregate source must match the map. Other history kinds reject
+field metadata and mixed sources. The existing matching-audit and append-only
+guards remain in force.
+
+The attributed repository operation uses the existing dealer authorization lock,
+scoped record lock, exact revision check and transaction. A failed metadata guard,
+audit write or history insert rolls back the inventory update. Downgrade refuses
+to discard any recorded field metadata; migration tooling cannot silently erase
+provenance. Runtime credentials retain no migration or history rewrite powers.

@@ -38,6 +38,7 @@ type inventoryHistoryModel struct {
 	Revision                  int64
 	ActorUserID, Source, Kind string
 	Snapshot                  json.RawMessage `gorm:"type:jsonb"`
+	FieldSources              json.RawMessage `gorm:"type:jsonb"`
 	AuditID                   string
 	CreatedAt                 time.Time
 }
@@ -209,6 +210,16 @@ func (r *Repository) GetRecord(ctx context.Context, actor, dealerID, id string, 
 
 // ReviseRecord changes only private attributes. Publication has a separate boundary.
 func (r *Repository) ReviseRecord(ctx context.Context, actor, dealerID, id string, expected int64, attributes domain.Attributes, source domain.Source, event audit.Event) (domain.Record, error) {
+	return r.reviseRecord(ctx, actor, dealerID, id, expected, event, func(current domain.Record) (domain.Record, domain.History, error) {
+		return current.Revise(attributes, expected, actor, source, event.OccurredAt)
+	})
+}
+func (r *Repository) ReviseAttributedRecord(ctx context.Context, actor, dealerID, id string, expected int64, attributes domain.Attributes, voiceFields []string, event audit.Event) (domain.Record, error) {
+	return r.reviseRecord(ctx, actor, dealerID, id, expected, event, func(current domain.Record) (domain.Record, domain.History, error) {
+		return current.ReviseAttributed(attributes, expected, actor, voiceFields, event.OccurredAt)
+	})
+}
+func (r *Repository) reviseRecord(ctx context.Context, actor, dealerID, id string, expected int64, event audit.Event, revise func(domain.Record) (domain.Record, domain.History, error)) (domain.Record, error) {
 	if dealerID == "" || !inventoryEventValid(event, actor, id, audit.ResourceUpdated) {
 		return domain.Record{}, ports.ErrInvalidArgument
 	}
@@ -225,7 +236,7 @@ func (r *Repository) ReviseRecord(ctx context.Context, actor, dealerID, id strin
 		if err != nil {
 			return err
 		}
-		next, history, err := current.Revise(attributes, expected, actor, source, event.OccurredAt)
+		next, history, err := revise(current)
 		if errors.Is(err, domain.ErrConflict) {
 			return ports.ErrConflict
 		}
@@ -254,7 +265,11 @@ func (r *Repository) ReviseRecord(ctx context.Context, actor, dealerID, id strin
 		if err != nil {
 			return err
 		}
-		row := inventoryHistoryModel{RecordID: id, DealerID: dealerID, Revision: next.Revision, ActorUserID: actor, Source: string(history.Source), Kind: history.Kind, Snapshot: snapshot, AuditID: event.ID, CreatedAt: history.At}
+		sources, err := json.Marshal(history.FieldSources)
+		if err != nil {
+			return err
+		}
+		row := inventoryHistoryModel{RecordID: id, DealerID: dealerID, Revision: next.Revision, ActorUserID: actor, Source: string(history.Source), Kind: history.Kind, Snapshot: snapshot, FieldSources: sources, AuditID: event.ID, CreatedAt: history.At}
 		if err := tx.Create(&row).Error; err != nil {
 			return err
 		}

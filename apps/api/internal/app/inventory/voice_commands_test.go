@@ -132,3 +132,81 @@ func TestVoiceExtractionRechecksAndSanitizes(t *testing.T) {
 		})
 	}
 }
+
+type transcriptionFixture struct {
+	calls      int
+	transcript string
+	failure    error
+	complete   func()
+}
+
+func (f *transcriptionFixture) Transcribe(_ context.Context, audio []byte, mime string) (string, error) {
+	f.calls++
+	if f.complete != nil {
+		f.complete()
+	}
+	return f.transcript, f.failure
+}
+func TestVoiceTranscriptionAuthorityAndTransientOutput(t *testing.T) {
+	for _, kind := range []string{"success", "unauthenticated", "denied", "oversize", "empty", "revoked", "revision", "cancelled", "provider", "empty-result", "oversize-result", "unconfigured"} {
+		t.Run(kind, func(t *testing.T) {
+			c, f, m := commandFixture()
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			r, _ := c.CreateDraft(ctx, "opaque", "dealer", "voice-request-key")
+			p := &transcriptionFixture{transcript: "Grand piano"}
+			c.dependencies.VoiceTranscriber = p
+			token := "opaque"
+			audio := []byte("audio-fixture")
+			switch kind {
+			case "unauthenticated":
+				token = "bad"
+			case "denied":
+				f.permissions["manage_inventory"] = false
+			case "oversize":
+				audio = make([]byte, 6*1024*1024+1)
+			case "empty":
+				audio = nil
+			case "provider":
+				p.failure = errors.New("private provider details")
+			case "empty-result":
+				p.transcript = " "
+			case "oversize-result":
+				p.transcript = strings.Repeat("x", 16001)
+			case "unconfigured":
+				c.dependencies.VoiceTranscriber = nil
+			}
+			p.complete = func() {
+				switch kind {
+				case "revoked":
+					f.permissions["manage_inventory"] = false
+				case "revision":
+					v := m.rows[r.ID]
+					v.Revision++
+					m.rows[r.ID] = v
+				case "cancelled":
+					cancel()
+				}
+			}
+			result, err := c.TranscribeVoice(ctx, token, "dealer", r.ID, 1, audio, "audio/wav")
+			if kind == "success" {
+				if err != nil || result.Transcript != "Grand piano" || result.Revision != 1 || len(m.events) != 3 || m.rows[r.ID].Revision != 1 {
+					t.Fatalf("%+v %v", result, err)
+				}
+				return
+			}
+			if err == nil || result.Transcript != "" || result.Revision != 0 {
+				t.Fatalf("leaked result %+v %v", result, err)
+			}
+			if kind == "provider" && err != ErrVoiceUnavailable {
+				t.Fatal("raw error")
+			}
+			switch kind {
+			case "unauthenticated", "denied", "empty", "oversize", "unconfigured":
+				if p.calls != 0 {
+					t.Fatal("unnecessary provider call")
+				}
+			}
+		})
+	}
+}

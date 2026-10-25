@@ -13,7 +13,12 @@ authority, scoped audited context and revision before and after provider work,
 validates untrusted candidates/currency, and suppresses cancelled or revoked
 results. Controlled provider tests verify denial, stale revisions and sanitized
 failures without saving inventory. Production provider/HTTP composition remains
-unfinished. Recording, transcription, review/clarification UI,
+unfinished. A server-only Gemini REST adapter now translates bounded transient
+audio and transcripts with explicit model configuration, fixed-origin credentials,
+no redirects/retries, strict candidate decoding and independent domain validation.
+Transcription has the same pre/post authority and revision checks as extraction;
+local HTTP/race tests cover transport failures and invalid output. Live speech
+quality and HTTP/bootstrap composition remain unverified. Recording, review/clarification UI,
 voice-aware autosave/Undo and native microphone acceptance remain unfinished.
 
 Buyer inquiry foundations now implement canonical contact validation, immutable

@@ -112,6 +112,9 @@ real-catalog acceptance or the whole website complete.
    The two-user staff journey locally passed UI invitation/acceptance, editor
    creation, viewer read/write restrictions, removal of existing-session access
    and unused-invitation revocation. Its recurring run also requires fresh CI.
+   Complete inventory attributes, invalid partial-date reload protection and
+   two-session conflict review now have passing local real-service evidence;
+   automated recurring execution must still confirm the extended journey.
 4. Exercise the real speech and challenge adapters with explicit non-production
    configuration. Missing access is an integration blocker, not completed work;
    never borrow legacy production credentials.

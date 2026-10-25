@@ -671,3 +671,18 @@ invitation through the UI and reject its preview from the other user. Never put
 invitation tokens in URL paths, query strings, screenshots or failure output.
 Bound polling to the asynchronous grant behavior; do not retry mutations or
 replace real authorization decisions with HTTP fixtures.
+
+## Persisted complete inventory fields
+
+Extend photo-first browser acceptance to save/reopen every specified inventory
+field, including private serial/location/cost/notes, independent player and featured
+flags, exact asking/acquisition money, and explicit partial date precision. Use
+independent API assertions for the complete attributes object and prove private
+values remain absent from rendered public HTML. A malformed partial date must
+survive real reload as a protected draft without replacing the last valid server
+record; correcting and saving it must resume persistence.
+
+A second independently signed-in browser session must also commit a competing
+edit. The original editor must surface the revision conflict, fetch the current
+version, and require an explicit keep-my-changes decision before saving. Confirm
+the chosen values through an independent persisted read; never bypass revisions.

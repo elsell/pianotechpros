@@ -2,6 +2,20 @@
 
 ## Current milestone: feature-complete product
 
+The node-forge 1.4.0 mitigation backports the exact RSA nested-DigestAlgorithm
+validation from unmerged upstream PR 1152, with license, source and installed
+hashes recorded. The old parser accepted malformed nested encodings through both
+direct CLI consumers. Twenty-one tests now exercise all six installed consumers,
+valid signatures/optional NULL parameters, changed messages/wrong signers,
+malformed nested children, and actual Expo/EAS certificate and buffer signing.
+Full repository/contract/age checks, review, compatibility/Doctor (19/19), both
+mobile exports and clean native prebuild pass. This is a tested local mitigation,
+not an upstream release or proof of every cryptographic property. Hosted native
+builds remain required. The audit still reports the one high advisory; no audit
+suppression or version relabeling was added. Compiler-image findings remain open.
+The next product slice is persisted anonymous buyer inquiries and the authorized
+dealer inbox, including snapshot context and abuse controls (IQ-01 through IQ-03).
+
 The web upgrade to SvelteKit 3.0.1/adapter-node 6.0.0 removes the two remaining
 SvelteKit advisories. Compatible Svelte, web TypeScript and checker pins pass the
 age gate; EAS retains its supported TypeScript 5 peer. Explicit package aliases

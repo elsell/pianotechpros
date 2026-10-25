@@ -48,7 +48,7 @@ check:
 	cd apps/api && go test ./...
 	pnpm check
 	pnpm test
-	pnpm --dir packages/client-core exec tsx --test ../../scripts/mobile-technician-ownership.test.ts ../../scripts/mobile-technician-model.test.ts
+	pnpm --dir packages/client-core exec tsx --test ../../scripts/web-server-config.test.ts ../../scripts/mobile-technician-ownership.test.ts ../../scripts/mobile-technician-model.test.ts
 	node scripts/validate-mobile-config.mjs
 	cd apps/mobile && ../../tools/eas-cli/node_modules/.bin/eas --version
 

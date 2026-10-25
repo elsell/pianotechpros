@@ -640,3 +640,107 @@ weekly timezone and effective dates, reload and a subsequent edit via independen
 real API reads. A separate signed-in user must not receive either profile.
 Keep fixture browser tests for controlled failures; this composed journey adds
 evidence and does not substitute for authorization or device acceptance.
+
+## Recurring persisted inquiry, history and scan journeys
+
+After the isolated dealer API acceptance has provisioned and republished its
+synthetic dealer/piano and verified staff boundaries, run the existing persisted
+browser inquiry, history and scan journeys using those exact identifiers. Resolve
+the current private title before each journey rather than relying on a title an
+earlier journey may have changed. Each child authenticates normally; do not pass
+parent application session environment variables into browser subprocesses.
+
+Inquiry acceptance must verify the saved inquiry snapshot remains unchanged after
+the owner changes and republishes the piano. History keeps bounded 20+5 pagination
+and unsaved-field preservation. Scan retains real-provider continuation, private
+token handling, status changes and sale history assertions. A child failure fails
+the recurring acceptance command; no route fixtures replace these interactions.
+
+The disposable acceptance Compose override explicitly disables the external
+challenge on both API and web, with empty verifier credentials. This configuration
+is confined to synthetic local acceptance; production defaults stay fail closed.
+Live Turnstile composition remains a separate unproven provider gate.
+
+## Composed photo-first web publication journey
+
+Use the synthetic dealer created by recurring API acceptance, and create a new
+piano through the web's New action with a selected image before entering required
+publication fields. Assert that New alone sends no create command and that photo
+selection creates exactly one private record. Use normal PKCE login and actual
+image processing/storage. Save exact money and partial manufacturing dates,
+reload, then publish through review/confirmation. An anonymous context must see
+the saved public snapshot and processed image, never private notes. Later private
+title/photo edits must leave the public snapshot unchanged until publication or
+unpublication is explicitly confirmed. Verify anonymous disappearance after
+unpublishing. This complements controlled failure tests without substituting for
+real speech-provider, accessibility or native-device acceptance.
+
+## Composed dealer profile settings
+
+The recurring real-service browser acceptance creates its own synthetic dealer
+through normal owner login. Verify duplicate-slug rejection retains the entered
+form, then create with a unique slug, persist all profile settings, reload/edit,
+and compare independent private API reads with the public showroom projection.
+Publish visibility only through explicit owner save, then hide it and prove
+anonymous access disappears. Browser setup must not mutate legacy data or seed
+application sessions. Verify banner selection/review, replacement, removal cancellation and confirmed
+removal through real processing/storage and anonymous rendered image delivery.
+Staff journeys remain separately tracked until verified with real services.
+
+## Separate web server API addressing
+
+Server-rendered showroom, media and crawler routes use a validated private
+`PIANOTECHPROS_SERVER_API_URL` override, falling back to the configured browser API
+URL. Never serialize this override in layout data. Development Compose uses
+`http://api:8080` for server requests and keeps the browser-facing localhost URL.
+Production preserves the existing HTTPS/nonlocal endpoint constraints; credentials,
+queries, fragments and non-HTTP(S) URLs are rejected in every environment.
+Exercise the split address in composed browser acceptance and cover invalid
+configuration and production fallback in behavioral configuration tests.
+
+## Two-user persisted staff browser journey
+
+Use two independently authenticated browser contexts and a new synthetic shop.
+The owner issues an editor invitation through the UI; the second user reviews and
+accepts it, waits for the durable authorization grant, and creates an inventory
+draft through the browser. Change that membership to viewer through the owner UI
+and prove real reads remain allowed while writes and staff administration are
+denied. Remove access through confirmation, then prove the existing browser
+session loses both private reads and inventory UI access. Revoke a second unused
+invitation through the UI and reject its preview from the other user. Never put
+invitation tokens in URL paths, query strings, screenshots or failure output.
+Bound polling to the asynchronous grant behavior; do not retry mutations or
+replace real authorization decisions with HTTP fixtures.
+
+## Persisted complete inventory fields
+
+Extend photo-first browser acceptance to save/reopen every specified inventory
+field, including private serial/location/cost/notes, independent player and featured
+flags, exact asking/acquisition money, and explicit partial date precision. Use
+independent API assertions for the complete attributes object and prove private
+values remain absent from rendered public HTML. A malformed partial date must
+survive real reload as a protected draft without replacing the last valid server
+record; correcting and saving it must resume persistence.
+
+A second independently signed-in browser session must also commit a competing
+edit. The original editor must surface the revision conflict, fetch the current
+version, and require an explicit keep-my-changes decision before saving. Confirm
+the chosen values through an independent persisted read; never bypass revisions.
+
+## Persisted journey rate-limit isolation
+
+The sequential real-service browser journeys reuse one synthetic owner. Wait a
+full minute plus one second before each child, including before its preparatory
+read, so earlier scenarios cannot consume its audit allowance. Keep production
+rate limits unchanged; do not retry failed mutations or suppress 429 assertions.
+A journey must still pass within its own normal per-principal allowance.
+
+## Persisted public discovery
+
+Configure only the disposable acceptance web service with the synthetic canonical
+origin `https://pianos.example`. After browser publication, fetch server-rendered
+HTML, canonical redirects, JSON-LD, robots, sitemap index, showroom sitemap and
+localized discovery text backed by actual saved records. Require exact public
+URLs and price, exclude private sentinels, and verify private edits leave discovery
+unchanged. After explicit unpublishing, require the listing URL to disappear from
+the showroom sitemap and old canonical/alias URLs to return 404 without redirect.

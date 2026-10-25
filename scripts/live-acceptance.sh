@@ -2,6 +2,7 @@
 set -euo pipefail
 app_dir="${1:?generated app directory is required}"
 cd "$app_dir"
+export COMPOSE_FILE=compose.yaml:compose.acceptance.yaml
 lock_dir="${TMPDIR:-/tmp}/pianotechpros-live-acceptance.lock"
 for _ in $(seq 1 1200); do
   if mkdir "$lock_dir" 2>/dev/null; then printf '%s\n' "$$" > "$lock_dir/pid"; acquired=1; break; fi
@@ -37,6 +38,7 @@ curl -fsS http://localhost:8080/readyz >/dev/null
 for _ in $(seq 1 180); do curl -fsS http://localhost:5173 >/dev/null 2>&1 && break; sleep 1; done
 curl -fsS http://localhost:5173 >/dev/null
 
+node --test scripts/private-invitation-input.test.mjs
 node scripts/web-browser-acceptance.mjs
 node scripts/profile-persisted-browser-acceptance.mjs
 node scripts/scalar-browser-acceptance.mjs

@@ -86,26 +86,38 @@ and the shared locale gate pass; the single-listing screenshot was inspected.
 This fixes that presentation gap without claiming SH-02's remaining composed
 real-catalog acceptance or the whole website complete.
 
-## Next implementation sequence
+## Current execution evidence and remaining sequence
 
-1. Complete and verify the new `profile-persisted-browser-acceptance.mjs`
-   real-service customer/technician path in recurring acceptance. It uses normal
-   login and UI commands with independent persisted reads. Local segmented
-   execution verified creation and subsequent updates of both profiles, linked
-   locations/pianos, weekly timezone/effective dates and separate-user isolation.
-   A stale development server and a corrected selector interrupted the first
-   attempts; a fresh single-pass CI run remains required. Retain fixture suites
-   for deterministic failures.
-2. Put the existing standalone persisted inquiry/history/scan journeys behind
-   synthetic setup in recurring acceptance rather than relying on manual setup.
-3. Close the dealer/inventory/publication/photo/showroom composed browser gaps
-   with owner and anonymous contexts against the same isolated persistent data.
-4. Exercise the real speech and challenge adapters with explicit non-production
-   configuration. Missing access is an integration blocker, not completed work;
-   never borrow legacy production credentials.
-5. Record keyboard, responsive layout, screen-reader and supported-browser
-   acceptance separately. Current Playwright Chromium coverage does not establish
-   Safari/WebKit or Firefox behavior. Inspect visual output, not only selectors.
+1. The normal-PKCE customer/technician profile journey passed fresh-account CI
+   run `40218708883`, source `2ffaedb09c5d6bc1cc4babb706453ccd82960615`.
+   It verifies business/two locations/linked piano, weekly timezone/effective
+   dates, persisted reload/edit and separate-user isolation.
+2. PR #72 merged the recurring real-service inquiry/history/scan, photo-first
+   publication, dealer settings/banner and two-user staff journeys. Combined
+   acceptance and both native builds passed run `40221325565` at exact source
+   `4a985595e2486cd1001a51a3c45778a0e8639f87`. This includes inquiry snapshot
+   preservation, history 20+5 pagination, private scan continuation, viewer
+   restrictions and revocation of an existing browser session.
+3. PR #74 merged complete inventory fields, protected invalid-date recovery,
+   two-session conflict reconciliation and real publication discovery. Combined
+   acceptance and both native builds passed run `40221328970`, exact source
+   `04b91066379a085ea63f54c512e4444b429fe915`. Canonical URLs, exact-price JSON-LD,
+   robots, localized discovery and sitemap removal after unpublishing passed.
+4. Separate photo-management and complete publication journeys passed locally
+   in Chromium, Firefox 151 and Linux WebKit 26.5 against isolated real services.
+   Photo-management recurring CI is pending in PR #75. The one-off Firefox/WebKit
+   checks are not Safari or native iOS acceptance. A local real-browser inventory
+   check also passed stock/title/make/model search, featured ordering, exact
+   30+1 pagination without duplicates and sold-filter exclusion using 31 synthetic
+   records; preserve it in recurring acceptance before treating that row as closed.
+5. Finish remaining showroom filtering/gallery/contact, complete lifecycle,
+   provider, accessibility and device evidence from the table above. Live
+   Turnstile public test-key Siteverify responses were observed without the
+   required `inquiry` action; they do not prove an enabled successful inquiry
+   path. Keep exact hostname/action validation intact. Dedicated non-production
+   Gemini and Turnstile configuration remains requested; never borrow legacy
+   production credentials. Screen-reader, broader supported-browser and native
+   interaction acceptance remain separate requirements.
 
 Production-readiness additionally requires the security/configuration/release
 contracts already specified under platform. Existing reviewed dependency

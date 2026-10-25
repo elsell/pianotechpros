@@ -13,9 +13,17 @@ Fixture tests pass. Hosted execution exposed readiness-address and empty-test-pr
 configuration failures; corrections require a fresh XCTest run and screenshot review.
 This work does not replace real API authorization tests or physical-device QA.
 
+Persisted dealer, inventory and staff journeys merged through PR #72 at
+`42b63ba1fc35b8d370d13e2d8916a4d59255ffa8`; complete-field editing and public
+discovery merged through PR #74 at `fb873c6a5a6e44295a8c14f0cab1e8e608892848`.
+Their exact-head combined acceptance and both native builds passed. Verification
+reported only the previously authorized node-forge finding, with all 21 mitigation
+regressions passing. These results do not complete the remaining parity matrix.
+
 Web-only parity is now tracked separately in `web-parity-audit.spec.md` across all
-30 baseline rows. The composed profile browser journey passed fresh-account
-CI in run 40218708883; broader website parity remains unverified.
+30 baseline rows. The composed profile browser journey now passes in a fresh-account CI run
+`40218708883` at source `2ffaedb09c5d6bc1cc4babb706453ccd82960615`; this
+supersedes the earlier segmented local limitation for that journey.
 The audit exposed unconditional filters on small showrooms. Their correction now
 passes red/green development and built-web browser checks, preserves sold discovery
 and active/paginated recovery, and passes Svelte/i18n checks. Remaining real-service

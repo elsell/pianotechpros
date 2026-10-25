@@ -1,9 +1,10 @@
-import {createInventoryEditor, type InventoryEditorRecord, type InventoryEditorCheckpoint, type InventoryEditorState} from './inventory-editor';
+import {createInventoryEditor, type InventoryEditorRecord, type InventoryEditorCheckpoint, type InventoryEditorState,type InventoryAttributionPolicy} from './inventory-editor';
 export type InventoryWorkspaceState<A,R> = InventoryEditorState<A,R> & {recovery:'writing'|'ready'|'failed';restored:boolean;invalid:boolean};
 /** Durable existing-record composition. Scheduling and storage are injected platform ports. */
 export function createInventoryWorkspace<A,R extends InventoryEditorRecord<A>>(port:{
  active?():boolean;initial:R;recovery?:InventoryEditorCheckpoint<A,R>;copy(a:A):A;equal(a:A,b:A):boolean;valid(a:A):boolean;
- edit(a:A,revision:number):Promise<R>;get():Promise<R>;
+ attribution?:InventoryAttributionPolicy<A>;
+ edit(a:A,revision:number,voiceFields?:readonly string[]):Promise<R>;get():Promise<R>;
  classify(error:unknown):'denied'|'conflict'|'rejected'|'uncertain';
  journal:{save(value:InventoryEditorCheckpoint<A,R>):Promise<void>;discard():Promise<void>};
  schedule(run:()=>void):()=>void;
@@ -16,7 +17,7 @@ export function createInventoryWorkspace<A,R extends InventoryEditorRecord<A>>(p
  const requireAlive=()=>{if(!alive())throw new Error('inventory_workspace_inactive');};
  const editor=createInventoryEditor({...port,persistAttempt:port.journal.save,
   get:async()=>{requireAlive();const value=await port.get();requireAlive();return value;},
-  edit:async(a,revision)=>{requireAlive();const value=await port.edit(a,revision);requireAlive();return value;},
+  edit:async(a,revision,voiceFields)=>{requireAlive();const value=await port.edit(a,revision,voiceFields);requireAlive();return value;},
  });
  function snapshot():InventoryWorkspaceState<A,R>{const state=editor.snapshot();if(!alive())return {...state,baseline:null,draft:null,latest:null,dirty:false,busy:false,recovery,restored,invalid:false};return {...state,busy:state.busy||locked>0,recovery,restored,invalid:state.draft!==null&&!port.valid(state.draft)};}
  function notify(){if(!disposed)for(const listener of listeners)listener(snapshot());}
@@ -67,7 +68,7 @@ export function createInventoryWorkspace<A,R extends InventoryEditorRecord<A>>(p
  return Object.freeze({
   snapshot,
   subscribe(listener:(s:InventoryWorkspaceState<A,R>)=>void){if(!disposed)listeners.add(listener);listener(snapshot());return()=>{listeners.delete(listener);};},
-  change(input:A){if(!alive())return;editor.change(input);},
+  change(input:A,voiceFields:readonly string[]=[]){if(!alive())return;editor.change(input,voiceFields);},
   save(){return enqueue(save);},
   recover(){return enqueue(async()=>{if(alive()){await editor.recover();await flush();}});},
   refresh(){return enqueue(async()=>{if(alive()){await editor.refresh();await flush();}});},

@@ -90,7 +90,12 @@ contract gates pass. The authenticated edit endpoint and generated-contract clie
 now carry optional voice field labels through the same scoped transaction. HTTP
 tests reject unauthorized, stale and misleading labels; a real HTTP client test
 checks the payload remains fixed while credentials load. Recovery-journal
-attribution and connecting accepted suggestions to autosave remain unfinished.
+attribution now has generic editor/workspace support: current and pending field
+labels persist independently, manual correction clears only touched origins, and
+restart, conflict choice, lost acknowledgements and reverting to an old baseline
+during pending writes preserve correct attribution. Nine behavioral regressions
+and full structural/contract checks pass. Form/capture adapters and connecting
+accepted suggestions to autosave remain unfinished.
 
 Buyer inquiry foundations now implement canonical contact validation, immutable
 public snapshot context and first-read domain state. Submission orchestration

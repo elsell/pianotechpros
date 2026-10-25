@@ -25,3 +25,21 @@ before listeners start. Compose the provider in a project-owned registration,
 leaving the generated registry untouched. OpenAPI always advertises the contract;
 unconfigured authenticated requests receive service unavailable. The browser or
 native client never receives provider configuration or keys.
+
+## Shared voice transport
+
+The generated-contract client uses a fresh opaque session per request, no browser
+credentials/cache, and rejects redirects. Audio is synchronously copied before
+asynchronous credential acquisition, bounded to 6 MiB, sent as binary with its
+validated browser/native MIME type, and never retried automatically. Both calls
+accept cancellation. Errors expose only a fixed category and status, never raw
+server/provider bodies. Cancellation is distinct from network failure.
+
+Validate local scope and revision before network work. Responses must be HTTP 200,
+match the requested revision, and contain a bounded canonical transcript. An
+extraction response must match the submitted transcript exactly and pass strict
+field/value/evidence validation for all 18 editable attributes. Reject injected
+properties, duplicate fields, unsupported currencies, invalid dates, unsafe money,
+wrong value variants, blank suggestions and malformed Unicode. Transport validation
+and shared review validation remain independent defenses. No save or publication
+operation is added to the voice client.

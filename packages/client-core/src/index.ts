@@ -220,3 +220,9 @@ export * from './native-voice-cleanup';
 
 export * from './voice-input-level';
 export {createInventoryHistory,type InventoryHistoryState,type InventoryHistoryIssue} from './inventory-history';
+
+export * from "./inventory-scan-link";
+
+export * from "./inventory-scan-qr";
+
+export * from "./inventory-scan-label";

@@ -1,6 +1,8 @@
 <script lang="ts">
- import {onMount,tick} from 'svelte';
+ import {inventoryScanLabelTitle} from '@pianotechpros/client-core';
+import {onMount,tick} from 'svelte';
  import InventoryHistory from './InventoryHistory.svelte';
+ import InventoryScanLabel from './InventoryScanLabel.svelte';
  import InventoryVoice from './InventoryVoice.svelte';
  import InventoryPublication from './InventoryPublication.svelte';
  import InventoryPhotos from './InventoryPhotos.svelte';
@@ -78,7 +80,7 @@
    </section>{/if}
    <footer><button type="submit" disabled={state.busy||state.conflict}>{i18n.t('inventory.edit.save')}</button></footer>
   </form>
-  {#if workspace&&state.baseline&&!state.denied}{#key historyScope(workspace.recordID())}<InventoryHistory {accountId} {dealerID} recordID={workspace.recordID()} {apiURL} {credential} {i18n} {onSessionRejected} />{/key}{/if}
+  {#if workspace&&state.baseline&&!state.denied}{#key historyScope(workspace.recordID())}<InventoryScanLabel {dealerID} recordID={workspace.recordID()} stock={state.baseline.attributes.stock_number} title={inventoryScanLabelTitle(state.baseline.attributes)} {apiURL} {credential} {i18n} {onSessionRejected} /><InventoryHistory {accountId} {dealerID} recordID={workspace.recordID()} {apiURL} {credential} {i18n} {onSessionRejected} />{/key}{/if}
   {#if workspace&&state.baseline}{#key workspace.recordID()}<InventoryPublication {workspace} {accountId} {dealerID} recordID={workspace.recordID()} {apiURL} {credential} {i18n} {onSessionRejected} otherBusy={photosBusy||voiceBusy} publishReady={!state.restored&&!state.invalid&&!state.conflict&&!state.uncertain} onBusy={value=>publicationBusy=value} />{/key}{/if}
  {/if}
 </section>

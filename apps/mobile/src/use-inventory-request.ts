@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { createInventoryHistoryApiClient, createInventoryApiClient, createInventoryPhotoApiClient, createInventoryPublicationApiClient, createInventoryVoiceApiClient, VoiceClientError, InventoryClientError } from '@pianotechpros/api-client';
+import { createInventoryScanApiClient, createInventoryHistoryApiClient, createInventoryApiClient, createInventoryPhotoApiClient, createInventoryPublicationApiClient, createInventoryVoiceApiClient, VoiceClientError, InventoryClientError } from '@pianotechpros/api-client';
 import { useMobileSession } from './session-provider';
 
 /** Mount within an account-keyed screen; only committed credentials are used. */
@@ -28,3 +28,5 @@ export function useInventoryPublicationRequest(){return useRequest(createInvento
 export function useInventoryVoiceRequest(){return useRequest(createInventoryVoiceApiClient);}
 
 export function useInventoryHistoryRequest(){return useRequest(createInventoryHistoryApiClient);}
+
+export function useInventoryScanRequest(){return useRequest(createInventoryScanApiClient);}

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 
 assert.equal(process.env.PIANOTECHPROS_APP_ENV, 'production', 'signed mobile releases require PIANOTECHPROS_APP_ENV=production');
 for (const [name, value] of [
+  ['PIANOTECHPROS_WEB_URL', process.env.PIANOTECHPROS_WEB_URL],
   ['PIANOTECHPROS_API_URL', process.env.PIANOTECHPROS_API_URL],
   ['PIANOTECHPROS_OIDC_ISSUER', process.env.PIANOTECHPROS_OIDC_ISSUER],
   ['PIANOTECHPROS_MOBILE_OIDC_CLIENT_ID', process.env.PIANOTECHPROS_MOBILE_OIDC_CLIENT_ID],
@@ -9,8 +10,9 @@ for (const [name, value] of [
   assert.ok(value?.trim(), `${name} is required for a production mobile release`);
 }
 assert.doesNotMatch(process.env.PIANOTECHPROS_MOBILE_OIDC_CLIENT_ID, /\s/, 'PIANOTECHPROS_MOBILE_OIDC_CLIENT_ID must not contain whitespace');
-for (const [name, value] of [['PIANOTECHPROS_API_URL', process.env.PIANOTECHPROS_API_URL], ['PIANOTECHPROS_OIDC_ISSUER', process.env.PIANOTECHPROS_OIDC_ISSUER]]) {
+for (const [name, value] of [['PIANOTECHPROS_WEB_URL', process.env.PIANOTECHPROS_WEB_URL], ['PIANOTECHPROS_API_URL', process.env.PIANOTECHPROS_API_URL], ['PIANOTECHPROS_OIDC_ISSUER', process.env.PIANOTECHPROS_OIDC_ISSUER]]) {
   const parsed = new URL(value);
+  if (name === 'PIANOTECHPROS_WEB_URL') assert.equal(parsed.pathname, '/', 'PIANOTECHPROS_WEB_URL must be a root origin');
   const hostname = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, '');
   const privateIPv4Address = (octets) => octets.length === 4 && octets.every((part) => Number.isInteger(part) && part >= 0 && part <= 255) && (
     octets[0] === 0 || octets[0] === 10 || octets[0] === 127 ||

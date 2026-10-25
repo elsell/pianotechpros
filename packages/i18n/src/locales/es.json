@@ -505,5 +505,15 @@
   "history.field.sale_price": "Precio de venta",
   "history.from": "Estado anterior",
   "history.to": "Nuevo estado",
-  "history.reason": "Motivo"
+  "history.reason": "Motivo",
+  "scan.label.open": "Mostrar etiqueta del piano",
+  "scan.label.close": "Cerrar etiqueta",
+  "scan.label.title": "Etiqueta del piano",
+  "scan.label.signIn": "Escanea para gestionar este piano. Debes iniciar sesión.",
+  "scan.label.print": "Imprimir etiqueta",
+  "scan.label.share": "Compartir enlace de la etiqueta",
+  "scan.label.image": "Código escaneable de este piano",
+  "scan.label.failed": "No se pudo cargar la etiqueta. Inténtalo de nuevo.",
+  "scan.label.saved": "Esta etiqueta usa el número de inventario y el título guardados.",
+  "scan.label.shareFailed": "No se pudo compartir el enlace. Inténtalo de nuevo."
 }

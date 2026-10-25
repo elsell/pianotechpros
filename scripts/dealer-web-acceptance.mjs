@@ -52,6 +52,7 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   const chunks=[];for await(const chunk of req)chunks.push(chunk);const rawBytes=Buffer.concat(chunks);const raw=rawBytes.toString();
   const body=rawBytes.length&&req.headers['content-type']?.includes('application/json')?JSON.parse(rawBytes.toString()):{};
+  if(url.pathname.endsWith('/scan-label')&&req.method==='POST')return send(200,{data:{dealer_id:'created-shop',record_id:'concert',token:'AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE'}});
   if(url.pathname.endsWith('/history')){
     historyReads++;
     if(historyMode==='denied')return send(404,{code:'not_found'});
@@ -296,6 +297,23 @@ try {
   await page.getByRole('button', { name: 'Concert Grand', exact: true }).click();
   await page.getByLabel('Marca', { exact: true }).waitFor();
   await page.locator('#year').fill('19x');
+  const labels=JSON.parse(await (await import('node:fs/promises')).readFile(new URL('../packages/i18n/src/locales/es.json',import.meta.url),'utf8'));
+  await page.getByRole('button',{name:labels['scan.label.open'],exact:true}).click();
+  const labelDialog=page.locator('dialog[data-piano-label]');
+  await labelDialog.getByRole('img',{name:labels['scan.label.image']}).waitFor();
+  assert.equal(await labelDialog.locator('.stock').textContent(),editorRecord.attributes.stock_number);
+  await page.emulateMedia({media:'print'});
+  assert.equal(await page.locator('#year').isVisible(),false);
+  assert.equal(await labelDialog.locator('.printed-label').isVisible(),true);
+  assert.equal(await labelDialog.getByRole('button',{name:labels['scan.label.print'],exact:true}).isVisible(),false);
+  await page.pdf({path:'/tmp/piano-scan-label.pdf',format:'A4'});
+  await page.emulateMedia({media:'screen'});
+  await page.keyboard.press('Escape');
+  await labelDialog.waitFor({state:'hidden'});
+  assert.equal(await page.locator('#year').inputValue(),'19x');
+  assert.equal(await page.getByRole('button',{name:labels['scan.label.open'],exact:true}).evaluate(node=>node===document.activeElement),true);
+  await page.emulateMedia({media:'print'});assert.equal(await labelDialog.isVisible(),false);await page.emulateMedia({media:'screen'});
+
   await page.getByRole('button',{name:'Ver historial',exact:true}).click();
   const historyPanel=page.locator('section.history');
   await historyPanel.getByText('Marca — Sugerencia de voz',{exact:true}).waitFor();

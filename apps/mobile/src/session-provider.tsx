@@ -13,7 +13,7 @@ import { restoreStoredSession } from './session-restoration';
 import { useProviderSignIn } from './provider-auth';
 import { createSessionLifecycle, dismissSession, type SessionLease } from '@pianotechpros/client-core';
 
-const { apiURL, oidcClientId: clientId, oidcIssuer: issuer } = loadMobileConfig(Constants.expoConfig?.extra);
+const { apiURL, webURL, oidcClientId: clientId, oidcIssuer: issuer } = loadMobileConfig(Constants.expoConfig?.extra);
 const storageKey = 'application_session';
 const i18n = createDeviceTranslator(getLocales);
 
@@ -147,7 +147,7 @@ function useSessionState() {
     return () => clearTimeout(timer);
   }, [session?.token, session?.expiresAt, sessionRenewable, accessState, retryAttempt, privateBlocked]);
 
-  return { session, profile: privateBlocked ? null : profile, ready, accessState, errorKey, apiURL, i18n,
+  return { session, profile: privateBlocked ? null : profile, ready, accessState, errorKey, apiURL, webURL, i18n,
     signInReady: providerSignIn.ready,
     signIn: () => providerSignIn.begin(),
     signOut: () => clearSession(),

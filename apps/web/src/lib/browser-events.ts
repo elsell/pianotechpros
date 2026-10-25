@@ -40,3 +40,10 @@ function claimBrowserLease(name:string):Promise<()=>void>{
   }).catch(()=>reject(new Error('inventory_capture_unavailable')));
  });
 }
+
+/** Body-level labels isolate print layout from the editor and retain native dialog focus. */
+export function mountInventoryLabel(node:HTMLDialogElement){
+ document.body.appendChild(node);
+ return {destroy(){node.remove();}};
+}
+export function printInventoryLabel(){window.print();}

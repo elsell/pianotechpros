@@ -505,5 +505,15 @@
   "history.field.sale_price": "Sale price",
   "history.from": "Previous status",
   "history.to": "New status",
-  "history.reason": "Reason"
+  "history.reason": "Reason",
+  "scan.label.open": "Show piano label",
+  "scan.label.close": "Close label",
+  "scan.label.title": "Piano label",
+  "scan.label.signIn": "Scan to manage this piano. Signing in is required.",
+  "scan.label.print": "Print label",
+  "scan.label.share": "Share label link",
+  "scan.label.image": "Scannable code for this piano",
+  "scan.label.failed": "The label could not be loaded. Try again.",
+  "scan.label.saved": "This label uses the saved stock number and title.",
+  "scan.label.shareFailed": "The link could not be shared. Try again."
 }

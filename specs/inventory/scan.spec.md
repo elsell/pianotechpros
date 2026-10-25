@@ -135,3 +135,20 @@ modules on white regardless of application theme. Matrix round-trip tests use th
 package decoder; native device rendering and physical scan acceptance remain
 separate requirements. No QR payload is sent to an external image service.
 Source: https://github.com/paulmillr/qr (tag/release 0.7.2).
+
+## Label presentation
+
+An editor opens its saved record's label on demand without flushing or replacing
+its draft. The label shows saved stock/title, a high-contrast QR image, a notice
+that signing in is required, and explicit close/print or native share actions.
+Unsaved identity text is not printed as if saved. Opening/loading/failed/denied
+states are localized; retries issue fresh authorized requests. Dismissal or scope
+change aborts pending work and clears the link/matrix. Native backgrounding closes
+the label. Web printing includes only the label, not private editor content.
+
+Mobile configuration adds an explicit public web origin for label links. Local
+HTTP is available only in development; production requires a configured public
+HTTPS origin with no credentials, path, query or fragment. The signed-release
+gate requires this origin. The web label uses its current page origin.
+
+Web label printing and body-level dialog mounting use the integrity-pinned browser capability adapter; presentation code receives only those explicit operations.

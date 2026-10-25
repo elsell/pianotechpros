@@ -224,3 +224,5 @@ export {createInventoryHistory,type InventoryHistoryState,type InventoryHistoryI
 export * from "./inventory-scan-link";
 
 export * from "./inventory-scan-qr";
+
+export * from "./inventory-scan-label";

@@ -28,7 +28,7 @@ application's `app.json` and `eas.json`.
 
 ## Device-reachable development URLs
 
-The root `.env` is loaded by the Make targets. Set all three values together:
+The root `.env` is loaded by the Make targets. Set the API and identity values together:
 
 ```sh
 PIANOTECHPROS_API_URL=http://localhost:8080
@@ -99,9 +99,9 @@ Hosted iOS compilation uses GitHub's `macos-26` runner to satisfy Expo SDK 55's
 Xcode 26 requirement.
 
 The production profile selects the EAS environment named `production`. Configure
-`PIANOTECHPROS_API_URL`, `PIANOTECHPROS_OIDC_ISSUER`, and
+`PIANOTECHPROS_API_URL`, `PIANOTECHPROS_WEB_URL`, `PIANOTECHPROS_OIDC_ISSUER`, and
 `PIANOTECHPROS_MOBILE_OIDC_CLIENT_ID` in that EAS environment before building. They are
-public application configuration, not secrets, but the API and issuer must use
+public application configuration, not secrets. The web address must be a public root origin without a path, query, or fragment. The web address, API and issuer must use
 HTTPS. The generated application sets `PIANOTECHPROS_APP_ENV=production` in the
 profile and deliberately fails bundling if any production endpoint is absent;
 it cannot silently fall back to localhost.
@@ -129,3 +129,5 @@ committed command. Supply unique action IDs, serializable presentation attribute
 and a stable native option builder. Disabled, removed and unmounted actions do
 nothing. The builder owns platform-specific header rendering. These helpers add
 no navigation or custom controls; device verification remains an application gate.
+
+Inventory labels use `PIANOTECHPROS_WEB_URL` for their scan links. Development defaults to `http://localhost:5173`; use a reachable HTTPS web origin for physical-device scans. Production requires an explicit public HTTPS origin.

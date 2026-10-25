@@ -7,6 +7,7 @@ const script = fileURLToPath(new URL('./validate-mobile-release-env.mjs', import
 const valid = {
   PIANOTECHPROS_APP_ENV: 'production',
   PIANOTECHPROS_API_URL: 'https://api.example.com',
+  PIANOTECHPROS_WEB_URL: 'https://piano.example.com',
   PIANOTECHPROS_OIDC_ISSUER: 'https://identity.example.com',
   PIANOTECHPROS_MOBILE_OIDC_CLIENT_ID: 'pianotechpros-mobile',
   PIANOTECHPROS_EXPO_PROJECT_ID: '3f14cb3e-753d-48eb-89e4-54df740de5c4',
@@ -25,4 +26,8 @@ test('signed release validation rejects unspecified and IPv4-mapped local IPv6 e
     assert.throws(() => validate({ PIANOTECHPROS_API_URL: endpoint }), endpoint);
     assert.throws(() => validate({ PIANOTECHPROS_OIDC_ISSUER: endpoint }), endpoint);
   }
+});
+
+test('signed release requires a public root web origin for scan links',()=>{
+ for(const value of ['', 'https://localhost', 'https://piano.example.com/path'])assert.throws(()=>validate({PIANOTECHPROS_WEB_URL:value}));
 });

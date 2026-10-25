@@ -686,3 +686,11 @@ A second independently signed-in browser session must also commit a competing
 edit. The original editor must surface the revision conflict, fetch the current
 version, and require an explicit keep-my-changes decision before saving. Confirm
 the chosen values through an independent persisted read; never bypass revisions.
+
+## Persisted journey rate-limit isolation
+
+The sequential real-service browser journeys reuse one synthetic owner. Wait a
+full minute plus one second before each child, including before its preparatory
+read, so earlier scenarios cannot consume its audit allowance. Keep production
+rate limits unchanged; do not retry failed mutations or suppress 429 assertions.
+A journey must still pass within its own normal per-principal allowance.

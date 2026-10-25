@@ -36,8 +36,12 @@ full repository/contract gates pass. The localized web buyer form now includes
 focusable validation, explicit retry, delivery confirmation and fail-closed
 Turnstile configuration. Built-browser tests cover disabled-policy journeys and
 provider DNS failure/retry; the real provider public test key also passes.
-Web/native inbox presentation, real persisted browser delivery and native
-interaction acceptance remain.
+Web and native inbox screens now use a shared account/dealer-scoped workspace
+with cancellation, explicit read acknowledgment, conflict reconciliation and
+authority-loss clearing. Native uses pushed list/detail navigation and clears
+buyer data on blur. Controlled HTTP browser acceptance covers contact actions,
+read conflict, narrow layout and revocation. Real persisted browser delivery and
+native interaction acceptance remain; screen implementation is not device acceptance.
 
 The node-forge 1.4.0 mitigation backports the exact RSA nested-DigestAlgorithm
 validation from unmerged upstream PR 1152, with license, source and installed

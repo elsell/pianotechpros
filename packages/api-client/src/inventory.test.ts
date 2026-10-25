@@ -31,6 +31,15 @@ test('inventory wire adapter preserves intent, private attributes, revision and 
  const saved=await pending;assert.equal(saved.attributes.asking_price?.minor_units,12345);assert.equal(saved.attributes.manufactured?.year,1920);
  const cleared=await api.edit('shop','piano',{stock_number:'PT-1',asking_price:null,acquisition_cost:null,manufactured:null},3);
  assert.equal(cleared.attributes.asking_price,null);assert.equal(cleared.attributes.manufactured,null);
+ let resume!:()=>void;const held=new Promise<void>(resolve=>{resume=resolve;});
+ const attributed=createInventoryApiClient(`http://127.0.0.1:${address.port}`,async()=>{await held;return token;});
+ const voiceFields:('make'|'private_notes')[]=['make'];
+ const proposed={stock_number:'PT-1',make:'Steinway',private_notes:'manual'};
+ const attributedSave=attributed.edit('shop','piano',proposed,4,voiceFields);
+ voiceFields[0]='private_notes';proposed.make='Changed later';resume();
+ assert.equal((await attributedSave).attributes.make,'Steinway');
+ assert.deepEqual(requests.at(-1)?.body,{expectedRevision:4,attributes:{stock_number:'PT-1',make:'Steinway',private_notes:'manual'},voiceFields:['make']});
+
 
 });
 

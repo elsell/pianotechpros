@@ -1353,6 +1353,8 @@ export interface components {
             attributes: components["schemas"]["Attributes"];
             /** Format: int64 */
             expectedRevision: number;
+            /** @description Changed attribute fields accepted from voice suggestions; omitted fields are manual. */
+            voiceFields?: string[] | null;
         };
         UserDTO: {
             displayName: string;

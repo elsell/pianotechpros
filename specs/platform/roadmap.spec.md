@@ -2,6 +2,56 @@
 
 ## Current milestone: feature-complete product
 
+Hosted run 40015648853 passed Android Gradle, unsigned iOS Xcode and acceptance.
+The backported screens APK (source 374f169, merge ref d9d1ac56, SHA-256
+818703e056c3546f227dfe05e8e329271c676acdbc31007da740bc46f935ade6) completed ten
+cold launches on the Android API 36 emulator on 2026-10-25 with no observed
+native crash. Real Dex browser sign-in/callback, shop/inventory navigation and
+reopening the previously saved “Android recovery piano offline” draft also
+passed with the current Metro graph. This supports the mounting-listener fix;
+physical-device coverage, offline recovery and full native interaction acceptance
+remain pending.
+
+The Metro image-size consumer now pins 2.0.3. Bounded subprocess regressions
+cover zero-length ICNS/JXL/HEIF containers, and the actual React Native community
+CLI Metro adapter reads the fixture PNG/JPEG dimensions. The old ICNS/JXL
+parsers exhaust the subprocess heap; the new parser rejects those inputs.
+A fresh 2026-10-25 audit no longer reports either image-size advisory, but now
+reports nine findings (two high, three moderate, four low), including newly
+reported Zod, SvelteKit and fast-uri advisories as well as decode-uri-component
+and node-forge. Historical counts below describe their dated runs; security
+release gates remain unchanged and failing.
+
+The subsequent build-tool refresh reduces the npm audit to four findings: three
+high (image-size and node-forge) and one moderate (decode-uri-component). It
+updates eight compatible tooling dependencies and carries the existing callable
+CommonJS brace-expansion shim onto 5.0.12. Installed legacy/modern matcher
+regressions, full repository/contract checks, dependency-age validation, required
+review, Expo compatibility, Doctor (19/19), web compilation and public showroom
+browser acceptance pass. Remaining advisories still block release;
+native compilation and runtime acceptance of this dependency graph remain
+separate pending gates.
+
+A compatible parser/tooling dependency refresh reduces the npm audit from 69 to
+19 findings: zero critical, 7 high, 11 moderate and 1 low. It upgrades URI, YAML,
+XML, serialization, target-resolution and configuration-validation dependencies;
+YAML major versions and XML minor lines remain separate. Review found two missed
+EAS Joi consumers; a Joi 17-wide override now covers them all. Frozen install,
+full repository/contract checks, dependency age, Expo compatibility, Expo Doctor
+(19/19), web build and required review pass. Public showroom browser acceptance
+passes SSR, filtering, keyboard gallery, contact links, Spanish, narrow layout and
+unpublish after moving Chromium temporary storage off the nearly full root disk.
+The remaining findings still block release; native compilation and device
+acceptance of the updated graph are required separately.
+
+The shell-quote override now pins 1.11.0, resolving the critical command-injection
+advisory GHSA-pqg4-j6r4-53mv. Regression tests through the actual React Native
+devtools dependency fail on 1.9.0 and pass on the new pin, covering all four line
+terminators after comments without executing shell input. Frozen installation,
+Expo compatibility, repository/contract checks, dependency-age validation and
+required review pass. The refreshed npm audit has zero critical findings and
+69 remaining findings (47 high, 18 moderate, 4 low); release remains blocked.
+
 Android acceptance reached the photo-first new-piano editor, cancelled the system
 photo picker without losing the draft, entered a title with the keyboard, and
 observed autosave. Restart then reproduced the native crash at the same binary

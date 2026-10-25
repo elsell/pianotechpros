@@ -65,6 +65,55 @@ the current named exports. Compensating verification includes frozen-lock
 regeneration, legacy and modern Minimatch probes, the generated security-policy
 test, a clean package audit, workspace tests and builds, Expo Doctor, clean
 prebuild, and hosted native compilation.
+Pin shell-quote 1.11.0 throughout the workspace to remediate
+GHSA-pqg4-j6r4-53mv (CVE-2026-102422). The registry release timestamp is
+2026-09-29T02:34:24.391Z, outside the fourteen-day window on 2026-10-23.
+Regression coverage must resolve the actual React Native devtools dependency
+and reject every line terminator after a comment token without executing any
+shell payload. Ordinary quoted arguments and comment behavior must remain
+usable. Keep the complete package audit enabled; resolving this advisory does
+not waive other findings or establish release readiness.
+
+The next security refresh pins the following compatible release lines using
+workspace overrides. Registry timestamps reviewed on 2026-10-23 place every
+listed release before the fourteen-day cutoff; no new age exception is needed.
+
+| Dependency | Reviewed pin | Boundary requiring verification |
+| --- | --- | --- |
+| fast-uri | 3.1.7 | URI authority normalization and AJV/schema tooling |
+| joi (EAS consumers) | 17.13.7 | CLI configuration validation |
+| js-yaml | 3.15.2 / 4.3.2 | Preserve each consumer's major API while fixing merge/omap limits |
+| nanoid | 3.3.18 | Existing CommonJS identifier-generation consumers |
+| browserslist | 4.28.7 | Web/native compilation target resolution |
+| source-map-js | 1.2.2 | Web compilation/source-map consumers |
+| compression | 1.8.2 | Development-server response teardown |
+| devalue | 5.9.3 | SvelteKit server-rendered data serialization |
+| @xmldom/xmldom | 0.8.15 / 0.9.12 | Preserve both installed minor API lines in Expo/XML tooling |
+
+Use a fresh full package audit as the advisory regression gate; retain its
+failure for findings outside this refresh. Frozen installation, complete
+repository/contract tests, dependency-age validation, Expo compatibility,
+actual web compilation and EAS startup must pass. Native compilation and real
+browser/native journeys remain necessary integration evidence, not substitutes
+for fixing outstanding advisories.
+
+The build-tool follow-up pins PostCSS 8.5.23, SvelteKit 2.70.2, Vite 8.1.6,
+baseline-browser-mapping 2.11.0, fast-uri 3.1.8, moment 2.31.0, Joi 17.13.8 and
+brace-expansion 5.0.12. Their registry release timestamps precede 2026-10-09.
+Move the existing callable-CommonJS compatibility patch to the reviewed
+brace-expansion release without changing its bounded expansion implementation.
+Regression coverage resolves both legacy EAS and modern Expo glob consumers,
+preserves their matching behavior and verifies bounded nesting through the real
+patched package. Run the complete audit, age gate, web build/browser journey,
+repository/contract tests, Expo compatibility/Doctor and native build gates.
+The Metro image metadata parser must use image-size 2.0.3 (released 2026-09-14)
+to remediate GHSA-5p2g-fcmc-qvqq and GHSA-w3rx-r6r6-pgpr. Verify the actual
+Metro asset-size boundary still reads valid PNG/JPEG dimensions. Malformed ICNS,
+JXL and HEIF buffers with zero-length boxes must terminate with rejection in a
+bounded subprocess; never run potentially unbounded parser inputs in the test
+runner itself. Keep the package's supported named/default CommonJS exports;
+Metro consumes its default export and passes a buffer, not a filesystem path.
+
 Migration acceptance applies the prior released migration set first, then runs
 the current migrator and verifies preserved baseline data and new schema objects.
 Every prior-release up and down migration is frozen by a checked-in SHA-256

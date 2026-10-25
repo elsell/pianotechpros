@@ -76,3 +76,29 @@ manual edits as conflicts, preserving unrelated changes. This controller does no
 save or publish; presentation must pass accepted form changes through the existing
 durable workspace. Session/scope lifetime, recording, transport, review UI and
 voice provenance in saves remain separately required.
+
+## Account-bound voice workflow
+
+A framework-independent workflow is bound to one account, dealer and existing
+private record. Recording permission and microphone lifetime remain platform
+responsibilities. Processing accepts one bounded copied audio result at a time,
+transcribes then extracts with the current revision, and never starts overlapping
+requests. Cancellation clears visible private data immediately but a separate busy
+guard remains until the aborted provider promise settles; immediate restart cannot
+overlap it. Typed/revised transcript extraction is available without recording.
+Every async completion rechecks scope and revision; scope loss, cancellation and
+disposal clear private state, abort outstanding work and ignore late completions.
+Revision drift rejects the proposal. Extraction failure may retain the transcript
+for explicit correction/retry, without retaining raw audio or automatically retrying.
+
+A successful proposal captures the current raw form for review. Explicit Apply
+uses only selected fields and the reviewed snapshot, through the existing form
+change port; no save or publication request is issued by this workflow. Conflicts
+preserve the proposal for renewed review. Undo uses its conditional field groups
+against the current raw form and passes the resulting change through the same
+port. The form-change port must acknowledge synchronous local acceptance; rejection
+changes nothing and retains the proposal or retryable Undo. Applied means local
+form application, never durable/server save success.
+Review refresh is explicit; stale revision requires re-extraction. Subscriptions
+and snapshots return private copies and cannot mutate workflow state. An observer
+may cancel/dispose during state notification; no subsequent provider work may start.

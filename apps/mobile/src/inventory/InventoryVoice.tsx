@@ -1,6 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
 import {AppState,Pressable,Keyboard,KeyboardAvoidingView,Modal,Platform,ScrollView,Switch,Text,TextInput,View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaProvider,SafeAreaView} from 'react-native-safe-area-context';
 import {useIsFocused} from '@react-navigation/native';
 import {nativeVoiceFailure} from './voice-failure';
 import {createInventoryVoiceWorkspace,inventoryFormFromAttributes,type InventoryForm,type InventoryFormWorkspace,type InventoryVoiceCandidate,type InventoryVoiceField,type InventoryVoiceWorkspaceState,type NativeVoiceState} from '@pianotechpros/client-core';
@@ -64,7 +64,7 @@ export function InventoryVoice({workspace,userID,dealerID,otherBusy,onBusy,onPau
  {voice?.phase==='applied'?<Text accessibilityLiveRegion="polite" style={text}>{t('applied')}</Text>:null}
  {voice?.canUndo?button('undo',()=>model.current?.coordinator.undo(),busy||otherBusy):null}
  <Modal visible={open&&focused} animationType="slide" presentationStyle="pageSheet" onRequestClose={cancel}>
- <SafeAreaView style={{flex:1,backgroundColor:theme.background}} accessibilityViewIsModal onAccessibilityEscape={cancel}>
+ <SafeAreaProvider><SafeAreaView style={{flex:1,backgroundColor:theme.background}} accessibilityViewIsModal onAccessibilityEscape={cancel}>
  <View style={{paddingHorizontal:16,paddingVertical:8,borderBottomWidth:1,borderColor:theme.border}}>{button('cancel',cancel)}<Text accessibilityRole="header" style={{...text,fontSize:24,fontWeight:'600'}}>{t(reviewing?'review':'title')}</Text></View>
  <KeyboardAvoidingView style={{flex:1}} enabled={Platform.OS==='android'} behavior="height"><ScrollView ref={scroll} contentInsetAdjustmentBehavior="automatic" automaticallyAdjustKeyboardInsets keyboardDismissMode="interactive" keyboardShouldPersistTaps="handled" contentContainerStyle={{padding:20,gap:16,paddingBottom:40}}>
  {feedback}
@@ -85,6 +85,6 @@ export function InventoryVoice({workspace,userID,dealerID,otherBusy,onBusy,onPau
  {button('extract',process,denied||!transcript.trim())}</>:null}
  </ScrollView></KeyboardAvoidingView>
  {reviewing?<View style={{padding:16,borderTopWidth:1,borderColor:theme.border}}>{button('apply',apply,!selected.length)}</View>:null}
- </SafeAreaView></Modal>
+ </SafeAreaView></SafeAreaProvider></Modal>
  </View>;
 }

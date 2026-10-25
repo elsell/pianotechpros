@@ -1,6 +1,6 @@
 {
   "name":"@pianotechpros/web","private":true,"type":"module",
   "scripts":{"dev":"vite dev --host 0.0.0.0","build":"vite build","check":"svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"},
-  "dependencies":{"@pianotechpros/api-client":"workspace:*","@pianotechpros/client-core":"workspace:*","@pianotechpros/i18n":"workspace:*","@sveltejs/kit":"2.70.2","svelte":"5.56.2","oidc-client-ts":"3.3.0"},
-  "devDependencies":{"@sveltejs/adapter-node":"5.5.7","@sveltejs/vite-plugin-svelte":"7.1.2","@types/node":"24.13.1","svelte-check":"4.6.0","typescript":"5.9.3","vite":"8.1.6"}
+  "dependencies":{"@pianotechpros/api-client":"workspace:*","@pianotechpros/client-core":"workspace:*","@pianotechpros/i18n":"workspace:*","@sveltejs/kit":"3.1.0","svelte":"5.57.2","oidc-client-ts":"3.5.0"},
+  "devDependencies":{"@sveltejs/adapter-node":"6.0.0","@sveltejs/vite-plugin-svelte":"7.3.1","@types/node":"26.6.5","svelte-check":"4.7.7","typescript":"7.0.2","vite":"8.3.5"}
 }

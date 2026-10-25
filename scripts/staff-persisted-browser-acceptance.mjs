@@ -1,0 +1,39 @@
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {chromium} from 'playwright';
+import {fillPrivateInvitation} from './private-invitation-input.mjs';
+const base=process.env.INQUIRY_ACCEPTANCE_WEB_URL??'http://localhost:5173';
+const local=value=>{const u=new URL(value);return u.protocol==='http:'&&['localhost','127.0.0.1','[::1]'].includes(u.hostname)&&!u.username&&!u.password;};
+assert.ok(local(base));
+const browser=await chromium.launch({headless:true});let owner,member;
+async function login(email){
+ const context=await browser.newContext();const page=await context.newPage();await page.goto(base);await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.locator('input[name=login]').waitFor();assert.ok(local(page.url()));
+ await page.locator('input[name=login]').fill(email);await page.locator('input[name=password]').fill('password');
+ const [me]=await Promise.all([page.waitForResponse(r=>new URL(r.url()).pathname==='/v1/me'&&r.status()===200),page.getByRole('button',{name:'Login',exact:true}).click()]);
+ const api=new URL(me.url()).origin;assert.ok(local(api));const authorization=(await me.request().allHeaders()).authorization;assert.ok(authorization);return{context,page,api,authorization};
+}
+async function until(check,message){for(let n=0;n<40;n++){if(await check())return;await new Promise(resolve=>setTimeout(resolve,500));}assert.fail(message);}
+try{
+ owner=await login('developer@example.com');member=await login('second@example.com');const name='Staff browser '+Date.now();
+ await owner.page.getByRole('button',{name:'Create shop',exact:true}).click();await owner.page.getByLabel('Shop name',{exact:true}).fill(name);await owner.page.getByLabel('Showroom address name',{exact:true}).fill('staff-'+randomUUID());await owner.page.getByLabel('Email',{exact:true}).fill('staff-shop@example.com');
+ const [created]=await Promise.all([owner.page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname==='/v1/dealers'),owner.page.getByRole('button',{name:'Create shop',exact:true}).last().click()]);assert.equal(created.status(),201);const dealer=(await created.json()).data;const path=owner.api+'/v1/dealers/'+dealer.id;
+ const request=(method,url,data)=>member.context.request.fetch(url,{method,headers:{authorization:member.authorization,...(method==='POST'&&url.endsWith('/inventory')?{'Idempotency-Key':randomUUID()}:{})},...(data?{data}:{})});
+ assert.equal((await request('GET',path)).status(),404);
+ await until(async()=>(await owner.context.request.get(path+'/staff',{headers:{authorization:owner.authorization}})).status()===200,'owner grant did not become usable');
+ await owner.page.getByRole('button',{name:'Manage staff',exact:true}).click();await owner.page.getByRole('combobox',{name:/Access role/}).selectOption('editor');await owner.page.getByRole('button',{name:'Create invitation',exact:true}).click();const codeField=owner.page.getByLabel('One-time invitation code',{exact:true});await codeField.waitFor();const code=await codeField.inputValue();const invitation=JSON.parse(code);
+ const urls=[];for(const page of [owner.page,member.page])page.on('request',r=>urls.push(r.url()));
+ await owner.page.getByRole('button',{name:'I have saved the code',exact:true}).click();await member.page.getByRole('button',{name:'Join a shop',exact:true}).click();await fillPrivateInvitation(member.page.getByLabel('Paste your invitation code',{exact:true}),code);await member.page.getByRole('button',{name:'Review invitation',exact:true}).click();await member.page.getByRole('heading',{name,exact:true}).waitFor();
+ const [accepted]=await Promise.all([member.page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname.endsWith('/accept')),member.page.getByRole('button',{name:'Accept invitation',exact:true}).click()]);assert.equal(accepted.status(),200);const userID=(await accepted.json()).data.userID;
+ await until(async()=>(await request('GET',path)).status()===200,'editor grant did not become usable');await member.page.getByRole('button',{name:'Check shop access',exact:true}).click();await member.page.getByRole('button',{name:'Browse inventory',exact:true}).click();await member.page.getByRole('button',{name:'New piano',exact:true}).click();
+ const [draft]=await Promise.all([member.page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname.endsWith('/inventory')),member.page.getByLabel('Display title',{exact:true}).fill('Staff-owned capture')]);assert.equal(draft.status(),201);await member.page.getByText('Saved',{exact:true}).waitFor();
+ await owner.page.getByRole('button',{name:'Refresh staff',exact:true}).click();const row=owner.page.locator('article').filter({hasText:userID});await until(async()=>{if(await row.getByRole('button',{name:'Change to viewer',exact:true}).isEnabled())return true;await owner.page.getByRole('button',{name:'Refresh staff',exact:true}).click();return false;},'editor membership stayed pending');
+ const [changed]=await Promise.all([owner.page.waitForResponse(r=>r.request().method()==='PUT'&&new URL(r.url()).pathname.endsWith('/role')),row.getByRole('button',{name:'Change to viewer',exact:true}).click()]);assert.equal(changed.status(),200);
+ await until(async()=>{const response=await owner.context.request.get(path+'/staff',{headers:{authorization:owner.authorization}});assert.equal(response.status(),200);return(await response.json()).data.some(m=>m.userID===userID&&!m.grantPending&&m.role==='viewer');},'viewer grant did not settle');
+ assert.equal((await request('GET',path)).status(),200);assert.equal((await request('POST',path+'/inventory')).status(),404);assert.equal((await request('GET',path+'/staff')).status(),404);
+ await owner.page.getByRole('button',{name:'Refresh staff',exact:true}).click();await row.getByRole('button',{name:'Remove access',exact:true}).click();const [removed]=await Promise.all([owner.page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname.endsWith('/staff/'+encodeURIComponent(userID)+'/revoke')),row.getByRole('button',{name:'Confirm removal',exact:true}).click()]);assert.equal(removed.status(),200);
+ await until(async()=>(await request('GET',path)).status()===404,'removed membership retained private access');await member.page.getByRole('button',{name:'Back to inventory',exact:true}).click();await member.page.getByText('You no longer have access to this inventory.',{exact:true}).waitFor();
+ await owner.page.getByRole('button',{name:'Create invitation',exact:true}).click();await codeField.waitFor();const revokedCode=await codeField.inputValue();const revoked=JSON.parse(revokedCode);await owner.page.getByRole('button',{name:'Revoke invitation',exact:true}).click();const [revocation]=await Promise.all([owner.page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname.endsWith('/revoke')),owner.page.getByRole('button',{name:'Confirm revocation',exact:true}).click()]);assert.equal(revocation.status(),204);
+ assert.equal((await request('POST',path+'/staff-invitations/'+revoked.invitationID+'/preview',{token:revoked.token})).status(),400);
+ assert.ok(urls.every(url=>!url.includes(invitation.token)&&!url.includes(revoked.token)));
+ console.log(JSON.stringify({result:'PASS',dealerID:dealer.id,checks:['two normal PKCE sessions','UI invitation and acceptance','editor creates draft','viewer reads but cannot write/administer','removal revokes existing browser access','unused invitation revoked','tokens absent from browser URLs']}));
+}catch(error){for(const client of [owner,member])if(client)console.error(JSON.stringify({headings:await client.page.getByRole('heading').allTextContents(),alerts:await client.page.getByRole('alert').allTextContents(),buttons:await client.page.getByRole('button').allTextContents()}));throw error;}finally{await browser.close();}

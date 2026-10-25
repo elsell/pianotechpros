@@ -657,3 +657,17 @@ Production preserves the existing HTTPS/nonlocal endpoint constraints; credentia
 queries, fragments and non-HTTP(S) URLs are rejected in every environment.
 Exercise the split address in composed browser acceptance and cover invalid
 configuration and production fallback in behavioral configuration tests.
+
+## Two-user persisted staff browser journey
+
+Use two independently authenticated browser contexts and a new synthetic shop.
+The owner issues an editor invitation through the UI; the second user reviews and
+accepts it, waits for the durable authorization grant, and creates an inventory
+draft through the browser. Change that membership to viewer through the owner UI
+and prove real reads remain allowed while writes and staff administration are
+denied. Remove access through confirmation, then prove the existing browser
+session loses both private reads and inventory UI access. Revoke a second unused
+invitation through the UI and reject its preview from the other user. Never put
+invitation tokens in URL paths, query strings, screenshots or failure output.
+Bound polling to the asynchronous grant behavior; do not retry mutations or
+replace real authorization decisions with HTTP fixtures.

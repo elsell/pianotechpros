@@ -109,6 +109,9 @@ real-catalog acceptance or the whole website complete.
    profile/browser journey now locally verifies duplicate slug recovery, all
    settings saved/reloaded, public projection/visibility and real banner
    upload/render/replacement/removal; its recurring CI result remains pending.
+   The two-user staff journey locally passed UI invitation/acceptance, editor
+   creation, viewer read/write restrictions, removal of existing-session access
+   and unused-invitation revocation. Its recurring run also requires fresh CI.
 4. Exercise the real speech and challenge adapters with explicit non-production
    configuration. Missing access is an integration blocker, not completed work;
    never borrow legacy production credentials.

@@ -275,7 +275,8 @@ for script in ("photo-publication-persisted-acceptance.mjs",
                "inquiry-persisted-browser-acceptance.mjs",
                "inventory-history-persisted-acceptance.mjs",
                "inventory-scan-persisted-acceptance.mjs",
-               "dealer-profile-persisted-acceptance.mjs"):
+               "dealer-profile-persisted-acceptance.mjs",
+               "staff-persisted-browser-acceptance.mjs"):
     current_title = request("GET", piano_path)["data"]["attributes"]["title"]
     subprocess.run(["node", "scripts/" + script], check=True, env={
         **browser_environment,

@@ -476,3 +476,18 @@ read receipts and execute the embedded acknowledgment rollback migration inside
 an explicitly rolled-back transaction. The fixed table names and repository-owned
 migration contain no external SQL input. These checks prove append-only runtime
 privileges and refusal to remove retained receipts on an isolated fixture.
+
+The web Turnstile boundary is an exact hash-protected provider adapter. It may
+load only Cloudflare's fixed explicit-render script and expose token/error
+callbacks; it receives no contact or application credential. The ordinary client
+transport gate remains unchanged for other source files. Built-web inquiry
+acceptance uses a controlled HTTP service to exercise form validation, failure
+preservation, explicit retry, localization, focus and success clearing. This
+fixture is not evidence of durable backend delivery or live CAPTCHA validation;
+those retain their separate integration/provider gates.
+The additional enabled-policy browser gate denies DNS resolution for the provider
+host, verifying unavailable verification, explicit retry, retained contact and
+zero delivery attempts. Optional `INQUIRY_TEST_TURNSTILE=1` uses Cloudflare's
+public test site key against the real widget, independently of backend provider
+validation. Expiry and navigation during an active challenge still require
+interaction coverage; a successful widget run alone does not prove those paths.

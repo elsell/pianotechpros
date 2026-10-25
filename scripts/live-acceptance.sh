@@ -38,6 +38,8 @@ node scripts/scalar-browser-acceptance.mjs
 node scripts/showroom-web-acceptance.mjs
 pnpm --dir apps/web build
 WEB_ACCEPTANCE_BUILT=1 node scripts/showroom-web-acceptance.mjs
+WEB_ACCEPTANCE_BUILT=1 node scripts/inquiry-web-acceptance.mjs
+WEB_ACCEPTANCE_BUILT=1 INQUIRY_TEST_TURNSTILE_FAILURE=1 node scripts/inquiry-web-acceptance.mjs
 
 token() {
   curl -fsS -X POST http://localhost:5556/dex/token -d grant_type=password -d "client_id=$1" -d "username=$2" -d password=password -d scope='openid profile email' |

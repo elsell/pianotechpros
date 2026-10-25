@@ -32,7 +32,12 @@ anonymous credential-free submission from rotating-session inbox access, validat
 private response scope and public snapshot shape, and never automatically retry
 delivery. The shared composer preserves failed input in memory, serializes sends,
 and clears private fields on confirmed delivery or disposal. Package tests and
-full repository/contract gates pass; presentation and device acceptance remain.
+full repository/contract gates pass. The localized web buyer form now includes
+focusable validation, explicit retry, delivery confirmation and fail-closed
+Turnstile configuration. Built-browser tests cover disabled-policy journeys and
+provider DNS failure/retry; the real provider public test key also passes.
+Web/native inbox presentation, real persisted browser delivery and native
+interaction acceptance remain.
 
 The node-forge 1.4.0 mitigation backports the exact RSA nested-DigestAlgorithm
 validation from unmerged upstream PR 1152, with license, source and installed

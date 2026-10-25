@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {sessionScopedFailure} from '@pianotechpros/api-client';
  import {onMount,tick} from 'svelte';
  import {createInventoryPublicationApiClient,InventoryClientError,type InventoryPublicationState,type InventoryRecord} from '@pianotechpros/api-client';
  import {publicationSaleDefaults,createInventoryPublicationWorkspace,inventoryCurrencies,inventoryMoneyFromInput,inventoryScanLabelTitle,type PublicationCommand,type SessionCredential} from '@pianotechpros/client-core';
@@ -10,7 +11,7 @@
  const statuses=['draft','available','reserved','in_service','sold','archived'] as const;
  const t=(key:string)=>i18n.t(`inventory.publication.${key}` as MessageKey);
  const statusLabel=(value:string)=>i18n.t(`inventory.status.${value}` as MessageKey);
- async function request<T>(work:(api:ReturnType<typeof createInventoryPublicationApiClient>)=>Promise<T>){const session=credential;try{return await work(createInventoryPublicationApiClient(apiURL,()=>Date.parse(session.expiresAt)>Date.now()?session.token:null));}catch(error){if(active&&session.token===credential.token&&error instanceof InventoryClientError&&error.status===401)onSessionRejected();throw error;}}
+ async function request<T>(work:(api:ReturnType<typeof createInventoryPublicationApiClient>)=>Promise<T>){const session=credential;try{return await work(createInventoryPublicationApiClient(apiURL,()=>Date.parse(session.expiresAt)>Date.now()?session.token:null));}catch(error){error=sessionScopedFailure(error,session.token,credential.token);if(active&&session.token===credential.token&&error instanceof InventoryClientError&&error.status===401)onSessionRejected();throw error;}}
  const model=createInventoryPublicationWorkspace<InventoryPublicationState>({userID:accountId,dealerID,recordID,active:()=>active,copy:value=>JSON.parse(JSON.stringify(value)),withMutation:work=>work(),get:()=>request(api=>api.get(dealerID,recordID,lifetime.signal)),execute:(command,revision)=>request(api=>{if(command.kind==='publish')throw Error('scan_publication_creation_forbidden');return command.kind==='unpublish'?api.unpublish(dealerID,recordID,revision,lifetime.signal):api.transition(dealerID,recordID,revision,command.status,command.salePrice,command.reason,lifetime.signal);}),classify:error=>error instanceof InventoryClientError&&[401,403,404].includes(error.status)?'denied':error instanceof InventoryClientError&&error.code==='conflict'?'conflict':error instanceof InventoryClientError&&[400,422].includes(error.status)?'rejected':'uncertain'});
  let state=model.snapshot();
  $: disabled=state.busy||state.failure==='denied';

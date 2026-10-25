@@ -1,7 +1,7 @@
 import { AESEncryptionKey, AESSealedData, aesEncryptAsync, aesDecryptAsync, CryptoDigestAlgorithm, digestStringAsync, randomUUID } from 'expo-crypto';
 import * as SecureStore from 'expo-secure-store';
 import { openDatabaseAsync } from 'expo-sqlite';
-import { createProtectedRecovery } from '@pianotechpros/client-core';
+import { createProtectedRecovery, protectedRecoveryMaxBytes, protectedRecoveryMaxBase64Length } from '@pianotechpros/client-core';
 import { createRecoveryDatabase } from './recovery-database';
 import { recoveryBytes } from './recovery-bytes';
 
@@ -32,12 +32,12 @@ const vault=createProtectedRecovery({
   generate:async()=>({generation:randomUUID(),key:await (await AESEncryptionKey.generate()).encoded('hex')}),
   address:value=>digestStringAsync(CryptoDigestAlgorithm.SHA256,value),
   seal:async(key,aad,value)=>{
-   const bytes=encoder.encode(value);if(bytes.length>1024*1024)throw new Error('inventory_storage_unavailable');
+   const bytes=encoder.encode(value);if(bytes.length>protectedRecoveryMaxBytes)throw new Error('inventory_storage_unavailable');
    const sealed=await aesEncryptAsync(bytes,await AESEncryptionKey.import(key,'hex'),{nonce:{length:12},tagLength:16,additionalData:encoder.encode(aad)});
    return sealed.combined('base64');
   },
   open:async(key,aad,value)=>{
-   if(value.length>1400000)throw new Error('inventory_storage_unavailable');
+   if(value.length>protectedRecoveryMaxBase64Length)throw new Error('inventory_storage_unavailable');
    const bytes=await aesDecryptAsync(AESSealedData.fromCombined(recoveryBytes(value),{ivLength:12,tagLength:16}),await AESEncryptionKey.import(key,'hex'),{additionalData:encoder.encode(aad)});
    return decoder.decode(bytes);
   },

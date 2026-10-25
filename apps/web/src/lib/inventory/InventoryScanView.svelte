@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {sessionScopedFailure} from '@pianotechpros/api-client';
  import {onMount,tick} from 'svelte';
  import {createInventoryScanApiClient,createInventoryPhotoApiClient,InventoryClientError,type InventoryRecord,type InventoryPhoto} from '@pianotechpros/api-client';
  import {createInventoryScanView,inventoryScanLabelTitle,type SessionCredential} from '@pianotechpros/client-core';
@@ -8,7 +9,7 @@
  import PhotoImage from './PhotoImage.svelte';
  export let link:string;export let accountId:string;export let apiURL:string;export let credential:SessionCredential;export let i18n:Translator;export let onSessionRejected:()=>void;
  let active=true;let editing=false;let actionBusy=false;let actionConfirmed=false;let actionDenied=false;let denialRechecked=false;let heading:HTMLHeadingElement;const imageRequest=new AbortController();
- async function request<T>(work:(scans:ReturnType<typeof createInventoryScanApiClient>,photos:ReturnType<typeof createInventoryPhotoApiClient>)=>Promise<T>){const current=credential;const token=()=>Date.parse(current.expiresAt)>Date.now()?current.token:null;try{return await work(createInventoryScanApiClient(apiURL,token),createInventoryPhotoApiClient(apiURL,token));}catch(error){if(active&&credential.token===current.token&&error instanceof InventoryClientError&&error.status===401)onSessionRejected();throw error;}}
+ async function request<T>(work:(scans:ReturnType<typeof createInventoryScanApiClient>,photos:ReturnType<typeof createInventoryPhotoApiClient>)=>Promise<T>){const current=credential;const token=()=>Date.parse(current.expiresAt)>Date.now()?current.token:null;try{return await work(createInventoryScanApiClient(apiURL,token),createInventoryPhotoApiClient(apiURL,token));}catch(error){error=sessionScopedFailure(error,current.token,credential.token);if(active&&credential.token===current.token&&error instanceof InventoryClientError&&error.status===401)onSessionRejected();throw error;}}
  const model=createInventoryScanView<InventoryRecord&{cover:InventoryPhoto|null}>({origin:window.location.origin,resolve:(dealer,token,signal)=>request(api=>api.resolve(dealer,token,signal)),read:(dealer,id,signal)=>request(async(_,api)=>{const value=await api.list(dealer,id,signal);return {...value.record,cover:value.photos[0]??null};}),classify:error=>error instanceof InventoryClientError&&[401,403,404].includes(error.status)?'denied':'unavailable'});
  let state=model.snapshot();
  onMount(()=>{const unsubscribe=model.subscribe(next=>state=next);void model.open(link);return()=>{active=false;imageRequest.abort();unsubscribe();model.dispose();};});

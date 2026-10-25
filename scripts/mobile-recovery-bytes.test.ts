@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomBytes,createCipheriv,createDecipheriv} from 'node:crypto';
+import {protectedRecoveryMaxBase64Length,protectedRecoveryMaxSealedBytes} from '../packages/client-core/src/recovery-limits';
 import {recoveryBytes} from '../apps/mobile/src/inventory/recovery-bytes';
 test('persisted sealed bytes reopen without changing nonce, ciphertext or tag',()=>{
- for(const length of [0,1,2,3,100,1024]){
+ for(const length of [0,1,2,3,100,1024,1300000,protectedRecoveryMaxSealedBytes-28]){
  const key=randomBytes(32),iv=randomBytes(12),plain=randomBytes(length),aad=Buffer.from('account/generation/journal');
  const cipher=createCipheriv('aes-256-gcm',key,iv);cipher.setAAD(aad);
  const sealed=Buffer.concat([iv,cipher.update(plain),cipher.final(),cipher.getAuthTag()]);
@@ -13,5 +14,5 @@ test('persisted sealed bytes reopen without changing nonce, ciphertext or tag',(
  }
 });
 test('malformed, noncanonical and oversized ciphertext fails with fixed diagnostic',()=>{
- for(const value of ['', 'AA==','!!!!','AAAA\n','A===','A'.repeat(36)+'AB==','A'.repeat(36)+'AAB=','A'.repeat(1400004)])assert.throws(()=>recoveryBytes(value),/^Error: inventory_storage_unavailable$/);
+ for(const value of ['', 'AA==','!!!!','AAAA\n','A===','A'.repeat(36)+'AB==','A'.repeat(36)+'AAB=','A'.repeat(protectedRecoveryMaxBase64Length+4),Buffer.alloc(protectedRecoveryMaxSealedBytes+1).toString('base64')])assert.throws(()=>recoveryBytes(value),/^Error: inventory_storage_unavailable$/);
 });

@@ -1,5 +1,6 @@
+import {NativeButton as Button} from '../native-button';
 import {useEffect,useRef,useState} from 'react';
-import {Alert,Button,Image,Modal,Pressable,ScrollView,Text,TextInput,View} from 'react-native';
+import {Alert,Image,Modal,Pressable,ScrollView,Text,TextInput,View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {randomUUID} from 'expo-crypto';
 import {InventoryClientError} from '@pianotechpros/api-client';
@@ -56,7 +57,7 @@ export function InventoryPhotos({workspace,userID,dealerID,onBusy,otherBusy=fals
  async function run(work:(current:NonNullable<typeof model.current>)=>Promise<void>){const current=model.current;if(!current||operation.current||otherBusy||!current.active())return;operation.current=true;setWorking(true);setError(null);try{await work(current);}catch(failure){if(current.active())setError(failure instanceof Error&&failure.message==='native_picker_other_target'?'inventory.photos.pickerOtherTarget':'inventory.photos.failed');}finally{if(current.active()){operation.current=false;setWorking(false);}}}
  function choose(source:'camera'|'library'){void run(current=>current.picker.select(source));}
  function discard(){Alert.alert(i18n.t('inventory.photos.pickerDiscard'),i18n.t('inventory.photos.pickerDiscardHint'),[{text:i18n.t('inventory.photos.cancel'),style:'cancel'},{text:i18n.t('inventory.photos.pickerDiscard'),style:'destructive',onPress:()=>{void run(current=>current.picker.discard());}}]);}
- const text={color:theme.text,fontSize:17};const button=(key:MessageKey,action:()=>void,disabled=busy)=><Button title={i18n.t(key)} color={theme.accent} disabled={disabled} onPress={action} />;
+ const text={color:theme.text,fontSize:17};const button=(key:MessageKey,action:()=>void,disabled=busy)=><Button title={i18n.t(key)}  disabled={disabled} onPress={action} />;
  function remove(photoID:string){Alert.alert(i18n.t('inventory.photos.removeTitle'),i18n.t('inventory.photos.removeHint'),[{text:i18n.t('inventory.photos.cancel'),style:'cancel'},{text:i18n.t('inventory.photos.remove'),style:'destructive',onPress:()=>{void run(async current=>{await current.photos.remove(photoID);if(current.active())setPreview(null);});}}]);}
  const selected=state?.photos.find(p=>p.id===preview);
  return <View style={{gap:12}}>

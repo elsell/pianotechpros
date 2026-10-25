@@ -87,3 +87,56 @@ func TestDealerRolePermissionsAndRevocation(t *testing.T) {
 		t.Fatalf("generic resource ownership leaked into dealer access: %v, %v", got, err)
 	}
 }
+
+func TestCustomerOwnershipPermissionsAndRevocation(t *testing.T) {
+	if *liveEndpoint == "" {
+		t.Skip("-spicedb-endpoint is required")
+	}
+	a, err := New(*liveEndpoint, *liveToken, *liveInsecure)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	id, other, owner, stranger := uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString()
+	if err := a.WriteRelationship(ctx, "customer", id, "owner", "user", owner); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		cleanup, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := a.DeleteRelationship(cleanup, "customer", id, "owner", "user", owner); err != nil {
+			t.Error(err)
+		}
+	})
+	for _, permission := range []string{"view", "update"} {
+		if allowed, err := a.Check(ctx, "customer", id, permission, owner); err != nil || !allowed {
+			t.Fatalf("owner %s: %v %v", permission, allowed, err)
+		}
+		for _, pair := range [][2]string{{id, stranger}, {other, owner}} {
+			if allowed, err := a.Check(ctx, "customer", pair[0], permission, pair[1]); err != nil || allowed {
+				t.Fatalf("foreign %s: %v %v", permission, allowed, err)
+			}
+		}
+	}
+	if err := a.WriteRelationship(ctx, "dealer", id, "owner", "user", stranger); err != nil {
+		t.Fatal(err)
+	}
+	defer a.DeleteRelationship(ctx, "dealer", id, "owner", "user", stranger)
+	if allowed, err := a.Check(ctx, "customer", id, "view", stranger); err != nil || allowed {
+		t.Fatalf("dealer ownership granted customer access: %v %v", allowed, err)
+	}
+	for _, relation := range []string{"editor", "viewer"} {
+		if err := a.WriteRelationship(ctx, "customer", id, relation, "user", stranger); err == nil {
+			t.Fatalf("unsupported sharing relation accepted: %s", relation)
+		}
+	}
+	if err := a.DeleteRelationship(ctx, "customer", id, "owner", "user", owner); err != nil {
+		t.Fatal(err)
+	}
+	for _, permission := range []string{"view", "update"} {
+		if allowed, err := a.Check(ctx, "customer", id, permission, owner); err != nil || allowed {
+			t.Fatalf("revoked %s: %v %v", permission, allowed, err)
+		}
+	}
+}

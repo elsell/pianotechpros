@@ -1,5 +1,6 @@
+import {NativeButton as Button} from '../../src/native-button';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, BackHandler, Button, KeyboardAvoidingView, Platform, ScrollView, Switch, Text, TextInput, View } from 'react-native';
+import {Alert,BackHandler,KeyboardAvoidingView,Platform,ScrollView,Switch,Text,TextInput,View} from 'react-native';
 import { Redirect, Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { randomUUID } from 'expo-crypto';
 import { DealerClientError, type DealerProfile, type DealerProfileInput } from '@pianotechpros/api-client';
@@ -52,7 +53,7 @@ function Form({ initial }: { initial: DealerProfile | null }) {
   const display = (value: string | boolean | undefined) => typeof value === 'boolean' ? i18n.t(value ? 'dealer.published' : 'dealer.private') : value || i18n.t('dealer.notSet');
   const comparison = [...dealerFieldGroups.flatMap((group) => group.fields), { key: 'showroom_published' as const, label: 'dealer.showroom' as const }];
   return <>
-    <Stack.Screen options={{ title: i18n.t(initial ? 'dealer.edit' : 'dealer.create'), gestureEnabled: false, headerBackVisible: false, headerLeft: () => <Button title={i18n.t('dealer.cancel')} disabled={locked} color={theme.accent} onPress={close} /> }} />
+    <Stack.Screen options={{ title: i18n.t(initial ? 'dealer.edit' : 'dealer.create'), gestureEnabled: false, headerBackVisible: false, headerLeft: () => <Button title={i18n.t('dealer.cancel')} disabled={locked}  onPress={close} /> }} />
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'android' ? 'height' : undefined}>
       <ScrollView automaticallyAdjustKeyboardInsets contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" contentContainerStyle={{ padding: 20, paddingBottom: 48, gap: 24 }}>
         {initial ? <Text style={{ color: theme.secondary, fontSize: 17 }}>{i18n.t('dealer.ownerOnly')}</Text> : null}
@@ -68,17 +69,17 @@ function Form({ initial }: { initial: DealerProfile | null }) {
         {failure ? <Text accessibilityRole="alert" style={{ color: theme.text, fontSize: 17 }}>{i18n.t(errorKey)}</Text> : null}
         {state.uncertain ? <Text accessibilityLiveRegion="polite" style={{ color: theme.text, fontSize: 17 }}>{i18n.t('dealer.pendingCreation')}</Text> : null}
         {state.conflict ? <View style={{ gap: 16 }}>
-          <Button title={i18n.t('dealer.reviewCurrent')} color={theme.accent} disabled={state.busy} onPress={() => { void controller.review(); }} />
+          <Button title={i18n.t('dealer.reviewCurrent')}  disabled={state.busy} onPress={() => { void controller.review(); }} />
           {state.latest ? <>
             {comparison.filter((field) => (state.latest?.[field.key] ?? '') !== (draft[field.key] ?? '')).map((field) => <View key={field.key} style={{ gap: 8, padding: 16, borderRadius: 10, backgroundColor: theme.surface }}>
               <Text accessibilityRole="header" style={{ color: theme.text, fontSize: 20 }}>{i18n.t(field.label)}</Text>
               <Text style={{ color: theme.secondary, fontSize: 15 }}>{i18n.t('dealer.currentValue')}</Text><Text style={{ color: theme.text, fontSize: 17 }}>{display(state.latest?.[field.key])}</Text>
               <Text style={{ color: theme.secondary, fontSize: 15 }}>{i18n.t('dealer.yourValue')}</Text><Text style={{ color: theme.text, fontSize: 17 }}>{display(draft[field.key])}</Text>
             </View>)}
-            <Button title={i18n.t('dealer.keepEdits')} color={theme.accent} disabled={state.busy} onPress={() => controller.keepEdits()} />
+            <Button title={i18n.t('dealer.keepEdits')}  disabled={state.busy} onPress={() => controller.keepEdits()} />
           </> : null}
         </View> : null}
-        <Button title={i18n.t(state.busy ? 'dealer.saving' : state.uncertain ? 'dealer.retry' : initial ? 'dealer.save' : 'dealer.create')} color={theme.accent} disabled={state.busy || state.conflict} onPress={() => { void save(); }} />
+        <Button title={i18n.t(state.busy ? 'dealer.saving' : state.uncertain ? 'dealer.retry' : initial ? 'dealer.save' : 'dealer.create')}  disabled={state.busy || state.conflict} onPress={() => { void save(); }} />
       </ScrollView>
     </KeyboardAvoidingView>
   </>;
@@ -93,7 +94,7 @@ function LoadForm({ id }: { id?: string }) {
     void request((api) => api.get(id)).then((profile) => { if (active) setInitial(profile); }, () => { if (active) setFailure(true); });
     return () => { active = false; };
   }, [id, request, attempt]);
-  if (id && !initial) return <View style={{ padding: 20, gap: 16 }}><Text accessibilityRole={failure ? 'alert' : undefined} style={{ color: theme.text, fontSize: 17 }}>{i18n.t(failure ? 'dealer.detailFailed' : 'common.loading')}</Text>{failure ? <Button title={i18n.t('dealer.retry')} color={theme.accent} onPress={() => setAttempt((value) => value + 1)} /> : null}</View>;
+  if (id && !initial) return <View style={{ padding: 20, gap: 16 }}><Text accessibilityRole={failure ? 'alert' : undefined} style={{ color: theme.text, fontSize: 17 }}>{i18n.t(failure ? 'dealer.detailFailed' : 'common.loading')}</Text>{failure ? <Button title={i18n.t('dealer.retry')}  onPress={() => setAttempt((value) => value + 1)} /> : null}</View>;
   return <Form initial={initial} />;
 }
 export default function DealerFormScreen() {

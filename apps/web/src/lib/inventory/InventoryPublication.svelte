@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {sessionScopedFailure} from '@pianotechpros/api-client';
  import {onMount,tick} from 'svelte';
  import {createInventoryPublicationApiClient,createInventoryPhotoApiClient,InventoryClientError,InventoryPublicationError,type InventoryPublicationState,type InventoryPhoto,type PublicationReadinessField} from '@pianotechpros/api-client';
  import {publicationSaleDefaults,createInventoryPublicationWorkspace,inventoryCurrencies,inventoryMoneyFromInput,type PublicationCommand,type InventoryFormWorkspace,type SessionCredential} from '@pianotechpros/client-core';
@@ -15,7 +16,7 @@
  async function request<T>(operation:(api:ReturnType<typeof createInventoryPublicationApiClient>,photos:ReturnType<typeof createInventoryPhotoApiClient>)=>Promise<T>){
   const session=credential;const token=()=>Date.parse(session.expiresAt)>Date.now()?session.token:null;
   try{return await operation(createInventoryPublicationApiClient(apiURL,token),createInventoryPhotoApiClient(apiURL,token));}
-  catch(error){if(active&&error instanceof InventoryPublicationError)missing=error.missing;if(active&&session.token===credential.token&&error instanceof InventoryClientError&&error.status===401)onSessionRejected();throw error;}
+  catch(error){error=sessionScopedFailure(error,session.token,credential.token);if(active&&error instanceof InventoryPublicationError)missing=error.missing;if(active&&session.token===credential.token&&error instanceof InventoryClientError&&error.status===401)onSessionRejected();throw error;}
  }
  async function withPhotos(value:InventoryPublicationState):Promise<ReviewState>{const photos=await request((_,api)=>api.list(dealerID,recordID));if(photos.record.revision!==value.record.revision)throw new InventoryClientError('conflict',409);return {...value,photos:photos.photos};}
  const controller=createInventoryPublicationWorkspace<ReviewState>({userID:accountId,dealerID,recordID,active:()=>active&&workspace.recordID()===recordID&&!!workspace.snapshot().draft,copy:value=>JSON.parse(JSON.stringify(value)),

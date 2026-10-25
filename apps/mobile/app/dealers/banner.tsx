@@ -1,5 +1,6 @@
+import {NativeButton as Button} from '../../src/native-button';
 import {useCallback,useEffect,useRef,useState} from 'react';
-import {AppState,Button,Image,Modal,ScrollView,Text,View,useWindowDimensions} from 'react-native';
+import {AppState,Image,Modal,ScrollView,Text,View,useWindowDimensions} from 'react-native';
 import {Redirect,Stack,useLocalSearchParams} from 'expo-router';
 import {useIsFocused} from '@react-navigation/native';
 import {SafeAreaProvider,SafeAreaView} from 'react-native-safe-area-context';
@@ -82,8 +83,8 @@ function BannerScreen({dealerID,userID}:{dealerID:string;userID:string}){
   {current?<><View style={{backgroundColor:theme.surface,borderRadius:16,padding:16,borderWidth:1,borderColor:theme.border}}>
    {current.banner?<CurrentImage key={current.banner.id} id={current.banner.id} read={readImage} alt={current.profile.banner_alt_text||t('current')} />:<Text style={secondary}>{t('empty')}</Text>}
   </View><Text style={secondary}>{t('formats')}</Text><Text style={secondary}>{t('altHint')}</Text>
-   <Button title={t('choose')} color={theme.accent} disabled={busy||!!picker?.held||phase!=='idle'} onPress={()=>{void choose();}} />
-   {current.banner?<Button title={t('remove')} color={theme.accent} disabled={busy||!!picker?.held||phase!=='idle'} onPress={()=>model.current?.editor.reviewRemoval()} />:null}
+   <Button title={t('choose')}  disabled={busy||!!picker?.held||phase!=='idle'} onPress={()=>{void choose();}} />
+   {current.banner?<Button title={t('remove')}  disabled={busy||!!picker?.held||phase!=='idle'} onPress={()=>model.current?.editor.reviewRemoval()} />:null}
   </>:null}
   {busy?<Text accessibilityLiveRegion="polite" style={secondary}>{i18n.t(state?.busy&&phase!=='idle'?'dealer.banner.busy':'common.loading')}</Text>:null}
   {state?.denied?<Text accessibilityRole="alert" style={text}>{t('denied')}</Text>:phase==='refresh-required'?<Text accessibilityRole="alert" style={text}>{t('refreshRequired')}</Text>:state?.failure&&!review?<Text accessibilityRole="alert" style={text}>{t('failed')}</Text>:null}
@@ -92,10 +93,10 @@ function BannerScreen({dealerID,userID}:{dealerID:string;userID:string}){
   {picker?.state.status==='denied'?<Text accessibilityRole="alert" style={text}>{t('pickerDenied')}</Text>:null}
   {picker?.held?<View style={{gap:12,padding:16,borderWidth:1,borderColor:theme.border,borderRadius:12}}>
    <Text style={text}>{t(picker.state.status==='selected'?'pickerSelected':picker.state.status==='uncertain'?'pickerUncertain':'pickerInterrupted')}</Text>
-   {picker.state.status==='selected'?<Button title={t('pickerContinue')} color={theme.accent} disabled={busy} onPress={()=>{void model.current?.picker.consume();}} />:<Button title={t('pickerResume')} color={theme.accent} disabled={busy} onPress={()=>{void model.current?.picker.restore();}} />}
-   <Button title={t('pickerDiscard')} color={theme.accent} disabled={busy} onPress={()=>{void model.current?.picker.discard();}} />
+   {picker.state.status==='selected'?<Button title={t('pickerContinue')}  disabled={busy} onPress={()=>{void model.current?.picker.consume();}} />:<Button title={t('pickerResume')}  disabled={busy} onPress={()=>{void model.current?.picker.restore();}} />}
+   <Button title={t('pickerDiscard')}  disabled={busy} onPress={()=>{void model.current?.picker.discard();}} />
   </View>:null}
-  {!review?<Button title={t('refresh')} color={theme.accent} disabled={busy||!!picker?.held} onPress={()=>{void model.current?.editor.refresh();}} />:null}
+  {!review?<Button title={t('refresh')}  disabled={busy||!!picker?.held} onPress={()=>{void model.current?.editor.refresh();}} />:null}
  </ScrollView>
  <Modal visible={!!review&&focused&&foreground} animationType="slide" presentationStyle="pageSheet" onRequestClose={cancel}>
   <SafeAreaProvider><SafeAreaView style={{flex:1,backgroundColor:theme.background}} accessibilityViewIsModal onAccessibilityEscape={cancel}>
@@ -105,8 +106,8 @@ function BannerScreen({dealerID,userID}:{dealerID:string;userID:string}){
     <Text style={secondary}>{t('immediate')}</Text>
     {phase==='upload-uncertain'?<Text accessibilityRole="alert" style={text}>{t('uncertain')}</Text>:state?.failure?<Text accessibilityRole="alert" style={text}>{t('failed')}</Text>:null}
     {busy?<Text accessibilityLiveRegion="polite" style={secondary}>{t('busy')}</Text>:null}
-    <Button title={t('cancel')} color={theme.accent} disabled={busy} onPress={cancel} />
-    <Button title={t(phase==='remove-review'?'confirmRemove':phase==='upload-uncertain'?'retry':'confirm')} color={phase==='remove-review'?(theme.statusBarStyle==='light'?'#ff8a80':'#b42318'):theme.accent} disabled={busy||(phase!=='remove-review'&&!preview)} onPress={()=>{const editor=model.current?.editor;if(editor)void (phase==='remove-review'?editor.confirmRemoval():editor.confirmUpload());}} />
+    <Button title={t('cancel')}  disabled={busy} onPress={cancel} />
+    <Button title={t(phase==='remove-review'?'confirmRemove':phase==='upload-uncertain'?'retry':'confirm')} tone={phase==='remove-review'?'destructive':'primary'} disabled={busy||(phase!=='remove-review'&&!preview)} onPress={()=>{const editor=model.current?.editor;if(editor)void (phase==='remove-review'?editor.confirmRemoval():editor.confirmUpload());}} />
    </ScrollView>
   </SafeAreaView></SafeAreaProvider>
  </Modal></>;

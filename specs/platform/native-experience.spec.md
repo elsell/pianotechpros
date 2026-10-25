@@ -272,3 +272,11 @@ Keep the generated hook idempotent and reject unknown activity formats or an
 existing custom configuration callback instead of overwriting it. No framework
 patch or new dependency is needed. Native compilation and an open-dialog theme
 transition are required acceptance gates for this hook.
+
+Native action buttons retain the platform Button behavior with a shared semantic
+palette. Android uses the color as a filled background under white text; iOS
+uses it as foreground text. Do not reuse a pale dark-mode foreground accent as
+an Android fill. Enabled primary and destructive button labels require at least
+4.5:1 contrast in light and dark modes. Test the actual palette values and inspect
+device rendering. All application native Buttons use the shared adapter so
+unconfigured default buttons cannot bypass this palette.

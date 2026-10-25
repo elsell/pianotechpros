@@ -24,12 +24,14 @@ docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U app_migrator -d postg
 docker compose run --rm -e PIANOTECHPROS_DATABASE_DSN='postgres://app_migrator:app_migrator@postgres:5432/dealer_acceptance?sslmode=disable' app-migrate
 bash scripts/dealer-grant-migration-sql.sh | docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U app_migrator -d dealer_acceptance
 (cd apps/api && go test ./internal/adapters/gormstore/dealer -database-dsn 'postgres://app_migrator:app_migrator@localhost:5432/dealer_acceptance?sslmode=disable')
+(cd apps/api && go test ./internal/adapters/gormstore/customer -database-dsn 'postgres://app_migrator:app_migrator@localhost:5432/dealer_acceptance?sslmode=disable')
 (cd apps/api && go test ./internal/bootstrap/inquiry -database-dsn 'postgres://app:app@localhost:5432/dealer_acceptance?sslmode=disable')
 docker compose up -d --build spicedb dex api web
 for _ in $(seq 1 180); do curl -fsS http://localhost:8080/readyz >/dev/null 2>&1 && curl -fsS http://localhost:5556/dex/.well-known/openid-configuration >/dev/null 2>&1 && break; sleep 1; done
 curl -fsS http://localhost:8080/healthz >/dev/null
 curl -fsS http://localhost:8080/readyz >/dev/null
 (cd apps/api && go test ./internal/adapters/spicedb -spicedb-endpoint localhost:50051 -spicedb-token local-development-runtime-change-me -spicedb-insecure)
+(cd apps/api && go test ./internal/app/customer -customer-database-dsn 'postgres://app_migrator:app_migrator@localhost:5432/dealer_acceptance?sslmode=disable' -customer-spicedb-endpoint localhost:50051 -customer-spicedb-token local-development-runtime-change-me)
 for _ in $(seq 1 180); do curl -fsS http://localhost:5173 >/dev/null 2>&1 && break; sleep 1; done
 curl -fsS http://localhost:5173 >/dev/null
 
@@ -42,6 +44,8 @@ WEB_ACCEPTANCE_BUILT=1 node scripts/showroom-web-acceptance.mjs
 WEB_ACCEPTANCE_BUILT=1 node scripts/crawler-no-origin-acceptance.mjs
 WEB_ACCEPTANCE_BUILT=1 node scripts/inquiry-web-acceptance.mjs
 WEB_ACCEPTANCE_BUILT=1 node scripts/banner-web-acceptance.mjs
+WEB_ACCEPTANCE_BUILT=1 node scripts/customer-web-acceptance.mjs
+node scripts/session-rotation-web-acceptance.mjs
 node scripts/voice-recorder-acceptance.mjs
 node scripts/dealer-web-suite.mjs
 WEB_ACCEPTANCE_BUILT=1 INQUIRY_TEST_TURNSTILE_FAILURE=1 node scripts/inquiry-web-acceptance.mjs

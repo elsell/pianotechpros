@@ -1,5 +1,6 @@
+import {NativeButton as Button} from '../src/native-button';
 import {useCallback,useEffect,useLayoutEffect,useRef,useState} from 'react';
-import {AppState,BackHandler,Button,Keyboard,ScrollView,Text,TextInput,View} from 'react-native';
+import {AppState,BackHandler,Keyboard,ScrollView,Text,TextInput,View} from 'react-native';
 import {Stack,useFocusEffect,useRouter} from 'expo-router';
 import {useIsFocused,usePreventRemove} from '@react-navigation/native';
 import {NativeScanCamera,useNativeScanPermission} from '../src/inventory/scan-camera';
@@ -27,11 +28,11 @@ function ScanResult({busy,onBusy}:{busy:boolean;onBusy(value:boolean):void}){
  {actionDenied&&record?<Text accessibilityRole="alert" style={text}>{i18n.t('scan.view.actionDenied')}</Text>:null}
  {state.busy?<Text accessibilityLiveRegion="polite" style={text}>{i18n.t('common.loading')}</Text>:null}
  {state.issue?<Text accessibilityRole="alert" style={text}>{i18n.t(state.issue==='invalid'?'scan.view.invalid':state.issue==='denied'?'inventory.denied':'scan.view.failed')}</Text>:null}
- {state.issue==='unavailable'?<Button title={i18n.t('inventory.retry')} color={theme.accent} onPress={()=>void model.retry()} />:null}
+ {state.issue==='unavailable'?<Button title={i18n.t('inventory.retry')}  onPress={()=>void model.retry()} />:null}
  {record?<><Text accessibilityRole="header" style={{...text,fontSize:28,fontWeight:'600'}}>{inventoryScanLabelTitle(record.attributes)}</Text><Text style={text}>{i18n.t('inventory.stock',{number:record.attributes.stock_number})}</Text><Text style={text}>{i18n.t(`inventory.status.${record.status}` as MessageKey)}</Text>
  {record.cover?<InventoryPhotoImage key={record.cover.id} dealerID={record.dealer_id} recordID={record.id} photoID={record.cover.id} alt={record.cover.altText||inventoryScanLabelTitle(record.attributes)} />:<Text style={{...text,color:theme.secondary}}>{i18n.t('inventory.photos.empty')}</Text>}
  <Text style={text}>{i18n.t('inventory.field.make')}: {record.attributes.make}</Text><Text style={text}>{i18n.t('inventory.field.model')}: {record.attributes.model}</Text>
- <Button title={i18n.t('scan.view.editor')} color={theme.accent} disabled={busy} onPress={()=>router.push({pathname:'/inventory/[id]',params:{id:record.id,dealerID:record.dealer_id}})} /><Button title={i18n.t('scan.view.refresh')} color={theme.accent} disabled={busy} onPress={refresh} />
+ <Button title={i18n.t('scan.view.editor')}  disabled={busy} onPress={()=>router.push({pathname:'/inventory/[id]',params:{id:record.id,dealerID:record.dealer_id}})} /><Button title={i18n.t('scan.view.refresh')}  disabled={busy} onPress={refresh} />
  {profile?<InventoryScanActions userID={profile.id} dealerID={record.dealer_id} recordID={record.id} onObserved={observed} onDenied={denied} onIntent={intent} onBusy={onBusy} />:null}
  </>:null}
  </View>;
@@ -52,17 +53,17 @@ export default function ScanScreen(){
  function startCamera(){setIssue(null);Keyboard.dismiss();void cameraModel.start();}
  function accept(value:string,ticket?:number){if(!activeScreen.current||AppState.currentState!=='active'||(ticket!==undefined&&!cameraModel.consume(ticket)))return;cameraModel.cancel();setTorch(false);setInput('');Keyboard.dismiss();setIssue(scanEntry.open(value,auth.profile?.id??null)?null:'invalid');}
  const text={color:theme.text,fontSize:17};
- return <><Stack.Screen options={{title:i18n.t('scan.native.open'),gestureEnabled:false,headerLeft:()=> <Button title={i18n.t('scan.view.cancel')} color={theme.accent} disabled={actionBusy} onPress={cancel} />}} />
+ return <><Stack.Screen options={{title:i18n.t('scan.native.open'),gestureEnabled:false,headerLeft:()=> <Button title={i18n.t('scan.view.cancel')}  disabled={actionBusy} onPress={cancel} />}} />
  <ScrollView contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" contentContainerStyle={{padding:20,gap:20,flexGrow:1}}>
  {!auth.ready?<Text style={text}>{i18n.t('common.loading')}</Text>:scanState.pending?<>
- {auth.session&&auth.profile?focused&&foreground?<ScanResult busy={actionBusy} onBusy={setActionBusy} key={JSON.stringify([auth.profile.id,scanState.version])} />:null:<><Text style={text}>{i18n.t('scan.native.signIn')}</Text>{auth.errorKey?<Text accessibilityRole="alert" style={text}>{i18n.t(auth.errorKey)}</Text>:null}<Button title={i18n.t('auth.signIn')} color={theme.accent} disabled={!auth.signInReady||!!auth.session} onPress={()=>void auth.signIn()} /></>}
- <Button title={i18n.t('scan.native.again')} color={theme.accent} disabled={actionBusy} onPress={()=>{scanEntry.clear();setIssue(null);}} />
+ {auth.session&&auth.profile?focused&&foreground?<ScanResult busy={actionBusy} onBusy={setActionBusy} key={JSON.stringify([auth.profile.id,scanState.version])} />:null:<><Text style={text}>{i18n.t('scan.native.signIn')}</Text>{auth.errorKey?<Text accessibilityRole="alert" style={text}>{i18n.t(auth.errorKey)}</Text>:null}<Button title={i18n.t('auth.signIn')}  disabled={!auth.signInReady||!!auth.session} onPress={()=>void auth.signIn()} /></>}
+ <Button title={i18n.t('scan.native.again')}  disabled={actionBusy} onPress={()=>{scanEntry.clear();setIssue(null);}} />
  </>:<>
  <Text style={{...text,color:theme.secondary}}>{i18n.t('scan.native.hint')}</Text>
  {issue||cameraState.failure?<Text accessibilityRole="alert" style={text}>{i18n.t(issue==='invalid'?'scan.view.invalid':(issue??cameraState.failure)==='denied'?'scan.native.denied':'scan.native.failed')}</Text>:null}
- {cameraState.visible&&focused&&foreground&&permission?.granted?<><NativeScanCamera ticket={cameraState.ticket} torch={torch} onResult={(ticket,value)=>accept(value,ticket)} onFailure={ticket=>{cameraModel.fail(ticket);setTorch(false);}} /><Button title={i18n.t(torch?'scan.native.torchOff':'scan.native.torchOn')} color={theme.accent} onPress={()=>setTorch(value=>!value)} /><Button title={i18n.t('inventory.publication.cancel')} color={theme.accent} onPress={()=>{cameraModel.cancel();setTorch(false);}} /></>:<Button title={i18n.t('scan.native.camera')} color={theme.accent} disabled={cameraState.busy} onPress={()=>void startCamera()} />}
+ {cameraState.visible&&focused&&foreground&&permission?.granted?<><NativeScanCamera ticket={cameraState.ticket} torch={torch} onResult={(ticket,value)=>accept(value,ticket)} onFailure={ticket=>{cameraModel.fail(ticket);setTorch(false);}} /><Button title={i18n.t(torch?'scan.native.torchOff':'scan.native.torchOn')}  onPress={()=>setTorch(value=>!value)} /><Button title={i18n.t('inventory.publication.cancel')}  onPress={()=>{cameraModel.cancel();setTorch(false);}} /></>:<Button title={i18n.t('scan.native.camera')}  disabled={cameraState.busy} onPress={()=>void startCamera()} />}
  <Text style={text}>{i18n.t('scan.native.manual')}</Text><TextInput accessibilityLabel={i18n.t('scan.native.manual')} value={input} onChangeText={setInput} autoCapitalize="none" autoCorrect={false} keyboardType="url" returnKeyType="go" maxLength={2048} onSubmitEditing={()=>accept(input)} style={{...text,minHeight:48,borderWidth:1,borderColor:theme.border,borderRadius:10,padding:12,backgroundColor:theme.surface}} />
- <Button title={i18n.t('scan.native.useLink')} color={theme.accent} disabled={!input} onPress={()=>accept(input)} />
+ <Button title={i18n.t('scan.native.useLink')}  disabled={!input} onPress={()=>accept(input)} />
  </>}
  </ScrollView></>;
 }

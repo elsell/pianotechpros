@@ -49,3 +49,19 @@ to `patches/decode-uri-component.LICENSE`. Patch/source hashes are recorded in
 `patches/decode-uri-component.json` and checked by the installed-consumer test.
 The patch contains no credentials, private data or deployment configuration.
 Retire it when navigation's query-string consumer supports the fixed ESM decoder.
+
+The customer timezone name catalog in
+`apps/api/internal/adapters/timezones/zones.txt` is extracted from the existing
+pinned Go 1.26.10 distribution's `lib/time/zoneinfo.zip`. That archive's README
+identifies its source as the public-domain IANA Time Zone Database. Extraction
+retains every non-directory archive entry name, deduplicates and sorts ASCII
+names, then writes one UTF-8 name per line with a final newline (598 names).
+No timezone implementation, private data or host configuration is imported.
+The name catalog does not calculate timezone offsets.
+
+- Source archive SHA-256: `8f55634d05f8bca1f7bc7c69c5933428c69357e0bdf565e5ba224e3f88ff12e8`.
+- Name catalog SHA-256: `8725722643bf1f4ff4fc4b22268ade98b6fae047a86897219c3a13d4c4ced93d`.
+
+Catalog initialization verifies the name digest, sorted uniqueness, allowed
+identifier syntax and UTC membership. Updates require regenerating from an
+explicitly reviewed toolchain archive and reviewing the names/provenance diff.

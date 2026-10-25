@@ -33,10 +33,18 @@ try {
   const {revokeApplicationSession}=await import('/src/lib/auth.ts');sessionStorage.removeItem('pianotechpros_application_session');await revokeApplicationSession({});
   const afterSignOut=await openBrowserInventoryRecovery('parallel');if(await afterSignOut.read('journal')!==null)throw Error('sign-out retained draft');
   localStorage.setItem('pianotechpros_inventory_cleanup_pending','1');let closed=false;try{await afterSignOut.write('journal','PENDING-CLEANUP');}catch{closed=true;}if(!closed)throw Error('cleanup marker allowed write');
-  const reopened=await openBrowserInventoryRecovery('parallel');if(localStorage.getItem('pianotechpros_inventory_cleanup_pending'))throw Error('pending cleanup not retried');await reopened.write('reload','RELOAD-PAYLOAD');return {passed:true};
+  const reopened=await openBrowserInventoryRecovery('parallel');if(localStorage.getItem('pianotechpros_inventory_cleanup_pending'))throw Error('pending cleanup not retried');await reopened.write('reload','RELOAD-PAYLOAD');
+  const {openBrowserCustomerRecovery}=await import('/src/lib/customer/recovery-storage.ts');
+  const customer=await openBrowserCustomerRecovery('parallel');
+  const attributes={name:'Customer',isBusiness:false,businessName:'',email:'customer@example.test',phone:'',locations:[{key:'home',label:'Home',street1:'1 Main',street2:'',city:'Town',region:'State',postalCode:'123',timezone:'UTC',notes:''}],pianos:Array.from({length:200},(_,i)=>({key:'p'+i,locationKey:'home',nickname:'Piano',form:'grand',make:'',model:'',serial:'',manufacturedYear:'',player:false,notes:'x'.repeat(2000)}))};
+  const checkpoint=JSON.stringify({version:1,baseline:{id:'profile',revision:1,attributes},draft:attributes,pending:{kind:'save',id:'profile',revision:1,attributes},conflict:false});
+  if(new TextEncoder().encode(checkpoint).length<=1024*1024)throw Error('large checkpoint fixture too small');
+  await customer.write('large-customer',checkpoint);
+  let oversized=false;try{await customer.write('too-large','😀'.repeat(1024*1024+1));}catch{oversized=true;}if(!oversized)throw Error('oversized customer checkpoint accepted');
+  return {passed:true};
  });
  assert.equal(result.passed,true);
  await page.reload();
- assert.equal(await page.evaluate(async()=>{const storage=await import('/src/lib/inventory/recovery-storage.ts');const handle=await storage.openBrowserInventoryRecovery('parallel');const value=await handle.read('reload');await storage.clearBrowserInventoryRecovery();return value;}),'RELOAD-PAYLOAD');
+ assert.equal(await page.evaluate(async()=>{const storage=await import('/src/lib/inventory/recovery-storage.ts');const handle=await storage.openBrowserInventoryRecovery('parallel');const value=await handle.read('reload');const customer=JSON.parse(await handle.read('large-customer'));if(customer.draft.pianos.length!==200||customer.pending.attributes.pianos[199].notes!=='x'.repeat(2000))throw Error('large customer checkpoint lost on reload');await storage.clearBrowserInventoryRecovery();return value;}),'RELOAD-PAYLOAD');
  console.log('Browser inventory encryption, reload, scope, generation invalidation and tamper checks passed');
 } finally {await browser.close();}

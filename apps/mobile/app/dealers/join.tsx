@@ -1,5 +1,6 @@
+import {NativeButton as Button} from '../../src/native-button';
 import { useEffect, useState } from 'react';
-import { Button, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, View } from 'react-native';
+import {KeyboardAvoidingView,Platform,ScrollView,Text,TextInput,View} from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
 import { DealerClientError } from '@pianotechpros/api-client';
 import { createDealerJoin, InvitationCodeError } from '@pianotechpros/client-core';
@@ -38,7 +39,7 @@ function Join({ accountId }: { accountId: string }) {
       {!state.accepted ? <View style={{ gap: 12 }}>
         <Text style={{ color: theme.text, fontSize: 17 }}>{i18n.t('staff.pasteCode')}</Text>
         <TextInput accessibilityLabel={i18n.t('staff.pasteCode')} value={code} onChangeText={(value) => { controller.reset(); setCode(value); }} editable={!state.busy} multiline maxLength={4096} autoCapitalize="none" autoCorrect={false} spellCheck={false} autoComplete="off" textContentType="none" importantForAutofill="no" textAlignVertical="top" style={{ minHeight: 140, padding: 14, borderWidth: 1, borderRadius: 10, borderColor: theme.border, color: theme.text, backgroundColor: theme.surface, fontSize: 17 }} />
-        <Button title={i18n.t('staff.preview')} color={theme.accent} disabled={state.busy || !code} onPress={() => { void controller.preview(code); }} />
+        <Button title={i18n.t('staff.preview')}  disabled={state.busy || !code} onPress={() => { void controller.preview(code); }} />
       </View> : null}
       {state.preview ? <View style={{ padding: 20, gap: 16, borderRadius: 12, backgroundColor: theme.surface }}>
         <Text accessibilityRole="header" style={{ color: theme.text, fontSize: 24, fontWeight: '600' }}>{state.preview.dealerName}</Text>
@@ -49,13 +50,13 @@ function Join({ accountId }: { accountId: string }) {
           {state.grantPending ? <Text style={{ color: theme.secondary, fontSize: 17 }}>{i18n.t('staff.pending')}</Text> : null}
         </> : <>
           <Text style={{ color: theme.secondary, fontSize: 17 }}>{i18n.t('staff.previewHelp')}</Text>
-          <Button title={i18n.t('staff.accept')} color={theme.accent} disabled={state.busy} onPress={() => { void controller.accept(); }} />
+          <Button title={i18n.t('staff.accept')}  disabled={state.busy} onPress={() => { void controller.accept(); }} />
         </>}
-        {state.accepted || state.failure ? <Button title={i18n.t('staff.checkAccess')} color={theme.accent} disabled={state.busy} onPress={() => { void checkAccess(); }} /> : null}
+        {state.accepted || state.failure ? <Button title={i18n.t('staff.checkAccess')}  disabled={state.busy} onPress={() => { void checkAccess(); }} /> : null}
       </View> : null}
       {state.busy ? <Text accessibilityLiveRegion="polite" style={{ color: theme.secondary, fontSize: 17 }}>{i18n.t('common.loading')}</Text> : null}
       {state.failure ? <Text accessibilityRole="alert" style={{ color: theme.text, fontSize: 17 }}>{i18n.t(errorKey)}</Text> : null}
-      <Button title={i18n.t('dealer.cancel')} color={theme.accent} onPress={() => router.back()} />
+      <Button title={i18n.t('dealer.cancel')}  onPress={() => router.back()} />
     </ScrollView>
   </KeyboardAvoidingView>;
 }

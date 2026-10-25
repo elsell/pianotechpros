@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {sessionScopedFailure} from '@pianotechpros/api-client';
  import {onMount,tick} from 'svelte';
  import {createInventoryVoiceApiClient,VoiceClientError} from '@pianotechpros/api-client';
  import {createInventoryVoiceWorkspace,inventoryFormFromAttributes,type InventoryForm,type InventoryFormWorkspace,type InventoryVoiceCandidate,type InventoryVoiceField,type InventoryVoiceState,type SessionCredential} from '@pianotechpros/client-core';
@@ -27,7 +28,7 @@
  async function request<T>(run:(client:ReturnType<typeof createInventoryVoiceApiClient>)=>Promise<T>){
   const session=credential;
   try{return await run(createInventoryVoiceApiClient(apiURL,()=>Date.parse(session.expiresAt)>Date.now()?session.token:null));}
-  catch(error){if(error instanceof VoiceClientError&&['unauthenticated','not_found'].includes(error.code)){denied=true;failure='denied';transcript='';workflow?.cancel();voice=null;if(active&&session.token===credential.token&&error.code==='unauthenticated')onSessionRejected();}throw error;}
+  catch(error){error=sessionScopedFailure(error,session.token,credential.token);if(error instanceof VoiceClientError&&['unauthenticated','not_found'].includes(error.code)){denied=true;failure='denied';transcript='';workflow?.cancel();voice=null;if(active&&session.token===credential.token&&error.code==='unauthenticated')onSessionRejected();}throw error;}
  }
  async function process(audio:BrowserVoiceAudio|null=null){
   if(!active||working||otherBusy||denied){audio?.bytes.fill(0);return;}

@@ -515,3 +515,46 @@ continues rejecting fetch, browser-global transport and alternate clients even
 when an AbortController signal is provided.
 
 Native QR camera access is confined to `apps/mobile/src/inventory/scan-camera.tsx`. The structural gate permits `expo-camera` only there, rejects direct imports from presentation and still rejects network primitives inside that adapter. The adapter exposes QR-only preview and camera permission, not media recording or alternate API transport.
+
+The exact file `apps/api/internal/adapters/gormstore/customer/postgres_test.go`
+may execute SQL for controlled PostgreSQL fixtures and adversarial schema tests:
+proving runtime DELETE denial, immutable ownership/revision guards, corruption
+rejection, and rejection of previously committed audit proof. This exception
+allows testing database enforcement beneath the repository. Production customer
+persistence uses typed GORM operations; the exception does not cover product code.
+
+Customer editor ownership is confined to the exact hash-protected adapters
+`apps/web/src/lib/customer/ownership.ts` and
+`apps/mobile/src/customer/ownership.ts`. The web adapter holds a conditional
+exclusive Web Lock until its lease releases; the native adapter shares one
+registry across module reloads in the UI runtime. Neither grants network or
+storage capabilities to callers. Review and regenerate hashes when changing
+these files; do not broadly permit browser globals or runtime registries.
+
+The exact hash-protected native adapter
+`apps/mobile/src/customer/presentation.ts` retains the customer presentation
+lifetime across route remounts and module reloads. Controlled asynchronous tests
+verify retirement during opening and cleanup ordering. A real workspace test
+denies access, fails journal deletion, unmounts and retries through the retained
+lifetime; no replacement acquisition can bypass cleanup. This adapter grants no
+network or storage capability. Its hash and tampering checks follow the same
+review requirement as the ownership adapters.
+
+The built-web customer acceptance journey uses a stateful local HTTP fake behind
+the generated client and real browser Web Locks, IndexedDB and WebCrypto. It
+covers creation, immutable retry after lost response and reload, child validation
+focus, explicit conflict decisions, removal confirmation, competing tabs, delayed
+old-token rejection after session rotation, denial cleanup, Spanish navigation
+and logout recovery invalidation. This is browser integration evidence; real
+API/session/PostgreSQL/SpiceDB tests remain separate, and it does not establish
+native interaction acceptance.
+
+Session-rotation browser acceptance runs the built web app with a stateful HTTP
+fake. It holds an inventory save, refreshes the opaque session, rejects the old
+request and proves reload retains both the exact pending command and newer edits.
+It separately holds voice extraction across refresh and preserves the transcript
+for explicit retry. Current-session rejection still clears credentials and hides
+private content. Typed API-client tests exercise delayed real HTTP failures for
+dealer, inventory, inquiry, voice and customer families; 403/404 and unrelated
+failures are not changed by rotation. These checks do not substitute for native
+device acceptance.

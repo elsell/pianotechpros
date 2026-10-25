@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {sessionScopedFailure} from '@pianotechpros/api-client';
  import {onMount,tick} from 'svelte';
  import {createInventoryPhotoWorkspace,type InventoryFormWorkspace} from '@pianotechpros/client-core';
  import {createInventoryPhotoApiClient,InventoryClientError} from '@pianotechpros/api-client';
@@ -10,7 +11,7 @@
  import PhotoImage from './PhotoImage.svelte';
  export let otherBusy=false;export let onBusy:(value:boolean)=>void=()=>{};export let workspace:InventoryFormWorkspace;export let accountId:string;export let dealerID:string;export let apiURL:string;export let credential:SessionCredential;export let i18n:Translator;export let onSessionRejected:()=>void;
  let active=true;let selecting=false;let localError:MessageKey|null=null;let page=0;let preview:string|null=null;let removal:string|null=null;let altText='';let previewDialog:HTMLDialogElement;let removeDialog:HTMLDialogElement;
- async function request<T>(operation:(api:ReturnType<typeof createInventoryPhotoApiClient>)=>Promise<T>){const session=credential;try{return await operation(createInventoryPhotoApiClient(apiURL,()=>Date.parse(session.expiresAt)>Date.now()?session.token:null));}catch(error){if(active&&session.token===credential.token&&error instanceof InventoryClientError&&error.status===401)onSessionRejected();throw error;}}
+ async function request<T>(operation:(api:ReturnType<typeof createInventoryPhotoApiClient>)=>Promise<T>){const session=credential;try{return await operation(createInventoryPhotoApiClient(apiURL,()=>Date.parse(session.expiresAt)>Date.now()?session.token:null));}catch(error){error=sessionScopedFailure(error,session.token,credential.token);if(active&&session.token===credential.token&&error instanceof InventoryClientError&&error.status===401)onSessionRejected();throw error;}}
  const capture='stagePhoto' in workspace?workspace as InventoryFormWorkspace & {stagePhoto(bytes:Uint8Array):Promise<string|null>;pendingPhoto():{id:string}|null;expiredPhoto():boolean;discardPhoto():Promise<void>}:null;
  const controller=createInventoryPhotoWorkspace({capture:capture?{stage:bytes=>capture.stagePhoto(bytes),pending:()=>capture.pendingPhoto(),expired:()=>capture.expiredPhoto(),discard:()=>capture.discardPhoto()}:undefined,userID:accountId,dealerID,active:()=>active&&!!workspace.snapshot().draft,recordID:()=>workspace.recordID(),
   ensureRecord:async()=>{if('ensureRecord' in workspace&&typeof workspace.ensureRecord==='function')return workspace.ensureRecord() as Promise<string|null>;return workspace.recordID()||null;},

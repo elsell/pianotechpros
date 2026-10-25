@@ -1,3 +1,4 @@
+import {sessionScopedFailure} from '@pianotechpros/api-client';
 import {useLayoutEffect,useRef,useState} from 'react';
 import {createInquiryInboxApiClient,InquiryClientError} from '@pianotechpros/api-client';
 import {useMobileSession} from './session-provider';
@@ -9,6 +10,6 @@ export function useInquiryRequest(){
   const scope=current.current;const credential=scope?.session;
   if(!scope||!credential||Date.parse(credential.expiresAt)<=Date.now())throw new InquiryClientError('unauthenticated',401);
   try{return await operation(createInquiryInboxApiClient(scope.apiURL,()=>credential.token));}
-  catch(error){if(error instanceof InquiryClientError&&error.status===401&&current.current?.session?.token===credential.token)current.current.reject(credential.token);throw error;}
+  catch(error){error=sessionScopedFailure(error,credential.token,current.current?.session?.token??null);if(error instanceof InquiryClientError&&error.status===401&&current.current?.session?.token===credential.token)current.current.reject(credential.token);throw error;}
  });return request;
 }

@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {sessionScopedFailure} from '@pianotechpros/api-client';
  import {onMount,tick} from 'svelte';
  import {createInquiryInboxApiClient,InquiryClientError,type InboxInquiry} from '@pianotechpros/api-client';
  import {createInquiryWorkspace,type SessionCredential,type InquiryWorkspaceIssue} from '@pianotechpros/client-core';
@@ -8,7 +9,7 @@
  const workspace=createInquiryWorkspace<InboxInquiry>(error=>error instanceof InquiryClientError?error.code:'unavailable');let state=workspace.snapshot();
  const denied=(issue:InquiryWorkspaceIssue|null)=>issue==='unauthenticated'||issue==='not_found';
  const date=(value:string)=>i18n.date(new Date(value),{dateStyle:'medium',timeStyle:'short'});
- async function request<T>(run:(api:ReturnType<typeof createInquiryInboxApiClient>)=>Promise<T>){const session=credential;try{if(!active||Date.parse(session.expiresAt)<=Date.now())throw new InquiryClientError('unauthenticated',401);return await run(createInquiryInboxApiClient(apiURL,()=>session.token));}catch(error){if(active&&error instanceof InquiryClientError&&error.status===401&&session.token===credential.token)onSessionRejected();throw error;}}
+ async function request<T>(run:(api:ReturnType<typeof createInquiryInboxApiClient>)=>Promise<T>){const session=credential;try{if(!active||Date.parse(session.expiresAt)<=Date.now())throw new InquiryClientError('unauthenticated',401);return await run(createInquiryInboxApiClient(apiURL,()=>session.token));}catch(error){error=sessionScopedFailure(error,session.token,credential.token);if(active&&error instanceof InquiryClientError&&error.status===401&&session.token===credential.token)onSessionRejected();throw error;}}
  onMount(()=>{const off=workspace.subscribe(next=>{state=next;});workspace.replaceScope(accountId,dealerID,{list:(cursor,signal)=>request(api=>api.list(dealerID,cursor,30,signal)),get:(id,signal)=>request(api=>api.get(dealerID,id,signal)),markRead:(id,revision,signal)=>request(api=>api.markRead(dealerID,id,revision,signal))});heading.focus();void workspace.refresh();return()=>{active=false;off();workspace.clear();};});
  async function select(id:string|null){await workspace.select(id);if(!active)return;await tick();if(id)detailHeading?.focus();else heading?.focus();}
 </script>

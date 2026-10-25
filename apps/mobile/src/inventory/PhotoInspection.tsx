@@ -1,5 +1,6 @@
+import {NativeButton as Button} from '../native-button';
 import {useEffect,useRef,useState} from 'react';
-import {Button,Image,PanResponder,Platform,ScrollView,Text,View,type GestureResponderEvent} from 'react-native';
+import {Image,PanResponder,Platform,ScrollView,Text,View,type GestureResponderEvent} from 'react-native';
 import {createPhotoViewport} from '@pianotechpros/client-core';
 import {useMobileSession} from '../session-provider';
 import {useNativeTheme} from '../native-theme';
@@ -30,7 +31,7 @@ export function PhotoInspection({uri,alt,onError}:{uri:string;alt:string;onError
  :<View {...pan.panHandlers} accessibilityRole="adjustable" accessible accessibilityLabel={alt||i18n.t('inventory.photos.heading')} accessibilityHint={i18n.t('inventory.photos.zoomHint')} accessibilityValue={{min:100,max:400,now:Math.round(scale*100)}} accessibilityActions={[{name:'increment',label:i18n.t('inventory.photos.zoomIn')},{name:'decrement',label:i18n.t('inventory.photos.zoomOut')}]} onAccessibilityAction={event=>{if(event.nativeEvent.actionName==='increment')zoom(scale+0.5);if(event.nativeEvent.actionName==='decrement')zoom(scale-0.5);}} style={{flex:1,alignItems:'center',justifyContent:'center'}}><View pointerEvents="none" style={{width:transform.width||viewport.width,height:transform.height||viewport.height,transform:[{translateX:transform.x},{translateY:transform.y},{scale:transform.scale}]}}><Image {...imageProps} accessible={false} style={{width:'100%',height:'100%'}} /></View></View>):null}
  </View>
  <Text style={{color:theme.secondary,textAlign:'center'}}>{i18n.t('inventory.photos.zoomLevel',{level:i18n.number(Math.round(scale*100))})}</Text>
- <View style={{flexDirection:'row',flexWrap:'wrap',justifyContent:'center',gap:8}}><Button title={i18n.t('inventory.photos.zoomOut')} color={theme.accent} disabled={scale<=1.001} onPress={()=>zoom(scale-0.5)} /><Button title={i18n.t('inventory.photos.zoomReset')} color={theme.accent} disabled={scale<=1.001} onPress={()=>zoom(1)} /><Button title={i18n.t('inventory.photos.zoomIn')} color={theme.accent} disabled={scale>=3.999} onPress={()=>zoom(scale+0.5)} /></View>
+ <View style={{flexDirection:'row',flexWrap:'wrap',justifyContent:'center',gap:8}}><Button title={i18n.t('inventory.photos.zoomOut')}  disabled={scale<=1.001} onPress={()=>zoom(scale-0.5)} /><Button title={i18n.t('inventory.photos.zoomReset')}  disabled={scale<=1.001} onPress={()=>zoom(1)} /><Button title={i18n.t('inventory.photos.zoomIn')}  disabled={scale>=3.999} onPress={()=>zoom(scale+0.5)} /></View>
  <Text style={{color:theme.secondary,textAlign:'center',paddingHorizontal:16}}>{i18n.t('inventory.photos.zoomHint')}</Text>
  </View>;
 }

@@ -46,6 +46,7 @@ while IFS= read -r -d '' file; do
       apps/api/internal/adapters/gormstore/dealer/inventory_publication_test.go) ;;
       apps/api/internal/adapters/gormstore/dealer/inquiry_inbox_test.go) ;;
       apps/api/internal/adapters/gormstore/dealer/inventory_scan_test.go) ;;
+      apps/api/internal/adapters/gormstore/customer/postgres_test.go) ;;
       *) report "$file uses direct SQL execution" ;;
     esac
   fi

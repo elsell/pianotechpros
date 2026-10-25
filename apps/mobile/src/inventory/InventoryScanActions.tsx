@@ -1,5 +1,6 @@
+import {NativeButton as Button} from '../native-button';
 import {useEffect,useLayoutEffect,useRef,useState} from 'react';
-import {Button,InputAccessoryView,Keyboard,KeyboardAvoidingView,Modal,Platform,Pressable,ScrollView,Text,TextInput,View} from 'react-native';
+import {InputAccessoryView,Keyboard,KeyboardAvoidingView,Modal,Platform,Pressable,ScrollView,Text,TextInput,View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {InventoryClientError,type InventoryPublicationState,type InventoryRecord} from '@pianotechpros/api-client';
 import {publicationSaleDefaults,createInventoryPublicationWorkspace,inventoryCurrencies,inventoryScanLabelTitle,publicationStatuses,publicationTransitionFromInput,type PublicationCommand} from '@pianotechpros/client-core';
@@ -30,7 +31,7 @@ export function InventoryScanActions(props:Props){
  function change(){try{const command=publicationTransitionFromInput({status:target,amount,currency,reason},state?.state?.record.status??'',i18n.locale==='es'?',':'.');setInvalid(false);review(command);}catch{setInvalid(true);}}
  function confirm(){void run(async current=>{try{await current.confirm();}finally{if(model.current===current){if(current.snapshot().outcome==='succeeded'){setAmount('');setReason('');saleSeeded.current=false;}setScreen('closed');}}});}
  const feedback=<>{busy?<Text accessibilityLiveRegion="polite" style={text}>{t('busy')}</Text>:null}{state?.outcome==='unknown'?<Text accessibilityRole="alert" style={text}>{t('unknown')}</Text>:state?.failure?<Text accessibilityRole="alert" style={text}>{state.failure==='denied'?i18n.t('inventory.denied'):t(state.failure==='conflict'?'conflict':'failed')}</Text>:screen==='closed'&&state?.outcome==='succeeded'?<Text accessibilityLiveRegion="polite" style={text}>{t('success')}</Text>:null}</>;
- const button=(key:string,onPress:()=>void,blocked=disabled)=><Button title={t(key)} color={theme.accent} onPress={onPress} disabled={blocked} />;
+ const button=(key:string,onPress:()=>void,blocked=disabled)=><Button title={t(key)}  onPress={onPress} disabled={blocked} />;
  const field=(name:string,value:string)=><View style={{gap:4}}><Text style={secondary}>{name}</Text><Text style={text}>{value}</Text></View>;
  return <View style={{gap:12,paddingVertical:20,borderTopWidth:1,borderColor:theme.border}}>
  <Text accessibilityRole="header" style={{...text,fontSize:22,fontWeight:'600'}}>{t('heading')}</Text>{state?.state?<Text style={secondary}>{label(state.state.record.status)} · {t(state.state.publication?.visible?'visible':state.state.publication?'hidden':'absent')}</Text>:null}{screen==='closed'?feedback:null}
@@ -45,6 +46,6 @@ export function InventoryScanActions(props:Props){
  <Text style={secondary}>{t('reason')}</Text><TextInput accessibilityLabel={t('reason')} value={reason} onChangeText={setReason} editable={!busy} multiline maxLength={2000} style={{...text,minHeight:120,padding:12,textAlignVertical:'top',borderWidth:1,borderColor:theme.border,borderRadius:10,backgroundColor:theme.surface}} /><Text style={secondary}>{t('reasonHint')}</Text>{invalid?<Text accessibilityRole="alert" style={text}>{t('invalid')}</Text>:null}{button('change',change,busy)}
  </>:state?.review?<><Text accessibilityRole="header" style={{...text,fontSize:22,fontWeight:'600'}}>{inventoryScanLabelTitle(state.review.state.record.attributes)}</Text><Text style={text}>{state.review.state.record.attributes.stock_number}</Text><Text style={text}>{t(state.review.command.kind==='unpublish'?'unpublishHint':'lifecycleHint')}</Text>{state.review.command.kind==='transition'?<><Text style={text}>{label(state.review.state.record.status)} → {label(state.review.command.status)}</Text><Text style={secondary}>{t('privateSale')}</Text>{state.review.command.salePrice?field(t('amount'),i18n.money(state.review.command.salePrice.minor_units,state.review.command.salePrice.currency)):null}{state.review.command.reason?field(t('reason'),state.review.command.reason):null}</>:null}</>:null}
  </ScrollView></KeyboardAvoidingView>{screen==='review'?<View style={{padding:16,borderTopWidth:1,borderColor:theme.border}}>{button('confirm',confirm,busy||!state?.review)}</View>:null}
- {Platform.OS==='ios'?<InputAccessoryView nativeID="scan-sale-keyboard"><View style={{backgroundColor:theme.surface,alignItems:'flex-end'}}><Button title={i18n.t('inventory.edit.done')} color={theme.accent} onPress={Keyboard.dismiss} /></View></InputAccessoryView>:null}
+ {Platform.OS==='ios'?<InputAccessoryView nativeID="scan-sale-keyboard"><View style={{backgroundColor:theme.surface,alignItems:'flex-end'}}><Button title={i18n.t('inventory.edit.done')}  onPress={Keyboard.dismiss} /></View></InputAccessoryView>:null}
  </SafeAreaView></Modal></View>;
 }

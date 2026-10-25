@@ -1,5 +1,6 @@
+import {NativeButton as Button} from '../native-button';
 import {useEffect,useRef,useState} from 'react';
-import {Button,InputAccessoryView,Keyboard,KeyboardAvoidingView,Modal,Platform,Pressable,ScrollView,Text,TextInput,View} from 'react-native';
+import {InputAccessoryView,Keyboard,KeyboardAvoidingView,Modal,Platform,Pressable,ScrollView,Text,TextInput,View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {InventoryClientError,InventoryPublicationError,type InventoryPhoto,type InventoryPublicationState,type PublicationReadinessField} from '@pianotechpros/api-client';
 import {publicationSaleDefaults,createInventoryPublicationWorkspace,inventoryCurrencies,publicationStatuses,publicationTransitionFromInput,type InventoryFormWorkspace,type PublicationCommand} from '@pianotechpros/client-core';
@@ -34,7 +35,7 @@ export function InventoryPublication({workspace,userID,dealerID,recordID,publish
  const t=(key:string)=>i18n.t(`inventory.publication.${key}` as MessageKey);
  const statusLabel=(status:string)=>i18n.t(`inventory.status.${status}` as MessageKey);
  const text={color:theme.text,fontSize:17};const secondary={color:theme.secondary,fontSize:16};
- const button=(key:string,action:()=>void,blocked=disabled)=><Button title={t(key)} color={theme.accent} onPress={action} disabled={blocked} />;
+ const button=(key:string,action:()=>void,blocked=disabled)=><Button title={t(key)}  onPress={action} disabled={blocked} />;
  function chooseStatus(value:string){setTarget(value);if(value==='sold'&&!saleSeeded.current){saleSeeded.current=true;const defaults=publicationSaleDefaults(state?.state?.record.attributes.asking_price,i18n.locale==='es'?',':'.');setAmount(defaults.amount);setCurrency(defaults.currency);}}
  function cancel(){const current=model.current;if(operation.current||current?.controller.snapshot().busy)return;current?.controller.cancel();Keyboard.dismiss();setScreen('closed');setChoice(null);setMissing([]);}
  async function run(work:(current:NonNullable<typeof model.current>)=>Promise<void>){const current=model.current;if(!current||!current.active()||operation.current)return;operation.current=true;setMissing([]);setInvalid(false);try{await work(current);}catch{/* Stable controller state and validated readiness identifiers own feedback. */}finally{if(model.current===current&&current.active())operation.current=false;}}
@@ -77,12 +78,12 @@ export function InventoryPublication({workspace,userID,dealerID,recordID,publish
  {row(i18n.t('inventory.field.asking_amount'),attributes.price_visible&&attributes.asking_price?i18n.money(attributes.asking_price.minor_units,attributes.asking_price.currency):t('noPrice'))}
  {reviewed.state.photos.slice(page*6,page*6+6).map((photo,index)=><View key={photo.id} style={{gap:6}}><Text style={secondary}>{i18n.t('inventory.photos.number',{number:i18n.number(page*6+index+1)})}</Text><InventoryPhotoImage dealerID={dealerID} recordID={recordID} photoID={photo.id} alt={photo.altText||i18n.t('inventory.photos.number',{number:i18n.number(page*6+index+1)})} /></View>)}
  {!reviewed.state.photos.length?<Text style={secondary}>{t('noPhotos')}</Text>:null}
- {reviewed.state.photos.length>6?<View style={{flexDirection:'row',flexWrap:'wrap',justifyContent:'space-between'}}><Button title={i18n.t('inventory.photos.previous')} color={theme.accent} disabled={page===0} onPress={()=>setPage(v=>v-1)} /><Button title={i18n.t('inventory.photos.next')} color={theme.accent} disabled={(page+1)*6>=reviewed.state.photos.length} onPress={()=>setPage(v=>v+1)} /></View>:null}
+ {reviewed.state.photos.length>6?<View style={{flexDirection:'row',flexWrap:'wrap',justifyContent:'space-between'}}><Button title={i18n.t('inventory.photos.previous')}  disabled={page===0} onPress={()=>setPage(v=>v-1)} /><Button title={i18n.t('inventory.photos.next')}  disabled={(page+1)*6>=reviewed.state.photos.length} onPress={()=>setPage(v=>v+1)} /></View>:null}
  </>:reviewed.command.kind==='transition'?<><Text style={text}>{statusLabel(reviewed.state.record.status)} → {statusLabel(reviewed.command.status)}</Text><Text style={secondary}>{t('privateSale')}</Text>{reviewed.command.salePrice?row(t('amount'),i18n.money(reviewed.command.salePrice.minor_units,reviewed.command.salePrice.currency)):null}{reviewed.command.reason?row(t('reason'),reviewed.command.reason):null}</>:null}
  </>:null}
  </ScrollView></KeyboardAvoidingView>
  {screen==='review'?<View style={{padding:16,borderTopWidth:1,borderColor:theme.border}}>{button('confirm',confirm,busy||!state?.review)}</View>:null}
- {Platform.OS==='ios'?<InputAccessoryView nativeID="publication-keyboard"><View style={{backgroundColor:theme.surface,alignItems:'flex-end'}}><Button title={i18n.t('inventory.edit.done')} color={theme.accent} onPress={Keyboard.dismiss} /></View></InputAccessoryView>:null}
+ {Platform.OS==='ios'?<InputAccessoryView nativeID="publication-keyboard"><View style={{backgroundColor:theme.surface,alignItems:'flex-end'}}><Button title={i18n.t('inventory.edit.done')}  onPress={Keyboard.dismiss} /></View></InputAccessoryView>:null}
  </SafeAreaView></Modal>
  </View>;
 }

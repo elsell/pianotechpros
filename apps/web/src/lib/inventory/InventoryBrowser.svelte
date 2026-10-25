@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {sessionScopedFailure} from '@pianotechpros/api-client';
  import InventoryEditor from './InventoryEditor.svelte';
  import { onMount } from 'svelte';
  import { createInventoryApiClient, InventoryClientError } from '@pianotechpros/api-client';
@@ -16,7 +17,7 @@
   try{
    const page=await createInventoryApiClient(apiURL,()=>Date.parse(session.expiresAt)>Date.now()?session.token:null).list(dealerID,{search:filters.search,status:filters.status==='all'||filters.status==='active'?undefined:filters.status,includeInactive:filters.status==='all',cursor});
    return {...page,items:page.items.map(r=>({id:r.id,title:r.attributes.title||[r.attributes.make,r.attributes.model].filter(Boolean).join(' ')||r.attributes.stock_number,stock:r.attributes.stock_number,status:r.status,featured:!!r.attributes.featured}))};
-  }catch(error){if(error instanceof InventoryClientError&&error.status===401&&active&&session.token===credential.token)onSessionRejected();throw error;}
+  }catch(error){error=sessionScopedFailure(error,session.token,credential.token);if(error instanceof InventoryClientError&&error.status===401&&active&&session.token===credential.token)onSessionRejected();throw error;}
  }});
  let state=browser.snapshot();
  onMount(()=>{heading.focus();const unsubscribe=browser.subscribe(next=>{state=next;});void browser.refresh();return()=>{active=false;unsubscribe();browser.dispose();};});

@@ -12,7 +12,8 @@ compilation. Android interaction confirms a private title edit never enters the
 share sheet. iOS interaction remains unverified. Verification reports only the
 previously reviewed node-forge advisory; no security threshold was weakened.
 
-Crawler discovery (SH-05) is the active slice. Dedicated anonymous directory and
+Crawler discovery (SH-05) merged in PR #62 at
+`e730017ef309acab45e184795ffbcf05aba36182` after acceptance and both native builds passed. Dedicated anonymous directory and
 catalog ports return minimal public projections with bounded batch reads and
 publication visibility locks. Isolated PostgreSQL tests cover private edits,
 sold publications, unpublication, corrupted snapshots, capacity overflow, failures
@@ -22,8 +23,77 @@ fields. Root-level sitemap files preserve protocol URL scope. Robots and localiz
 public discovery text use only the configured origin; absent configuration blocks
 crawlers and fails before API reads. Development and production browser acceptance, full project/contract
 checks and critic review pass, including Unicode-control sanitization. Hosted
-checks and merge remain pending. Customer/technician
+verification reported only the previously reviewed node-forge advisory. Customer/technician
 profiles and broader native/device acceptance remain required parity work.
+
+Customer profile parity (CU-01) is the active implementation slice. The legacy
+contract now specifies private personal/business details, stable locations and
+owned pianos, injected timezone validation and optimistic revisions. Domain tests
+cover validation, nested defensive copies, stale saves, no-ops and clock/revision
+bounds. Aggregate storage now preserves nested keys, scopes owner reads, serializes
+revision saves and commits audits/outbox/idempotency atomically. Real PostgreSQL
+race tests cover runtime privileges, rollback, duplicate creation, competing edits,
+corrupt rows and rejection of previously committed audit proof. Review corrected
+production-translated duplicate errors and same-transaction audit validation;
+no confirmed persistence blockers remain. The generated authenticated application
+remains fail-closed. The product application policy now enforces owned reads,
+serialized revision saves, completed local grant readiness, SpiceDB permissions
+and audited retries. The 598-name pinned IANA catalog supports regional names
+and legacy aliases. Real PostgreSQL/SpiceDB/runtime-proxy integration covers
+creation, reads, updates, no-ops, replay and revocation without regranting access.
+The product HTTP adapter now has explicit nested DTOs, owner-free responses,
+bounded strict inputs and no-store responses. Transport tests cover closed policy,
+injected ownership fields, body limits, revision errors and child mapping. The
+reviewed nickname requirement is reflected in its schema. Runtime bootstrap now
+injects the verified catalog into both adapters and exposes matching generated
+contracts. Real HTTP/session/PostgreSQL/SpiceDB integration covers legitimate
+create/edit/read/replay, stale saves, cross-user access, revoked grants and expired
+or revoked sessions. Composition tests include the public showroom to prevent
+schema-name collisions. The typed shared client now snapshots commands, validates
+profile identity/revisions and nested response shapes, and exposes safe machine
+errors. HTTP fixture tests cover current credentials, cancellation, stale and
+malformed replies and private-field rejection. The optional manufacturing-year
+schema now explicitly permits null. Shared form/controller tests now cover field
+validation, stable child keys and safe removals, durable-command-before-request
+ordering, immutable retries, edits during saves, explicit conflict choices and
+scope-loss suppression. Review corrected mailbox parity and observer-triggered
+reads after disposal. A separate API/user-bound recovery journal and workspace
+now validate checkpoints, authorize before restore, retain writes across navigation
+and share platform vault cleanup. Exclusive API/user ownership now spans opening,
+editing, pending writes and denial cleanup. Web Locks enforce two-tab exclusion
+and recover after tab closure; the native runtime registry survives module reload.
+Failed protection retains ownership and failed deletion permits cleanup retry.
+Review corrected mutable opening scope by freezing one canonical identity.
+Large aggregate recovery now
+uses a shared 4 MiB vault/customer bound while inventory stays at 1 MiB; encrypted
+restart and actual browser reload tests preserve full pending checkpoints. Native
+codec tests cover large ciphertext and precise size rejection.
+Web composition now exposes an account-owned customer entry, focused location
+and piano editors, protected navigation, localized validation focus, confirmed
+removal and explicit conflict comparisons. Built-browser integration with a
+stateful HTTP fake passes creation, lost-response/reload retry preserving newer
+edits, two-tab exclusion, session rotation, denial cleanup, Spanish navigation
+and logout invalidation. Review corrected stale-token rejection handling and
+comparison of identically named locations. Native composition now provides the
+account entry, focused child editors, searchable choices, protected Back,
+conflict comparisons and confirmed removal. Android interaction with the isolated
+real API verifies contact/location creation, timezone selection, save/reopen,
+cold-start recovery of an unfinished piano, validation opening the type selector,
+empty-search feedback, piano type selection, invalid-year focus and recovery,
+section Back positioning, and cancelled/confirmed piano removal. Spanish dark
+mode with 1.3 font scaling exposed pale Android button fills; a shared native
+button adapter now uses platform-specific primary/destructive colors, with
+contrast checks and reviewed Android rendering. This is partial accessibility
+evidence, not screen-reader or iOS acceptance. Review fixed private picker
+retention after denial, Back after denial and cleanup ownership across remounts.
+The remaining native conflict/failure/recovery, accessibility and iOS interaction
+matrix is not yet accepted; CU-01 remains incomplete.
+Shared typed error normalization now protects remaining
+web domain request boundaries and native request hooks from delayed old-token
+401s. Built inventory/voice browser tests preserve pending commands, newer edits
+and transcripts across rotation; current-token rejection remains authoritative.
+Real HTTP tests cover all five client families without changing resource denial.
+Technician profile parity follows and remains required.
 
 QR scan parity (QR-01) is implemented with remaining device acceptance below.
 The legacy scan flow has been rechecked read-only: stable label, authenticated

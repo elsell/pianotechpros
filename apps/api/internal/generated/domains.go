@@ -3,10 +3,13 @@ package generated
 
 import (
 	"github.com/danielgtaylor/huma/v2"
+	customerstore "github.com/elsell/pianotechpros/apps/api/internal/adapters/gormstore/customer"
 	dealerstore "github.com/elsell/pianotechpros/apps/api/internal/adapters/gormstore/dealer"
 	inventorystore "github.com/elsell/pianotechpros/apps/api/internal/adapters/gormstore/inventory"
+	customerroutes "github.com/elsell/pianotechpros/apps/api/internal/adapters/httpserver/customer/routes"
 	dealerroutes "github.com/elsell/pianotechpros/apps/api/internal/adapters/httpserver/dealer/routes"
 	inventoryroutes "github.com/elsell/pianotechpros/apps/api/internal/adapters/httpserver/inventory/routes"
+	customerapp "github.com/elsell/pianotechpros/apps/api/internal/app/customer"
 	dealerapp "github.com/elsell/pianotechpros/apps/api/internal/app/dealer"
 	inventoryapp "github.com/elsell/pianotechpros/apps/api/internal/app/inventory"
 	"github.com/elsell/pianotechpros/apps/api/internal/ports"
@@ -34,6 +37,11 @@ type Dependencies struct {
 
 func Registrations(dependencies Dependencies) []func(huma.API) {
 	registrations := make([]func(huma.API), 0)
+	registrations = append(registrations, func(api huma.API) {
+		repository := customerstore.New(dependencies.DB)
+		service := customerapp.New(customerapp.Dependencies{Auth: dependencies.Auth, Authorizer: dependencies.Authorizer, AuthorizationOutbox: dependencies.AuthorizationOutbox, AuthorizationSerializer: dependencies.AuthorizationSerializer, Repository: repository, Audits: dependencies.Audits, AuditRateLimiter: dependencies.AuditRateLimiter, Clock: dependencies.Clock, Probe: dependencies.Probe, NewID: dependencies.NewID, AuthorizationWorker: dependencies.AuthorizationWorker, AuthorizationLease: dependencies.AuthorizationLease, CursorSigningKey: dependencies.CursorSigningKey})
+		customerroutes.Register(api, service)
+	})
 	registrations = append(registrations, func(api huma.API) {
 		repository := dealerstore.New(dependencies.DB)
 		service := dealerapp.New(dealerapp.Dependencies{Auth: dependencies.Auth, Authorizer: dependencies.Authorizer, AuthorizationOutbox: dependencies.AuthorizationOutbox, AuthorizationSerializer: dependencies.AuthorizationSerializer, Repository: repository, Audits: dependencies.Audits, AuditRateLimiter: dependencies.AuditRateLimiter, Clock: dependencies.Clock, Probe: dependencies.Probe, NewID: dependencies.NewID, AuthorizationWorker: dependencies.AuthorizationWorker, AuthorizationLease: dependencies.AuthorizationLease, CursorSigningKey: dependencies.CursorSigningKey})

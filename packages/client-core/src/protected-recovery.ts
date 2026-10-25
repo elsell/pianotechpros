@@ -1,3 +1,4 @@
+import {protectedRecoveryMaxBytes} from './recovery-limits';
 import type { ProtectedInventoryDraftStorage } from './inventory-recovery';
 
 export interface RecoveryCrypto {
@@ -52,7 +53,7 @@ export function createProtectedRecovery(port:{secure:SecretStorage;records:Ciphe
       const plaintext=encrypted===null?null:await port.crypto.open(key,aad,encrypted);await valid();return plaintext;
      });},
      write(journalKey:string,value:string){return queue(async()=>{
-      await valid();const aad=binding(journalKey);if(typeof value!=='string'||value.length>1024*1024)throw unavailable();
+      await valid();const aad=binding(journalKey);if(typeof value!=='string'||value.length>protectedRecoveryMaxBytes||new TextEncoder().encode(value).length>protectedRecoveryMaxBytes)throw unavailable();
       const address=await port.crypto.address(aad);const encrypted=await port.crypto.seal(key,aad,value);await valid();
       await port.records.write(address,encrypted);await valid();
      });},

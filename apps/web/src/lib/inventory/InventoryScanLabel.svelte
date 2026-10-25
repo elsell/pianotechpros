@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {sessionScopedFailure} from '@pianotechpros/api-client';
  import {mountInventoryLabel,printInventoryLabel} from '../browser-events';
  import {onDestroy,tick} from 'svelte';
  import {createInventoryScanApiClient,InventoryClientError} from '@pianotechpros/api-client';
@@ -12,7 +13,7 @@
  const path=(matrix:boolean[][])=>matrix.flatMap((row,y)=>row.flatMap((dark,x)=>dark?[`M${x} ${y}h1v1h-1z`]:[])).join('');
  async function show(){
   if(open)return;open=true;savedStock=stock;savedTitle=title;
-  const current=createInventoryScanLabel({origin:window.location.origin,dealerID,load:async signal=>{const session=credential;try{return await createInventoryScanApiClient(apiURL,()=>Date.parse(session.expiresAt)>Date.now()?session.token:null).ensure(dealerID,recordID,signal);}catch(error){if(active&&credential.token===session.token&&error instanceof InventoryClientError&&error.status===401)onSessionRejected();throw error;}},classify:error=>error instanceof InventoryClientError&&[401,403,404].includes(error.status)?'denied':'unavailable'});
+  const current=createInventoryScanLabel({origin:window.location.origin,dealerID,load:async signal=>{const session=credential;try{return await createInventoryScanApiClient(apiURL,()=>Date.parse(session.expiresAt)>Date.now()?session.token:null).ensure(dealerID,recordID,signal);}catch(error){error=sessionScopedFailure(error,session.token,credential.token);if(active&&credential.token===session.token&&error instanceof InventoryClientError&&error.status===401)onSessionRejected();throw error;}},classify:error=>error instanceof InventoryClientError&&[401,403,404].includes(error.status)?'denied':'unavailable'});
   model=current;unsubscribe=current.subscribe(value=>state=value);await tick();if(!active||model!==current||!open)return;dialog.showModal();await current.load();
  }
  async function close(){if(!open)return;open=false;unsubscribe();model?.dispose();model=null;state={busy:false,issue:null,value:null};dialog.close();await tick();if(active)trigger?.focus();}

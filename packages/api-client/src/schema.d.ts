@@ -71,6 +71,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/dealers/{dealerID}/inquiries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list-inbox-inquiries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dealers/{dealerID}/inquiries/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get-inbox-inquiry"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dealers/{dealerID}/inquiries/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["acknowledge-inbox-inquiry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/dealers/{dealerID}/inventory": {
         parameters: {
             query?: never;
@@ -569,6 +617,16 @@ export interface components {
              */
             type: string;
         };
+        AcknowledgeInquiry: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/AcknowledgeInquiry.json
+             */
+            readonly $schema?: string;
+            /** Format: int64 */
+            revision: number;
+        };
         Attributes: {
             acquisition_cost?: components["schemas"]["Money"] | null;
             asking_price?: components["schemas"]["Money"] | null;
@@ -633,6 +691,14 @@ export interface components {
             readonly $schema?: string;
             data: components["schemas"]["AuthorizationDeadLetterDTO"][];
             meta: components["schemas"]["PaginationMeta"];
+        };
+        BuyerContact: {
+            email: string;
+            message: string;
+            name: string;
+            phone: string;
+            /** @enum {string} */
+            preference: "email" | "phone" | "either";
         };
         CollectionOutputBody: {
             /**
@@ -755,6 +821,39 @@ export interface components {
             message?: string;
             /** @description The value at the given location */
             value?: unknown;
+        };
+        InboxInquiry: {
+            contact: components["schemas"]["BuyerContact"];
+            /** Format: date-time */
+            createdAt: string;
+            dealerName: string;
+            dealerSlug: string;
+            id: string;
+            piano: components["schemas"]["PublicListing"];
+            /** Format: date-time */
+            readAt?: string;
+            readBy?: string;
+            /** Format: int64 */
+            revision: number;
+        };
+        InboxListOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/InboxListOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["InboxInquiry"][];
+            meta: components["schemas"]["MetaStruct"];
+        };
+        InboxOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/InboxOutputBody.json
+             */
+            readonly $schema?: string;
+            data: components["schemas"]["InboxInquiry"];
         };
         InventoryListMeta: {
             nextCursor?: string;
@@ -1393,6 +1492,114 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DealerItemOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "list-inbox-inquiries": {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                dealerID: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxListOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "get-inbox-inquiry": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                dealerID: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    "acknowledge-inbox-inquiry": {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string;
+            };
+            path: {
+                dealerID: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcknowledgeInquiry"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxOutputBody"];
                 };
             };
             /** @description Error */

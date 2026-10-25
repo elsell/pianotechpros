@@ -44,6 +44,7 @@ while IFS= read -r -d '' file; do
     case "$file" in
       # Exact security-test exception documented in platform/testing.spec.md.
       apps/api/internal/adapters/gormstore/dealer/inventory_publication_test.go) ;;
+      apps/api/internal/adapters/gormstore/dealer/inquiry_inbox_test.go) ;;
       *) report "$file uses direct SQL execution" ;;
     esac
   fi

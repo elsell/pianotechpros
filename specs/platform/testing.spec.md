@@ -469,3 +469,10 @@ to prove rollback after record/audit/history writes. Table names are fixed test
 literals and the generated fixture identity is SQL-quoted. This exception is
 limited to the test file; direct SQL remains prohibited in production Go code.
 The tests never use the legacy or production database.
+
+The exact file `apps/api/internal/adapters/gormstore/dealer/inquiry_inbox_test.go`
+has the same test-only exception to attempt forbidden deletion/truncation of
+read receipts and execute the embedded acknowledgment rollback migration inside
+an explicitly rolled-back transaction. The fixed table names and repository-owned
+migration contain no external SQL input. These checks prove append-only runtime
+privileges and refusal to remove retained receipts on an isolated fixture.

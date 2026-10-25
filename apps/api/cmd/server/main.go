@@ -101,7 +101,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	registrations := append(generated.Registrations(domainDependencies), inventoryphotos.Registration(domainDependencies, photoprocessor.New()), showroom.Registration(store.DB, probe, []byte(cfg.CursorSigningKey)), inquiryRegistration)
+	registrations := append(generated.Registrations(domainDependencies), inventoryphotos.Registration(domainDependencies, photoprocessor.New()), showroom.Registration(store.DB, probe, []byte(cfg.CursorSigningKey)), inquiryRegistration, inquiry.InboxRegistration(domainDependencies))
 	handler, _ := httpserver.New(application, generated.Domains, httpserver.Options{OIDCIssuer: cfg.OIDCIssuer, OIDCDiscoveryURL: discoveryURL, OIDCAuthorizationURL: authorizationURL, OIDCTokenURL: tokenURL, OIDCDocsClientID: cfg.OIDCDocsClientID, OIDCDocsRedirectURI: cfg.OIDCDocsRedirectURI, PublicBaseURL: cfg.PublicBaseURL, CORSAllowedOrigins: cfg.CORSAllowedOrigins, TrustedProxyCIDRs: cfg.TrustedProxyCIDRs, DisableDocs: cfg.ScalarDocsDisabled, RequestRateLimiter: requestLimiter, Clock: clock, Probe: probe, MetricsHandler: metrics, DomainRegistrations: registrations})
 	server := &http.Server{Addr: cfg.HTTPAddr, Handler: handler, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 20}
 	go func() {

@@ -24,7 +24,7 @@ export function InventoryVoice({workspace,userID,dealerID,otherBusy,onBusy,onPau
    transcribe:(id,revision,bytes,mime,signal)=>request(api=>api.transcribe(dealerID,id,revision,bytes,mime,signal)),extract:(id,revision,text,signal)=>request(api=>api.extract(dealerID,id,revision,text,signal)),
    classify:nativeVoiceFailure,
   });
-  const recorder=createMobileVoiceCapture({active,changed:value=>{if(alive)setCapture(value);},completed:bytes=>{if(active())void coordinator.process(bytes,'audio/mp4');else bytes.fill(0);}});
+  const recorder=createMobileVoiceCapture({active,backgrounded:()=>clear(),changed:value=>{if(alive)setCapture(value);},completed:bytes=>{if(active())void coordinator.process(bytes,'audio/mp4');else bytes.fill(0);}});
   const current={coordinator,capture:recorder,active};model.current=current;
   setOpen(false);setTranscript('');setSelected([]);setShowTranscript(false);setCapture(idle);
   let phase='idle';
@@ -34,7 +34,7 @@ export function InventoryVoice({workspace,userID,dealerID,otherBusy,onBusy,onPau
   });
   const clear=()=>{coordinator.cancel();void recorder.cancel();if(alive){setOpen(false);setTranscript('');setSelected([]);}};
   const unwatch=workspace.subscribe(value=>{if(value.denied){clear();coordinator.reconcile();}});
-  const lifecycle=AppState.addEventListener('change',value=>{if(value==='background')clear();});
+  const lifecycle=AppState.addEventListener('change',value=>{if(value==='background'&&recorder.snapshot().phase!=='requesting')clear();});
   return()=>{alive=false;unsubscribe();unwatch();lifecycle.remove();coordinator.dispose();void recorder.dispose();if(model.current===current)model.current=null;};
  },[workspace,userID,dealerID,request,focused]);
  const busy=state.busy||capture.busy,denied=state.issue==='denied';

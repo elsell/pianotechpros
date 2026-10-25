@@ -86,7 +86,11 @@ record snapshot; historical rows remain untouched and downgrade refuses to disca
 recorded attribution. Both repository edit paths share scoped locking and atomic
 audit/history writes. Real PostgreSQL race tests cover mixed edits, cross-user
 denial, rollback, malformed source maps and runtime immutability; structural and
-contract gates pass. Transport and recovery-journal attribution remain unfinished.
+contract gates pass. The authenticated edit endpoint and generated-contract client
+now carry optional voice field labels through the same scoped transaction. HTTP
+tests reject unauthorized, stale and misleading labels; a real HTTP client test
+checks the payload remains fixed while credentials load. Recovery-journal
+attribution and connecting accepted suggestions to autosave remain unfinished.
 
 Buyer inquiry foundations now implement canonical contact validation, immutable
 public snapshot context and first-read domain state. Submission orchestration

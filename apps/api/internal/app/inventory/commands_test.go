@@ -12,10 +12,11 @@ import (
 
 // recordMemory is a controlled transactional fake: failure commits nothing.
 type recordMemory struct {
-	rows    map[string]domain.Record
-	intents map[string]string
-	events  []audit.Event
-	failure error
+	rows      map[string]domain.Record
+	intents   map[string]string
+	histories []domain.History
+	events    []audit.Event
+	failure   error
 }
 
 func (m *recordMemory) CreateDraft(_ context.Context, actor string, d domain.Record, key string, event audit.Event) (domain.Record, bool, error) {
@@ -45,7 +46,7 @@ func (m *recordMemory) GetRecord(_ context.Context, actor, dealerID, id string, 
 	m.events = append(m.events, event)
 	return d, nil
 }
-func (m *recordMemory) ReviseRecord(_ context.Context, actor, dealerID, id string, expected int64, a domain.Attributes, source domain.Source, event audit.Event) (domain.Record, error) {
+func (m *recordMemory) ReviseAttributedRecord(_ context.Context, actor, dealerID, id string, expected int64, a domain.Attributes, voiceFields []string, event audit.Event) (domain.Record, error) {
 	if m.failure != nil {
 		return domain.Record{}, m.failure
 	}
@@ -53,7 +54,7 @@ func (m *recordMemory) ReviseRecord(_ context.Context, actor, dealerID, id strin
 	if !ok || d.DealerID != dealerID || actor != "actor" {
 		return domain.Record{}, ports.ErrNotFound
 	}
-	next, _, err := d.Revise(a, expected, actor, source, event.OccurredAt)
+	next, history, err := d.ReviseAttributed(a, expected, actor, voiceFields, event.OccurredAt)
 	if errors.Is(err, domain.ErrConflict) {
 		return domain.Record{}, ports.ErrConflict
 	}
@@ -61,6 +62,7 @@ func (m *recordMemory) ReviseRecord(_ context.Context, actor, dealerID, id strin
 		return domain.Record{}, err
 	}
 	m.rows[id] = next
+	m.histories = append(m.histories, history)
 	m.events = append(m.events, event)
 	return next, nil
 }

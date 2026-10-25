@@ -57,3 +57,20 @@ scoped record lock, exact revision check and transaction. A failed metadata guar
 audit write or history insert rolls back the inventory update. Downgrade refuses
 to discard any recorded field metadata; migration tooling cannot silently erase
 provenance. Runtime credentials retain no migration or history rewrite powers.
+
+## Authenticated edit transport
+
+The existing inventory PUT accepts optional `voiceFields`, an array of at most
+18 canonical attribute names. Omission means a manual revision. Authentication,
+SpiceDB policy, coordinated limiting and scoped transactional repository checks
+apply identically to manual and attributed edits. The service never accepts a
+caller-supplied aggregate source. Duplicate, unknown, protected and unchanged
+labels are rejected without committing attributes, history or audit success.
+Metadata is input-method attribution claimed by the authenticated editor; it is
+not proof of a provider result. Public and ordinary inventory response DTOs do
+not expose private field attribution. Generated OpenAPI describes the optional
+input, and existing clients that omit it retain manual behavior.
+
+The shared generated-contract client snapshots the optional field list together
+with attributes and expected revision before asynchronous credential lookup.
+Later caller mutations cannot change the attribution sent for that revision.

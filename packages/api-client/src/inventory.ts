@@ -70,13 +70,14 @@ export function createInventoryApiClient(baseURL:string,tokenProvider:TokenProvi
   },
   createDraft:(dealerID:string,idempotencyKey:string)=>item(()=>client.POST('/v1/dealers/{dealerID}/inventory',{params:{path:{dealerID},header:{'Idempotency-Key':idempotencyKey}}}),dealerID),
   get:(dealerID:string,id:string)=>item(()=>client.GET('/v1/dealers/{dealerID}/inventory/{id}',{params:{path:{dealerID,id}}}),dealerID,id),
-  edit:(dealerID:string,id:string,attributes:InventoryAttributes,expectedRevision:number)=>{
+  edit:(dealerID:string,id:string,attributes:InventoryAttributes,expectedRevision:number,voiceFields?:readonly (keyof InventoryAttributes)[])=>{
+   const attribution=voiceFields===undefined?{}:{voiceFields:[...voiceFields]};
    const snapshot: InventoryAttributes = { ...attributes,
     asking_price: attributes.asking_price == null ? attributes.asking_price : { ...attributes.asking_price },
     acquisition_cost: attributes.acquisition_cost == null ? attributes.acquisition_cost : { ...attributes.acquisition_cost },
     manufactured: attributes.manufactured == null ? attributes.manufactured : { ...attributes.manufactured },
    };
-   return item(()=>client.PUT('/v1/dealers/{dealerID}/inventory/{id}',{params:{path:{dealerID,id}},body:{attributes:snapshot,expectedRevision}}),dealerID,id);
+   return item(()=>client.PUT('/v1/dealers/{dealerID}/inventory/{id}',{params:{path:{dealerID,id}},body:{attributes:snapshot,expectedRevision,...attribution}}),dealerID,id);
   },
  };
 }

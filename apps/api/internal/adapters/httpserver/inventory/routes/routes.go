@@ -15,7 +15,7 @@ type Service interface {
 	ListRecords(context.Context, string, string, string, domain.Status, bool, string, int) ([]domain.Record, string, error)
 	CreateDraft(context.Context, string, string, string) (domain.Record, error)
 	GetRecord(context.Context, string, string, string) (domain.Record, error)
-	EditRecord(context.Context, string, string, string, int64, domain.Attributes) (domain.Record, error)
+	EditAttributedRecord(context.Context, string, string, string, int64, domain.Attributes, []string) (domain.Record, error)
 }
 type CreateInput struct {
 	Authorization  string `header:"Authorization"`
@@ -98,6 +98,6 @@ func Register(api huma.API, service Service) {
 		return output(service.GetRecord(ctx, in.Authorization, in.DealerID, in.ID))
 	})
 	huma.Register(api, operation("edit-inventory-record", http.MethodPut, path+"/{id}"), func(ctx context.Context, in *UpdateInput) (*ItemOutput, error) {
-		return output(service.EditRecord(ctx, in.Authorization, in.DealerID, in.ID, in.Body.ExpectedRevision, mapper.Attributes(in.Body.Attributes)))
+		return output(service.EditAttributedRecord(ctx, in.Authorization, in.DealerID, in.ID, in.Body.ExpectedRevision, mapper.Attributes(in.Body.Attributes), in.Body.VoiceFields))
 	})
 }

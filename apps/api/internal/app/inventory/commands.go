@@ -102,6 +102,9 @@ func (c *Commands) GetRecord(ctx context.Context, credential, dealerID, id strin
 	return c.result(ctx, access, result, err, "inventory.viewed")
 }
 func (c *Commands) EditRecord(ctx context.Context, credential, dealerID, id string, expected int64, attributes domain.Attributes) (domain.Record, error) {
+	return c.EditAttributedRecord(ctx, credential, dealerID, id, expected, attributes, nil)
+}
+func (c *Commands) EditAttributedRecord(ctx context.Context, credential, dealerID, id string, expected int64, attributes domain.Attributes, voiceFields []string) (domain.Record, error) {
 	access, err := c.require(ctx, credential, dealerID, Write)
 	if err != nil {
 		return domain.Record{}, err
@@ -114,6 +117,6 @@ func (c *Commands) EditRecord(ctx context.Context, credential, dealerID, id stri
 			return domain.Record{}, ports.ErrInvalidArgument
 		}
 	}
-	result, err := c.dependencies.Records.ReviseRecord(ctx, access.ActorID, dealerID, id, expected, attributes, domain.Manual, c.event(ctx, access, id, audit.ResourceUpdated))
+	result, err := c.dependencies.Records.ReviseAttributedRecord(ctx, access.ActorID, dealerID, id, expected, attributes, voiceFields, c.event(ctx, access, id, audit.ResourceUpdated))
 	return c.result(ctx, access, result, err, "inventory.updated")
 }

@@ -35,6 +35,7 @@ type Attributes struct {
 	PrivateNotes    string             `json:"private_notes" required:"false"`
 }
 type Update struct {
+	VoiceFields      []string   `json:"voiceFields,omitempty" required:"false" maxItems:"18" doc:"Changed attribute fields accepted from voice suggestions; omitted fields are manual."`
 	ExpectedRevision int64      `json:"expectedRevision" minimum:"1" maximum:"9007199254740991"`
 	Attributes       Attributes `json:"attributes"`
 }

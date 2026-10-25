@@ -134,3 +134,19 @@ real-catalog acceptance or the whole website complete.
 Production-readiness additionally requires the security/configuration/release
 contracts already specified under platform. Existing reviewed dependency
 mitigations remain subject to exact-commit evidence; this audit waives no gate.
+
+## Recurring inventory browse acceptance
+
+The isolated real-service acceptance runner must provision 31 uniquely named
+private inventory records using the normally signed-in browser's application
+session, then exercise the website's stock/title/make/model searches, featured
+ordering, 30+1 cursor pagination and sold exclusion. Assert the complete expected
+record set without duplicates after loading more. Provision through the real API;
+do not substitute HTTP responses. Require loopback web, identity and API origins,
+keep credentials in memory, and respect the unchanged audit rate limit. A local
+pass alone does not establish the recurring CI result or close all IN-01 filters.
+
+Local execution of this recurring script passed on 2026-10-25 with synthetic
+marker `Browse3d5c1bb6`: all four search fields, featured-first ordering, exact
+31-record set across pagination and exclusion of drafts from sold results.
+Recurring CI remains pending.

@@ -6,6 +6,8 @@ export type PublicShowroomProfile=components['schemas']['PublicShowroomProfile']
 export type PublicPiano=components['schemas']['PublicListing'];
 export type ShowroomFilters=NonNullable<operations['list-public-pianos']['parameters']['query']>;
 export type ShowroomPage={profile:PublicShowroomProfile;pianos:PublicPiano[];nextCursor?:string};
+export type DiscoveryShop=components['schemas']['DiscoveryShop'];
+export type DiscoveryCatalog=components['schemas']['DiscoveryCatalogData'];
 export class ShowroomClientError extends Error {
  constructor(readonly code:'not_found'|'invalid_query'|'rate_limited'|'unavailable'|'network'|'protocol_error',readonly status:number){super(code);this.name='ShowroomClientError';}
 }
@@ -29,6 +31,11 @@ function validProfile(v:unknown,slug:string):v is PublicShowroomProfile{
  return true;
 }
 type Wire={response:Response;data?:unknown;error?:unknown};
+const discoveryID=(v:unknown):v is string=>typeof v==='string'&&/^[A-Za-z0-9_-]{1,128}$/.test(v);
+const discoverySlug=(v:unknown):v is string=>typeof v==='string'&&v.length<=80&&/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v);
+function validDiscoveryShop(v:unknown):v is DiscoveryShop{
+ return object(v)&&exact(v,'id slug name')&&discoveryID(v.id)&&discoverySlug(v.slug)&&text(v.name,200,true);
+}
 export function createShowroomApiClient(baseURL:string){
  const client=createClient<paths>({baseUrl:baseURL,fetch:async(input)=>{
   const headers=new Headers(input.headers);headers.delete('Authorization');headers.delete('Cookie');
@@ -42,6 +49,21 @@ export function createShowroomApiClient(baseURL:string){
  const invalid=()=>new ShowroomClientError('protocol_error',200);
  const scope=(slug:string,id?:string)=>{if(!identifier(slug,80)||id!==undefined&&!identifier(id))throw new ShowroomClientError('invalid_query',0);};
  return {
+  async directory(signal?:AbortSignal):Promise<DiscoveryShop[]>{
+   const result=await execute(()=>client.GET('/v1/showroom-discovery',{signal}));const body=result.data;
+   if(!object(body)||!object(body.data)||!exact(body.data,'shops')||!Array.isArray(body.data.shops)||body.data.shops.length>10000)throw invalid();
+   const ids=new Set<string>(),slugs=new Set<string>();
+   for(const shop of body.data.shops){if(!validDiscoveryShop(shop)||ids.has(shop.id)||slugs.has(shop.slug))throw invalid();ids.add(shop.id);slugs.add(shop.slug);}
+   return body.data.shops as DiscoveryShop[];
+  },
+  async catalog(slug:string,signal?:AbortSignal):Promise<DiscoveryCatalog>{
+   if(!discoverySlug(slug))throw new ShowroomClientError('invalid_query',0);
+   const result=await execute(()=>client.GET('/v1/showrooms/{slug}/discovery',{params:{path:{slug}},signal}));const body=result.data;
+   if(!object(body)||!object(body.data)||!exact(body.data,'shop pianos')||!validDiscoveryShop(body.data.shop)||body.data.shop.slug!==slug||!Array.isArray(body.data.pianos)||body.data.pianos.length>10000)throw invalid();
+   const ids=new Set<string>();
+   for(const piano of body.data.pianos){if(!object(piano)||!exact(piano,'id dealer_id title')||!discoveryID(piano.id)||piano.dealer_id!==body.data.shop.id||!text(piano.title,500,true)||ids.has(piano.id))throw invalid();ids.add(piano.id);}
+   return body.data as DiscoveryCatalog;
+  },
   async list(slug:string,filters:ShowroomFilters={},signal?:AbortSignal):Promise<ShowroomPage>{
    scope(slug);const query={...filters};const result=await execute(()=>client.GET('/v1/showrooms/{slug}/pianos',{params:{path:{slug},query},signal}));const body=result.data;
    if(!object(body)||!object(body.data)||!exact(body.data,'profile pianos')||!validProfile(body.data.profile,slug)||!Array.isArray(body.data.pianos)||body.data.pianos.length>(query.limit??30)||!object(body.meta)||Object.keys(body.meta).some(k=>k!=='nextCursor'))throw invalid();

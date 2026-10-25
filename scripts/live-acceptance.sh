@@ -36,8 +36,10 @@ curl -fsS http://localhost:5173 >/dev/null
 node scripts/web-browser-acceptance.mjs
 node scripts/scalar-browser-acceptance.mjs
 node scripts/showroom-web-acceptance.mjs
+node scripts/crawler-no-origin-acceptance.mjs
 pnpm --dir apps/web build
 WEB_ACCEPTANCE_BUILT=1 node scripts/showroom-web-acceptance.mjs
+WEB_ACCEPTANCE_BUILT=1 node scripts/crawler-no-origin-acceptance.mjs
 WEB_ACCEPTANCE_BUILT=1 node scripts/inquiry-web-acceptance.mjs
 WEB_ACCEPTANCE_BUILT=1 node scripts/banner-web-acceptance.mjs
 node scripts/voice-recorder-acceptance.mjs

@@ -28,6 +28,10 @@ type DiscoveryRepository interface {
 	ReadPublicDirectory(context.Context) ([]DiscoveryShop, error)
 	ReadPublicCatalog(context.Context, string) (DiscoveryCatalog, error)
 }
+type DiscoveryReader interface {
+	Directory(context.Context) ([]DiscoveryShop, error)
+	Catalog(context.Context, string) (DiscoveryCatalog, error)
+}
 type DiscoveryService struct {
 	repository DiscoveryRepository
 	probe      ports.Probe

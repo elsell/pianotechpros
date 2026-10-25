@@ -250,8 +250,9 @@ Sharing is an explicit user action. Cancellation is neutral, and permission or
 clipboard failure offers a selectable public link without claiming success.
 Disable repeated actions while pending; ignore completions after navigation or a
 listing change. Native owner sharing must independently resolve the current
-public projection before presenting a platform sheet; implementation and device
-acceptance for that native entry point remain required.
+public projection before presenting a platform sheet. Android interaction verifies
+publication-derived sharing and neutral dismissal; iOS interaction acceptance
+remains required.
 
 ## Crawler discovery
 
@@ -262,7 +263,9 @@ is a crawl hint, never an authorization mechanism. Without an explicitly
 configured public web origin it disallows crawling and advertises no sitemap;
 XML and discovery-text routes fail unavailable instead of guessing a hostname.
 
-The root sitemap is an index of current published showroom sitemaps. A showroom
+The root sitemap is an index of current published showroom sitemaps at
+`/sitemap-showroom-{slug}.xml`. These files live at the web root so their protocol
+URL scope includes both the showroom page and its nested listings. A showroom
 sitemap contains its canonical profile URL and current visible published listing
 URLs, including reserved and sold publications. Paths derive from public titles
 and immutable IDs. Discovery uses a dedicated anonymous repository/application
@@ -271,10 +274,18 @@ visibility checks serialized against writes. It must never enumerate private
 repository methods or issue one full inventory request per listing. Only public
 identity, slug, name and published listing ID/title may cross this boundary.
 
+The anonymous contract exposes `GET /v1/showroom-discovery` for the directory and
+`GET /v1/showrooms/{slug}/discovery` for one current catalog. Both use ordinary
+data envelopes, source limiting, no-store headers and sanitized failures. A
+missing showroom is indistinguishable from an unpublished showroom. No session
+or provider token grants additional discovery visibility.
+
 Reads and output are bounded. The initial capacity is 10,000 published showrooms
 and 10,000 visible listings per showroom, each detected with a limit-plus-one
 read. Overflow fails unavailable rather than silently publishing a partial
-sitemap. XML is UTF-8, entity escaped, limited to 50,000 entries and 50 MiB;
+sitemap. Catalog validation also caps fetched snapshot text at 32 MiB and current
+photo references at 50 per permitted listing; exceeding either budget fails
+unavailable. XML is UTF-8, entity escaped, limited to 50,000 entries and 50 MiB;
 absolute URLs are shorter than 2,048 characters and share the configured origin.
 Do not invent last-modified timestamps from request time. Anonymous dependency
 failures never reuse stale private or previously published data.

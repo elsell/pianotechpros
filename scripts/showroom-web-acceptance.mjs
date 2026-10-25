@@ -15,7 +15,9 @@ const api=createServer((req,res)=>{
  assert.equal(req.headers.authorization,undefined);assert.equal(req.headers.cookie,undefined);requests.push(req.url);
  res.setHeader('Cache-Control','no-store');res.setHeader('Content-Type','application/json');
  const url=new URL(req.url,'http://localhost');const send=(status,data)=>{res.statusCode=status;res.end(JSON.stringify(data));};
+ if(url.pathname==='/v1/showroom-discovery')return send(200,{data:{shops:published?[{id:profile.id,slug:profile.slug,name:profile.name}]:[]}});
  if(!published)return send(404,{code:'not_found',detail:'PRIVATE'});
+ if(url.pathname==='/v1/showrooms/atelier/discovery')return send(200,{data:{shop:{id:profile.id,slug:profile.slug,name:profile.name},pianos:[piano,upright,aliasPiano].map(p=>({id:p.id,dealer_id:p.dealer_id,title:p.title}))}});
  if(url.pathname.includes('/photos/')||url.pathname==='/v1/showrooms/atelier/banner/current'){res.setHeader('Content-Type','image/jpeg');res.end(image);return;}
  if(url.pathname==='/v1/showrooms/atelier/pianos'){
   if(relatedFailure&&url.searchParams.get('limit')==='4')return send(503,{code:'unavailable'});
@@ -35,6 +37,11 @@ let browser;let evidencePage;const errors=[];
 try{
  for(let i=0;i<100;i++){if(web.exitCode!==null)throw Error(log);try{const response=await fetch(webURL);if(response.ok)break;}catch{}if(i===99)throw Error(log);await new Promise(r=>setTimeout(r,200));}
  const canonical='/showrooms/atelier/pianos/walnut-baby-grand-'+aliasPiano.id;
+ const robots=await fetch(webURL+'/robots.txt');assert.equal(robots.status,200);assert.match(await robots.text(),/Sitemap: https:\/\/pianos\.example\/sitemap\.xml/);
+ const sitemap=await fetch(webURL+'/sitemap.xml');assert.equal(sitemap.status,200);assert.equal(sitemap.headers.get('cache-control'),'no-store');assert.match(await sitemap.text(),/<loc>https:\/\/pianos\.example\/sitemap-showroom-atelier\.xml<\/loc>/);
+ const catalogMap=await fetch(webURL+'/sitemap-showroom-atelier.xml');assert.equal(catalogMap.status,200);const catalogXML=await catalogMap.text();assert.ok(catalogXML.includes('https://pianos.example'+canonical));assert.equal(catalogXML.includes('PRIVATE'),false);assert.equal(catalogXML.includes('/inventory'),false);
+ const discovery=await fetch(webURL+'/llms.txt',{headers:{'accept-language':'es'}});assert.equal(discovery.status,200);assert.match(await discovery.text(),/Salas de exposición/);
+
  for(const segment of [aliasPiano.id,'old-title-'+aliasPiano.id]){
   const redirected=await fetch(webURL+'/showrooms/atelier/pianos/'+segment+'?secret=never-copy',{redirect:'manual'});
   assert.equal(redirected.status,307);assert.equal(redirected.headers.get('location'),canonical);
@@ -85,7 +92,7 @@ try{
  await page.setViewportSize({width:390,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await page.screenshot({path:'/tmp/piano-showroom-detail-mobile.png',fullPage:true});
  await page.getByRole('link',{name:'Back to the showroom',exact:true}).click();await page.getByRole('heading',{name:'Studio upright'}).waitFor();await page.screenshot({path:'/tmp/piano-showroom-grid-mobile.png',fullPage:true});
  const spanish=await browser.newPage({locale:'es-ES'});await spanish.goto(webURL+'/showrooms/atelier');await spanish.getByText('Precio a consultar',{exact:true}).waitFor();await spanish.getByRole('img',{name:'Sala de exposición de Atelier Pianos',exact:true}).waitFor();await spanish.close();
- published=false;const hiddenAlias=await fetch(webURL+'/showrooms/atelier/pianos/old-title-'+aliasPiano.id,{redirect:'manual'});assert.equal(hiddenAlias.status,404);assert.equal(hiddenAlias.headers.get('location'),null);const hiddenBanner=await fetch(webURL+'/showrooms/atelier/banner/current');assert.equal(hiddenBanner.status,404);assert.equal(hiddenBanner.headers.get('cache-control'),'no-store');await page.reload();await page.getByText('This showroom or piano is no longer available.',{exact:true}).waitFor();assert.equal(await page.getByText('PRIVATE').count(),0);
+ published=false;const emptySitemap=await fetch(webURL+'/sitemap.xml');assert.equal(emptySitemap.status,200);assert.equal((await emptySitemap.text()).includes('/showrooms/atelier'),false);const hiddenMap=await fetch(webURL+'/sitemap-showroom-atelier.xml');assert.equal(hiddenMap.status,404);const hiddenAlias=await fetch(webURL+'/showrooms/atelier/pianos/old-title-'+aliasPiano.id,{redirect:'manual'});assert.equal(hiddenAlias.status,404);assert.equal(hiddenAlias.headers.get('location'),null);const hiddenBanner=await fetch(webURL+'/showrooms/atelier/banner/current');assert.equal(hiddenBanner.status,404);assert.equal(hiddenBanner.headers.get('cache-control'),'no-store');await page.reload();await page.getByText('This showroom or piano is no longer available.',{exact:true}).waitFor();assert.equal(await page.getByText('PRIVATE').count(),0);
  assert.deepEqual(errors.filter(message=>message!=='Failed to load resource: the server responded with a status of 404 (Not Found)'),[]);assert.ok(requests.some(p=>p.includes('/photos/')));
  console.log('Public SSR, filtering, listing/gallery keyboard navigation, contact links, narrow layout, Spanish and unpublish acceptance passed');
 }catch(error){console.error(errors);if(evidencePage){console.error(await evidencePage.locator('body').innerText());await evidencePage.screenshot({path:'/tmp/piano-showroom-browser-failure.png',fullPage:true});}throw error;}finally{await browser?.close();api.close();if(web.exitCode===null){process.kill(-web.pid,'SIGTERM');await once(web,'exit');}}

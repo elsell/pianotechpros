@@ -57,7 +57,7 @@ export function createTranslator(candidates: readonly (string | null | undefined
       const digits = formatter.resolvedOptions().maximumFractionDigits ?? 2;
       const base = 10n ** BigInt(digits), units = BigInt(minorUnits);
       const fraction = (units % base).toString().padStart(digits, '0');
-      return formatter.formatToParts(units / base).map(part => part.type === 'fraction' ? fraction : part.value).join('');
+      return formatter.formatToParts(Number(units / base)).map(part => part.type === 'fraction' ? fraction : part.value).join('');
     },
     date: (value, options) => new Intl.DateTimeFormat(locale, options).format(value)
   };

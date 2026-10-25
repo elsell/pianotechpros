@@ -27,6 +27,8 @@ test('currency review preserves exact safe minor units and currency precision',(
  const en=createTranslator(['en']),es=createTranslator(['es']);
  assert.equal(en.money(9007199254740991,'USD'),'$90,071,992,547,409.91');
  assert.equal(es.money(9007199254740991,'USD'),'90.071.992.547.409,91\u00a0US$');
+ assert.equal(en.money(9007199254740991,'JPY'),'¥9,007,199,254,740,991');
+ assert.equal(en.money(9007199254740991,'KWD'),'KWD\u00a09,007,199,254,740.991');
  assert.equal(en.money(1200,'JPY'),'¥1,200');assert.equal(en.money(0,'USD'),'$0.00');
  for(const amount of [-1,NaN,9007199254740992])assert.throws(()=>en.money(amount,'USD'));
 });

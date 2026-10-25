@@ -491,3 +491,14 @@ zero delivery attempts. Optional `INQUIRY_TEST_TURNSTILE=1` uses Cloudflare's
 public test site key against the real widget, independently of backend provider
 validation. Expiry and navigation during an active challenge still require
 interaction coverage; a successful widget run alone does not prove those paths.
+
+Persisted inquiry browser acceptance runs `node
+scripts/inquiry-persisted-browser-acceptance.mjs` against an isolated loopback web
+service and its actual API/PostgreSQL/Dex fixture. Set
+`INQUIRY_ACCEPTANCE_SHOWROOM_SLUG`, `INQUIRY_ACCEPTANCE_PIANO_ID` and
+`INQUIRY_ACCEPTANCE_DEALER_NAME` to a synthetic published listing owned by the
+fixture's `developer@example.com` identity. `INQUIRY_ACCEPTANCE_WEB_URL` defaults
+to the local development web origin. The script submits through the anonymous
+form, performs real PKCE login, reads and marks the message through the inbox,
+and verifies the exact persisted receipt after reload. It requires explicit
+local disabled challenge policy; separate provider gates verify CAPTCHA.

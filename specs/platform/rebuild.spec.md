@@ -80,3 +80,11 @@ the current SDK 55 compatibility manifest rather than an SDK-major migration.
 Keep exact pins/integrities and review with Doctor, native-manifest checks,
 type/tests, exports and hosted unsigned builds. These narrow age exceptions do
 not waive vulnerability findings or permit store/deployment publication.
+
+## Native currency formatting
+
+Shared currency presentation must work in Hermes as well as browsers. Keep minor
+units as safe integers and compute the fraction exactly; pass the safe integral
+major-unit quotient as a Number to Intl formatting. Do not require Intl BigInt
+support or convert fractional major units through floating-point division.
+Verify zero-, two- and three-decimal currencies and maximum safe minor units.

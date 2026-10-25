@@ -146,14 +146,18 @@ func (r *Repository) MarkInboxInquiryRead(ctx context.Context, actor, dealerID, 
 			event.Action = audit.ResourceViewed
 			return tx.Create(fromAudit(event)).Error
 		}
-		result, err = entry.MarkRead(actor, event.OccurredAt)
+		_, err = entry.MarkRead(actor, event.OccurredAt)
 		if err != nil {
 			return err
 		}
 		if err := tx.Create(fromAudit(event)).Error; err != nil {
 			return err
 		}
-		return tx.Create(&inquiryReadModel{InquiryID: id, DealerID: dealerID, ActorUserID: actor, ReadAt: event.OccurredAt, AuditID: event.ID}).Error
+		if err := tx.Create(&inquiryReadModel{InquiryID: id, DealerID: dealerID, ActorUserID: actor, ReadAt: event.OccurredAt, AuditID: event.ID}).Error; err != nil {
+			return err
+		}
+		result, err = inboxRead(tx, dealerID, id)
+		return err
 	})
 	if err != nil {
 		return domain.Inquiry{}, inventoryError(err)

@@ -360,3 +360,15 @@ correct dealer and inventory action, and Back retained the scrolled directory.
 Normal and large-text screenshots were inspected. Typechecking and both-locale
 structural checks pass. Display overrides were restored. This is not spoken
 TalkBack, iOS, or physical-device acceptance.
+
+Theme switching must update navigation-row backgrounds and text together without
+relaunch or interaction. Android runtime testing exposed white row backgrounds
+after a light-to-dark transition while text already used the light-green dark
+palette. Preserve screenshot evidence and verify both directions before merge.
+
+Moving the background/border to the enclosing themed view with a foreground
+ripple fixes the observed transition. Actual emulator screenshots now show
+`#1c2721` on account, profile and shop-action rows after switching to dark,
+and white after switching back, without relaunch. Customer navigation still
+opens correctly. Typechecking and review pass; the original light setting was
+restored. This evidence is specific to the tested Android runtime.

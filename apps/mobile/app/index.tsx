@@ -11,12 +11,12 @@ import { usePullRefresh } from '../src/use-pull-refresh';
 
 function NavigationRow({label,onPress,disabled=false,disclosure=true}: {label:string;onPress:()=>void;disabled?:boolean;disclosure?:boolean}) {
   const theme=useNativeTheme();
-  return <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{disabled}} disabled={disabled} onPress={onPress}
-    android_ripple={{color:theme.border}}
-    style={({pressed})=>({minHeight:Platform.OS==='android'?48:44,paddingHorizontal:16,paddingVertical:14,flexDirection:'row',alignItems:'center',gap:12,backgroundColor:theme.surface,opacity:disabled?0.5:pressed?0.65:1,borderBottomWidth:1,borderColor:theme.border})}>
+  return <View style={{backgroundColor:theme.surface,borderBottomWidth:1,borderColor:theme.border}}><Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{disabled}} disabled={disabled} onPress={onPress}
+    android_ripple={{color:theme.border,foreground:true}}
+    style={({pressed})=>({minHeight:Platform.OS==='android'?48:44,paddingHorizontal:16,paddingVertical:14,flexDirection:'row',alignItems:'center',gap:12,opacity:disabled?0.5:pressed?0.65:1})}>
     <Text style={{flex:1,color:theme.accent,fontSize:17}}>{label}</Text>
     {disclosure?<Text accessible={false} importantForAccessibility="no" style={{color:theme.secondary,fontSize:24}}>›</Text>:null}
-  </Pressable>;
+  </Pressable></View>;
 }
 
 function ShopList({ accountId, header }: { accountId: string; header: ReactNode }) {

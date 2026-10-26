@@ -45,9 +45,10 @@ spoken accessibility remains open. PR #89's durable photo-picker handoff fix
 merged at `8d3b695ce03156c5a7b06568ad778fe5b6052714` after exact source
 `cf60afbe9ab7175f6128957db09b6389e55561b1` passed real-service acceptance
 and both native builds in run `40384588702`. Verification reported only the
-authorized advisory with all 21 mitigation tests passing. Android development
-client checks confirmed 503/retry-201, reopening without the stale picker warning,
-Photo 7 and saved text retained. This does not prove iOS or physical capture.
+authorized advisory with all 21 mitigation tests passing. The native experience
+spec records Android retry/reopen and lost-successful-response evidence, plus
+shop editor large-text/keyboard/discard checks. These bounded checks do not
+complete physical-device, iOS, or spoken accessibility acceptance.
 
 Technician implementation merged in PR #64 at
 `689308b29e2349805124420bae243d3f3f8bcf3a` after Android, iOS and acceptance

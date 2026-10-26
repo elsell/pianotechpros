@@ -23,8 +23,10 @@ and validates the embedded simulator entitlements instead. The eighth run
 `40381415182` at `a047105` passed those checks and launched the development
 client, but timed out loading Metro before the product Sign in screen appeared.
 The next harness change fetches the iOS manifest and complete launch bundle after
-building, before XCTest. Fresh hosted validation is required; no successful iOS
-interaction is claimed. Remaining
+building, before XCTest. Run `40387476671` passed the bundle check and reached Ready to sign in, but
+Expo's first-launch tutorial covered Sign in. The harness now dismisses only the
+identified developer tutorial/menu through normal controls. Fresh hosted validation
+is required; no successful iOS interaction is claimed. Remaining
 release work includes that iOS interaction evidence, broader device/accessibility
 checks and dedicated non-production speech/Turnstile integration. Legacy hosting,
 GitOps, DNS and live data remain unchanged; signing and cutover stay deferred.

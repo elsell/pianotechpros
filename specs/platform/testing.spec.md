@@ -803,3 +803,15 @@ is required; correcting the harness alone does not prove Keychain access.
 
 Reference: upstream simulator signing behavior is documented in
 https://github.com/bazelbuild/rules_apple/blob/main/doc/common_info.md.
+
+### Development-client onboarding overlay
+
+The ninth iOS run (`40387476671`, source `7579825`) fetched its complete launch
+bundle and reached Ready to sign in, but Expo's first-launch developer-menu
+tutorial covered the product button. XCTest reported Sign in as not hittable.
+Before product interaction, recognize that exact tutorial text, tap its visible
+Continue button, then close the identified developer menu using its Close button.
+Require the menu's own Source code explorer marker before closing it. Never tap
+an arbitrary Continue/Close button, bypass product UI, or treat overlay dismissal
+as authentication acceptance. Repeat this bounded handling when reopening the
+development client; absent overlays need no action.

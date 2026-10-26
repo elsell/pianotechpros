@@ -2,6 +2,70 @@
 
 ## Current milestone: feature-complete product
 
+As of 2026-10-26, PR #80 merged the combined inventory browse, sale/unpublish
+lifecycle, public gallery/contact/sharing and showroom-filter journeys plus
+larger native action targets. Merge `4b8d6483edbbf5d95d1a436d8470ea4ebc569a2f`
+contains exact tested source `2ff7f16e45ad538ecc45d7a5739f515c39561976`;
+run `40224029059` passed real-service acceptance and both native builds.
+Verification failed only on the authorized node-forge finding; all 21 mitigation
+regressions passed. Android target measurements and edge activation passed,
+including inspected 2x-text rendering. These are specific acceptance results,
+not a claim of complete native interaction or screen-reader quality.
+
+PR #81 merged inventory coverage for exact sets across all six saved statuses
+at `745a0e5b22b7e4c2d07d371e05cc1d7da31a886b`. Run `40365056103` passed
+real-service acceptance and both native builds at source `84783cef`; verification
+reported only the authorized advisory with all 21 mitigation tests passing. iOS interaction PR #66 remains
+unmerged: native compilation has succeeded but its interaction test has not.
+The sixth run built successfully but failed the signature entitlement gate before
+installation. Explicit simulator-only ad-hoc signing is under fresh validation
+at source `83e1f430e88d8ce8b4b619a974d3a082323f3e01`; no successful iOS
+interaction is claimed. Remaining
+release work includes that iOS interaction evidence, broader device/accessibility
+checks and dedicated non-production speech/Turnstile integration. Legacy hosting,
+GitOps, DNS and live data remain unchanged; signing and cutover stay deferred.
+
+
+Technician implementation merged in PR #64 at
+`689308b29e2349805124420bae243d3f3f8bcf3a` after Android, iOS and acceptance
+passed. Exact-commit verification reported only the reviewed node-forge advisory;
+its backport regressions passed. PR #65 also merged the native stale-storage
+warning correction. Neither merge completes the outstanding device matrix.
+An iOS XCTest interaction harness is now being added to the macOS gate, using
+normal sign-in and screen paths with a loopback controlled protocol fixture.
+Fixture tests pass. Hosted execution exposed readiness-address and empty-test-product
+configuration failures; corrections require a fresh XCTest run and screenshot review.
+This work does not replace real API authorization tests or physical-device QA.
+
+Persisted dealer, inventory and staff journeys merged through PR #72 at
+`42b63ba1fc35b8d370d13e2d8916a4d59255ffa8`; complete-field editing and public
+discovery merged through PR #74 at `fb873c6a5a6e44295a8c14f0cab1e8e608892848`.
+Their exact-head combined acceptance and both native builds passed. Verification
+reported only the previously authorized node-forge finding, with all 21 mitigation
+regressions passing. These results do not complete the remaining parity matrix.
+
+PR #83 merged native choice-value and radio checked-state accessibility fixes
+at `94248f56771412241e4321956cf754025bd16b8b`. Exact source `4b981ee` passed
+combined acceptance and both native builds in run `40368370137`; verification
+reported only the authorized node-forge advisory and all 21 mitigation tests
+passed. Actual Android accessibility-tree checks support these specific fixes,
+not spoken screen-reader acceptance.
+
+PR #84 merged real-service public-catalog pagination at `89c3e34`. Exact source
+`54ae198` passed combined acceptance and both native builds in run `40374312501`.
+Anonymous browser checks cover all 31 published records across 12+12+7 pages,
+retained filters and stable reload. Verification reported only the authorized
+advisory with all 21 mitigation tests passing. Dedicated non-production provider
+integration and broader accessibility/device acceptance remain open.
+
+PR #85 merged home navigation hierarchy and theme-switch corrections at
+`fb1158167a673984e59444a078a625a6d008aabe`. Source `7b7ffff` passed both native
+builds in run `40375399383`; backend acceptance was correctly path-skipped for
+this native-only change. Verification reported only the authorized advisory,
+with all 21 mitigation tests passing. Android screenshots and interaction checks
+cover short-screen large text, shop navigation/return and two-way theme changes.
+These do not establish iOS interaction or spoken screen-reader acceptance.
+
 Web-only parity is now tracked separately in `web-parity-audit.spec.md` across all
 30 baseline rows. The composed profile browser journey now passes in a fresh-account CI run
 `40218708883` at source `2ffaedb09c5d6bc1cc4babb706453ccd82960615`; this

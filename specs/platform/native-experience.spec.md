@@ -858,3 +858,17 @@ provenance. TypeScript, structure and locale gates pass; read-only code review
 found no blocker. This verifies the shared marks on the technician surface;
 customer-specific runtime, iOS, dark-mode and spoken-screen-reader acceptance
 remain separate. Original source overlays, locale and font scale were restored.
+
+
+Customer-specific Android follow-up on 2026-10-26 passed in Spanish, dark mode
+and 2x text. Normal navigation opened saved Studio, then its timezone choice.
+Filtering for New_York retained the checked America/New_York row; the inspected
+screenshot shows its filled radio mark and full label without clipping. Back
+dismissed the sheet without changing or saving the profile. The first helper
+attempt incorrectly expected UTC and was stopped; the corrected run used the
+existing saved timezone. Evidence is `android-customer-dark-choice-radio.png`
+and matching filtered/dismissed native trees. This uses the same development APK
+and the three source overlays recorded for the visible-choice checks, not a new
+APK. Source, night mode, locale and font scale were restored and verified. This
+closes the named customer dark-mode rendering check only; iOS and spoken
+screen-reader acceptance remain open.

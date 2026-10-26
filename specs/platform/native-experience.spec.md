@@ -324,3 +324,16 @@ Tuning` and `Piano types serviced, Grand`. No profile data was changed for these
 checks. Typechecking and the two-locale structural gate pass. This verifies native
 value delivery, not spoken announcement quality, iOS interaction or full profile
 accessibility acceptance.
+
+Single-choice profile sheets use radio semantics with an explicit checked state
+for every option. Do not substitute the generic selected state for checked:
+Android must expose radio options as checkable and mark the current option
+checked, with other options unchecked. Multiple-choice sheets retain checkbox
+semantics and checked states. Verify current and alternate options in the native
+tree, including after searching, without saving changes to the synthetic profile.
+
+The Android regression failed before the change: the selected radio option had
+`selected=true` but `checkable=false` and `checked=false`. Afterward, a searched
+customer timezone sheet exposes UTC as checkable/checked and Etc/UTC as
+checkable/unchecked. The regression inspects native radio nodes, not visual
+highlighting. Technician single-choice runtime validation remains required.

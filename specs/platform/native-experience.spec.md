@@ -652,3 +652,26 @@ client runtime evidence, not a newly compiled release or iOS interaction result.
 Both themes also passed the photo preview transition from 100% with Reset
 disabled to 150% with Reset enabled, followed by reset and dismissal. The runtime
 helper restored the original source modules and light-mode device setting.
+
+## Native orientation adaptation
+
+The application must allow system-selected portrait and landscape orientation.
+The scaffold's portrait lock prevents required rotation acceptance and must be
+removed. Verify the actual generated Android activity orientation and iOS
+supported-orientation list using the pinned Expo config adapters. Runtime
+acceptance must assert landscape window dimensions, reachable photo controls,
+reset/dismissal and retained editor data; changing a device setting alone is
+not proof that the application rotated. Photo viewport resize may reset zoom
+to fit; it must not discard the draft or trap the user in the preview. A new
+native binary is required before runtime acceptance of this config change.
+Full-screen photo, publication and scan-action modals must explicitly support
+portrait and both landscape directions on iOS; the application orientation list
+alone does not override React Native's portrait default for these modals.
+
+On 2026-10-26, the existing Android APK remained 1080x2400 after landscape was
+requested, confirming the baseline lock. The helper's zoom/reset/dismiss checks
+passed but are not landscape acceptance; its captures are marked
+`android-fresh-apk-photo-rotation-locked-baseline-*`. Both pinned Expo adapter
+regressions failed before the configuration change and pass afterward. Mobile
+TypeScript and configuration validation pass. Actual rotated-window acceptance
+remains pending a rebuilt binary.

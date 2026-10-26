@@ -4,7 +4,7 @@
     "slug": "pianotechpros",
     "version": "1.0.0",
     "scheme": "pianotechpros",
-    "orientation": "portrait",
+    "orientation": "default",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/icon.png",
     "splash": {

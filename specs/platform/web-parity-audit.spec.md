@@ -112,7 +112,7 @@ real-catalog acceptance or the whole website complete.
    check also passed stock/title/make/model search, featured ordering, exact
    30+1 pagination without duplicates and sold-filter exclusion using 31 synthetic
    records; item 5 records its subsequent recurring acceptance. The separate
-   all-status extension remains pending.
+   all-status extension passed the recurring run described below.
 5. PR #80 merged inventory browse, complete lifecycle and public gallery/contact/
    sharing/filter journeys. Combined real-service acceptance passed run
    `40224029059` at source `2ff7f16e45ad538ecc45d7a5739f515c39561976`.
@@ -120,8 +120,9 @@ real-catalog acceptance or the whole website complete.
    immutable sale correction history, public gallery keyboard interaction,
    canonical clipboard/contact/related links and title/type/currency/price filters.
    This supersedes the recurring-CI gaps for those specific assertions, not the
-   full baseline table. The all-six-status inventory filter extension remains
-   separately pending in PR #81.
+   full baseline table. PR #81 subsequently merged exact six-status filtering
+   after run `40365056103` passed at source
+   `84783cef6cdd2cbb5d5f9f89a670509468a70d00`.
 6. Finish provider, accessibility, broader supported-browser and device evidence
    from the table above. Live
    Turnstile public test-key Siteverify responses were observed without the
@@ -205,7 +206,8 @@ synthetic record `96568d3c-f6ec-41fd-89d7-70016f12e788`. Each filter form opens
 with an active initial search so the control remains accessible after sale or
 unpublication leaves a small catalog. Recurring fresh-fixture CI passed run
 `40224029059` for record `2ea9f917-69f8-4ecc-925f-8fbaa78d08be`.
-Large public-catalog pagination and native touch evidence remain separate.
+Large public-catalog pagination passed the recurring run recorded below; native
+touch evidence remains separate.
 
 ## Persisted inventory status filters
 
@@ -217,7 +219,10 @@ each status, default active exclusion of sold/archived records, and all-status
 
 The complete extended inventory journey passed locally with synthetic marker
 `Browseb6d735f3`: exact status sets, active exclusion, and all-status pagination
-were checked against persisted records. Fresh recurring CI remains pending.
+were checked against persisted records. Recurring CI passed run `40365056103`
+with marker `Browseec912d1e`, including exact sets for six statuses, active
+exclusion and all-status pagination. PR #81 merged in
+`745a0e5b22b7e4c2d07d371e05cc1d7da31a886b`.
 
 ## Persisted large-showroom pagination
 
@@ -235,6 +240,15 @@ The first CI execution provisioned all 31 records but failed an incorrect
 12, unlike private inventory. Correct the test to follow both continuation
 links and assert 12+12+7; this does not change product pagination behavior.
 
+The corrected journey passed recurring run `40374312501` at exact source
+`54ae198f09bc695fb17948826a3c916637824a27`, with marker `Cataloge84bb6c7`.
+Its log confirms all 31 processed-photo publications, featured ordering, exact
+12+12+7 pagination, retained search/type/currency filters, stable final-page
+reload and no duplicate or extra continuation. Combined acceptance and both
+native builds passed. PR #84 merged at
+`89c3e34fe49c1744f9a2fffca485041450188035`. This closes this pagination evidence
+gap, not the provider, screen-reader, supported-browser or native touch gates.
+
 ## Recurring showroom browser engines
 
 Run the persisted public-pagination journey in Chromium, Firefox and WebKit
@@ -246,3 +260,12 @@ never substitute API responses, suppress failures, or relax production limits.
 CI installs browser binaries from the pinned Playwright version and their host
 dependencies. This proves this journey only, not all website behavior or Safari
 on an Apple device. Record execution before claiming any new engine passed.
+
+Run `40378770317` at source `10ef2223de0ac54447a38bd00c3fd7e66ef551ae`
+passed the complete acceptance job, including marker `Catalogca2b82df` in
+Chromium 149.0.7827.55, Firefox 151.0 and Linux WebKit 26.5. Each engine logged
+all six required pagination checks. Both native builds passed; verification
+reported only the authorized node-forge finding with all 21 mitigation tests
+passing. This is evidence for those engines and assertions, not physical Safari
+or website-wide cross-browser parity. A subsequent documentation reconciliation
+with main requires fresh exact-head CI before merge.

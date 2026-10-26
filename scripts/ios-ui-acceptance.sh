@@ -66,3 +66,6 @@ run_journey() {
 run_journey create testCreateProfilesAndProtectPartialDraft
 xcrun simctl terminate "$simulator" com.pianotechpros.pianotechpros || true
 run_journey restore testRestorePartialDraftAfterProcessRestart
+
+xcrun simctl terminate "$simulator" com.pianotechpros.pianotechpros || true
+run_journey inventory testBrowseInventoryThroughNormalNavigation

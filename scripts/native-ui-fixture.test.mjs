@@ -76,3 +76,23 @@ test('authentication diagnostics expose only fixed stages and status, excluding 
   {stage:'authorization',status:400},
  ]);
 });
+
+test('optional inventory fixture supports scoped browsing, search, status and bounded pages',async t=>{
+ const f=await startNativeUIFixture({inventory:true});t.after(()=>f.close());
+ const session=(await (await api(f,'/v1/sessions',{identityToken:await login(f)})).json()).data.token;
+ const shops=(await (await api(f,'/v1/dealers',undefined,session)).json()).data;
+ assert.equal(shops.length,1);assert.equal(shops[0].name,'Native UI Shop');
+ const path='/v1/dealers/'+shops[0].id+'/inventory';
+ assert.equal((await api(f,path)).status,401);
+ assert.equal((await api(f,'/v1/dealers/foreign/inventory',undefined,session)).status,404);
+ const read=async query=>(await (await api(f,path+query,undefined,session)).json());
+ assert.deepEqual((await read('')).data.map(r=>r.status),['draft','available','reserved','in_service']);
+ assert.equal((await read('?status=sold')).data[0].status,'sold');
+ assert.deepEqual((await read('?search=UI-006')).data,[]);
+ assert.equal((await read('?includeInactive=true&search=ui-006')).data[0].status,'archived');
+ const first=await read('?includeInactive=true&limit=2');assert.equal(first.data.length,2);assert.ok(first.meta.nextCursor);
+ const second=await read('?includeInactive=true&limit=2&cursor='+encodeURIComponent(first.meta.nextCursor));
+ assert.equal(second.data.length,2);assert.notEqual(first.data[0].id,second.data[0].id);
+ const last=await read('?includeInactive=true&limit=2&cursor='+encodeURIComponent(second.meta.nextCursor));assert.equal(last.data.length,2);assert.deepEqual(last.meta,{});
+ for(const query of ['?limit=0','?limit=101','?cursor=foreign','?status=unknown'])assert.equal((await api(f,path+query,undefined,session)).status,400);
+});

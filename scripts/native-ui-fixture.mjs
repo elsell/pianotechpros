@@ -1,3 +1,4 @@
+import {createNativeInventoryFixture} from './native-inventory-fixture.mjs';
 // Controlled loopback presentation fixture. Never imported by application code.
 import {createServer} from 'node:http';
 import {once} from 'node:events';
@@ -5,7 +6,8 @@ import {createHash,generateKeyPairSync,randomBytes,sign} from 'node:crypto';
 const client='pianotechpros-mobile',callback='pianotechpros://callback';
 const opaque=()=>randomBytes(32).toString('base64url');
 const object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
-export async function startNativeUIFixture({port=0,now=Date.now,onAuthResponse=()=>{}}={}){
+export async function startNativeUIFixture({port=0,now=Date.now,onAuthResponse=()=>{},inventory=false}={}){
+ const inventoryRoutes=inventory?createNativeInventoryFixture(now):null;
  const {privateKey,publicKey}=generateKeyPairSync('rsa',{modulusLength:2048});
  const jwk={...publicKey.export({format:'jwk'}),kid:'native-ui-fixture',use:'sig',alg:'RS256'};
  const codes=new Map(),identities=new Map(),sessions=new Map(),profiles=new Map(),creations=new Map();let origin;
@@ -45,6 +47,7 @@ export async function startNativeUIFixture({port=0,now=Date.now,onAuthResponse=(
    const bearer=req.headers.authorization?.replace(/^Bearer /,''),session=sessions.get(bearer);
    if(!session||req.headers.authorization!=='Bearer '+bearer)return send(401,{code:'unauthenticated'});
    if(req.method==='GET'&&path==='/v1/me')return send(200,{data:{id:'native-ui-owner',email:'owner@example.test',displayName:'Native UI Owner'}});
+   if(inventoryRoutes?.(req,url,send))return;
    if(req.method==='GET'&&path==='/v1/dealers')return send(200,{data:[],meta:{}});
    if(req.method==='POST'&&path==='/v1/session/refresh'){sessions.delete(bearer);const token=opaque();sessions.set(token,session);return send(200,{data:{token,expiresAt:new Date(session.expires).toISOString()}});}
    const match=/^\/v1\/(customer|technician)-profile(\/timezones)?$/.exec(path);

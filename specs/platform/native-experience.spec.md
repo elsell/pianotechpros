@@ -945,3 +945,15 @@ never alter source app configuration or distribution artifacts. This gate is
 unsigned-for-distribution simulator acceptance, not a signed store release or
 proof of real-provider/backend integration. Successful hosted execution remains
 required before this change can be called a working startup correction.
+
+## iOS inventory browse presentation journey
+
+After profile and process-restart recovery acceptance, the simulator must open a
+synthetic shop through normal home navigation, browse inventory, search stock,
+switch availability filters, and return to the shop and home. A controlled
+loopback fixture may seed six synthetic records spanning the lifecycle states;
+it must preserve normal sign-in and opaque-session checks, dealer scope, search,
+active/inactive filtering and bounded pagination. Fixture records must never be
+mistaken for real API/domain authorization evidence. Retain screenshots and
+assert actual native rows and empty states; source/tests alone do not establish
+an executed iOS interaction or complete inventory parity.

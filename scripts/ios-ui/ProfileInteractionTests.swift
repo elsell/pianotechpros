@@ -103,4 +103,28 @@ final class ProfileInteractionTests: XCTestCase {
         XCTAssertTrue(start.isHittable)
         capture("technician-invalid-time-focus")
     }
+    func inventoryRow(_ title: String) -> XCUIElement {
+        app.buttons.matching(NSPredicate(format: "label CONTAINS %@", title)).firstMatch
+    }
+    func testBrowseInventoryThroughNormalNavigation() throws {
+        XCTAssertTrue(button("Native UI Shop").waitForExistence(timeout: 60))
+        tap("Native UI Shop"); tap("Browse inventory")
+        XCTAssertTrue(inventoryRow("UI Draft Piano").waitForExistence(timeout: 15))
+        XCTAssertFalse(inventoryRow("UI Sold Piano").exists)
+        capture("inventory-active")
+        tap("Status: Active"); selectChoice("Sold", role: "radio button")
+        XCTAssertTrue(inventoryRow("UI Sold Piano").waitForExistence(timeout: 15))
+        XCTAssertFalse(inventoryRow("UI Draft Piano").exists)
+        let search = app.textFields["Search stock, title, make or model"].firstMatch
+        reach(search); search.tap(); search.typeText("UI-002\n")
+        XCTAssertTrue(app.staticTexts["No pianos match these filters."].waitForExistence(timeout: 15))
+        tap("Status: Sold"); selectChoice("Available", role: "radio button")
+        XCTAssertTrue(inventoryRow("UI Available Piano").waitForExistence(timeout: 15))
+        XCTAssertFalse(inventoryRow("UI Sold Piano").exists)
+        XCTAssertEqual(search.value as? String, "UI-002")
+        capture("inventory-search-available")
+        back(); XCTAssertTrue(button("Browse inventory").waitForExistence(timeout: 10))
+        back(); XCTAssertTrue(button("My customer profile").waitForExistence(timeout: 10))
+    }
+
 }

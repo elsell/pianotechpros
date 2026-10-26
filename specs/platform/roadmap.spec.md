@@ -2,6 +2,13 @@
 
 ## Current milestone: feature-complete product
 
+Latest iOS attempt `40409134653` passed native compilation and real-service
+browser/API acceptance but failed before sign-in: the development launcher timed
+out reaching Metro despite host manifest/bundle readiness. Simulator-side status
+validation and explicit foreground launch now precede development URL delivery;
+all 11 fixture/readiness tests pass locally. Hosted Swift/runtime verification
+remains required, including the unexercised role-aware choice and profile flows.
+
 Latest Android evidence (2026-10-26): the fresh CI APK from run `40403194496`,
 source `7ae6c7d`, was installed in place and its checksum verified. Saved customer
 locations/piano assignment survived; short-display 2x-text photo zoom/reset/close

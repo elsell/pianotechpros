@@ -4,6 +4,21 @@ final class ProfileInteractionTests: XCTestCase {
     let app = XCUIApplication(bundleIdentifier: "com.pianotechpros.pianotechpros")
     override func setUpWithError() throws {
         continueAfterFailure = false
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.timeoutIntervalForRequest = 15
+        configuration.timeoutIntervalForResource = 20
+        let session = URLSession(configuration: configuration)
+        defer { session.invalidateAndCancel() }
+        let ready = expectation(description: "Metro responds from the simulator")
+        session.dataTask(with: URL(string: "http://127.0.0.1:18081/status")!) { data, response, error in
+            XCTAssertNil(error, "Simulator must reach the development server")
+            XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, 200)
+            XCTAssertEqual(data.flatMap { String(data: $0, encoding: .utf8) }, "packager-status:running")
+            ready.fulfill()
+        }.resume()
+        wait(for: [ready], timeout: 25)
+        app.launch()
+        XCTAssertTrue(app.wait(for: .runningForeground, timeout: 15))
         if #available(iOS 16.4, *) {
             app.open(URL(string: "exp+pianotechpros://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A18081")!)
         } else {

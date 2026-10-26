@@ -660,3 +660,20 @@ spoken TalkBack, iOS interaction or complete CU-01/PH acceptance. The same run
 passed browser/API acceptance; its verification job reported only the previously
 reviewed node-forge advisory and passed all 21 mitigation tests. Its iOS
 interaction result was still pending when these Android results were recorded.
+
+## iOS simulator-side launch readiness
+
+Run `40409134653` compiled successfully but failed before sign-in: the retained
+accessibility hierarchy shows the development launcher reporting a timeout for
+`http://127.0.0.1:18081`. Host-side manifest/bundle priming passed, so it does
+not establish connectivity from the simulator process. The choice-selector
+correction was not exercised in this run.
+
+Before opening the development URL, the XCTest runner must check Metro's status
+from inside the simulator with a bounded request, validate the HTTP response and
+exact readiness body, and launch the app to the foreground before delivering
+the URL. This separates simulator connectivity failure from application loading
+and avoids delivering the URL during a cold application launch. The cold-launch
+race is a hypothesis, not a proven diagnosis. Keep every existing sign-in, save
+and process-restart assertion; do not retry product mutations or accept the
+launcher as a successful application start. Hosted execution remains required.

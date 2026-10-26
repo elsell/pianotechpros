@@ -201,3 +201,15 @@ The full corrected gallery/filter journey passed locally on 2026-10-25 for
 synthetic record `96568d3c-f6ec-41fd-89d7-70016f12e788`. Each filter form opens
 with an active initial search so the control remains accessible after sale or
 unpublication leaves a small catalog. Recurring fresh-fixture CI remains pending.
+
+## Persisted inventory status filters
+
+The recurring inventory browse journey must cover all six saved lifecycle states.
+After its initial search/pagination checks, use a fresh audit window to transition
+five synthetic drafts through the real API. In the browser assert exact sets for
+each status, default active exclusion of sold/archived records, and all-status
+30+1 pagination without duplicates. Do not weaken limits or replace API responses.
+
+The complete extended inventory journey passed locally with synthetic marker
+`Browseb6d735f3`: exact status sets, active exclusion, and all-status pagination
+were checked against persisted records. Fresh recurring CI remains pending.

@@ -54,3 +54,25 @@ test('interrupted discard retries local cleanup without claiming or attempting u
 test('a new photo cannot create a record without a durable capture staging port',async()=>{
  const f=fixture();f.port.recordID=()=>'';const c=createInventoryPhotoWorkspace(f.port);await c.refresh();await assert.rejects(c.add(new Uint8Array([1])));assert.equal(f.ensureCount(),0);await c.dispose();
 });
+
+test('durable handoff precedes upload and preserves retry after response loss',async()=>{
+ const f=fixture();const c=createInventoryPhotoWorkspace(f.port);f.lose(true);let transferred=0;
+ await assert.rejects(c.add(new Uint8Array([4,5]),async()=>{
+  transferred++;assert.equal(f.uploads(),0);assert.equal(c.snapshot().entries.length,1);assert.ok(f.rows.size>0);
+ }));
+ assert.equal(transferred,1);const id=c.snapshot().entries[0]!.id;
+ f.lose(false);await c.retry(id);assert.equal(f.state().photos.length,1);
+ assert.equal(f.attempts[0]?.key,f.attempts[1]?.key);await c.dispose();
+});
+test('failed handoff acknowledgement retains durable selection without uploading',async()=>{
+ const f=fixture();const c=createInventoryPhotoWorkspace(f.port);
+ await assert.rejects(c.add(new Uint8Array([7]),async()=>{throw new Error('picker cleanup failed');}));
+ assert.equal(f.uploads(),0);assert.equal(c.snapshot().entries.length,1);await c.dispose();
+});
+
+test('failed durable staging never acknowledges transfer or attempts upload',async()=>{
+ const f=fixture();const c=createInventoryPhotoWorkspace(f.port);let transfers=0;
+ const storage=await f.port.storage();f.port.storage=async()=>({...storage,write:async()=>{throw new Error('disk');}});
+ await assert.rejects(c.add(new Uint8Array([8]),async()=>{transfers++;}));
+ assert.equal(transfers,0);assert.equal(f.uploads(),0);await c.dispose();
+});

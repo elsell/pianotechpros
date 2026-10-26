@@ -426,3 +426,23 @@ call had failed during the first upload. The successful upload evidence above
 stands; the handoff/reconciliation UX is not complete. Require a regression and
 an ownership-safe durable handoff before clearing this finding. Never clear an
 untransferred selection merely to hide the warning.
+
+### Durable picker-to-upload transfer
+
+Native selection consumption must acknowledge transfer once the capture journal or upload coordinator
+has durably stored the selected bytes and intent, before record creation or upload
+respectively. A new capture must not wait for record creation to acknowledge its
+durable staging; failed creation remains owned by capture recovery. The
+picker broker may clear its processing intent only at that acknowledgement (or
+normal completed acceptance). Upload failure after transfer remains owned by the
+upload queue and must not recreate an interrupted-picker warning on reopen.
+Failed staging, failed picker cleanup, expired or inactive scope must not dispatch
+an upload or discard an untransferred selection. Acknowledgement is valid only
+while the accepting call is active; reject late callbacks to prevent clearing a
+later selection. Existing ambiguous processing intents without a recorded transfer
+remain recoverable by explicit review/discard; do not infer ownership from an
+empty queue. Verify real durable ports, preserved retry identity and restart state.
+After a failed consume, a successful protected restore to idle proves the picker
+no longer owns recovery. Clear only that picker error; the upload workspace must
+continue to display its failure and retry entry. Do not suppress initial picker,
+selection, storage or unknown-target failures on the same basis.

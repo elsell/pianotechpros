@@ -31,3 +31,14 @@ test('target mismatch remains actionable without holding navigation',async()=>{
  const f=fixture();f.picker.restore=async()=>{throw Error('native_picker_other_target');};await f.session.restore();assert.equal(f.session.snapshot().error,'other_target');assert.equal(f.session.snapshot().held,false);
  await f.session.discard();assert.equal(f.session.snapshot().error,null);assert.equal(f.counts().released,2);
 });
+test('failed upload after confirmed transfer has no picker recovery error',async()=>{
+ const f=fixture();await f.session.select('camera');
+ f.picker.consume=async()=>{throw Error('upload failed after transfer');};
+ f.picker.restore=async()=>({status:'idle'});
+ await f.session.consume();assert.equal(f.session.snapshot().state.status,'idle');
+ assert.equal(f.session.snapshot().held,false);assert.equal(f.session.snapshot().error,null);
+});
+test('selection failure remains visible even when restoration is idle',async()=>{
+ const f=fixture();f.picker.select=async()=>{throw Error('camera failed');};
+ await f.session.select('camera');assert.equal(f.session.snapshot().error,'unavailable');
+});

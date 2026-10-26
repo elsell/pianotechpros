@@ -7,7 +7,7 @@ export interface NativePickerPort {
  scope:NativePickerScope;active():boolean;now():number;key():string;
  authorize():Promise<void>;lease():Promise<()=>void>;storage():Promise<ProtectedInventoryDraftStorage>;
  pending():Promise<NativePickerResult|null>;launch(source:'camera'|'library'):Promise<NativePickerResult>;
- discard(asset:NativePickerAsset):Promise<void>;accept(asset:NativePickerAsset):Promise<void>;
+ discard(asset:NativePickerAsset):Promise<void>;accept(asset:NativePickerAsset,transferred:()=>Promise<void>):Promise<void>;
 }
 type Intent={version:1;scope:NativePickerScope;id:string;source:'camera'|'library';createdAt:number;phase:'waiting'|'selected'|'processing';asset:NativePickerAsset|null};
 export interface NativePickerState {status:'idle'|'denied'|'waiting'|'selected'|'uncertain'|'expired';id?:string}
@@ -90,7 +90,14 @@ export function createNativePhotoPicker(port:NativePickerPort) {
   consume(id:string):Promise<void>{return run(async storage=>{
    const intent=await load(storage);if(!intent||intent.id!==id||state(intent).status!=='selected'||!intent.asset)throw failed();
    await save(storage,{...intent,phase:'processing'});active();if(now()>=intent.createdAt+ttl)throw failed();
-   await port.accept({...intent.asset});active();await clear(storage);
+   let accepting=true;let transfer:Promise<void>|null=null;
+   const transferred=()=>{
+    if(!accepting)return Promise.reject(failed());active();
+    transfer??=clear(storage);return transfer;
+   };
+   try{await port.accept({...intent.asset},transferred);}
+   finally{accepting=false;if(transfer)await transfer;}
+   active();if(!transfer)await clear(storage);
   });},
   discard():Promise<void>{return run(storage=>discard(storage,true));},
   discardPending():Promise<void>{return run(storage=>discard(storage,false));},

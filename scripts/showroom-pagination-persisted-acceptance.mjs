@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
-import {chromium} from 'playwright';
+import {chromium,firefox,webkit} from 'playwright';
 const base=process.env.INQUIRY_ACCEPTANCE_WEB_URL??'http://localhost:5173';
 const slug=process.env.INQUIRY_ACCEPTANCE_SHOWROOM_SLUG;
 const dealerName=process.env.INQUIRY_ACCEPTANCE_DEALER_NAME;
@@ -27,7 +27,11 @@ try{
   await data(await context.request.post(url+'/publish',{headers:{authorization},data:{expectedRevision:uploaded.record.revision}}));
   records.push({id:created.id,title:marker+'-'+i});
  }
- const anonymous=await browser.newContext();const buyer=await anonymous.newPage();
+ for(const [engine,type] of Object.entries({chromium,firefox,webkit})){
+ if(engine!=='chromium'){console.log('Waiting for a fresh public rate window before '+engine);await new Promise(resolve=>setTimeout(resolve,61000));}
+ const publicBrowser=await type.launch();
+ try{
+ const anonymous=await publicBrowser.newContext();const buyer=await anonymous.newPage();
  const query=new URLSearchParams({search:marker,form:'grand',currency:'USD'});
  await buyer.goto(`${base}/showrooms/${slug}?${query}`);
  const cards=buyer.locator('.grid article a');await buyer.locator('.grid h2').first().waitFor();assert.equal(await cards.count(),12);
@@ -44,5 +48,7 @@ try{
  assert.deepEqual(seen.sort(),records.map(r=>r.id).sort());
  assert.equal(await buyer.getByRole('link',{name:'See more pianos',exact:false}).count(),0);
  await buyer.reload();await buyer.locator('.grid h2').first().waitFor();assert.deepEqual(await ids(),finalPage);
- console.log(JSON.stringify({result:'PASS',marker,checks:['31 real published records with processed photos','featured first','anonymous 12+12+7 exact-set pagination','continuation retains search/type/currency','final page reload stable','no duplicates or extra continuation']}));
+ console.log(JSON.stringify({result:'PASS',marker,engine,version:publicBrowser.version(),checks:['31 real published records with processed photos','featured first','anonymous 12+12+7 exact-set pagination','continuation retains search/type/currency','final page reload stable','no duplicates or extra continuation']}));
+ }finally{await publicBrowser.close();}
+ }
 }finally{await browser.close();}

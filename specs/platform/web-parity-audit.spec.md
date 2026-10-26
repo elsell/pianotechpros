@@ -248,3 +248,24 @@ reload and no duplicate or extra continuation. Combined acceptance and both
 native builds passed. PR #84 merged at
 `89c3e34fe49c1744f9a2fffca485041450188035`. This closes this pagination evidence
 gap, not the provider, screen-reader, supported-browser or native touch gates.
+
+## Recurring showroom browser engines
+
+Run the persisted public-pagination journey in Chromium, Firefox and WebKit
+using the same 31 real published records. Each engine must independently follow
+both continuation links, preserve filters, prove the exact 12+12+7 set, and
+reload the terminal page. Log the engine and version. Use a fresh anonymous
+context for each engine and pace engines across fresh public rate-limit windows;
+never substitute API responses, suppress failures, or relax production limits.
+CI installs browser binaries from the pinned Playwright version and their host
+dependencies. This proves this journey only, not all website behavior or Safari
+on an Apple device. Record execution before claiming any new engine passed.
+
+Run `40378770317` at source `10ef2223de0ac54447a38bd00c3fd7e66ef551ae`
+passed the complete acceptance job, including marker `Catalogca2b82df` in
+Chromium 149.0.7827.55, Firefox 151.0 and Linux WebKit 26.5. Each engine logged
+all six required pagination checks. Both native builds passed; verification
+reported only the authorized node-forge finding with all 21 mitigation tests
+passing. This is evidence for those engines and assertions, not physical Safari
+or website-wide cross-browser parity. A subsequent documentation reconciliation
+with main requires fresh exact-head CI before merge.

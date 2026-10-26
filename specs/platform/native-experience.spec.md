@@ -408,3 +408,12 @@ Only the recorded 503 followed by 201 supports the retry result.
 This does not establish lost-success-response recovery, physical camera/library
 coverage, spoken screen-reader quality, iOS interaction, or complete PH-01/PH-02
 acceptance. Those gates remain open.
+
+Follow-up reopen found an unresolved recovery-state defect: after the successful
+503 retry and process restart, the editor still displayed the interrupted-picker
+warning. Check interrupted selection did not clear it. The upload queue completed,
+but the separate picker intent remained in processing state because its accept
+call had failed during the first upload. The successful upload evidence above
+stands; the handoff/reconciliation UX is not complete. Require a regression and
+an ownership-safe durable handoff before clearing this finding. Never clear an
+untransferred selection merely to hide the warning.

@@ -2,14 +2,17 @@
 
 ## Current milestone: feature-complete product
 
-Latest Android evidence (2026-10-26): the fresh CI APK from run `40403194496`,
-source `7ae6c7d`, was installed in place and its checksum verified. Saved customer
-locations/piano assignment survived; short-display 2x-text photo zoom/reset/close
-and Spanish customer rendering passed. Native reassignment moved removal protection
-to the destination location and survived restart. `native-experience.spec.md`
-records the exact build and bounded assertions. Browser/API acceptance passed on
-that source; iOS interaction remains pending. These checks do not close the wider
-native, accessibility, provider or physical-device requirements.
+Latest Android evidence (2026-10-26): confirmed customer location removal survived
+restart while preserving the linked piano and remaining-location guard. Native
+publication/unpublish/republish produced anonymous 200/404/200 responses with
+matching public fields/photos and a newer snapshot revision. PR #96 merged the
+control-contrast correction; PR #97 merged orientation adaptation after both
+native builds and real-service acceptance passed. The checksum-verified APK from
+run `40411305890` passed actual landscape photo inspection, resize-to-fit,
+zoom/reset/dismissal and portrait reopening. `native-experience.spec.md` records
+APK/source-overlay provenance and bounded assertions. Broader landscape screens,
+iOS interactions, spoken accessibility, providers and physical devices remain
+required; these checks do not complete native parity.
 
 As of 2026-10-26, PR #80 merged the combined inventory browse, sale/unpublish
 lifecycle, public gallery/contact/sharing and showroom-filter journeys plus

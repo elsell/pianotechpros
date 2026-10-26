@@ -675,3 +675,56 @@ passed but are not landscape acceptance; its captures are marked
 regressions failed before the configuration change and pass afterward. Mobile
 TypeScript and configuration validation pass. Actual rotated-window acceptance
 remains pending a rebuilt binary.
+
+## Android confirmed customer location removal
+
+On 2026-10-26, the development APK from run `40403194496`, served primary
+source `c12ce7f0e2293cf1ba8dc0a3b4fb4455667b494d` through Metro, passed the
+confirmed-removal path against the isolated real API. After the prior reassignment
+of the synthetic piano to Studio, the now-unlinked Home location was removed
+through the native confirmation and explicit Save profile action. Process restart
+showed the saved status, Studio and its linked piano, with Home absent. Opening
+Studio retained the last/linked-location protection and exposed no Remove action.
+
+The local `android-customer-remove-confirm-*` UI trees retain confirmation,
+restarted status/locations/piano and remaining-location guard evidence. The helper
+exited successfully and stopped the app. The synthetic account now has one
+location; later tests must not assume the removed Home location exists. This
+complements cancellation/reassignment evidence without claiming iOS, spoken
+accessibility, physical-device or complete customer parity.
+
+## Android confirmed publication visibility
+
+On 2026-10-26, the same isolated development-client setup completed native
+review/confirmation for a synthetic piano with a processed photo. Anonymous
+HTTP access returned 200 after publication, 404 after explicitly confirmed
+unpublishing, and 200 after explicitly confirmed republishing. The restored
+public title, stock number, make, model, description, price and photo collection
+matched the first confirmed snapshot, with a newer publication revision.
+
+Evidence uses `android-publication-confirm-*` UI trees, the inspected review
+screenshot and anonymous responses. An initial helper failed parsing curl's
+status suffix after a successful publication; the resumed helper verified that
+state and did not repeat that command. The final helper exited successfully and
+stopped the app. These assertions concern the Android emulator and real isolated
+API; they do not establish iOS or complete publication acceptance.
+
+## Android orientation build interaction evidence
+
+The Android APK from run `40411305890`, source `109dde6`, artifact
+`12693887803`, was installed in place on 2026-10-26. Its installed SHA-256 matched
+`228a1a163f935b2d3e2c80ae36dd84c6b3df3eb50c7cda24fc8138dc3e409f89`.
+Metro served primary source `9b9498b` with the six app-config, palette/button and
+full-screen modal changes from that orientation source temporarily overlaid; the
+local provenance file records each overlay checksum. This is development-client
+evidence, not a signed release.
+
+Photo inspection started zoomed in portrait. Rotation produced a 2400x1080
+screenshot and a landscape application window, reset the viewport to 100% fit,
+and retained reachable controls. Zoom to 150%, reset to 100%, dismissal back to
+the photo gallery and portrait reopening at 100% all passed. The landscape
+screenshot was inspected for visible photo and unclipped controls. Local evidence
+uses `android-orientation-apk-photo-*` plus `android-orientation-apk-provenance.json`.
+The helper restored original rotation settings and source files, stopped the app,
+and Metro was restarted against the restored source. Large-text landscape, other
+forms/modals, iOS rotation and physical-device acceptance remain unproven.

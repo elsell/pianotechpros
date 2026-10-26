@@ -30,16 +30,19 @@ try{
  const anonymous=await browser.newContext();const buyer=await anonymous.newPage();
  const query=new URLSearchParams({search:marker,form:'grand',currency:'USD'});
  await buyer.goto(`${base}/showrooms/${slug}?${query}`);
- const cards=buyer.locator('.grid article a');await buyer.locator('.grid h2').first().waitFor();assert.equal(await cards.count(),30);
+ const cards=buyer.locator('.grid article a');await buyer.locator('.grid h2').first().waitFor();assert.equal(await cards.count(),12);
  assert.equal(await buyer.locator('.grid h2').first().innerText(),records[0].title);
  const ids=()=>cards.evaluateAll(links=>links.map(link=>link.getAttribute('href').match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/)?.[1]??null));
- const first=await ids();
- const next=buyer.getByRole('link',{name:'See more pianos',exact:false});const href=await next.getAttribute('href');assert.ok(href);
- const continuation=new URL(href,base);assert.ok(continuation.searchParams.get('cursor'));
- for(const [key,value] of query)assert.equal(continuation.searchParams.get(key),value);
- await Promise.all([buyer.waitForURL(continuation.href),next.click()]);await buyer.locator('.grid h2').first().waitFor();
- const second=await ids();assert.equal(second.length,1);assert.deepEqual([...first,...second].sort(),records.map(r=>r.id).sort());
+ const seen=await ids();let finalPage=[];
+ for(const expectedCount of [12,7]){
+  const next=buyer.getByRole('link',{name:'See more pianos',exact:false});const href=await next.getAttribute('href');assert.ok(href);
+  const continuation=new URL(href,base);assert.ok(continuation.searchParams.get('cursor'));
+  for(const [key,value] of query)assert.equal(continuation.searchParams.get(key),value);
+  await Promise.all([buyer.waitForURL(continuation.href),next.click()]);await buyer.locator('.grid h2').first().waitFor();
+  finalPage=await ids();assert.equal(finalPage.length,expectedCount);seen.push(...finalPage);
+ }
+ assert.deepEqual(seen.sort(),records.map(r=>r.id).sort());
  assert.equal(await buyer.getByRole('link',{name:'See more pianos',exact:false}).count(),0);
- await buyer.reload();await buyer.locator('.grid h2').first().waitFor();assert.deepEqual(await ids(),second);
- console.log(JSON.stringify({result:'PASS',marker,checks:['31 real published records with processed photos','featured first','anonymous 30+1 exact-set pagination','continuation retains search/type/currency','final page reload stable','no duplicates or extra continuation']}));
+ await buyer.reload();await buyer.locator('.grid h2').first().waitFor();assert.deepEqual(await ids(),finalPage);
+ console.log(JSON.stringify({result:'PASS',marker,checks:['31 real published records with processed photos','featured first','anonymous 12+12+7 exact-set pagination','continuation retains search/type/currency','final page reload stable','no duplicates or extra continuation']}));
 }finally{await browser.close();}

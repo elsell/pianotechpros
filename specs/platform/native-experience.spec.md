@@ -789,3 +789,38 @@ cancellation with an unchanged anonymous public snapshot passed. Evidence uses
 input has the same correction but has not yet received this runtime check.
 Mobile TypeScript and structural checks pass; read-only review found no code/spec
 blockers. This result does not establish iOS or physical-device acceptance.
+
+When editing a sold transition, keep the localized sale-amount label and selected
+currency in the fixed modal heading as well as in the scrollable form. This task
+context must remain visible when the keyboard scrolls the focused input into
+view. Use the existing catalog label and current currency value, allow wrapping
+for enlarged text, and preserve the ordinary availability and review headings
+for other states. Apply the same presentation to editor and scan sale flows.
+
+The fixed-heading inventory-editor rerun passed on 2026-10-26 at Android font
+scale 1.5 in landscape: the inspected screenshot shows the amount label, USD,
+focused input and Cancel above the keyboard. Editing, portrait rotation retention
+and cancellation preserving the anonymous public snapshot all passed. Evidence
+uses `android-sale-heading-*` and the six-module overlay manifest retained with
+its helper. An earlier attempt stopped on local disk exhaustion while saving
+portrait evidence; only the subsequent successful rerun counts for these results.
+The original source and device settings were restored. Scan-specific runtime,
+other locales/device sizes and iOS remain separate checks.
+
+The scan-screen check reached the saved synthetic piano through its QR link and
+passed amount editing, rotation retention and cancellation without success
+feedback at font scale 1.5. Its screenshot exposed a distinct layout failure:
+the scan modal's taller header left the amount field partially behind the numeric
+keyboard. This is not complete scan layout acceptance. Match the inventory
+editor's compact header vertical padding while preserving horizontal padding,
+wrapping, scaled text and Cancel's touch target, then repeat visual/input checks.
+
+The compact scan-header rerun passed on 2026-10-26. The inspected post-edit
+landscape screenshot shows the entire amount field and entered value, amount
+label, USD and Cancel above the keyboard at font scale 1.5. Rotation retained the
+edit, and Cancel returned without success feedback. Evidence uses
+`android-scan-sale-spacing-*`, with two presentation-module overlays on primary
+`679afd1` and the previously verified orientation APK. Both overlays and original
+device settings were restored; the helper exited successfully. This scan check
+does not assert an anonymous snapshot comparison or replace other locale,
+physical-device and iOS acceptance. Mobile TypeScript and code review pass.

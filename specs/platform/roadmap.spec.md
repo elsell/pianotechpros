@@ -2,21 +2,24 @@
 
 ## Current milestone: feature-complete product
 
-Latest iOS attempt `40409134653` passed native compilation and real-service
-browser/API acceptance but failed before sign-in: the development launcher timed
-out reaching Metro despite host manifest/bundle readiness. Simulator-side status
-validation and explicit foreground launch now precede development URL delivery;
-all 11 fixture/readiness tests pass locally. Hosted Swift/runtime verification
-remains required, including the unexercised role-aware choice and profile flows.
+Latest iOS attempt `40413380865` passed native compilation, simulator-side
+Metro status validation and the broader browser/API acceptance job, but the
+launcher again timed out before sign-in. Host and simulator HEAD probes now
+follow the pinned launcher's request sequence; seven readiness and six fixture
+tests pass locally. This is additional diagnosis, not a demonstrated startup fix.
+Hosted Swift/runtime verification and the profile journeys remain required.
 
-Latest Android evidence (2026-10-26): the fresh CI APK from run `40403194496`,
-source `7ae6c7d`, was installed in place and its checksum verified. Saved customer
-locations/piano assignment survived; short-display 2x-text photo zoom/reset/close
-and Spanish customer rendering passed. Native reassignment moved removal protection
-to the destination location and survived restart. `native-experience.spec.md`
-records the exact build and bounded assertions. Browser/API acceptance passed on
-that source; iOS interaction remains pending. These checks do not close the wider
-native, accessibility, provider or physical-device requirements.
+Latest Android evidence (2026-10-26): confirmed customer location removal survived
+restart while preserving the linked piano and remaining-location guard. Native
+publication/unpublish/republish produced anonymous 200/404/200 responses with
+matching public fields/photos and a newer snapshot revision. PR #96 merged the
+control-contrast correction; PR #97 merged orientation adaptation after both
+native builds and real-service acceptance passed. The checksum-verified APK from
+run `40411305890` passed actual landscape photo inspection, resize-to-fit,
+zoom/reset/dismissal and portrait reopening. `native-experience.spec.md` records
+APK/source-overlay provenance and bounded assertions. Broader landscape screens,
+iOS interactions, spoken accessibility, providers and physical devices remain
+required; these checks do not complete native parity.
 
 As of 2026-10-26, PR #80 merged the combined inventory browse, sale/unpublish
 lifecycle, public gallery/contact/sharing and showroom-filter journeys plus

@@ -10,3 +10,20 @@ for(const dark of [false,true])for(const platform of ['android','ios'])for(const
   else for(const background of [palette.background,palette.surface])assert.ok(contrast(color,background)>=4.5);
  });
 }
+
+for(const dark of [false,true]){
+ test(`${dark?'dark':'light'} native control boundaries contrast with both adjacent surfaces`,()=>{
+  const palette=nativePalette(dark);
+  for(const background of [palette.background,palette.surface]){
+   const ratio=contrast(palette.border,background);
+   assert.ok(ratio>=3,`Boundary contrast ${ratio} against ${background} must be at least 3:1`);
+  }
+ });
+}
+
+for(const dark of [false,true]){
+ test(`${dark?'dark':'light'} disabled Android labels retain readable contrast`,()=>{
+  const palette=nativePalette(dark);
+  assert.ok(contrast(palette.secondary,palette.disabledButton)>=4);
+ });
+}

@@ -690,3 +690,141 @@ probe HEAD with the same iOS platform/Accept headers before launching the app.
 A HEAD failure must stop readiness and preserve a stage-specific diagnostic;
 never hide it by retrying sign-in or increasing product waits. This expands
 observability, not a claim that HEAD caused the observed failure or fixes it.
+
+## Native control boundary contrast
+
+A fresh Android dark-mode customer-screen inspection on 2026-10-26 exposed faint
+input outlines. The palette border contrast is approximately 1.37:1 against the
+light page and 1.98:1 against the dark surface. Empty fields cannot rely on their
+entered text to identify the editable region. The shared native border color must
+provide at least 3:1 contrast against both the page background and surface in each
+theme. Preserve existing text/button contrast and the native interaction behavior.
+Keep disabled Android button fills independent from control boundaries, retaining
+their existing palette colors and at least 4:1 secondary-label contrast as an
+application readability target (inactive controls are exempt from WCAG 1.4.11).
+Use unrounded luminance-ratio regressions and inspect light/dark runtime screens;
+this bounded correction is not a claim of complete accessibility conformance.
+
+Reference: https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html
+
+The correction passes all 12 native palette tests. Light boundary contrast is
+3.75:1 against the page and 4.07:1 against the surface; dark contrast is 5.50:1
+and 4.71:1 respectively. Android emulator screenshots on 2026-10-26, using
+the development APK from run `40403194496` with these two source modules served
+by a freshly started Metro, show the corrected customer input outlines in both
+themes and retain the original disabled photo-control fills. Saved synthetic
+customer data remains visible. Evidence uses the local
+`android-control-contrast-final-*` screenshot/UI-tree set. This is development
+client runtime evidence, not a newly compiled release or iOS interaction result.
+Both themes also passed the photo preview transition from 100% with Reset
+disabled to 150% with Reset enabled, followed by reset and dismissal. The runtime
+helper restored the original source modules and light-mode device setting.
+
+## Native orientation adaptation
+
+The application must allow system-selected portrait and landscape orientation.
+The scaffold's portrait lock prevents required rotation acceptance and must be
+removed. Verify the actual generated Android activity orientation and iOS
+supported-orientation list using the pinned Expo config adapters. Runtime
+acceptance must assert landscape window dimensions, reachable photo controls,
+reset/dismissal and retained editor data; changing a device setting alone is
+not proof that the application rotated. Photo viewport resize may reset zoom
+to fit; it must not discard the draft or trap the user in the preview. A new
+native binary is required before runtime acceptance of this config change.
+Full-screen photo, publication and scan-action modals must explicitly support
+portrait and both landscape directions on iOS; the application orientation list
+alone does not override React Native's portrait default for these modals.
+
+On 2026-10-26, the existing Android APK remained 1080x2400 after landscape was
+requested, confirming the baseline lock. The helper's zoom/reset/dismiss checks
+passed but are not landscape acceptance; its captures are marked
+`android-fresh-apk-photo-rotation-locked-baseline-*`. Both pinned Expo adapter
+regressions failed before the configuration change and pass afterward. Mobile
+TypeScript and configuration validation pass. Actual rotated-window acceptance
+remains pending a rebuilt binary.
+
+## Android confirmed customer location removal
+
+On 2026-10-26, the development APK from run `40403194496`, served primary
+source `c12ce7f0e2293cf1ba8dc0a3b4fb4455667b494d` through Metro, passed the
+confirmed-removal path against the isolated real API. After the prior reassignment
+of the synthetic piano to Studio, the now-unlinked Home location was removed
+through the native confirmation and explicit Save profile action. Process restart
+showed the saved status, Studio and its linked piano, with Home absent. Opening
+Studio retained the last/linked-location protection and exposed no Remove action.
+
+The local `android-customer-remove-confirm-*` UI trees retain confirmation,
+restarted status/locations/piano and remaining-location guard evidence. The helper
+exited successfully and stopped the app. The synthetic account now has one
+location; later tests must not assume the removed Home location exists. This
+complements cancellation/reassignment evidence without claiming iOS, spoken
+accessibility, physical-device or complete customer parity.
+
+## Android confirmed publication visibility
+
+On 2026-10-26, the same isolated development-client setup completed native
+review/confirmation for a synthetic piano with a processed photo. Anonymous
+HTTP access returned 200 after publication, 404 after explicitly confirmed
+unpublishing, and 200 after explicitly confirmed republishing. The restored
+public title, stock number, make, model, description, price and photo collection
+matched the first confirmed snapshot, with a newer publication revision.
+
+Evidence uses `android-publication-confirm-*` UI trees, the inspected review
+screenshot and anonymous responses. An initial helper failed parsing curl's
+status suffix after a successful publication; the resumed helper verified that
+state and did not repeat that command. The final helper exited successfully and
+stopped the app. These assertions concern the Android emulator and real isolated
+API; they do not establish iOS or complete publication acceptance.
+
+## Android orientation build interaction evidence
+
+The Android APK from run `40411305890`, source `109dde6`, artifact
+`12693887803`, was installed in place on 2026-10-26. Its installed SHA-256 matched
+`228a1a163f935b2d3e2c80ae36dd84c6b3df3eb50c7cda24fc8138dc3e409f89`.
+Metro served primary source `9b9498b` with the six app-config, palette/button and
+full-screen modal changes from that orientation source temporarily overlaid; the
+local provenance file records each overlay checksum. This is development-client
+evidence, not a signed release.
+
+Photo inspection started zoomed in portrait. Rotation produced a 2400x1080
+screenshot and a landscape application window, reset the viewport to 100% fit,
+and retained reachable controls. Zoom to 150%, reset to 100%, dismissal back to
+the photo gallery and portrait reopening at 100% all passed. The landscape
+screenshot was inspected for visible photo and unclipped controls. Local evidence
+uses `android-orientation-apk-photo-*` plus `android-orientation-apk-provenance.json`.
+The helper restored original rotation settings and source files, stopped the app,
+and Metro was restarted against the restored source. Large-text landscape, other
+forms/modals, iOS rotation and physical-device acceptance remain unproven.
+
+## Android large-text landscape photo interaction
+
+On 2026-10-26, the same orientation APK and six-module Metro overlay described
+above passed photo inspection with Android system font scale set to 1.5. The
+helper verified both the 2400x1080 display and a landscape application window.
+Rotation reset the zoomed viewport to 100%; zoom to 150%, reset, dismissal to
+the gallery and portrait reopening at 100% passed. The landscape screenshot
+was inspected: controls and instructions remained visible without clipped text.
+
+Local evidence uses `android-large-text-landscape-photo-*`, including runtime
+provenance, UI trees and the screenshot. The helper exited successfully, restored
+the original source and rotation/font settings, and stopped the app. The restored
+font scale was independently checked as 1.0 and Metro restarted on original source.
+This closes this photo-flow check at that text size only. Other forms/modals,
+iOS rotation, spoken accessibility and physical-device acceptance remain open.
+
+## Android large-text landscape unpublish review
+
+The same orientation APK and six-module Metro overlay passed a second 1.5-font-scale
+check on 2026-10-26. A published synthetic record was opened through the normal
+Android inventory flow and its unpublish review rotated to landscape. Both the
+2400x1080 display and landscape application bounds were checked. The consequence
+text, Cancel and Confirm change remained visible in the inspected screenshot.
+Cancel dismissed the review; anonymous real-API reads before and after returned
+200 with identical public piano snapshots, including publication revision.
+
+Evidence uses `android-publication-landscape-*` UI trees, public responses and
+the screenshot. The helper exited successfully and restored font/rotation and
+source settings, stopped the app, and Metro restarted on original source. This
+checks cancellation, not confirmation, in this landscape configuration. Longer
+publication reviews, sale-entry keyboard behavior, other forms, iOS and physical
+devices remain separate acceptance work.

@@ -336,7 +336,16 @@ The Android regression failed before the change: the selected radio option had
 `selected=true` but `checkable=false` and `checked=false`. Afterward, a searched
 customer timezone sheet exposes UTC as checkable/checked and Etc/UTC as
 checkable/unchecked. The regression inspects native radio nodes, not visual
-highlighting. Technician single-choice runtime validation remains required.
+highlighting. Technician single-choice runtime validation subsequently passed on 2026-10-26:
+normal home navigation to Service area exposed `Time zone, UTC`; searching the
+sheet for UTC exposed UTC as checkable/checked and Etc/UTC as
+checkable/unchecked. Done dismissed the sheet with UTC unchanged and the profile
+still up to date. The first snapshot preceded filtered rendering; a fresh
+snapshot verified the options. Retained native trees are
+`android-technician-timezone-radio.xml` and
+`android-technician-timezone-dismissed.xml`. This used the existing Android
+development client and Metro with the merged PR #83 choice adapter, not a fresh
+exact-head APK or spoken TalkBack/iOS acceptance.
 
 ## Home navigation hierarchy
 
@@ -372,3 +381,68 @@ ripple fixes the observed transition. Actual emulator screenshots now show
 and white after switching back, without relaunch. Customer navigation still
 opens correctly. Typechecking and review pass; the original light setting was
 restored. This evidence is specific to the tested Android runtime.
+
+## Android photo interaction evidence — 2026-10-26
+
+The existing Android emulator development client, using the isolated synthetic
+API and the cached Metro source from `83e1f43` with the PR #85 home correction
+(`7b7ffff`), exercised these normal UI paths. This is bounded runtime evidence,
+not a new exact-head native build or a physical-device result.
+
+- Inventory → New piano → Take a photo opened the system camera without required
+  setup fields. Cancelling returned to the untouched editor and lazy-draft prompt.
+- After entering a synthetic Make value and seeing Saved, camera cancellation
+  preserved that value. Revoking camera permission restarted the process; normal
+  inventory search reopened the saved draft. Denying the subsequent system prompt
+  retained its text and displayed library/Settings guidance.
+- Shutter → Done produced a pending selection. Add selected photo uploaded to the
+  real isolated API and rendered the captured emulator scene as Photo 1/Cover.
+  Subsequent captures retained the prior photos and text.
+- A test-only loopback proxy rejected one upload before forwarding and recorded
+  HTTP 503. The editor retained the selection and prior photos, displayed
+  uncertainty guidance, and offered Retry upload. That action reused the selection
+  without another capture, reached the real API, returned 201 and rendered Photo 4.
+  The saved Make value remained intact. The direct API route and camera permission
+  were restored; the fault proxy was stopped. No photo was published.
+
+Retained evidence includes `android-new-photo-first.xml`,
+`android-new-camera-cancel.xml`, `android-camera-denied-saved-draft.xml`,
+`android-camera-upload.png`, `android-upload-confirmed-503.xml`,
+`android-upload-pending-retry.xml`, `android-upload-retry-complete.xml`,
+`android-upload-retry-retained-text.xml` and `android-upload-fault-events.jsonl`.
+The first route-removal attempt did not interrupt the request, and the first proxy
+matcher missed the revision query parameter; neither is counted as failure proof.
+Only the recorded 503 followed by 201 supports the retry result.
+
+This does not establish lost-success-response recovery, physical camera/library
+coverage, spoken screen-reader quality, iOS interaction, or complete PH-01/PH-02
+acceptance. Those gates remain open.
+
+Follow-up reopen found an unresolved recovery-state defect: after the successful
+503 retry and process restart, the editor still displayed the interrupted-picker
+warning. Check interrupted selection did not clear it. The upload queue completed,
+but the separate picker intent remained in processing state because its accept
+call had failed during the first upload. The successful upload evidence above
+stands; the handoff/reconciliation UX is not complete. Require a regression and
+an ownership-safe durable handoff before clearing this finding. Never clear an
+untransferred selection merely to hide the warning.
+
+### Durable picker-to-upload transfer
+
+Native selection consumption must acknowledge transfer once the capture journal or upload coordinator
+has durably stored the selected bytes and intent, before record creation or upload
+respectively. A new capture must not wait for record creation to acknowledge its
+durable staging; failed creation remains owned by capture recovery. The
+picker broker may clear its processing intent only at that acknowledgement (or
+normal completed acceptance). Upload failure after transfer remains owned by the
+upload queue and must not recreate an interrupted-picker warning on reopen.
+Failed staging, failed picker cleanup, expired or inactive scope must not dispatch
+an upload or discard an untransferred selection. Acknowledgement is valid only
+while the accepting call is active; reject late callbacks to prevent clearing a
+later selection. Existing ambiguous processing intents without a recorded transfer
+remain recoverable by explicit review/discard; do not infer ownership from an
+empty queue. Verify real durable ports, preserved retry identity and restart state.
+After a failed consume, a successful protected restore to idle proves the picker
+no longer owns recovery. Clear only that picker error; the upload workspace must
+continue to display its failure and retry entry. Do not suppress initial picker,
+selection, storage or unknown-target failures on the same basis.

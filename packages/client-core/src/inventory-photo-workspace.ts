@@ -74,9 +74,9 @@ export function createInventoryPhotoWorkspace(port:InventoryPhotoWorkspacePort){
   snapshot,
   subscribe(listener:(value:ReturnType<typeof snapshot>)=>void){if(!disposed)listeners.add(listener);listener(snapshot());return()=>{listeners.delete(listener);};},
   refresh(){return run(async()=>{const id=port.recordID();if(!id)return;await reload(id);if(port.capture?.pending())return;const uploads=await connect(id);await uploads.refresh();active();});},
-  add(source:Uint8Array):Promise<void>{
+  add(source:Uint8Array,transferred?:()=>Promise<void>):Promise<void>{
    if(!(source instanceof Uint8Array)||!source.length||source.length>20*1024*1024)return Promise.reject(unavailable());const bytes=new Uint8Array(source);
-   return run(async()=>{if(!port.recordID()&&!port.capture)throw unavailable();const staged=port.capture&&(!port.recordID()||port.capture.pending())?await port.capture.stage(bytes):null;active();const id=await port.ensureRecord();active();if(!id||id!==port.recordID())throw unavailable();const uploads=await connect(id);const selection=staged??await uploads.select(bytes);active();await upload(id,selection);});
+   return run(async()=>{if(!port.recordID()&&!port.capture)throw unavailable();const staged=port.capture&&(!port.recordID()||port.capture.pending())?await port.capture.stage(bytes):null;active();if(staged&&transferred){await transferred();active();}const id=await port.ensureRecord();active();if(!id||id!==port.recordID())throw unavailable();const uploads=await connect(id);const selection=staged??await uploads.select(bytes);active();if(!staged&&transferred){await transferred();active();}await upload(id,selection);});
   },
   retryCapture(){return run(async()=>{const selection=port.capture?.pending()?.id;if(!selection)throw unavailable();const id=await port.ensureRecord();active();if(!id)throw unavailable();const uploads=await connect(id);if(uploads.snapshot().entries.some(e=>e.id===selection))await upload(id,selection);else await reload(id);});},
   discardCapture(){return run(async()=>{if(!port.capture)throw unavailable();await port.capture.discard();active();});},

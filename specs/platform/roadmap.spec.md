@@ -32,6 +32,18 @@ checks and dedicated non-production speech/Turnstile integration. Legacy hosting
 GitOps, DNS and live data remain unchanged; signing and cutover stay deferred.
 
 
+PR #87 merged the real-service Chromium/Firefox/Linux WebKit showroom pagination
+matrix after exact-head run `40382626453` passed acceptance and both native
+builds. The web parity audit records its bounded assertions. Android technician
+timezone native-tree validation also passed without changing the saved profile;
+spoken accessibility remains open. PR #89's durable photo-picker handoff fix
+merged at `8d3b695ce03156c5a7b06568ad778fe5b6052714` after exact source
+`cf60afbe9ab7175f6128957db09b6389e55561b1` passed real-service acceptance
+and both native builds in run `40384588702`. Verification reported only the
+authorized advisory with all 21 mitigation tests passing. Android development
+client checks confirmed 503/retry-201, reopening without the stale picker warning,
+Photo 7 and saved text retained. This does not prove iOS or physical capture.
+
 Technician implementation merged in PR #64 at
 `689308b29e2349805124420bae243d3f3f8bcf3a` after Android, iOS and acceptance
 passed. Exact-commit verification reported only the reviewed node-forge advisory;

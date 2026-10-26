@@ -116,6 +116,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
         if: steps.routing.outcome == 'success' && needs.changes.outputs.acceptance == 'true'
+      - name: Install browser system dependencies
+        if: steps.routing.outcome == 'success' && needs.changes.outputs.acceptance == 'true'
+        run: pnpm exec playwright install-deps chromium firefox webkit
       - run: make acceptance
         if: steps.routing.outcome == 'success' && needs.changes.outputs.acceptance == 'true'
 

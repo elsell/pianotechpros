@@ -85,7 +85,7 @@ pre-push:
 	$(HOOK_RECURSIVE_ENV) $(MAKE) acceptance
 
 acceptance:
-	pnpm exec playwright install chromium
+	pnpm exec playwright install chromium firefox webkit
 	./scripts/live-acceptance.sh .
 
 compose-up:

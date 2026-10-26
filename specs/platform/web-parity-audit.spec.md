@@ -218,3 +218,19 @@ each status, default active exclusion of sold/archived records, and all-status
 The complete extended inventory journey passed locally with synthetic marker
 `Browseb6d735f3`: exact status sets, active exclusion, and all-status pagination
 were checked against persisted records. Fresh recurring CI remains pending.
+
+## Persisted large-showroom pagination
+
+Provision 31 uniquely searchable, published synthetic records through the real
+owner API, with processed photos and one featured record. Pace provisioning
+across fresh audit windows without relaxing limits. An anonymous browser must
+follow the rendered continuation link, retain search/type/currency filters,
+and see the exact 12+12+7 record set without duplicates (the public client
+requests 12 records per page). Reload the final page
+and verify its stable contents and absence of a continuation. This is a new
+acceptance requirement; do not claim a passing execution until recorded.
+
+The first CI execution provisioned all 31 records but failed an incorrect
+30-record first-page expectation. Public `showroomFilters` explicitly requests
+12, unlike private inventory. Correct the test to follow both continuation
+links and assert 12+12+7; this does not change product pagination behavior.

@@ -2,7 +2,7 @@
 
 ## Scope and decision
 
-Audit date: 2026-10-25. Reviewed rebuild source: main commit
+Initial audit date: 2026-10-25. Initial reviewed rebuild source: main commit
 `689308b29e2349805124420bae243d3f3f8bcf3a`. The baseline and required behaviors
 remain those in `product-parity.spec.md`; this document does not narrow them.
 
@@ -13,7 +13,8 @@ browser journeys. Their composition must not be described as universal end-to-en
 coverage. No percentage is assigned. Mobile QA, app-store signing, a new hostname
 and GitOps are separate from this web parity decision.
 
-This is a source/coverage audit, not a new execution result. A test listed below
+The baseline table is a source/coverage audit; the dated execution sections below
+record subsequent results. A test listed in the baseline table
 is evidence of the assertions and integration surface it defines; its existence
 alone is not evidence of a passing run. Preserve exact-commit CI results and
 named runtime evidence when closing a row. No row is promoted to complete by
@@ -110,9 +111,20 @@ real-catalog acceptance or the whole website complete.
    checks are not Safari or native iOS acceptance. A local real-browser inventory
    check also passed stock/title/make/model search, featured ordering, exact
    30+1 pagination without duplicates and sold-filter exclusion using 31 synthetic
-   records; preserve it in recurring acceptance before treating that row as closed.
-5. Finish remaining showroom filtering/gallery/contact, complete lifecycle,
-   provider, accessibility and device evidence from the table above. Live
+   records; item 5 records its subsequent recurring acceptance. The separate
+   all-status extension passed the recurring run described below.
+5. PR #80 merged inventory browse, complete lifecycle and public gallery/contact/
+   sharing/filter journeys. Combined real-service acceptance passed run
+   `40224029059` at source `2ff7f16e45ad538ecc45d7a5739f515c39561976`.
+   The log records exact 31-record browsing, all six lifecycle transitions,
+   immutable sale correction history, public gallery keyboard interaction,
+   canonical clipboard/contact/related links and title/type/currency/price filters.
+   This supersedes the recurring-CI gaps for those specific assertions, not the
+   full baseline table. PR #81 subsequently merged exact six-status filtering
+   after run `40365056103` passed at source
+   `84783cef6cdd2cbb5d5f9f89a670509468a70d00`.
+6. Finish provider, accessibility, broader supported-browser and device evidence
+   from the table above. Live
    Turnstile public test-key Siteverify responses were observed without the
    required `inquiry` action; they do not prove an enabled successful inquiry
    path. Keep exact hostname/action validation intact. Dedicated non-production
@@ -138,7 +150,8 @@ pass alone does not establish the recurring CI result or close all IN-01 filters
 Local execution of this recurring script passed on 2026-10-25 with synthetic
 marker `Browse3d5c1bb6`: all four search fields, featured-first ordering, exact
 31-record set across pagination and exclusion of drafts from sold results.
-Recurring CI remains pending.
+Recurring CI passed run `40224029059` with marker `Browsef0a86197` for these
+search/order/pagination assertions. All-six-status filter coverage is separate.
 
 ## Persisted web lifecycle acceptance
 
@@ -156,7 +169,8 @@ relax rate limits or retry a rejected mutation.
 The paced real-service journey passed locally on 2026-10-25 for synthetic record
 `4b78e80e-ed4d-488e-8fe1-107e3823f68c`, including explicit unpublish independence,
 sale defaults/override, immutable correction history, all six lifecycle states,
-private-edit isolation and no silent republication. Recurring CI remains pending.
+private-edit isolation and no silent republication. Recurring CI passed run
+`40224029059` for record `54aa4ae3-6180-403e-b60c-3004f83c2a18`.
 
 ## Persisted public listing interactions
 
@@ -174,7 +188,8 @@ Local real-service execution passed for synthetic record
 screenshot was inspected: gallery controls, contact actions, inquiry form and
 related cards remain readable without horizontal overflow. Synthetic color-block
 photos establish processing and layout behavior, not photographic quality.
-Recurring CI and actual touch/device acceptance remain pending.
+Recurring CI passed run `40224029059` for record
+`2ea9f917-69f8-4ecc-925f-8fbaa78d08be`. Actual touch/device acceptance remains open.
 
 ## Persisted showroom filtering
 
@@ -189,4 +204,21 @@ not replace large-catalog pagination or native touch acceptance.
 The full corrected gallery/filter journey passed locally on 2026-10-25 for
 synthetic record `96568d3c-f6ec-41fd-89d7-70016f12e788`. Each filter form opens
 with an active initial search so the control remains accessible after sale or
-unpublication leaves a small catalog. Recurring fresh-fixture CI remains pending.
+unpublication leaves a small catalog. Recurring fresh-fixture CI passed run
+`40224029059` for record `2ea9f917-69f8-4ecc-925f-8fbaa78d08be`.
+Large public-catalog pagination and native touch evidence remain separate.
+
+## Persisted inventory status filters
+
+The recurring inventory browse journey must cover all six saved lifecycle states.
+After its initial search/pagination checks, use a fresh audit window to transition
+five synthetic drafts through the real API. In the browser assert exact sets for
+each status, default active exclusion of sold/archived records, and all-status
+30+1 pagination without duplicates. Do not weaken limits or replace API responses.
+
+The complete extended inventory journey passed locally with synthetic marker
+`Browseb6d735f3`: exact status sets, active exclusion, and all-status pagination
+were checked against persisted records. Recurring CI passed run `40365056103`
+with marker `Browseec912d1e`, including exact sets for six statuses, active
+exclusion and all-status pagination. PR #81 merged in
+`745a0e5b22b7e4c2d07d371e05cc1d7da31a886b`.

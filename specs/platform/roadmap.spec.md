@@ -12,8 +12,10 @@ regressions passed. Android target measurements and edge activation passed,
 including inspected 2x-text rendering. These are specific acceptance results,
 not a claim of complete native interaction or screen-reader quality.
 
-PR #81 extends inventory coverage to exact sets across all six saved statuses;
-its local run passed and recurring CI is pending. iOS interaction PR #66 remains
+PR #81 merged inventory coverage for exact sets across all six saved statuses
+at `745a0e5b22b7e4c2d07d371e05cc1d7da31a886b`. Run `40365056103` passed
+real-service acceptance and both native builds at source `84783cef`; verification
+reported only the authorized advisory with all 21 mitigation tests passing. iOS interaction PR #66 remains
 unmerged: native compilation has succeeded but its interaction test has not.
 The current failed run is being diagnosed from retained artifacts. Remaining
 release work includes that iOS interaction evidence, broader device/accessibility

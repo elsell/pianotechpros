@@ -619,9 +619,12 @@ Physical camera/audio, VoiceOver and manual interaction quality remain separate.
 
 ### iOS fixture readiness addressing
 
-The iOS interaction harness uses the hostname Metro actually binds (`localhost`)
-for both its readiness probe and development-client URL; the synthetic API keeps
-its explicit IPv4 loopback address. Readiness requests have bounded connect/total
+The iOS interaction harness starts Metro with Node's IPv4-first DNS ordering
+while retaining its localhost-only listener. Its readiness probe, development
+URL and synthetic API use explicit IPv4 loopback addresses. Expo's native bundle
+request resolves to 127.0.0.1; a successful IPv6 localhost probe alone does not
+prove that address is reachable. The fourth hosted run retained a red-box error
+showing the failed IPv4 bundle URL; keep this as failed interaction evidence. Readiness requests have bounded connect/total
 timeouts and identify the failed local endpoint. A failed prerequisite remains
 a failing gate, never a skipped interaction test.
 

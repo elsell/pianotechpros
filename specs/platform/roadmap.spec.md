@@ -2,6 +2,25 @@
 
 ## Current milestone: feature-complete product
 
+As of 2026-10-26, PR #80 merged the combined inventory browse, sale/unpublish
+lifecycle, public gallery/contact/sharing and showroom-filter journeys plus
+larger native action targets. Merge `4b8d6483edbbf5d95d1a436d8470ea4ebc569a2f`
+contains exact tested source `2ff7f16e45ad538ecc45d7a5739f515c39561976`;
+run `40224029059` passed real-service acceptance and both native builds.
+Verification failed only on the authorized node-forge finding; all 21 mitigation
+regressions passed. Android target measurements and edge activation passed,
+including inspected 2x-text rendering. These are specific acceptance results,
+not a claim of complete native interaction or screen-reader quality.
+
+PR #81 extends inventory coverage to exact sets across all six saved statuses;
+its local run passed and recurring CI is pending. iOS interaction PR #66 remains
+unmerged: native compilation has succeeded but its interaction test has not.
+The current failed run is being diagnosed from retained artifacts. Remaining
+release work includes that iOS interaction evidence, broader device/accessibility
+checks and dedicated non-production speech/Turnstile integration. Legacy hosting,
+GitOps, DNS and live data remain unchanged; signing and cutover stay deferred.
+
+
 Technician implementation merged in PR #64 at
 `689308b29e2349805124420bae243d3f3f8bcf3a` after Android, iOS and acceptance
 passed. Exact-commit verification reported only the reviewed node-forge advisory;

@@ -19,9 +19,9 @@ fixture_pid=$!
 export PIANOTECHPROS_APP_ENV=development PIANOTECHPROS_API_URL=http://127.0.0.1:18082
 export PIANOTECHPROS_OIDC_ISSUER=http://127.0.0.1:18082/oidc PIANOTECHPROS_MOBILE_OIDC_CLIENT_ID=pianotechpros-mobile
 export CI=1
-python3 -c 'import os; os.setsid(); os.execvp("pnpm", ["pnpm", "--dir", "apps/mobile", "start", "--port", "18081", "--localhost"])' > "$evidence/metro.log" 2>&1 &
+NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--dns-result-order=ipv4first" python3 -c 'import os; os.setsid(); os.execvp("pnpm", ["pnpm", "--dir", "apps/mobile", "start", "--port", "18081", "--localhost"])' > "$evidence/metro.log" 2>&1 &
 metro_pid=$!
-for endpoint in http://127.0.0.1:18082/oidc/.well-known/openid-configuration http://localhost:18081/status; do
+for endpoint in http://127.0.0.1:18082/oidc/.well-known/openid-configuration http://127.0.0.1:18081/status; do
   ready=false
   for _ in {1..90}; do if curl --fail --silent --connect-timeout 2 --max-time 3 "$endpoint" >/dev/null; then ready=true; break; fi; sleep 1; done
   [[ "$ready" == true ]] || { echo "Native UI dependency failed to become ready: $endpoint" >&2; exit 1; }

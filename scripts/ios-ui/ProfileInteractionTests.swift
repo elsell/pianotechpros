@@ -5,7 +5,7 @@ final class ProfileInteractionTests: XCTestCase {
     override func setUpWithError() throws {
         continueAfterFailure = false
         if #available(iOS 16.4, *) {
-            app.open(URL(string: "exp+pianotechpros://expo-development-client/?url=http%3A%2F%2Flocalhost%3A18081")!)
+            app.open(URL(string: "exp+pianotechpros://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A18081")!)
         } else {
             XCTFail("The interaction gate requires iOS 16.4 or newer")
         }

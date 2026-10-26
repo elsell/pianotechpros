@@ -433,3 +433,7 @@ while the accepting call is active; reject late callbacks to prevent clearing a
 later selection. Existing ambiguous processing intents without a recorded transfer
 remain recoverable by explicit review/discard; do not infer ownership from an
 empty queue. Verify real durable ports, preserved retry identity and restart state.
+After a failed consume, a successful protected restore to idle proves the picker
+no longer owns recovery. Clear only that picker error; the upload workspace must
+continue to display its failure and retry entry. Do not suppress initial picker,
+selection, storage or unknown-target failures on the same basis.

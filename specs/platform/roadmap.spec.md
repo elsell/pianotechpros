@@ -2,6 +2,15 @@
 
 ## Current milestone: feature-complete product
 
+Latest Android evidence (2026-10-26): the fresh CI APK from run `40403194496`,
+source `7ae6c7d`, was installed in place and its checksum verified. Saved customer
+locations/piano assignment survived; short-display 2x-text photo zoom/reset/close
+and Spanish customer rendering passed. Native reassignment moved removal protection
+to the destination location and survived restart. `native-experience.spec.md`
+records the exact build and bounded assertions. Browser/API acceptance passed on
+that source; iOS interaction remains pending. These checks do not close the wider
+native, accessibility, provider or physical-device requirements.
+
 As of 2026-10-26, PR #80 merged the combined inventory browse, sale/unpublish
 lifecycle, public gallery/contact/sharing and showroom-filter journeys plus
 larger native action targets. Merge `4b8d6483edbbf5d95d1a436d8470ea4ebc569a2f`

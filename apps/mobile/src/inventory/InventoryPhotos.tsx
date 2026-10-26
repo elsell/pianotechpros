@@ -41,7 +41,7 @@ export function InventoryPhotos({workspace,userID,dealerID,onBusy,otherBusy=fals
    try{
     const broker=createNativePhotoPicker({scope:{userID,dealerID,targetID:binding.id},active,now:Date.now,key:randomUUID,owner:mobilePickerOwner,lease:claimMobilePhotoPicker,storage:()=>openMobileInventoryRecovery(userID),
      authorize:async()=>{const id=workspace.recordID();if(id)await inventory(api=>api.get(dealerID,id));else await inventory(api=>api.list(dealerID,{limit:1}));},pending:pendingMobilePhoto,launch:source=>launchMobilePhoto(source,active),discard:discardMobilePhoto,
-     accept:async asset=>{const bytes=await prepareMobilePhoto(asset,active);if(!active())throw new Error('native_picker_inactive');await photos.add(bytes);},
+     accept:async(asset,transferred)=>{const bytes=await prepareMobilePhoto(asset,active);if(!active())throw new Error('native_picker_inactive');await photos.add(bytes,transferred);},
     });return {picker:broker,release:binding.release};
    }catch(error){binding.release();throw error;}
   }});

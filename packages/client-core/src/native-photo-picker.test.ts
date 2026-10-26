@@ -11,7 +11,7 @@ function fixture(){
   pending:async()=>{calls.push('pending');const value=pending;pending=null;return value;},
   launch:async(_source:'camera'|'library'):Promise<NativePickerResult>=>{calls.push('launch');assert.equal(rows.size,1);return {kind:'selected',asset};},
   discard:async(_asset:NativePickerAsset)=>{calls.push('discard');},
-  accept:async(_asset:NativePickerAsset)=>{calls.push('accept');},
+  accept:async(_asset:NativePickerAsset,_transferred:()=>Promise<void>)=>{calls.push('accept');},
  };
  return {port,rows,calls,open:()=>createNativePhotoPicker(port),invalidate:()=>{active=false;},deny:()=>{authorized=false;},pending:(value:NativePickerResult)=>{pending=value;}};
 }
@@ -141,4 +141,30 @@ test('account-local discard cannot drain a superseding global launch and checks 
  const f=fixture();f.port.launch=async()=>{throw Error('interrupted');};await assert.rejects(f.open().select('camera'));await f.port.owner.write('newer-launch-0001');f.port.scope.targetID='record/new';f.calls.length=0;
  await f.open().discardPending();assert.equal(f.calls.includes('pending'),false);assert.equal(await f.port.owner.read(),'newer-launch-0001');
  const denied=fixture();await denied.open().select('library');denied.calls.length=0;denied.deny();await assert.rejects(denied.open().discardPending());assert.deepEqual(denied.calls,['authorize']);assert.equal(denied.rows.size,1);
+});
+
+test('durable transfer clears picker even when subsequent upload fails',async()=>{
+ const f=fixture();const picker=f.open();const state=await picker.select('camera');
+ f.port.accept=async(_asset,transferred)=>{await transferred();throw new Error('upload unavailable');};
+ await assert.rejects(picker.consume(state.id!));
+ assert.deepEqual(await f.open().restore(),{status:'idle'});
+});
+test('late transfer callback cannot clear a newer selection',async()=>{
+ const f=fixture();let transfer!:()=>Promise<void>;
+ f.port.accept=async(_asset,transferred)=>{transfer=transferred;throw new Error('staging failed');};
+ const picker=f.open();const first=await picker.select('camera');await assert.rejects(picker.consume(first.id!));
+ await picker.discard();const next=await picker.select('library');
+ await assert.rejects(transfer());assert.deepEqual(await picker.restore(),next);
+});
+
+test('scope loss prevents transfer cleanup and retains the processing intent',async()=>{
+ const f=fixture();const picker=f.open();const state=await picker.select('camera');
+ f.port.accept=async(_asset,transferred)=>{f.invalidate();await transferred();};
+ await assert.rejects(picker.consume(state.id!));assert.equal(f.rows.size,1);
+});
+test('cleanup failure retains the picker intent for explicit reconciliation',async()=>{
+ const f=fixture();const picker=f.open();const state=await picker.select('camera');
+ const storage=await f.port.storage();f.port.storage=async()=>({...storage,remove:async()=>{throw new Error('disk');}});
+ f.port.accept=async(_asset,transferred)=>{await transferred();};
+ await assert.rejects(picker.consume(state.id!));assert.equal((await picker.restore()).status,'uncertain');
 });

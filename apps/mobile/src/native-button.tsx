@@ -7,7 +7,7 @@ export function NativeButton({tone='primary',title,disabled,accessibilityState,.
  const color=nativeButtonColor(theme,Platform.OS,tone);
  const Touchable=android?TouchableNativeFeedback:TouchableOpacity;
  return <Touchable {...props} {...(android?{useForeground:true}:{})} accessibilityRole="button" accessibilityState={{...accessibilityState,disabled:inactive}} disabled={inactive}>
-  <View style={{minHeight:android?48:44,minWidth:android?48:44,justifyContent:'center',alignItems:'center',borderRadius:android?2:0,backgroundColor:android?(inactive?theme.border:color):'transparent',elevation:android&&!inactive?4:0}}>
+  <View style={{minHeight:android?48:44,minWidth:android?48:44,justifyContent:'center',alignItems:'center',borderRadius:android?2:0,backgroundColor:android?(inactive?theme.disabledButton:color):'transparent',elevation:android&&!inactive?4:0}}>
    <Text style={{margin:8,textAlign:'center',fontSize:android?14:18,fontWeight:android?'500':'400',color:inactive?theme.secondary:android?'#ffffff':color}}>{android?title.toUpperCase():title}</Text>
   </View>
  </Touchable>;

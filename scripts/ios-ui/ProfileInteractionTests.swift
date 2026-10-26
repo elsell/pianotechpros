@@ -17,6 +17,17 @@ final class ProfileInteractionTests: XCTestCase {
             ready.fulfill()
         }.resume()
         wait(for: [ready], timeout: 25)
+        var manifestProbe = URLRequest(url: URL(string: "http://127.0.0.1:18081/")!)
+        manifestProbe.httpMethod = "HEAD"
+        manifestProbe.setValue("ios", forHTTPHeaderField: "expo-platform")
+        manifestProbe.setValue("application/expo+json,application/json", forHTTPHeaderField: "Accept")
+        let manifestReady = expectation(description: "Launcher HEAD responds from the simulator")
+        session.dataTask(with: manifestProbe) { _, response, error in
+            XCTAssertNil(error, "Simulator launcher HEAD probe must succeed")
+            XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, 200)
+            manifestReady.fulfill()
+        }.resume()
+        wait(for: [manifestReady], timeout: 25)
         app.launch()
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 15))
         if #available(iOS 16.4, *) {

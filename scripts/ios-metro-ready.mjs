@@ -4,11 +4,14 @@ class ReadinessError extends Error {}
 export async function verifyIOSMetro(origin) {
  const base=new URL(origin);
  if(base.protocol!=='http:'||base.hostname!=='127.0.0.1'||base.username||base.password||base.pathname!=='/'||base.search||base.hash)throw new ReadinessError('Metro must use an explicit loopback origin');
- const request=async(url,stage)=>{
-  const response=await fetch(url,{headers:{'expo-platform':'ios',Accept:'application/expo+json,application/json'},redirect:'error',signal:AbortSignal.timeout(180_000)});
+ const request=async(url,stage,method='GET')=>{
+  let response;
+  try {response=await fetch(url,{method,headers:{'expo-platform':'ios',Accept:'application/expo+json,application/json'},redirect:'error',signal:AbortSignal.timeout(180_000)});}
+  catch {throw new ReadinessError(`Metro ${stage} request failed or timed out`);}
   if(!response.ok)throw new ReadinessError(`Metro ${stage} returned HTTP ${response.status}`);
   return response;
  };
+ await request(base,'HEAD probe','HEAD');
  let bundle;
  try {
   const manifest=await (await request(base,'manifest')).json();
@@ -23,6 +26,6 @@ export async function verifyIOSMetro(origin) {
  return {bundleBytes};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
- try{const result=await verifyIOSMetro(process.argv[2]);console.log(`PASS: iOS Metro manifest and bundle ready (${result.bundleBytes} bytes)`);}
+ try{const result=await verifyIOSMetro(process.argv[2]);console.log(`PASS: iOS Metro HEAD, manifest and bundle ready (${result.bundleBytes} bytes)`);}
  catch(error){console.error(`iOS Metro readiness failed: ${error instanceof ReadinessError?error.message:'Metro request failed or timed out'}`);process.exitCode=1;}
 }

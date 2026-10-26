@@ -677,3 +677,16 @@ and avoids delivering the URL during a cold application launch. The cold-launch
 race is a hypothesis, not a proven diagnosis. Keep every existing sign-in, save
 and process-restart assertion; do not retry product mutations or accept the
 launcher as a successful application start. Hosted execution remains required.
+
+## iOS launcher request-path diagnostics
+
+Run `40413380865` at `9b9498b` passed simulator-side `/status` readiness,
+Android compilation and the broader acceptance job, but failed before sign-in.
+Its retained hierarchy shows the development launcher reporting a request timeout;
+this is not profile interaction acceptance. The pinned Expo launcher first probes
+the development URL with HEAD before fetching its manifest. Host readiness must
+exercise HEAD followed by manifest/bundle GET, and the simulator diagnostic must
+probe HEAD with the same iOS platform/Accept headers before launching the app.
+A HEAD failure must stop readiness and preserve a stage-specific diagnostic;
+never hide it by retrying sign-in or increasing product waits. This expands
+observability, not a claim that HEAD caused the observed failure or fixes it.

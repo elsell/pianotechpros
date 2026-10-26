@@ -1,4 +1,4 @@
-"""Validate the test app's actual codesign entitlement output before installation."""
+"""Validate the test app's embedded simulator entitlement output before installation."""
 import plistlib
 import sys
 from pathlib import Path
@@ -13,5 +13,5 @@ try:
     if entitlements.get('keychain-access-groups') != [expected]:
         raise ValueError('simulator Keychain access groups must match only the test app')
 except (IndexError, OSError, ValueError, plistlib.InvalidFileException) as error:
-    raise SystemExit(f'Invalid simulator signing entitlements: {error}')
-print('PASS: simulator signing identity and Keychain group match the synthetic app')
+    raise SystemExit(f'Invalid simulator embedded entitlements: {error}')
+print('PASS: simulator embedded identity and Keychain group match the synthetic app')

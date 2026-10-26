@@ -776,18 +776,21 @@ credential. The generated test-only app entitlements use the synthetic
 `PIANOTESTS.com.pianotechpros.pianotechpros` application identifier and sole
 Keychain access group. Preserve real SecureStore reads/writes and encrypted draft
 storage; do not substitute a memory store to pass interaction tests.
-Before installation, extract the built app's signed entitlements and reject an
-absent/mismatched identity or additional Keychain access groups. These settings
-belong only to the generated simulator interaction target, never release config.
-The fifth run reached the app but failed after sign-in with the saved-session
-cleanup error; unsigned Keychain access is a diagnosis to verify, not a claimed
-successful interaction result. Retain that failed run and require fresh XCTest.
+Before installation, verify Xcode's ad-hoc signature and inspect the executable's
+embedded simulator entitlements in `__TEXT,__entitlements`. Require the exact
+synthetic identity and sole Keychain group, and a nonempty `__TEXT,__ents_der`
+section. Never apply iOS entitlements to the macOS-hosted simulator code signature.
+These settings belong only to the generated simulator interaction target, never
+release config. Preserve the separate real SecureStore and UI interaction gate.
 
-The sixth hosted run built successfully but stopped before installation: Xcode
-placed the synthetic identity in its simulated entitlement output while the
-app code signature exposed an empty dictionary. Explicitly ad-hoc sign the built
-simulator app with the generated synthetic entitlement file before reading and
-validating its signed entitlements. Keep the identity/group checks unchanged;
-no distribution identity, developer account or credential is involved. This
-corrects the harness gate and does not establish successful SecureStore or UI
-execution until a fresh interaction run passes.
+The fifth run reached the app but failed after sign-in with saved-session cleanup
+failure. The sixth stopped at an incorrect signature-entitlement inspection:
+Xcode embeds simulator entitlements in Mach-O sections. The seventh manually
+re-signed with iOS entitlements and failed at launch with `Taskgated Invalid
+Signature`. Preserve Xcode signing and validate the embedded sections instead.
+The binary inspector must reject missing, malformed, truncated or duplicate
+sections and foreign/shared identity values. Fresh hosted interaction evidence
+is required; correcting the harness alone does not prove Keychain access.
+
+Reference: upstream simulator signing behavior is documented in
+https://github.com/bazelbuild/rules_apple/blob/main/doc/common_info.md.

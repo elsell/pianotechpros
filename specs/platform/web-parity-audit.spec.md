@@ -234,3 +234,15 @@ The first CI execution provisioned all 31 records but failed an incorrect
 30-record first-page expectation. Public `showroomFilters` explicitly requests
 12, unlike private inventory. Correct the test to follow both continuation
 links and assert 12+12+7; this does not change product pagination behavior.
+
+## Recurring showroom browser engines
+
+Run the persisted public-pagination journey in Chromium, Firefox and WebKit
+using the same 31 real published records. Each engine must independently follow
+both continuation links, preserve filters, prove the exact 12+12+7 set, and
+reload the terminal page. Log the engine and version. Use a fresh anonymous
+context for each engine and pace engines across fresh public rate-limit windows;
+never substitute API responses, suppress failures, or relax production limits.
+CI installs browser binaries from the pinned Playwright version and their host
+dependencies. This proves this journey only, not all website behavior or Safari
+on an Apple device. Record execution before claiming any new engine passed.

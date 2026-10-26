@@ -4,53 +4,8 @@ final class ProfileInteractionTests: XCTestCase {
     let app = XCUIApplication(bundleIdentifier: "com.pianotechpros.pianotechpros")
     override func setUpWithError() throws {
         continueAfterFailure = false
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.timeoutIntervalForRequest = 15
-        configuration.timeoutIntervalForResource = 20
-        let session = URLSession(configuration: configuration)
-        defer { session.invalidateAndCancel() }
-        let ready = expectation(description: "Metro responds from the simulator")
-        session.dataTask(with: URL(string: "http://127.0.0.1:18081/status")!) { data, response, error in
-            XCTAssertNil(error, "Simulator must reach the development server")
-            XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, 200)
-            XCTAssertEqual(data.flatMap { String(data: $0, encoding: .utf8) }, "packager-status:running")
-            ready.fulfill()
-        }.resume()
-        wait(for: [ready], timeout: 25)
-        var manifestProbe = URLRequest(url: URL(string: "http://127.0.0.1:18081/")!)
-        manifestProbe.httpMethod = "HEAD"
-        manifestProbe.setValue("ios", forHTTPHeaderField: "expo-platform")
-        manifestProbe.setValue("application/expo+json,application/json", forHTTPHeaderField: "Accept")
-        let manifestReady = expectation(description: "Launcher HEAD responds from the simulator")
-        session.dataTask(with: manifestProbe) { _, response, error in
-            XCTAssertNil(error, "Simulator launcher HEAD probe must succeed")
-            XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, 200)
-            manifestReady.fulfill()
-        }.resume()
-        wait(for: [manifestReady], timeout: 25)
         app.launch()
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 15))
-        if #available(iOS 16.4, *) {
-            app.open(URL(string: "exp+pianotechpros://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A18081")!)
-        } else {
-            XCTFail("The interaction gate requires iOS 16.4 or newer")
-        }
-    }
-    func dismissDevelopmentOverlay() {
-        let tutorial = app.staticTexts["This is the developer menu. It gives you access to useful tools in development builds."]
-        if tutorial.waitForExistence(timeout: 5) {
-            let next = app.buttons["Continue"].firstMatch
-            let ready = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in next.isHittable }, object: next)
-            XCTAssertEqual(XCTWaiter.wait(for: [ready], timeout: 5), .completed)
-            next.tap()
-        }
-        let menu = app.buttons["Source code explorer"].firstMatch
-        if menu.exists {
-            let close = app.buttons["Close"].firstMatch
-            let ready = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in close.isHittable }, object: close)
-            XCTAssertEqual(XCTWaiter.wait(for: [ready], timeout: 5), .completed)
-            close.tap()
-        }
     }
     func button(_ name: String) -> XCUIElement { app.buttons[name].firstMatch }
     func reach(_ element: XCUIElement) {
@@ -104,7 +59,6 @@ final class ProfileInteractionTests: XCTestCase {
     func testCreateProfilesAndProtectPartialDraft() throws {
         let signIn = button("Sign in")
         XCTAssertTrue(signIn.waitForExistence(timeout: 90))
-        dismissDevelopmentOverlay()
         let ready = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in signIn.isEnabled }, object: signIn)
         XCTAssertEqual(XCTWaiter.wait(for: [ready], timeout: 30), .completed); signIn.tap()
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
@@ -136,7 +90,6 @@ final class ProfileInteractionTests: XCTestCase {
     }
     func testRestorePartialDraftAfterProcessRestart() throws {
         XCTAssertTrue(button("Technician profile").waitForExistence(timeout: 60))
-        dismissDevelopmentOverlay()
         tap("My customer profile")
         XCTAssertEqual(app.textFields["Name"].firstMatch.value as? String, "iOS Customer")
         back()

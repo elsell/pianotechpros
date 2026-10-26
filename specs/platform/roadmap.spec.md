@@ -2,12 +2,15 @@
 
 ## Current milestone: feature-complete product
 
-Latest iOS attempt `40413380865` passed native compilation, simulator-side
-Metro status validation and the broader browser/API acceptance job, but the
-launcher again timed out before sign-in. Host and simulator HEAD probes now
-follow the pinned launcher's request sequence; seven readiness and six fixture
-tests pass locally. This is additional diagnosis, not a demonstrated startup fix.
-Hosted Swift/runtime verification and the profile journeys remain required.
+Latest iOS attempt `40418370993` at `679afd1` passed native compilation,
+host HEAD/manifest/bundle readiness, simulator status/HEAD probes and broader
+browser/API acceptance, but the development launcher still timed out before
+Sign in. The next interaction gate uses a Release simulator product with embedded
+JavaScript and verified exact synthetic configuration, preserving the separate
+Debug native-build gate and all profile/recovery assertions. Three bundled-product
+checks, existing fixture/readiness tests and simulator entitlement tests pass
+locally; review found no blocker. Hosted build/startup and profile journeys remain
+unverified. This does not claim a working startup fix or store release.
 
 Latest Android evidence (2026-10-26): confirmed customer location removal survived
 restart while preserving the linked piano and remaining-location guard. Native

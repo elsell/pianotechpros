@@ -925,3 +925,23 @@ provenance. TypeScript, structure and locale gates pass; read-only code review
 found no blocker. This verifies the shared marks on the technician surface;
 customer-specific runtime, iOS, dark-mode and spoken-screen-reader acceptance
 remain separate. Original source overlays, locale and font scale were restored.
+
+## Bundled iOS simulator interaction gate
+
+Run `40418370993` at `679afd1` passed host HEAD/manifest/bundle readiness and
+simulator status/HEAD probes, then failed before Sign in with the development
+launcher's request timeout. Broader browser/API acceptance and Android compilation
+passed. The HEAD diagnostic does not fix launcher startup.
+
+The product interaction gate must launch a simulator Release configuration with
+its JavaScript bundle and synthetic configuration embedded, independently of
+Metro and the development launcher. Retain the separate Debug native-build gate.
+Require a nonempty bundled entrypoint and exact loopback fixture API/identity
+configuration before installation. Preserve normal sign-in, profile editing,
+secure-storage restart and recovery assertions; do not inject authenticated state.
+Simulator-only identity and Keychain entitlements remain required. Any HTTP
+transport allowance belongs only to the generated acceptance project and must
+never alter source app configuration or distribution artifacts. This gate is
+unsigned-for-distribution simulator acceptance, not a signed store release or
+proof of real-provider/backend integration. Successful hosted execution remains
+required before this change can be called a working startup correction.

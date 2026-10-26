@@ -13,9 +13,15 @@ Xcodeproj::Plist.write_to_path({
   'get-task-allow' => true
 }, entitlements)
 app.build_configurations.each do |config|
-  next unless config.name == 'Debug'
+  next unless config.name == 'Release'
   config.build_settings['CODE_SIGN_ENTITLEMENTS'] = entitlements
 end
+# The generated simulator acceptance product alone may contact its loopback fixture.
+# Source app configuration and separately generated distribution builds stay unchanged.
+info_path = File.join(File.dirname(project_path), app.name, 'Info.plist')
+info = Xcodeproj::Plist.read_from_path(info_path)
+info['NSAppTransportSecurity'] = { 'NSAllowsArbitraryLoads' => true }
+Xcodeproj::Plist.write_to_path(info, info_path)
 name = 'PianoInteractionTests'
 abort 'UI test target already exists' if project.targets.any? { |target| target.name == name }
 target = project.new_target(:ui_test_bundle, name, :ios, '15.1', nil, :swift)

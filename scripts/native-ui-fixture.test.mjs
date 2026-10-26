@@ -61,3 +61,18 @@ test('profile fixture preserves private drafts through scoped reads, create repl
   const zones=await (await api(f,path+'/timezones',undefined,session)).json();assert.deepEqual(zones.data.names,['America/Chicago','Europe/Madrid','UTC']);
  }
 });
+
+test('authentication diagnostics expose only fixed stages and status, excluding request secrets',async t=>{
+ const events=[];const f=await startNativeUIFixture({onAuthResponse:event=>events.push(event)});t.after(()=>f.close());
+ await fetch(f.origin+'/oidc/.well-known/openid-configuration?private=sentinel');
+ const identity=await login(f);
+ const session=(await (await api(f,'/v1/sessions',{identityToken:identity})).json()).data.token;
+ await api(f,'/v1/me',undefined,session);
+ await api(f,'/secret-sentinel',undefined,session);
+ await code(f,{client_id:'secret-sentinel'});
+ assert.deepEqual(events,[
+  {stage:'discovery',status:200},{stage:'authorization',status:303},
+  {stage:'token',status:200},{stage:'session',status:201},
+  {stage:'authorization',status:400},
+ ]);
+});

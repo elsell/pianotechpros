@@ -5,7 +5,7 @@ import {createHash,generateKeyPairSync,randomBytes,sign} from 'node:crypto';
 const client='pianotechpros-mobile',callback='pianotechpros://callback';
 const opaque=()=>randomBytes(32).toString('base64url');
 const object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
-export async function startNativeUIFixture({port=0,now=Date.now}={}){
+export async function startNativeUIFixture({port=0,now=Date.now,onAuthResponse=()=>{}}={}){
  const {privateKey,publicKey}=generateKeyPairSync('rsa',{modulusLength:2048});
  const jwk={...publicKey.export({format:'jwk'}),kid:'native-ui-fixture',use:'sig',alg:'RS256'};
  const codes=new Map(),identities=new Map(),sessions=new Map(),profiles=new Map(),creations=new Map();let origin;
@@ -19,6 +19,8 @@ export async function startNativeUIFixture({port=0,now=Date.now}={}){
   };
   try{
    prune();const url=new URL(req.url,origin),path=url.pathname;
+   const stage=new Map([['/oidc/.well-known/openid-configuration','discovery'],['/oidc/authorize','authorization'],['/oidc/token','token'],['/v1/sessions','session']]).get(path);
+   if(stage)res.once('finish',()=>onAuthResponse({stage,status:res.statusCode}));
    if(req.method==='GET'&&path==='/oidc/.well-known/openid-configuration')return send(200,{issuer:origin+'/oidc',authorization_endpoint:origin+'/oidc/authorize',token_endpoint:origin+'/oidc/token',jwks_uri:origin+'/oidc/keys',response_types_supported:['code'],subject_types_supported:['public'],id_token_signing_alg_values_supported:['RS256'],code_challenge_methods_supported:['S256'],token_endpoint_auth_methods_supported:['none']});
    if(req.method==='GET'&&path==='/oidc/keys')return send(200,{keys:[jwk]});
    if(req.method==='GET'&&path==='/oidc/authorize'){

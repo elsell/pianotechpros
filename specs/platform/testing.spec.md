@@ -815,3 +815,15 @@ Require the menu's own Source code explorer marker before closing it. Never tap
 an arbitrary Continue/Close button, bypass product UI, or treat overlay dismissal
 as authentication acceptance. Repeat this bounded handling when reopening the
 development client; absent overlays need no action.
+
+### Native fixture authentication diagnostics
+
+The tenth iOS interaction run (`40392649040`, source `7d76e09`) dismissed the
+identified developer overlay and tapped Sign in, but timed out before the
+signed-in home screen. Its retained app hierarchy remained signed out without
+an error; this does not establish whether the provider flow started or completed.
+The controlled native fixture must expose optional response observations with
+only a fixed authentication-stage name and HTTP status. Unknown and product
+routes emit nothing. Never include URLs, query parameters, headers, credentials,
+profile data or exception text. The standalone fixture runner records these
+observations for retained CI diagnostics; application behavior is unchanged.

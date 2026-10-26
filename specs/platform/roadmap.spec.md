@@ -25,8 +25,13 @@ client, but timed out loading Metro before the product Sign in screen appeared.
 The next harness change fetches the iOS manifest and complete launch bundle after
 building, before XCTest. Run `40387476671` passed the bundle check and reached Ready to sign in, but
 Expo's first-launch tutorial covered Sign in. The harness now dismisses only the
-identified developer tutorial/menu through normal controls. Fresh hosted validation
-is required; no successful iOS interaction is claimed. Remaining
+identified developer tutorial/menu through normal controls. The tenth run
+`40392649040` at `7d76e09` dismissed that overlay and tapped Sign in, but
+timed out waiting for the signed-in home screen. Real-service acceptance and
+Android compilation passed; iOS interaction remains failed. Fixed-stage/status
+fixture diagnostics are being added to distinguish authorization, token exchange
+and application session creation without retaining credentials. No successful
+iOS interaction is claimed. Remaining
 release work includes that iOS interaction evidence, broader device/accessibility
 checks and dedicated non-production speech/Turnstile integration. Legacy hosting,
 GitOps, DNS and live data remain unchanged; signing and cutover stay deferred.

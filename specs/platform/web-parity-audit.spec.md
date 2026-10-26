@@ -2,7 +2,7 @@
 
 ## Scope and decision
 
-Audit date: 2026-10-25. Reviewed rebuild source: main commit
+Initial audit date: 2026-10-25. Initial reviewed rebuild source: main commit
 `689308b29e2349805124420bae243d3f3f8bcf3a`. The baseline and required behaviors
 remain those in `product-parity.spec.md`; this document does not narrow them.
 
@@ -13,7 +13,8 @@ browser journeys. Their composition must not be described as universal end-to-en
 coverage. No percentage is assigned. Mobile QA, app-store signing, a new hostname
 and GitOps are separate from this web parity decision.
 
-This is a source/coverage audit, not a new execution result. A test listed below
+The baseline table is a source/coverage audit; the dated execution sections below
+record subsequent results. A test listed in the baseline table
 is evidence of the assertions and integration surface it defines; its existence
 alone is not evidence of a passing run. Preserve exact-commit CI results and
 named runtime evidence when closing a row. No row is promoted to complete by
@@ -86,50 +87,49 @@ and the shared locale gate pass; the single-listing screenshot was inspected.
 This fixes that presentation gap without claiming SH-02's remaining composed
 real-catalog acceptance or the whole website complete.
 
-## Next implementation sequence
+## Current execution evidence and remaining sequence
 
-1. Preserve the new `profile-persisted-browser-acceptance.mjs` real-service
-   customer/technician path in recurring acceptance. A fresh single-pass run now
-   passed in CI run `40218708883`, acceptance job `121245408772`, source commit
-   `2ffaedb09c5d6bc1cc4babb706453ccd82960615`. Its log confirms normal PKCE,
-   business/two locations/linked piano, weekly timezone/effective dates,
-   persisted reload/edit and separate-user isolation. This supersedes the earlier
-   segmented local limitation for that journey. Retain fixture suites for
-   deterministic failures and complete broader browser/accessibility coverage.
-2. The persisted inquiry/history/scan journeys now run after synthetic dealer
-   setup in recurring acceptance. Local real-service runs passed inquiry snapshot
-   preservation after republish, history 20+5 pagination with unsaved edits, and
-   private scan continuation/sale/sign-out. The new combined CI wiring still needs
-   a fresh single-pass result; live Turnstile remains separate.
-3. The photo-first publication browser journey now exercises real image storage,
-   lazy single-record creation, exact money/partial-date reload, reviewed publication,
-   private snapshot separation and explicit unpublishing. Local execution passed;
-   recurring CI wiring needs fresh evidence. Complete the remaining dealer, staff,
-   complete-field editing, conflict and broader showroom journeys. The dealer
-   profile/browser journey now locally verifies duplicate slug recovery, all
-   settings saved/reloaded, public projection/visibility and real banner
-   upload/render/replacement/removal; its recurring CI result remains pending.
-   The two-user staff journey locally passed UI invitation/acceptance, editor
-   creation, viewer read/write restrictions, removal of existing-session access
-   and unused-invitation revocation. Its recurring run also requires fresh CI.
-   Complete inventory attributes, invalid partial-date reload protection and
-   two-session conflict review now have passing local real-service evidence;
-   automated recurring execution must still confirm the extended journey.
-   The photo journey now also checks real server-rendered canonical redirects,
-   exact-price JSON-LD, robots, sitemap membership and localized discovery against
-   persisted publication snapshots. Private edits preserve discovery; explicit
-   unpublishing removes the URL and returns 404 for both canonical and ID aliases.
-   The synthetic origin is acceptance-only; recurring CI still needs fresh proof.
-   A separate photo-management journey now verifies two processed uploads into
-   one draft, persisted cover/order/description changes, preview keyboard focus,
-   cancellation and confirmed removal with independent private-image reads.
-   Local real-service execution passed; recurring CI evidence remains pending.
-4. Exercise the real speech and challenge adapters with explicit non-production
-   configuration. Missing access is an integration blocker, not completed work;
-   never borrow legacy production credentials.
-5. Record keyboard, responsive layout, screen-reader and supported-browser
-   acceptance separately. Current Playwright Chromium coverage does not establish
-   Safari/WebKit or Firefox behavior. Inspect visual output, not only selectors.
+1. The normal-PKCE customer/technician profile journey passed fresh-account CI
+   run `40218708883`, source `2ffaedb09c5d6bc1cc4babb706453ccd82960615`.
+   It verifies business/two locations/linked piano, weekly timezone/effective
+   dates, persisted reload/edit and separate-user isolation.
+2. PR #72 merged the recurring real-service inquiry/history/scan, photo-first
+   publication, dealer settings/banner and two-user staff journeys. Combined
+   acceptance and both native builds passed run `40221325565` at exact source
+   `4a985595e2486cd1001a51a3c45778a0e8639f87`. This includes inquiry snapshot
+   preservation, history 20+5 pagination, private scan continuation, viewer
+   restrictions and revocation of an existing browser session.
+3. PR #74 merged complete inventory fields, protected invalid-date recovery,
+   two-session conflict reconciliation and real publication discovery. Combined
+   acceptance and both native builds passed run `40221328970`, exact source
+   `04b91066379a085ea63f54c512e4444b429fe915`. Canonical URLs, exact-price JSON-LD,
+   robots, localized discovery and sitemap removal after unpublishing passed.
+4. Separate photo-management and complete publication journeys passed locally
+   in Chromium, Firefox 151 and Linux WebKit 26.5 against isolated real services.
+   Photo-management acceptance and both native builds passed run `40221559445`
+   at `e3c90f4a6283a3d90492f0be7cc1d84787f34435`; PR #75 merged. The one-off Firefox/WebKit
+   checks are not Safari or native iOS acceptance. A local real-browser inventory
+   check also passed stock/title/make/model search, featured ordering, exact
+   30+1 pagination without duplicates and sold-filter exclusion using 31 synthetic
+   records; item 5 records its subsequent recurring acceptance. The separate
+   all-status extension remains pending.
+5. PR #80 merged inventory browse, complete lifecycle and public gallery/contact/
+   sharing/filter journeys. Combined real-service acceptance passed run
+   `40224029059` at source `2ff7f16e45ad538ecc45d7a5739f515c39561976`.
+   The log records exact 31-record browsing, all six lifecycle transitions,
+   immutable sale correction history, public gallery keyboard interaction,
+   canonical clipboard/contact/related links and title/type/currency/price filters.
+   This supersedes the recurring-CI gaps for those specific assertions, not the
+   full baseline table. The all-six-status inventory filter extension remains
+   separately pending in PR #81.
+6. Finish provider, accessibility, broader supported-browser and device evidence
+   from the table above. Live
+   Turnstile public test-key Siteverify responses were observed without the
+   required `inquiry` action; they do not prove an enabled successful inquiry
+   path. Keep exact hostname/action validation intact. Dedicated non-production
+   Gemini and Turnstile configuration remains requested; never borrow legacy
+   production credentials. Screen-reader, broader supported-browser and native
+   interaction acceptance remain separate requirements.
 
 Production-readiness additionally requires the security/configuration/release
 contracts already specified under platform. Existing reviewed dependency
@@ -149,7 +149,8 @@ pass alone does not establish the recurring CI result or close all IN-01 filters
 Local execution of this recurring script passed on 2026-10-25 with synthetic
 marker `Browse3d5c1bb6`: all four search fields, featured-first ordering, exact
 31-record set across pagination and exclusion of drafts from sold results.
-Recurring CI remains pending.
+Recurring CI passed run `40224029059` with marker `Browsef0a86197` for these
+search/order/pagination assertions. All-six-status filter coverage is separate.
 
 ## Persisted web lifecycle acceptance
 
@@ -167,7 +168,8 @@ relax rate limits or retry a rejected mutation.
 The paced real-service journey passed locally on 2026-10-25 for synthetic record
 `4b78e80e-ed4d-488e-8fe1-107e3823f68c`, including explicit unpublish independence,
 sale defaults/override, immutable correction history, all six lifecycle states,
-private-edit isolation and no silent republication. Recurring CI remains pending.
+private-edit isolation and no silent republication. Recurring CI passed run
+`40224029059` for record `54aa4ae3-6180-403e-b60c-3004f83c2a18`.
 
 ## Persisted public listing interactions
 
@@ -185,7 +187,8 @@ Local real-service execution passed for synthetic record
 screenshot was inspected: gallery controls, contact actions, inquiry form and
 related cards remain readable without horizontal overflow. Synthetic color-block
 photos establish processing and layout behavior, not photographic quality.
-Recurring CI and actual touch/device acceptance remain pending.
+Recurring CI passed run `40224029059` for record
+`2ea9f917-69f8-4ecc-925f-8fbaa78d08be`. Actual touch/device acceptance remains open.
 
 ## Persisted showroom filtering
 
@@ -200,7 +203,9 @@ not replace large-catalog pagination or native touch acceptance.
 The full corrected gallery/filter journey passed locally on 2026-10-25 for
 synthetic record `96568d3c-f6ec-41fd-89d7-70016f12e788`. Each filter form opens
 with an active initial search so the control remains accessible after sale or
-unpublication leaves a small catalog. Recurring fresh-fixture CI remains pending.
+unpublication leaves a small catalog. Recurring fresh-fixture CI passed run
+`40224029059` for record `2ea9f917-69f8-4ecc-925f-8fbaa78d08be`.
+Large public-catalog pagination and native touch evidence remain separate.
 
 ## Persisted inventory status filters
 

@@ -336,7 +336,16 @@ The Android regression failed before the change: the selected radio option had
 `selected=true` but `checkable=false` and `checked=false`. Afterward, a searched
 customer timezone sheet exposes UTC as checkable/checked and Etc/UTC as
 checkable/unchecked. The regression inspects native radio nodes, not visual
-highlighting. Technician single-choice runtime validation remains required.
+highlighting. Technician single-choice runtime validation subsequently passed on 2026-10-26:
+normal home navigation to Service area exposed `Time zone, UTC`; searching the
+sheet for UTC exposed UTC as checkable/checked and Etc/UTC as
+checkable/unchecked. Done dismissed the sheet with UTC unchanged and the profile
+still up to date. The first snapshot preceded filtered rendering; a fresh
+snapshot verified the options. Retained native trees are
+`android-technician-timezone-radio.xml` and
+`android-technician-timezone-dismissed.xml`. This used the existing Android
+development client and Metro with the merged PR #83 choice adapter, not a fresh
+exact-head APK or spoken TalkBack/iOS acceptance.
 
 ## Home navigation hierarchy
 

@@ -13,7 +13,7 @@ cleanup() {
   if [[ -n "$simulator" ]]; then xcrun simctl shutdown "$simulator" >/dev/null 2>&1 || true; xcrun simctl delete "$simulator"; fi
 }
 trap cleanup EXIT
-node --test scripts/native-ui-fixture.test.mjs
+node --test scripts/native-ui-fixture.test.mjs scripts/ios-metro-ready.test.mjs
 python3 scripts/test_ios_simulator_entitlements.py
 python3 scripts/test_simulator_macho.py
 node scripts/run-native-ui-fixture.mjs 18082 > "$evidence/fixture.log" 2>&1 &
@@ -55,6 +55,7 @@ codesign --verify --strict "$application" 2> "$evidence/signing.log"
 executable="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$application/Info.plist")"
 python3 scripts/simulator_macho.py "$application/$executable" "$evidence/embedded-entitlements.plist"
 python3 scripts/check-ios-simulator-entitlements.py "$evidence/embedded-entitlements.plist"
+node scripts/ios-metro-ready.mjs http://127.0.0.1:18081 > "$evidence/metro-readiness.log" 2>&1
 xcrun simctl install "$simulator" "$application"
 run_journey() {
   local name="$1" method="$2" result=0

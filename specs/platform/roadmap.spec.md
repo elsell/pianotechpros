@@ -19,8 +19,12 @@ reported only the authorized advisory with all 21 mitigation tests passing. iOS 
 unmerged: native compilation has succeeded but its interaction test has not.
 The seventh run passed the synthetic entitlement inspection but failed app launch
 with `Taskgated Invalid Signature`. The harness now preserves Xcode's signature
-and validates the embedded simulator entitlements instead. Fresh hosted validation
-is required; no successful iOS interaction is claimed. Remaining
+and validates the embedded simulator entitlements instead. The eighth run
+`40381415182` at `a047105` passed those checks and launched the development
+client, but timed out loading Metro before the product Sign in screen appeared.
+The next harness change fetches the iOS manifest and complete launch bundle after
+building, before XCTest. Fresh hosted validation is required; no successful iOS
+interaction is claimed. Remaining
 release work includes that iOS interaction evidence, broader device/accessibility
 checks and dedicated non-production speech/Turnstile integration. Legacy hosting,
 GitOps, DNS and live data remain unchanged; signing and cutover stay deferred.

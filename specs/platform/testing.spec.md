@@ -628,6 +628,15 @@ showing the failed IPv4 bundle URL; keep this as failed interaction evidence. Re
 timeouts and identify the failed local endpoint. A failed prerequisite remains
 a failing gate, never a skipped interaction test.
 
+After Xcode finishes building, request the iOS development manifest and fully
+fetch its launch bundle before starting XCTest. Require a nonempty JavaScript
+bundle served by the same explicit loopback origin, bounded timeouts and no
+redirects. Status readiness alone does not prove manifest/bundle availability.
+Record only byte counts and stage failures; do not log manifest contents. The
+eighth hosted run passed signature/identity inspection but its development
+launcher timed out loading Metro before Sign in existed. This is a failed
+project-load prerequisite, not authentication or profile acceptance.
+
 The generated iOS UI-test target must set an explicit nonempty product name.
 The simulator build must produce `PianoInteractionTests.xctest` inside its named
 runner; an empty test product is a harness failure, not device acceptance evidence.

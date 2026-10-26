@@ -835,3 +835,18 @@ application or Springboard alerts, with a bounded 30-second readiness wait.
 Tap Continue only inside that identified, hittable alert. A missing consent
 must fail at this boundary rather than silently proceeding to profile lookup.
 The recording establishes a harness timing gap, not successful authentication.
+
+The eleventh run (`40398609369`, source `6c1835f`) accepted the identified
+consent dialog. Fixture diagnostics recorded authorization 303, token 200 and
+application session 201; XCTest reached My customer profile and tapped it.
+The journey then failed in `reach` for the Name text field before entering
+profile data. This establishes successful initial sign-in through the controlled
+fixture, not profile save, process-restart recovery or live-provider compatibility.
+
+The eleventh-run recording identifies the profile failure as the native
+react-native-screens status-bar assertion: `UIViewControllerBasedStatusBarAppearance`
+was disabled while navigation requests per-screen status-bar styles. Set this
+Info.plist capability explicitly to true in the generated application config,
+even when an inherited config supplies false. The post-prebuild gate must reject
+an absent or false value. Preserve per-screen light/dark styling; do not dismiss
+the native error or remove styling to make the interaction test advance.

@@ -18,6 +18,7 @@ export default ({ config }: { config: Record<string, unknown> }) => ({
   locales:{en:permissionStrings(en),es:permissionStrings(es)},
   ios:{...((config.ios as Record<string,unknown>|undefined)??{}),infoPlist:{
    ...(((config.ios as Record<string,unknown>|undefined)?.infoPlist as Record<string,unknown>|undefined)??{}),CFBundleAllowMixedLocalizations:true,
+   UIViewControllerBasedStatusBarAppearance:true,
   }},
   extra: {
     ...((config.extra as Record<string, unknown> | undefined) ?? {}),

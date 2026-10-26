@@ -10,6 +10,7 @@ app = root / 'apps/mobile'
 config = json.loads((app / 'app.json').read_text())['expo']
 project = app / 'ios' / config['name']
 info = plistlib.loads((project / 'Info.plist').read_bytes())
+assert info.get('UIViewControllerBasedStatusBarAppearance') is True, 'native navigation requires view-controller-based iOS status-bar appearance'
 for language in ('en', 'es'):
     catalog = json.loads((root / f'packages/i18n/src/locales/{language}.json').read_text())
     strings = (project / f'Supporting/{language}.lproj/InfoPlist.strings').read_text()

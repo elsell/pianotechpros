@@ -33,8 +33,14 @@ fixture diagnostics now distinguish authorization, token exchange and applicatio
 session creation without retaining credentials. The retained recording shows
 iOS consent arriving after the old five-second wait; the harness now requires
 that identified alert within 30 seconds before proceeding. Hosted validation
-of this correction remains pending. No successful
-iOS interaction is claimed. Remaining
+of the full profile journey remains incomplete. The eleventh run
+`40398609369` at `6c1835f` passed initial sign-in through the controlled fixture
+(authorization 303, token 200, session 201) and opened My customer profile, then
+failed reaching Name before entering data. The retained recording reveals a
+native status-bar configuration assertion when opening the profile. Explicit
+view-controller-based status-bar appearance now passes a config regression and
+clean-prebuild output gate; hosted interaction validation is pending. Profile
+save and process-restart recovery remain unverified. Remaining
 release work includes that iOS interaction evidence, broader device/accessibility
 checks and dedicated non-production speech/Turnstile integration. Legacy hosting,
 GitOps, DNS and live data remain unchanged; signing and cutover stay deferred.

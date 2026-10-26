@@ -418,7 +418,7 @@ This does not establish lost-success-response recovery, physical camera/library
 coverage, spoken screen-reader quality, iOS interaction, or complete PH-01/PH-02
 acceptance. Those gates remain open.
 
-Follow-up reopen found an unresolved recovery-state defect: after the successful
+Follow-up reopen initially found a recovery-state defect: after the successful
 503 retry and process restart, the editor still displayed the interrupted-picker
 warning. Check interrupted selection did not clear it. The upload queue completed,
 but the separate picker intent remained in processing state because its accept
@@ -446,3 +446,53 @@ After a failed consume, a successful protected restore to idle proves the picker
 no longer owns recovery. Clear only that picker error; the upload workspace must
 continue to display its failure and retry entry. Do not suppress initial picker,
 selection, storage or unknown-target failures on the same basis.
+
+## Android durable handoff and lost-response evidence
+
+PR #89 merged the durable handoff and picker-presentation correction at
+`8d3b695ce03156c5a7b06568ad778fe5b6052714`. Exact source
+`cf60afbe9ab7175f6128957db09b6389e55561b1` passed real-service acceptance
+and both native builds in run `40384588702`; verification reported only the
+authorized node-forge advisory with all 21 mitigation regressions passing.
+
+Android development-client runtime checks using the four corrected modules
+confirmed that a rejected upload retained an explicit retry, successful retry
+removed the upload error, and normal navigation after process restart showed
+Photo 7 and the saved Make value without interrupted-picker controls. Existing
+ambiguous pre-fix selections still require explicit review/discard.
+
+A subsequent test forwarded a camera upload to the real isolated API, observed
+201, and closed the proxy socket before sending any response to the client. The
+app showed an unconfirmed-operation message, retained Retry upload and did not
+show stale picker recovery controls. Explicit retry without recapture returned
+201. The last photo page contained exactly Photo 7 and Photo 8 with Next photos
+disabled; the saved Make value remained intact. This establishes the tested
+lost-successful-response retry without an extra photo. The proxy logged only
+event/status pairs, was stopped afterward, and direct API access was restored.
+
+Retained evidence: `android-handoff-final-503-no-picker.xml`,
+`android-handoff-final-reopened.xml`, `android-handoff-final-photo7-and-text.xml`,
+`android-photo-lost-response.xml`, `android-photo-lost-response-pending.xml`,
+`android-photo-lost-response-final-page.xml`,
+`android-photo-lost-response-exact-last-two.xml`, and
+`android-photo-lost-response-events.jsonl`. The runtime used an existing
+development client and Metro, not a newly installed exact-head APK. Physical
+camera/library, iOS, and spoken accessibility acceptance remain separate.
+
+## Android shop editor interaction evidence
+
+On 2026-10-26, the synthetic shop's native Edit profile form remained scrollable
+at 2x font scale. The focused Email field was fully visible above its email
+keyboard, and scrolling reached the bottom Save changes action with readable
+text. Cancel without edits returned to the shop. Screenshots
+`android-shop-large-email-keyboard.png` and `android-shop-large-bottom.png` were
+inspected; corresponding native trees were retained. Normal font scale was restored.
+
+At normal text size, entering an unsaved name change then pressing Cancel opened
+Discard changes. Continue editing preserved the unsaved text. A second Cancel
+and explicit Discard changes returned to the shop; reopening Edit profile showed
+the exact original saved name. No save was performed. Native evidence:
+`android-shop-dirty-discard-dialog.xml`, `android-shop-dirty-continued.xml`,
+`android-shop-discard-reopened.xml`. This checks the named existing development
+client interactions, not every field/keyboard, dirty process recovery, save
+conflicts, spoken TalkBack, iOS or physical-device usability.

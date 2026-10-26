@@ -267,5 +267,9 @@ Chromium 149.0.7827.55, Firefox 151.0 and Linux WebKit 26.5. Each engine logged
 all six required pagination checks. Both native builds passed; verification
 reported only the authorized node-forge finding with all 21 mitigation tests
 passing. This is evidence for those engines and assertions, not physical Safari
-or website-wide cross-browser parity. A subsequent documentation reconciliation
-with main requires fresh exact-head CI before merge.
+or website-wide cross-browser parity. The subsequent documentation reconciliation passed fresh run `40382626453` at
+`ef13ac221df11a26f247b9e0a97d91eeb11a8c16`, with marker `Catalogb562996f`
+and the same three engine versions and six assertions. Both native builds and
+combined acceptance passed; verification reported only the authorized advisory
+with all 21 mitigation tests passing. PR #87 merged at
+`f2ad82c3603873997f49cda118bc5384945ab2c4`.

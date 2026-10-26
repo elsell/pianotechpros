@@ -17,14 +17,23 @@ at `745a0e5b22b7e4c2d07d371e05cc1d7da31a886b`. Run `40365056103` passed
 real-service acceptance and both native builds at source `84783cef`; verification
 reported only the authorized advisory with all 21 mitigation tests passing. iOS interaction PR #66 remains
 unmerged: native compilation has succeeded but its interaction test has not.
-The sixth run built successfully but failed the signature entitlement gate before
-installation. Explicit simulator-only ad-hoc signing is under fresh validation
-at source `83e1f430e88d8ce8b4b619a974d3a082323f3e01`; no successful iOS
-interaction is claimed. Remaining
+The seventh run failed launch after manual re-signing. The eighth run
+`40381415182` at `a047105` preserved Xcode signing, passed embedded entitlement
+inspection and launched the development client, but timed out loading Metro
+before product Sign in appeared. Source `7579825` adds a post-build manifest and
+complete JavaScript bundle readiness check; its fresh hosted run `40387476671`
+is pending. No successful iOS interaction or Keychain use is claimed. Remaining
 release work includes that iOS interaction evidence, broader device/accessibility
 checks and dedicated non-production speech/Turnstile integration. Legacy hosting,
 GitOps, DNS and live data remain unchanged; signing and cutover stay deferred.
 
+
+PR #87 merged the real-service Chromium/Firefox/Linux WebKit showroom pagination
+matrix after exact-head run `40382626453` passed acceptance and both native
+builds. The web parity audit records its bounded assertions. Android technician
+timezone native-tree validation also passed without changing the saved profile;
+spoken accessibility remains open. PR #89's durable photo-picker handoff fix
+remains under CI; the stale-warning finding is not closed by this roadmap.
 
 Technician implementation merged in PR #64 at
 `689308b29e2349805124420bae243d3f3f8bcf3a` after Android, iOS and acceptance

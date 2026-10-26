@@ -39,8 +39,13 @@ of the full profile journey remains incomplete. The eleventh run
 failed reaching Name before entering data. The retained recording reveals a
 native status-bar configuration assertion when opening the profile. Explicit
 view-controller-based status-bar appearance now passes a config regression and
-clean-prebuild output gate; hosted interaction validation is pending. Profile
-save and process-restart recovery remain unverified. Remaining
+clean-prebuild output gate. Run `40403194496` at `7ae6c7d` passed Android
+compilation and real-service acceptance; iOS entered customer contact/location
+fields but failed querying UTC as a button in the timezone sheet. Pinned React
+Native exposes iOS radio/checkbox roles through accessibility values. The harness
+now targets exact labels plus those values and requires checked checkbox state;
+a fresh hosted run must validate this correction. Profile save and process-restart
+recovery remain unverified. Remaining
 release work includes that iOS interaction evidence, broader device/accessibility
 checks and dedicated non-production speech/Turnstile integration. Legacy hosting,
 GitOps, DNS and live data remain unchanged; signing and cutover stay deferred.

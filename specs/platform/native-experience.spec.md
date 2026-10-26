@@ -574,3 +574,21 @@ review header/actions and initial content, not every field or photo at 2x text.
 After cancellation, Refresh publication status again returned Draft · Not
 published yet (`android-publication-refreshed-after-cancel.xml`). The app was
 force-stopped after the check. No Confirm change action was invoked.
+
+## iOS choice-control acceptance selectors
+
+Run `40403194496` at source `7ae6c7d` passed iOS compilation and loopback sign-in,
+then entered customer contact/location fields and opened Timezone. The create
+journey failed at `app.buttons["UTC"]`; it did not reach profile save or restart.
+The status-bar transition error from the earlier run no longer prevented entry.
+The pinned React Native iOS implementation gives radio/checkbox controls no button
+trait and exposes their role plus checked state in the accessibility value.
+Customer and technician choices intentionally use those roles.
+
+The XCTest journey must locate exact option labels together with the expected
+radio/checkbox value, require reachability, and activate that element. Checkbox
+selection must additionally assert the resulting checked value. Do not change
+product roles to satisfy a button-only selector, use coordinates, silently skip
+missing options, or omit selection. Retain the synthetic picker accessibility
+tree to diagnose role/value disagreements in hosted runs. A new successful hosted
+journey is required; source inspection and local checks do not prove execution.

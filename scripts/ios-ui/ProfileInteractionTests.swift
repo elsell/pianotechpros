@@ -35,6 +35,19 @@ final class ProfileInteractionTests: XCTestCase {
         XCTAssertTrue(element.exists && element.isHittable, "Control must be reachable")
     }
     func tap(_ name: String) { let element = button(name); reach(element); element.tap() }
+    func selectChoice(_ name: String, role: String) {
+        let tree = XCTAttachment(string: app.debugDescription)
+        tree.name = "choice-\(name)-before"; tree.lifetime = .keepAlways; add(tree)
+        let predicate = NSPredicate(format: "label == %@ AND (value == %@ OR value == %@)",
+                                    name, "\(role), checked", "\(role), unchecked")
+        let option = app.descendants(matching: .any).matching(predicate).firstMatch
+        reach(option); option.tap()
+        if role == "checkbox" {
+            let checked = XCTNSPredicateExpectation(
+                predicate: NSPredicate(format: "value == %@", "checkbox, checked"), object: option)
+            XCTAssertEqual(XCTWaiter.wait(for: [checked], timeout: 5), .completed)
+        }
+    }
     func enter(_ label: String, _ value: String) {
         let field = app.textFields[label].firstMatch
         reach(field); field.tap(); field.typeText(value)
@@ -82,14 +95,14 @@ final class ProfileInteractionTests: XCTestCase {
         tap("My customer profile"); enter("Name", "iOS Customer"); enter("Email", "customer@example.test")
         tap("Add location"); enter("Location name", "Home"); enter("Street address", "1 Test Street")
         enter("City", "Boston"); enter("State or region", "MA"); enter("Postal code", "02110")
-        tap("Timezone"); tap("UTC"); tap("Save profile"); saved(); capture("customer-saved")
+        tap("Timezone"); selectChoice("UTC", role: "radio button"); tap("Save profile"); saved(); capture("customer-saved")
         back(); back()
         tap("Technician profile"); tap("Contact details"); enter("Name", "iOS Technician"); enter("Email", "technician@example.test")
         back(); tap("Service area"); enter("Location label", "Workshop"); enter("Street address", "2 Test Street")
         enter("City", "Boston"); enter("State or region", "MA"); enter("Postal code", "02110")
-        tap("Time zone"); tap("UTC"); enter("Service radius (miles)", "25")
-        back(); tap("Work preferences"); tap("Services offered"); tap("Tuning"); tap("Done")
-        tap("Piano types serviced"); tap("Grand"); tap("Done"); back(); tap("Save profile"); saved(); capture("technician-saved")
+        tap("Time zone"); selectChoice("UTC", role: "radio button"); enter("Service radius (miles)", "25")
+        back(); tap("Work preferences"); tap("Services offered"); selectChoice("Tuning", role: "checkbox"); tap("Done")
+        tap("Piano types serviced"); selectChoice("Grand", role: "checkbox"); tap("Done"); back(); tap("Save profile"); saved(); capture("technician-saved")
         tap("Weekly availability"); tap("Add a weekday"); replace("Start time", "09:")
         for _ in 0..<6 { app.swipeDown() }
         XCTAssertTrue(app.staticTexts["Changes protected on this device. Save to update your profile."].waitForExistence(timeout: 15))

@@ -623,3 +623,32 @@ spoken TalkBack, iOS interaction or complete CU-01/PH acceptance. The same run
 passed browser/API acceptance; its verification job reported only the previously
 reviewed node-forge advisory and passed all 21 mitigation tests. Its iOS
 interaction result was still pending when these Android results were recorded.
+
+## Native control boundary contrast
+
+A fresh Android dark-mode customer-screen inspection on 2026-10-26 exposed faint
+input outlines. The palette border contrast is approximately 1.37:1 against the
+light page and 1.98:1 against the dark surface. Empty fields cannot rely on their
+entered text to identify the editable region. The shared native border color must
+provide at least 3:1 contrast against both the page background and surface in each
+theme. Preserve existing text/button contrast and the native interaction behavior.
+Keep disabled Android button fills independent from control boundaries, retaining
+their existing palette colors and at least 4:1 secondary-label contrast as an
+application readability target (inactive controls are exempt from WCAG 1.4.11).
+Use unrounded luminance-ratio regressions and inspect light/dark runtime screens;
+this bounded correction is not a claim of complete accessibility conformance.
+
+Reference: https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html
+
+The correction passes all 12 native palette tests. Light boundary contrast is
+3.75:1 against the page and 4.07:1 against the surface; dark contrast is 5.50:1
+and 4.71:1 respectively. Android emulator screenshots on 2026-10-26, using
+the development APK from run `40403194496` with these two source modules served
+by a freshly started Metro, show the corrected customer input outlines in both
+themes and retain the original disabled photo-control fills. Saved synthetic
+customer data remains visible. Evidence uses the local
+`android-control-contrast-final-*` screenshot/UI-tree set. This is development
+client runtime evidence, not a newly compiled release or iOS interaction result.
+Both themes also passed the photo preview transition from 100% with Reset
+disabled to 150% with Reset enabled, followed by reset and dismissal. The runtime
+helper restored the original source modules and light-mode device setting.

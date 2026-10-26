@@ -528,3 +528,30 @@ physical-device acceptance remain open. Mobile TypeScript checking passed.
 The corrected-runtime run also returned through Photo details -> Inspect photo,
 then Close preview to the original gallery position. The app was force-stopped
 and the temporary source overlay was restored after execution.
+
+## Android publication review cancellation — 2026-10-26
+
+The existing Android development client reopened the isolated synthetic
+CameraCancelAcceptance record with its saved text and photos. Review publication
+presented the saved Make/stock details, private-price indication, snapshot
+explanation, and separate Cancel/Confirm change actions. Android Back dismissed
+the sheet; reopening and using Cancel also returned to the editor displaying
+Draft · Not published yet. Neither path activated Confirm change.
+
+Retained native trees are `android-publication-before-review.xml`,
+`android-publication-review.xml`, `android-publication-back-cancel.xml`, and
+`android-publication-explicit-cancel.xml` under the local 2026-10-25 evidence
+root. This checks the existing development-client presentation with current
+source modules, not a newly installed exact-commit APK, public publication,
+physical-device, spoken accessibility, or iOS acceptance.
+
+At 2x system text size, the review action remained reachable by scrolling.
+The review sheet's Cancel and Confirm change controls were both within the
+viewport, with readable unclipped labels in the inspected screenshot. Cancel
+returned to the editor; system text size was restored to 1.0. Evidence:
+`android-publication-large-review.xml` and `.png`. This checks the visible
+review header/actions and initial content, not every field or photo at 2x text.
+
+After cancellation, Refresh publication status again returned Draft · Not
+published yet (`android-publication-refreshed-after-cancel.xml`). The app was
+force-stopped after the check. No Confirm change action was invoked.

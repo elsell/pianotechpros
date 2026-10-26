@@ -806,3 +806,21 @@ its helper. An earlier attempt stopped on local disk exhaustion while saving
 portrait evidence; only the subsequent successful rerun counts for these results.
 The original source and device settings were restored. Scan-specific runtime,
 other locales/device sizes and iOS remain separate checks.
+
+The scan-screen check reached the saved synthetic piano through its QR link and
+passed amount editing, rotation retention and cancellation without success
+feedback at font scale 1.5. Its screenshot exposed a distinct layout failure:
+the scan modal's taller header left the amount field partially behind the numeric
+keyboard. This is not complete scan layout acceptance. Match the inventory
+editor's compact header vertical padding while preserving horizontal padding,
+wrapping, scaled text and Cancel's touch target, then repeat visual/input checks.
+
+The compact scan-header rerun passed on 2026-10-26. The inspected post-edit
+landscape screenshot shows the entire amount field and entered value, amount
+label, USD and Cancel above the keyboard at font scale 1.5. Rotation retained the
+edit, and Cancel returned without success feedback. Evidence uses
+`android-scan-sale-spacing-*`, with two presentation-module overlays on primary
+`679afd1` and the previously verified orientation APK. Both overlays and original
+device settings were restored; the helper exited successfully. This scan check
+does not assert an anonymous snapshot comparison or replace other locale,
+physical-device and iOS acceptance. Mobile TypeScript and code review pass.

@@ -32,5 +32,21 @@ try{
  await page.getByRole('button',{name:'Load more pianos',exact:true}).click();assert.equal((await more).status(),200);await page.locator('ul[aria-busy="false"]').waitFor();
  assert.deepEqual((await rows.allTextContents()).sort(),records.map(r=>r.attributes.title).sort());assert.equal(await page.getByRole('button',{name:'Load more pianos',exact:true}).count(),0);
  const sold=page.waitForResponse(r=>r.request().method()==='GET'&&r.url().startsWith(root+'?')&&new URL(r.url()).searchParams.get('status')==='sold');await page.getByLabel('Status',{exact:true}).selectOption('sold');assert.equal((await sold).status(),200);await page.getByText('No pianos match these filters.',{exact:true}).waitFor();assert.equal(await rows.count(),0);
- console.log(JSON.stringify({result:'PASS',marker,count:31,checks:['normal PKCE','real persisted stock/title/make/model search','featured record first','30+1 cursor pagination with exact set and no duplicates','sold filter excludes draft records']}));
+ console.log('Waiting for a fresh audit window before inventory status filters');
+ await new Promise(resolve=>setTimeout(resolve,61000));
+ for(const [offset,status] of ['sold','archived','in_service','available','reserved'].entries()){
+  const record=records[offset+1];const response=await context.request.post(root+'/'+record.id+'/lifecycle',{headers:{authorization},data:{expectedRevision:record.revision,status,...(status==='sold'?{salePrice:{minor_units:10000,currency:'USD'}}:{})}});assert.equal(response.status(),200);records[offset+1]=(await response.json()).data.record;
+ }
+ const filter=async status=>{
+  const response=page.waitForResponse(r=>r.request().method()==='GET'&&r.url().startsWith(root+'?')&&!new URL(r.url()).searchParams.has('cursor'));
+  await page.getByLabel('Status',{exact:true}).selectOption(status);assert.equal((await response).status(),200);await page.locator('ul[aria-busy="false"]').waitFor();
+ };
+ await filter('active');assert.deepEqual((await rows.allTextContents()).sort(),records.filter(r=>!['sold','archived'].includes(r.status)).map(r=>r.attributes.title).sort());
+ for(const status of ['draft','available','reserved','in_service','sold','archived']){
+  await filter(status);assert.deepEqual((await rows.allTextContents()).sort(),records.filter(r=>r.status===status).map(r=>r.attributes.title).sort());
+ }
+ await filter('all');assert.equal(await rows.count(),30);
+ const allMore=page.waitForResponse(r=>r.request().method()==='GET'&&r.url().startsWith(root+'?')&&new URL(r.url()).searchParams.get('includeInactive')==='true'&&new URL(r.url()).searchParams.has('cursor'));
+ await page.getByRole('button',{name:'Load more pianos',exact:true}).click();assert.equal((await allMore).status(),200);await page.locator('ul[aria-busy="false"]').waitFor();assert.deepEqual((await rows.allTextContents()).sort(),records.map(r=>r.attributes.title).sort());
+ console.log(JSON.stringify({result:'PASS',marker,count:31,checks:['normal PKCE','real persisted stock/title/make/model search','featured record first','30+1 cursor pagination with exact set and no duplicates','sold filter excludes draft records','active hides sold and archived','six status filters match exact saved sets','all statuses restores full 31-record pagination']}));
 }finally{await browser.close();}

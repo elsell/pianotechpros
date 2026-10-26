@@ -1,7 +1,7 @@
-import {Platform,Text,TouchableNativeFeedback,TouchableOpacity,View,type ButtonProps} from 'react-native';
+import {Platform,Text,TouchableNativeFeedback,TouchableOpacity,View,type AccessibilityProps,type ButtonProps} from 'react-native';
 import {useNativeTheme} from './native-theme';
 import {nativeButtonColor} from './native-palette';
-export function NativeButton({tone='primary',title,disabled,accessibilityState,...props}:Omit<ButtonProps,'color'>&{tone?:'primary'|'destructive'}){
+export function NativeButton({tone='primary',title,disabled,accessibilityState,...props}:Omit<ButtonProps,'color'>&Pick<AccessibilityProps,'accessibilityValue'>&{tone?:'primary'|'destructive'}){
  const theme=useNativeTheme();const android=Platform.OS==='android';
  const inactive=disabled??accessibilityState?.disabled;
  const color=nativeButtonColor(theme,Platform.OS,tone);

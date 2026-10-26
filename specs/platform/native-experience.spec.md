@@ -307,3 +307,20 @@ readable labels in the inspected screenshot. Typechecking and eight palette
 contrast tests passed. iOS runtime, disabled/busy activation and broader
 screen-reader acceptance remain separate checks; this evidence does not close
 those requirements.
+
+## Choice control accessibility values
+
+Profile choice controls must expose both the localized field label and current
+selection in native accessibility data. A field-name override must not hide the
+visible value. Use the same localized selection text for the visible title and
+accessibility value, including the empty-selection prompt and multiple choices.
+Verify the actual native accessibility tree; source attributes alone do not
+establish runtime delivery or spoken VoiceOver/TalkBack acceptance.
+
+Android acceptance captured a failing customer Timezone control (label only,
+visible UTC child) before this correction. The same native-tree assertion passes
+afterward with `Timezone, UTC`; technician work choices expose `Services offered,
+Tuning` and `Piano types serviced, Grand`. No profile data was changed for these
+checks. Typechecking and the two-locale structural gate pass. This verifies native
+value delivery, not spoken announcement quality, iOS interaction or full profile
+accessibility acceptance.

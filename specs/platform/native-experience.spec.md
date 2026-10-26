@@ -828,3 +828,100 @@ source settings, stopped the app, and Metro restarted on original source. This
 checks cancellation, not confirmation, in this landscape configuration. Longer
 publication reviews, sale-entry keyboard behavior, other forms, iOS and physical
 devices remain separate acceptance work.
+
+## Landscape sale-entry keyboard context
+
+Observed on Android at font scale 1.5: focusing the sale amount and rotating to
+landscape entered the keyboard's full-screen extracted editor, hiding the sale
+form and its context. Editing and rotation recovery worked, but that alone does
+not satisfy contextual sale-entry acceptance.
+
+Both inventory-editor and scan-action sale amount inputs must opt out of Android
+full-screen extracted editing. Keep the existing decimal keyboard, keyboard-aware
+scrolling, explicit review/cancel and iOS accessory behavior. Verify on the native
+runtime that the focused amount remains an application input with the keyboard
+open, that its value can be edited and survives rotation, and that cancellation
+does not change the public snapshot. Enlarged-text layout and action reachability
+require visual inspection; a prop check alone does not establish acceptance.
+
+The focused correction passed the inventory-editor Android check on 2026-10-26
+using the installed orientation APK and six temporarily overlaid current modules.
+The retained input-method dump reports `mInputShown=true` and
+`mIsFullscreen=false`; the inspected screenshot shows the application heading,
+Cancel and focused amount above the numeric keyboard. The amount label/currency
+are outside this small visible viewport, so broader contextual layout remains a
+follow-up rather than complete acceptance. Editing, rotation retention and
+cancellation with an unchanged anonymous public snapshot passed. Evidence uses
+`android-sale-context-*`; source/device settings were restored. The scan-action
+input has the same correction but has not yet received this runtime check.
+Mobile TypeScript and structural checks pass; read-only review found no code/spec
+blockers. This result does not establish iOS or physical-device acceptance.
+
+When editing a sold transition, keep the localized sale-amount label and selected
+currency in the fixed modal heading as well as in the scrollable form. This task
+context must remain visible when the keyboard scrolls the focused input into
+view. Use the existing catalog label and current currency value, allow wrapping
+for enlarged text, and preserve the ordinary availability and review headings
+for other states. Apply the same presentation to editor and scan sale flows.
+
+The fixed-heading inventory-editor rerun passed on 2026-10-26 at Android font
+scale 1.5 in landscape: the inspected screenshot shows the amount label, USD,
+focused input and Cancel above the keyboard. Editing, portrait rotation retention
+and cancellation preserving the anonymous public snapshot all passed. Evidence
+uses `android-sale-heading-*` and the six-module overlay manifest retained with
+its helper. An earlier attempt stopped on local disk exhaustion while saving
+portrait evidence; only the subsequent successful rerun counts for these results.
+The original source and device settings were restored. Scan-specific runtime,
+other locales/device sizes and iOS remain separate checks.
+
+The scan-screen check reached the saved synthetic piano through its QR link and
+passed amount editing, rotation retention and cancellation without success
+feedback at font scale 1.5. Its screenshot exposed a distinct layout failure:
+the scan modal's taller header left the amount field partially behind the numeric
+keyboard. This is not complete scan layout acceptance. Match the inventory
+editor's compact header vertical padding while preserving horizontal padding,
+wrapping, scaled text and Cancel's touch target, then repeat visual/input checks.
+
+The compact scan-header rerun passed on 2026-10-26. The inspected post-edit
+landscape screenshot shows the entire amount field and entered value, amount
+label, USD and Cancel above the keyboard at font scale 1.5. Rotation retained the
+edit, and Cancel returned without success feedback. Evidence uses
+`android-scan-sale-spacing-*`, with two presentation-module overlays on primary
+`679afd1` and the previously verified orientation APK. Both overlays and original
+device settings were restored; the helper exited successfully. This scan check
+does not assert an anonymous snapshot comparison or replace other locale,
+physical-device and iOS acceptance. Mobile TypeScript and code review pass.
+
+
+## Visible profile choice indicators
+
+Profile radio and checkbox options must communicate selection with a visible
+shape or mark as well as native checked semantics. A small background-color
+change alone is insufficient. Keep the entire row actionable, localized label
+wrapping, existing radio/checkbox behavior and screen-reader checked state.
+Decorative selection marks must not become separate accessible controls.
+
+Android Spanish technician acceptance at 2x text on 2026-10-26 verified readable
+profile navigation, work preferences, `Servicios ofrecidos, Afinación` native
+accessibility value, and a checked service option. The inspected choice screenshot
+exposed a visual gap: the selected service has only a background change and no
+checkbox/checkmark. This is an open visual acceptance finding, despite the passing
+native checked-state assertion. No choices were changed or saved. Locale and
+font scale were restored and the app stopped. Evidence is retained as
+`android-technician-spanish-large-{profile,work,choices}.png` and matching native
+trees, using the orientation development APK from source `109dde6` and Metro
+source `679afd1` without source overlays. This does not establish spoken TalkBack
+quality, iOS acceptance or complete technician parity.
+
+
+The follow-up shared indicator now draws an outlined checkbox with a checkmark
+or an outlined radio circle with a filled selected center. Android emulator
+reruns at Spanish locale and 2x text passed: the inspected service sheet shows
+checked Afinación and empty alternatives; filtered timezone choices show filled
+UTC and empty Etc/UTC. Native trees retain checked state, and Back dismisses the
+sheets. These checks made no profile edits. Evidence is
+`android-technician-visible-choice-{choices,radio}.png` with native trees and
+provenance. TypeScript, structure and locale gates pass; read-only code review
+found no blocker. This verifies the shared marks on the technician surface;
+customer-specific runtime, iOS, dark-mode and spoken-screen-reader acceptance
+remain separate. Original source overlays, locale and font scale were restored.

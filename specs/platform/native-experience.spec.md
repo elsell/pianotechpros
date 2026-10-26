@@ -280,3 +280,30 @@ an Android fill. Enabled primary and destructive button labels require at least
 4.5:1 contrast in light and dark modes. Test the actual palette values and inspect
 device rendering. All application native Buttons use the shared adapter so
 unconfigured default buttons cannot bypass this palette.
+
+## Action touch targets
+
+Shared native actions must expose at least 48 by 48 density-independent pixels
+on Android and 44 by 44 points on iOS. Increasing surrounding layout whitespace
+without increasing the actionable accessibility bounds is insufficient. Retain
+platform-appropriate feedback, shared contrast-safe colors, localized labels,
+font scaling, disabled/busy semantics and keyboard/accessibility activation.
+Do not create overlapping expanded hit regions or nest accessible buttons.
+
+Validate actual native accessibility bounds and edge activation at normal and
+large text sizes. The Android customer profile currently exposes Timezone,
+Remove and Save profile actions with 93px height at 420dpi (about 35.4dp), below
+this contract. This is a confirmed native acceptance gap, not a completed row.
+Reference guidance: Android accessibility Views recommends 48dp touch targets;
+Apple button HIG recommends 44pt hit regions. These requirements do not make
+build success equivalent to device or screen-reader acceptance.
+
+The shared action adapter now retains React Native's platform touch primitives
+(Android native feedback and iOS opacity feedback) with actionable minimum bounds.
+The original three Android location actions passed at 48dp after the change;
+home actions also passed, and an edge tap opened the customer profile. At 2x
+font scale, Add location, Add piano and Save profile remained at least 48dp, with
+readable labels in the inspected screenshot. Typechecking and eight palette
+contrast tests passed. iOS runtime, disabled/busy activation and broader
+screen-reader acceptance remain separate checks; this evidence does not close
+those requirements.

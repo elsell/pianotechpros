@@ -555,3 +555,31 @@ review header/actions and initial content, not every field or photo at 2x text.
 After cancellation, Refresh publication status again returned Draft · Not
 published yet (`android-publication-refreshed-after-cancel.xml`). The app was
 force-stopped after the check. No Confirm change action was invoked.
+
+## Android short-display photo inspection — 2026-10-26
+
+The existing Android development client, using current Metro source and the
+isolated synthetic API, opened photo inspection with a 1080x1600 display override
+and 2x font scale. The inspected `android-photo-large-short.png` shows the photo,
+full control labels and explanatory text within the viewport. A separate runtime
+interaction reached 400% through six Zoom in activations, checked disabled Zoom in,
+reset to 100%, and closed to the original gallery. Native trees are retained as
+`android-photo-short-interaction-{maximum,reset,dismissed}.xml` under the local
+2026-10-25 evidence root. The check restored normal display size/font scale and
+force-stopped the app. This establishes the named layout and button interactions,
+not pinch, rotation, spoken accessibility, physical-device or iOS acceptance.
+
+## Android customer linked-location protection — 2026-10-26
+
+Through the native customer editor, a synthetic Grand piano named
+LocationGuardAcceptance was saved against the existing Home location. Home then
+showed the explanation to move linked pianos before removal, without a Remove
+action. The unlinked Studio location offered Remove, required confirmation, and
+remained after Cancel. After force-stop and relaunch, the profile reported its
+saved state and displayed both locations and the piano linked to Home.
+
+Native trees `android-customer-location-{linked-guard,unlinked-confirm,cancelled,
+piano-linked,restarted-saved,restarted-linked}.xml` are retained under the same
+local evidence root. This used the existing development client and Metro with
+isolated real services. Actual deletion, reassignment, iOS, physical-device and
+spoken-accessibility acceptance are separate; no full CU-01 completion is claimed.

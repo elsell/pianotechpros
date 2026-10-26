@@ -5,6 +5,17 @@ abort 'Generated iOS project missing' unless project_path
 project = Xcodeproj::Project.open(project_path)
 app = project.targets.find { |target| target.product_type == 'com.apple.product-type.application' }
 abort 'Application target missing' unless app
+# Simulator-only identity: no developer account or distribution credentials.
+entitlements = File.join(root, 'build/ios-ui-evidence/simulator.entitlements')
+Xcodeproj::Plist.write_to_path({
+  'application-identifier' => 'PIANOTESTS.com.pianotechpros.pianotechpros',
+  'keychain-access-groups' => ['PIANOTESTS.com.pianotechpros.pianotechpros'],
+  'get-task-allow' => true
+}, entitlements)
+app.build_configurations.each do |config|
+  next unless config.name == 'Debug'
+  config.build_settings['CODE_SIGN_ENTITLEMENTS'] = entitlements
+end
 name = 'PianoInteractionTests'
 abort 'UI test target already exists' if project.targets.any? { |target| target.name == name }
 target = project.new_target(:ui_test_bundle, name, :ios, '15.1', nil, :swift)
@@ -14,7 +25,7 @@ target.build_configurations.each do |config|
     'PRODUCT_NAME' => name,
     'PRODUCT_BUNDLE_IDENTIFIER' => 'com.pianotechpros.interaction-tests',
     'GENERATE_INFOPLIST_FILE' => 'YES', 'SWIFT_VERSION' => '5.0',
-    'TEST_TARGET_NAME' => app.name, 'CODE_SIGNING_ALLOWED' => 'NO',
+    'TEST_TARGET_NAME' => app.name,
     'TARGETED_DEVICE_FAMILY' => '1,2'
   })
 end

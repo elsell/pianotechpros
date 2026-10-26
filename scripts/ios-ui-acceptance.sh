@@ -14,6 +14,7 @@ cleanup() {
 }
 trap cleanup EXIT
 node --test scripts/native-ui-fixture.test.mjs
+python3 scripts/test_ios_simulator_entitlements.py
 node scripts/run-native-ui-fixture.mjs 18082 > "$evidence/fixture.log" 2>&1 &
 fixture_pid=$!
 export PIANOTECHPROS_APP_ENV=development PIANOTECHPROS_API_URL=http://127.0.0.1:18082
@@ -44,10 +45,12 @@ xcrun simctl bootstatus "$simulator" -b
 xcrun simctl spawn "$simulator" defaults write NSGlobalDomain AppleLanguages -array en
 workspace="$(find apps/mobile/ios -maxdepth 1 -name '*.xcworkspace' -print -quit)"
 test -n "$workspace"
-args=(-workspace "$workspace" -scheme PianoInteractionTests -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,id=$simulator" -derivedDataPath build/ios-simulator CODE_SIGNING_ALLOWED=NO)
+args=(-workspace "$workspace" -scheme PianoInteractionTests -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,id=$simulator" -derivedDataPath build/ios-simulator CODE_SIGNING_ALLOWED=YES CODE_SIGNING_REQUIRED=YES CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=)
 xcodebuild "${args[@]}" build-for-testing > "$evidence/build.log" 2>&1
 application="$(find build/ios-simulator/Build/Products/Debug-iphonesimulator -maxdepth 1 -name '*.app' ! -name '*Runner.app' -print -quit)"
 test -n "$application"
+codesign --display --entitlements :- "$application" > "$evidence/signed-entitlements.plist" 2> "$evidence/signing.log"
+python3 scripts/check-ios-simulator-entitlements.py "$evidence/signed-entitlements.plist"
 xcrun simctl install "$simulator" "$application"
 run_journey() {
   local name="$1" method="$2" result=0

@@ -767,3 +767,18 @@ API reads. Open and dismiss preview with the keyboard and verify focus returns
 to its trigger. Cancel removal without changing stored photos, then confirm it
 and prove the removed private image is inaccessible while the retained photo
 remains readable. Do not replace HTTP responses or suppress revisions.
+
+### Simulator Keychain identity
+
+Keep unsigned compilation as its own gate. Interactive simulator builds must use
+local ad-hoc signing, without a developer account, provisioning profile or store
+credential. The generated test-only app entitlements use the synthetic
+`PIANOTESTS.com.pianotechpros.pianotechpros` application identifier and sole
+Keychain access group. Preserve real SecureStore reads/writes and encrypted draft
+storage; do not substitute a memory store to pass interaction tests.
+Before installation, extract the built app's signed entitlements and reject an
+absent/mismatched identity or additional Keychain access groups. These settings
+belong only to the generated simulator interaction target, never release config.
+The fifth run reached the app but failed after sign-in with the saved-session
+cleanup error; unsigned Keychain access is a diagnosis to verify, not a claimed
+successful interaction result. Retain that failed run and require fresh XCTest.

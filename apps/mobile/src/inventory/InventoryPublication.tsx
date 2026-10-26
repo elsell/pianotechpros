@@ -56,7 +56,7 @@ export function InventoryPublication({workspace,userID,dealerID,recordID,publish
  {button('refresh',()=>{void run(async current=>{await current.controller.refresh();});},busy||otherBusy)}
  <Modal visible={screen!=='closed'&&!!model.current?.active()} animationType="slide" presentationStyle="fullScreen" supportedOrientations={['portrait','landscape-left','landscape-right']} onRequestClose={cancel}>
  <SafeAreaView style={{flex:1,backgroundColor:theme.background}} accessibilityViewIsModal onAccessibilityEscape={cancel}>
- <View style={{paddingHorizontal:16,paddingVertical:8,borderBottomWidth:1,borderColor:theme.border}}>{button('cancel',cancel,busy)}<Text accessibilityRole="header" style={{...text,fontSize:24,fontWeight:'600'}}>{t(screen==='review'?'review':'target')}</Text></View>
+ <View style={{paddingHorizontal:16,paddingVertical:8,borderBottomWidth:1,borderColor:theme.border}}>{button('cancel',cancel,busy)}<View style={{flexDirection:'row',flexWrap:'wrap',alignItems:'baseline',gap:12}}><Text accessibilityRole="header" style={{...text,fontSize:24,fontWeight:'600'}}>{t(screen==='review'?'review':target==='sold'?'amount':'target')}</Text>{screen==='edit'&&target==='sold'?<Text style={text}>{currency}</Text>:null}</View></View>
  <KeyboardAvoidingView style={{flex:1}} enabled={Platform.OS==='android'} behavior="height"><ScrollView key={screen} contentInsetAdjustmentBehavior="automatic" automaticallyAdjustKeyboardInsets keyboardDismissMode="interactive" keyboardShouldPersistTaps="handled" contentContainerStyle={{padding:20,gap:16,paddingBottom:36}}>
  {feedback}
  {screen==='edit'?<>

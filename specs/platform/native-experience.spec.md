@@ -789,3 +789,20 @@ cancellation with an unchanged anonymous public snapshot passed. Evidence uses
 input has the same correction but has not yet received this runtime check.
 Mobile TypeScript and structural checks pass; read-only review found no code/spec
 blockers. This result does not establish iOS or physical-device acceptance.
+
+When editing a sold transition, keep the localized sale-amount label and selected
+currency in the fixed modal heading as well as in the scrollable form. This task
+context must remain visible when the keyboard scrolls the focused input into
+view. Use the existing catalog label and current currency value, allow wrapping
+for enlarged text, and preserve the ordinary availability and review headings
+for other states. Apply the same presentation to editor and scan sale flows.
+
+The fixed-heading inventory-editor rerun passed on 2026-10-26 at Android font
+scale 1.5 in landscape: the inspected screenshot shows the amount label, USD,
+focused input and Cancel above the keyboard. Editing, portrait rotation retention
+and cancellation preserving the anonymous public snapshot all passed. Evidence
+uses `android-sale-heading-*` and the six-module overlay manifest retained with
+its helper. An earlier attempt stopped on local disk exhaustion while saving
+portrait evidence; only the subsequent successful rerun counts for these results.
+The original source and device settings were restored. Scan-specific runtime,
+other locales/device sizes and iOS remain separate checks.

@@ -728,3 +728,36 @@ uses `android-orientation-apk-photo-*` plus `android-orientation-apk-provenance.
 The helper restored original rotation settings and source files, stopped the app,
 and Metro was restarted against the restored source. Large-text landscape, other
 forms/modals, iOS rotation and physical-device acceptance remain unproven.
+
+## Android large-text landscape photo interaction
+
+On 2026-10-26, the same orientation APK and six-module Metro overlay described
+above passed photo inspection with Android system font scale set to 1.5. The
+helper verified both the 2400x1080 display and a landscape application window.
+Rotation reset the zoomed viewport to 100%; zoom to 150%, reset, dismissal to
+the gallery and portrait reopening at 100% passed. The landscape screenshot
+was inspected: controls and instructions remained visible without clipped text.
+
+Local evidence uses `android-large-text-landscape-photo-*`, including runtime
+provenance, UI trees and the screenshot. The helper exited successfully, restored
+the original source and rotation/font settings, and stopped the app. The restored
+font scale was independently checked as 1.0 and Metro restarted on original source.
+This closes this photo-flow check at that text size only. Other forms/modals,
+iOS rotation, spoken accessibility and physical-device acceptance remain open.
+
+## Android large-text landscape unpublish review
+
+The same orientation APK and six-module Metro overlay passed a second 1.5-font-scale
+check on 2026-10-26. A published synthetic record was opened through the normal
+Android inventory flow and its unpublish review rotated to landscape. Both the
+2400x1080 display and landscape application bounds were checked. The consequence
+text, Cancel and Confirm change remained visible in the inspected screenshot.
+Cancel dismissed the review; anonymous real-API reads before and after returned
+200 with identical public piano snapshots, including publication revision.
+
+Evidence uses `android-publication-landscape-*` UI trees, public responses and
+the screenshot. The helper exited successfully and restored font/rotation and
+source settings, stopped the app, and Metro restarted on original source. This
+checks cancellation, not confirmation, in this landscape configuration. Longer
+publication reviews, sale-entry keyboard behavior, other forms, iOS and physical
+devices remain separate acceptance work.

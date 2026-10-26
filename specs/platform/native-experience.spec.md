@@ -592,3 +592,71 @@ product roles to satisfy a button-only selector, use coordinates, silently skip
 missing options, or omit selection. Retain the synthetic picker accessibility
 tree to diagnose role/value disagreements in hosted runs. A new successful hosted
 journey is required; source inspection and local checks do not prove execution.
+
+## Android short-display photo inspection — 2026-10-26
+
+The existing Android development client, using current Metro source and the
+isolated synthetic API, opened photo inspection with a 1080x1600 display override
+and 2x font scale. The inspected `android-photo-large-short.png` shows the photo,
+full control labels and explanatory text within the viewport. A separate runtime
+interaction reached 400% through six Zoom in activations, checked disabled Zoom in,
+reset to 100%, and closed to the original gallery. Native trees are retained as
+`android-photo-short-interaction-{maximum,reset,dismissed}.xml` under the local
+2026-10-25 evidence root. The check restored normal display size/font scale and
+force-stopped the app. This establishes the named layout and button interactions,
+not pinch, rotation, spoken accessibility, physical-device or iOS acceptance.
+
+## Android customer linked-location protection — 2026-10-26
+
+Through the native customer editor, a synthetic Grand piano named
+LocationGuardAcceptance was saved against the existing Home location. Home then
+showed the explanation to move linked pianos before removal, without a Remove
+action. The unlinked Studio location offered Remove, required confirmation, and
+remained after Cancel. After force-stop and relaunch, the profile reported its
+saved state and displayed both locations and the piano linked to Home.
+
+Native trees `android-customer-location-{linked-guard,unlinked-confirm,cancelled,
+piano-linked,restarted-saved,restarted-linked}.xml` are retained under the same
+local evidence root. This used the existing development client and Metro with
+isolated real services. Actual deletion, reassignment, iOS, physical-device and
+spoken-accessibility acceptance are separate; no full CU-01 completion is claimed.
+
+## Android current-build acceptance — 2026-10-26
+
+Run `40403194496` built the Android development APK for PR #66 source
+`7ae6c7d0380939bb97b17c483fd70d684472e08f`. Artifact `12691560692` is named
+`android-development-8326c49935b9af999dff2f64b8414b0062c1052e` (the tested PR merge
+revision). Its archive passed ZIP integrity checking. The extracted and installed
+APK share SHA-256
+`0ccb80f19fa7d5fb3979117575d4224b95519fd9641eee7565637c89016f0c28`.
+An in-place install retained the synthetic app data. Metro served the unchanged
+source head above; this is a development build, not a signed store release.
+
+The fresh build reopened the saved customer profile with both locations and the
+piano assigned to Studio. At 1080x1600 and 2x text, photo inspection reached 400%,
+disabled further Zoom in, reset to 100% and closed back to the gallery. Native
+trees use `android-fresh-apk-customer-location-*` and
+`android-fresh-apk-photo-short-*` under the local 2026-10-25 evidence root;
+`android-fresh-apk-provenance.json` records build/install identity. Display size
+and text scale were restored and the app stopped afterward.
+
+Before that install, the native editor reassigned LocationGuardAcceptance from
+Home to Studio and saved it through the isolated real API. Studio then prevented
+removal while Home offered Remove. A process restart retained the saved Studio
+assignment and both locations. No location was deleted. Trees
+`android-customer-location-{reassigned-row,reassigned-guard,former-location-removable,
+reassigned-restarted-saved,reassigned-restarted-linked}.xml` retain these checks.
+
+On the fresh APK, Android's per-app locale override `es` produced Spanish home
+navigation and the saved customer profile. The inspected
+`android-fresh-apk-spanish-customer.png` shows translated privacy/status text and
+contact labels without clipping at normal text size. Matching home/customer trees
+are retained. The original empty locale override was restored and verified before
+stopping the app. External synthetic profile values remained unchanged.
+
+These named checks strengthen Android build and interaction evidence only. They
+do not establish every screen/locale, actual deletion, physical camera/audio,
+spoken TalkBack, iOS interaction or complete CU-01/PH acceptance. The same run
+passed browser/API acceptance; its verification job reported only the previously
+reviewed node-forge advisory and passed all 21 mitigation tests. Its iOS
+interaction result was still pending when these Android results were recorded.

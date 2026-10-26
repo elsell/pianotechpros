@@ -782,3 +782,12 @@ belong only to the generated simulator interaction target, never release config.
 The fifth run reached the app but failed after sign-in with the saved-session
 cleanup error; unsigned Keychain access is a diagnosis to verify, not a claimed
 successful interaction result. Retain that failed run and require fresh XCTest.
+
+The sixth hosted run built successfully but stopped before installation: Xcode
+placed the synthetic identity in its simulated entitlement output while the
+app code signature exposed an empty dictionary. Explicitly ad-hoc sign the built
+simulator app with the generated synthetic entitlement file before reading and
+validating its signed entitlements. Keep the identity/group checks unchanged;
+no distribution identity, developer account or credential is involved. This
+corrects the harness gate and does not establish successful SecureStore or UI
+execution until a fresh interaction run passes.

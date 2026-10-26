@@ -49,6 +49,7 @@ args=(-workspace "$workspace" -scheme PianoInteractionTests -configuration Debug
 xcodebuild "${args[@]}" build-for-testing > "$evidence/build.log" 2>&1
 application="$(find build/ios-simulator/Build/Products/Debug-iphonesimulator -maxdepth 1 -name '*.app' ! -name '*Runner.app' -print -quit)"
 test -n "$application"
+codesign --force --sign - --entitlements "$evidence/simulator.entitlements" "$application"
 codesign --display --entitlements :- "$application" > "$evidence/signed-entitlements.plist" 2> "$evidence/signing.log"
 python3 scripts/check-ios-simulator-entitlements.py "$evidence/signed-entitlements.plist"
 xcrun simctl install "$simulator" "$application"

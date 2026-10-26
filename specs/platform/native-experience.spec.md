@@ -824,3 +824,37 @@ edit, and Cancel returned without success feedback. Evidence uses
 device settings were restored; the helper exited successfully. This scan check
 does not assert an anonymous snapshot comparison or replace other locale,
 physical-device and iOS acceptance. Mobile TypeScript and code review pass.
+
+
+## Visible profile choice indicators
+
+Profile radio and checkbox options must communicate selection with a visible
+shape or mark as well as native checked semantics. A small background-color
+change alone is insufficient. Keep the entire row actionable, localized label
+wrapping, existing radio/checkbox behavior and screen-reader checked state.
+Decorative selection marks must not become separate accessible controls.
+
+Android Spanish technician acceptance at 2x text on 2026-10-26 verified readable
+profile navigation, work preferences, `Servicios ofrecidos, Afinación` native
+accessibility value, and a checked service option. The inspected choice screenshot
+exposed a visual gap: the selected service has only a background change and no
+checkbox/checkmark. This is an open visual acceptance finding, despite the passing
+native checked-state assertion. No choices were changed or saved. Locale and
+font scale were restored and the app stopped. Evidence is retained as
+`android-technician-spanish-large-{profile,work,choices}.png` and matching native
+trees, using the orientation development APK from source `109dde6` and Metro
+source `679afd1` without source overlays. This does not establish spoken TalkBack
+quality, iOS acceptance or complete technician parity.
+
+
+The follow-up shared indicator now draws an outlined checkbox with a checkmark
+or an outlined radio circle with a filled selected center. Android emulator
+reruns at Spanish locale and 2x text passed: the inspected service sheet shows
+checked Afinación and empty alternatives; filtered timezone choices show filled
+UTC and empty Etc/UTC. Native trees retain checked state, and Back dismisses the
+sheets. These checks made no profile edits. Evidence is
+`android-technician-visible-choice-{choices,radio}.png` with native trees and
+provenance. TypeScript, structure and locale gates pass; read-only code review
+found no blocker. This verifies the shared marks on the technician surface;
+customer-specific runtime, iOS, dark-mode and spoken-screen-reader acceptance
+remain separate. Original source overlays, locale and font scale were restored.

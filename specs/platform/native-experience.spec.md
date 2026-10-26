@@ -337,3 +337,26 @@ The Android regression failed before the change: the selected radio option had
 customer timezone sheet exposes UTC as checkable/checked and Etc/UTC as
 checkable/unchecked. The regression inspects native radio nodes, not visual
 highlighting. Technician single-choice runtime validation remains required.
+
+## Home navigation hierarchy
+
+The home screen must prioritize access to shops and use ordinary navigation rows
+for customer/technician profiles and shop creation/joining, rather than presenting
+every destination as a filled primary action. Account status and sign-out are
+secondary to work navigation. Keep scan access explicit. Use one scrolling
+surface for the complete signed-in home, including account controls and shops,
+so large text on a short screen cannot reserve most of the viewport for controls.
+Rows use platform press feedback, full localized names, at least 48dp/44pt hit
+areas, wrapping text, and disabled semantics. Preserve refresh, pagination,
+errors, session restoration and pending scan redirection. Validate normal and
+2x text on the Android emulator, including navigation and return; iOS interaction
+and spoken screen-reader acceptance remain separate. This follows Apple HIG
+hierarchy guidance: https://developer.apple.com/design/human-interface-guidelines .
+
+Android emulator execution on 2026-10-26 passed normal rendering and a
+1080×1600 viewport at 2× font scale. A single swipe moved the account/profile
+header out of view and exposed the complete shop row; opening it showed the
+correct dealer and inventory action, and Back retained the scrolled directory.
+Normal and large-text screenshots were inspected. Typechecking and both-locale
+structural checks pass. Display overrides were restored. This is not spoken
+TalkBack, iOS, or physical-device acceptance.

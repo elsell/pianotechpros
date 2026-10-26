@@ -761,3 +761,31 @@ source settings, stopped the app, and Metro restarted on original source. This
 checks cancellation, not confirmation, in this landscape configuration. Longer
 publication reviews, sale-entry keyboard behavior, other forms, iOS and physical
 devices remain separate acceptance work.
+
+## Landscape sale-entry keyboard context
+
+Observed on Android at font scale 1.5: focusing the sale amount and rotating to
+landscape entered the keyboard's full-screen extracted editor, hiding the sale
+form and its context. Editing and rotation recovery worked, but that alone does
+not satisfy contextual sale-entry acceptance.
+
+Both inventory-editor and scan-action sale amount inputs must opt out of Android
+full-screen extracted editing. Keep the existing decimal keyboard, keyboard-aware
+scrolling, explicit review/cancel and iOS accessory behavior. Verify on the native
+runtime that the focused amount remains an application input with the keyboard
+open, that its value can be edited and survives rotation, and that cancellation
+does not change the public snapshot. Enlarged-text layout and action reachability
+require visual inspection; a prop check alone does not establish acceptance.
+
+The focused correction passed the inventory-editor Android check on 2026-10-26
+using the installed orientation APK and six temporarily overlaid current modules.
+The retained input-method dump reports `mInputShown=true` and
+`mIsFullscreen=false`; the inspected screenshot shows the application heading,
+Cancel and focused amount above the numeric keyboard. The amount label/currency
+are outside this small visible viewport, so broader contextual layout remains a
+follow-up rather than complete acceptance. Editing, rotation retention and
+cancellation with an unchanged anonymous public snapshot passed. Evidence uses
+`android-sale-context-*`; source/device settings were restored. The scan-action
+input has the same correction but has not yet received this runtime check.
+Mobile TypeScript and structural checks pass; read-only review found no code/spec
+blockers. This result does not establish iOS or physical-device acceptance.

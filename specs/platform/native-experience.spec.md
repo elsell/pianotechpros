@@ -497,6 +497,38 @@ the exact original saved name. No save was performed. Native evidence:
 client interactions, not every field/keyboard, dirty process recovery, save
 conflicts, spoken TalkBack, iOS or physical-device usability.
 
+## Android button state repaint
+
+A 2026-10-26 photo-inspection runtime check exposed stale button fills after
+zoom state changed: at 400%, Zoom out/Reset were enabled in the native tree but
+retained their initial pale disabled backgrounds; Zoom in was disabled but
+retained its initial green fill. The screenshot is
+`android-photo-inspect-pan.png`, with matching native trees under the local
+2026-10-25 evidence root. Zoom limits, Reset, details/inspection return and
+Close preview passed, but this visual regression prevents acceptance.
+
+A button's fill, label color and accessibility enabled state must update together
+in both directions. Keep Android native ripple feedback separate from the
+state-dependent fill by using foreground feedback on supported Android versions.
+The minimum supported Android version permits that native capability. Preserve
+iOS opacity feedback, touch targets and state semantics. Verify the actual
+100% -> 400% -> 100% photo controls in the emulator and inspect retained screenshots;
+a component-prop assertion alone cannot prove native repaint.
+
+Reference: https://reactnative.dev/docs/touchablenativefeedback#useforeground
+
+With foreground ripple enabled, the same Android development client passed
+100% -> 400% -> Reset to 100%, with enabled/disabled native-tree states at both
+limits. Inspected `android-photo-foreground-maximum.png` and
+`android-photo-foreground-reset.png` show matching green enabled and pale disabled
+fills in both directions. Matching XML, initial-state and post-pan screenshots
+are retained under the same evidence root. This is runtime source-module evidence,
+not a rebuilt APK or iOS execution; pinch, rotation, spoken accessibility and
+physical-device acceptance remain open. Mobile TypeScript checking passed.
+The corrected-runtime run also returned through Photo details -> Inspect photo,
+then Close preview to the original gallery position. The app was force-stopped
+and the temporary source overlay was restored after execution.
+
 ## Android publication review cancellation — 2026-10-26
 
 The existing Android development client reopened the isolated synthetic

@@ -69,8 +69,15 @@ final class ProfileInteractionTests: XCTestCase {
         let ready = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in signIn.isEnabled }, object: signIn)
         XCTAssertEqual(XCTWaiter.wait(for: [ready], timeout: 30), .completed); signIn.tap()
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-        let consent = springboard.buttons["Continue"]
-        if consent.waitForExistence(timeout: 5) { consent.tap() }
+        let identity = NSPredicate(format: "label CONTAINS %@ AND label CONTAINS %@", "127.0.0.1", "Sign In")
+        let appConsent = app.alerts.containing(identity).firstMatch.buttons["Continue"]
+        let systemConsent = springboard.alerts.containing(identity).firstMatch.buttons["Continue"]
+        let consentReady = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            (appConsent.exists && appConsent.isHittable) || (systemConsent.exists && systemConsent.isHittable)
+        }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [consentReady], timeout: 30), .completed)
+        if appConsent.exists && appConsent.isHittable { appConsent.tap() }
+        else { systemConsent.tap() }
         XCTAssertTrue(button("My customer profile").waitForExistence(timeout: 45))
         tap("My customer profile"); enter("Name", "iOS Customer"); enter("Email", "customer@example.test")
         tap("Add location"); enter("Location name", "Home"); enter("Street address", "1 Test Street")

@@ -827,3 +827,11 @@ only a fixed authentication-stage name and HTTP status. Unknown and product
 routes emit nothing. Never include URLs, query parameters, headers, credentials,
 profile data or exception text. The standalone fixture runner records these
 observations for retained CI diagnostics; application behavior is unchanged.
+
+The retained tenth-run recording shows the iOS authentication consent dialog
+appearing after the harness's five-second optional consent wait. On the fresh
+simulator, require the alert identifying `127.0.0.1` and `Sign In`, scoped to
+application or Springboard alerts, with a bounded 30-second readiness wait.
+Tap Continue only inside that identified, hittable alert. A missing consent
+must fail at this boundary rather than silently proceeding to profile lookup.
+The recording establishes a harness timing gap, not successful authentication.

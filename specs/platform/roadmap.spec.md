@@ -29,8 +29,11 @@ identified developer tutorial/menu through normal controls. The tenth run
 `40392649040` at `7d76e09` dismissed that overlay and tapped Sign in, but
 timed out waiting for the signed-in home screen. Real-service acceptance and
 Android compilation passed; iOS interaction remains failed. Fixed-stage/status
-fixture diagnostics are being added to distinguish authorization, token exchange
-and application session creation without retaining credentials. No successful
+fixture diagnostics now distinguish authorization, token exchange and application
+session creation without retaining credentials. The retained recording shows
+iOS consent arriving after the old five-second wait; the harness now requires
+that identified alert within 30 seconds before proceeding. Hosted validation
+of this correction remains pending. No successful
 iOS interaction is claimed. Remaining
 release work includes that iOS interaction evidence, broader device/accessibility
 checks and dedicated non-production speech/Turnstile integration. Legacy hosting,

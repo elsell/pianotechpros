@@ -206,7 +206,8 @@ synthetic record `96568d3c-f6ec-41fd-89d7-70016f12e788`. Each filter form opens
 with an active initial search so the control remains accessible after sale or
 unpublication leaves a small catalog. Recurring fresh-fixture CI passed run
 `40224029059` for record `2ea9f917-69f8-4ecc-925f-8fbaa78d08be`.
-Large public-catalog pagination and native touch evidence remain separate.
+Large public-catalog pagination passed the recurring run recorded below; native
+touch evidence remains separate.
 
 ## Persisted inventory status filters
 
@@ -222,3 +223,28 @@ were checked against persisted records. Recurring CI passed run `40365056103`
 with marker `Browseec912d1e`, including exact sets for six statuses, active
 exclusion and all-status pagination. PR #81 merged in
 `745a0e5b22b7e4c2d07d371e05cc1d7da31a886b`.
+
+## Persisted large-showroom pagination
+
+Provision 31 uniquely searchable, published synthetic records through the real
+owner API, with processed photos and one featured record. Pace provisioning
+across fresh audit windows without relaxing limits. An anonymous browser must
+follow the rendered continuation link, retain search/type/currency filters,
+and see the exact 12+12+7 record set without duplicates (the public client
+requests 12 records per page). Reload the final page
+and verify its stable contents and absence of a continuation. This is a new
+acceptance requirement; do not claim a passing execution until recorded.
+
+The first CI execution provisioned all 31 records but failed an incorrect
+30-record first-page expectation. Public `showroomFilters` explicitly requests
+12, unlike private inventory. Correct the test to follow both continuation
+links and assert 12+12+7; this does not change product pagination behavior.
+
+The corrected journey passed recurring run `40374312501` at exact source
+`54ae198f09bc695fb17948826a3c916637824a27`, with marker `Cataloge84bb6c7`.
+Its log confirms all 31 processed-photo publications, featured ordering, exact
+12+12+7 pagination, retained search/type/currency filters, stable final-page
+reload and no duplicate or extra continuation. Combined acceptance and both
+native builds passed. PR #84 merged at
+`89c3e34fe49c1744f9a2fffca485041450188035`. This closes this pagination evidence
+gap, not the provider, screen-reader, supported-browser or native touch gates.

@@ -123,3 +123,70 @@ real-catalog acceptance or the whole website complete.
 Production-readiness additionally requires the security/configuration/release
 contracts already specified under platform. Existing reviewed dependency
 mitigations remain subject to exact-commit evidence; this audit waives no gate.
+
+## Recurring inventory browse acceptance
+
+The isolated real-service acceptance runner must provision 31 uniquely named
+private inventory records using the normally signed-in browser's application
+session, then exercise the website's stock/title/make/model searches, featured
+ordering, 30+1 cursor pagination and sold exclusion. Assert the complete expected
+record set without duplicates after loading more. Provision through the real API;
+do not substitute HTTP responses. Require loopback web, identity and API origins,
+keep credentials in memory, and respect the unchanged audit rate limit. A local
+pass alone does not establish the recurring CI result or close all IN-01 filters.
+
+Local execution of this recurring script passed on 2026-10-25 with synthetic
+marker `Browse3d5c1bb6`: all four search fields, featured-first ordering, exact
+31-record set across pagination and exclusion of drafts from sold results.
+Recurring CI remains pending.
+
+## Persisted web lifecycle acceptance
+
+Exercise a new synthetic photo-first draft through publication, reserved, sold,
+sale correction, in-service, available, draft and archived states using ordinary
+browser review and confirmation. Check sale amount defaults to asking price,
+explicit override persists in append-only history, correction adds a new event,
+and lifecycle-only changes retain the published snapshot's other fields despite
+private edits. Hidden states and unpublishing must remove anonymous access;
+returning to available must not silently republish. Run through isolated real
+services with unchanged authorization and rate limits. No completion claim until
+actual execution passes. Pace the two halves across fresh audit windows; never
+relax rate limits or retry a rejected mutation.
+
+The paced real-service journey passed locally on 2026-10-25 for synthetic record
+`4b78e80e-ed4d-488e-8fe1-107e3823f68c`, including explicit unpublish independence,
+sale defaults/override, immutable correction history, all six lifecycle states,
+private-edit isolation and no silent republication. Recurring CI remains pending.
+
+## Persisted public listing interactions
+
+Use normal owner sign-in to create and explicitly publish a synthetic listing
+with two processed photos. Provision a reserved synthetic contact phone through
+the authorized real API after the parent fixture tests empty-phone behavior.
+In an anonymous browser verify keyboard and narrow
+viewport gallery navigation, exact canonical clipboard URL, contact links from
+persisted dealer data, related listing navigation and no horizontal overflow.
+Save a screenshot for visual inspection. Do not substitute API responses, launch
+phone/email applications or treat desktop Chromium as native device acceptance.
+
+Local real-service execution passed for synthetic record
+`ad64c5c3-d352-4df4-8654-f16afacdd5b6` on 2026-10-25. The 390px full-page
+screenshot was inspected: gallery controls, contact actions, inquiry form and
+related cards remain readable without horizontal overflow. Synthetic color-block
+photos establish processing and layout behavior, not photographic quality.
+Recurring CI and actual touch/device acceptance remain pending.
+
+## Persisted showroom filtering
+
+Extend the real public-listing journey with exact-title search, matching and
+nonmatching piano type, currency and inclusive minimum/maximum price boundaries.
+After a private title edit, only the explicit published title is searchable.
+Sold status disappears from default available results and appears through sold
+and include-sold filters; explicit unpublishing removes it even from include-sold
+results. Exercise browser form submission against persisted API data. This does
+not replace large-catalog pagination or native touch acceptance.
+
+The full corrected gallery/filter journey passed locally on 2026-10-25 for
+synthetic record `96568d3c-f6ec-41fd-89d7-70016f12e788`. Each filter form opens
+with an active initial search so the control remains accessible after sale or
+unpublication leaves a small catalog. Recurring fresh-fixture CI remains pending.

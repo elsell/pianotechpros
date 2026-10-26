@@ -271,7 +271,10 @@ print("Owner staff and invitation list pagination, terminal state and secret exc
 # normally and receive no parent application session credentials.
 browser_environment = {name: value for name, value in os.environ.items()
                        if name not in {"DEALER_ACCEPTANCE_OWNER_SESSION", "DEALER_ACCEPTANCE_OTHER_SESSION"}}
-for script in ("photo-management-persisted-acceptance.mjs",
+for script in ("showroom-persisted-interactions.mjs",
+               "lifecycle-persisted-acceptance.mjs",
+               "inventory-browse-persisted-acceptance.mjs",
+               "photo-management-persisted-acceptance.mjs",
                "photo-publication-persisted-acceptance.mjs",
                "inquiry-persisted-browser-acceptance.mjs",
                "inventory-history-persisted-acceptance.mjs",

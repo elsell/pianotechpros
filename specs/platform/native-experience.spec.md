@@ -496,3 +496,22 @@ the exact original saved name. No save was performed. Native evidence:
 `android-shop-discard-reopened.xml`. This checks the named existing development
 client interactions, not every field/keyboard, dirty process recovery, save
 conflicts, spoken TalkBack, iOS or physical-device usability.
+
+## Android voice permission and cancellation — 2026-10-26
+
+The existing Android development client reopened the isolated synthetic
+CameraCancelAcceptance draft. Record voice note requested microphone permission
+at use; denying it displayed the localized Settings/manual-transcript recovery
+message. Typing an unapplied transcript and choosing Cancel voice returned to
+the editor without applying it. After restoring permission, Record voice note
+showed recording state, an input meter and Stop and review. Cancel voice returned
+to the existing draft with its saved Make unchanged. Android appops reported a
+completed 14.143-second microphone use after cancellation, not active recording.
+
+Native trees are retained as `android-voice-denied.xml`,
+`android-voice-denied-cancel.xml`, `android-voice-recording.xml` and
+`android-voice-recording-cancel.xml` in the local 2026-10-25 evidence root.
+The original microphone grant and permission flags were restored and the app
+force-stopped. Stop and review and Apply were not invoked. This verifies emulator
+permission/cancellation behavior, not speech-provider integration, recording
+quality, physical-device or iOS acceptance.

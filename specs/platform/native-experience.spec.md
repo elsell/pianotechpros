@@ -987,6 +987,72 @@ Earlier attempts using a stale bundle or failing screenshot storage are excluded
 TypeScript, structure and locale gates passed. Inventory field/filter runtime
 checks, iOS execution and spoken accessibility remain pending for this change.
 
+The follow-up inventory check passed on 2026-10-27 with the same APK and primary
+Metro source, overlaying the three choice views at `eacce91`. At 2x font scale,
+Active → Sold → reopened Sold retained the correct checked state and visible
+radio mark; Active was restored afterward. At ordinary font scale, the existing
+CameraCancelAcceptance draft's Piano type sheet showed exactly one checked
+Not set option, with all other explicit radio marks empty; Back dismissed it
+without editing the draft. Inspected screenshots and matching native trees are
+`android-inventory-choice-active`, `-sold` and `-type` in the same local evidence
+directory. This validates filter interaction and field rendering/dismissal, not
+field-value persistence, screen-reader speech or iOS. Source and font overrides
+were restored after the check.
+
+## Android invitation creation and code dismissal — 2026-10-27
+
+The checksum-verified PR #102 development APK with restored primary Metro source
+`fa2898e` (no choice overlays) created a Viewer invitation through Manage staff
+with expiry changed from 72 to 1 hour. The resulting one-time code was displayed
+exactly once. Explicit I have saved the code dismissal removed it; leaving and
+reopening the screen did not restore it. A read-only query of the isolated
+runtime database confirmed the created invitation's Viewer role, exact 3600-second
+lifetime and unused/unrevoked state. The one-hour synthetic invitation remains
+unconsumed; no real account was invited.
+
+Evidence consists of redacted `android-invitation-created`, `-dismissed`,
+`-reopened` native trees, an inspected reopened-screen screenshot and token-free
+result/persistence JSON in the local 2026-10-25 evidence directory. No screenshot
+was captured while the code was displayed. The temporary raw tree was overwritten
+after execution. This proves native creation and explicit dismissal/teardown, not
+copy/share, another-user acceptance, revocation, clipboard policy, spoken
+accessibility or iOS.
+
+A subsequent native revocation check targeted that exact synthetic invitation ID
+in the confirmation dialog. Cancel preserved the database row's unrevoked and
+unconsumed state. Reopening the same confirmation and choosing Confirm revocation
+persisted revoked=true without consumption; the inspected list screenshot then
+showed the matching expiry card as Revoked without its revoke action. Thus the
+invitation is now revoked, superseding its earlier unrevoked observation. Retained
+`android-invitation-revoke-{dialog,cancelled,confirmed}` trees, dialog/confirmed
+screenshots and token-free result JSON support this separate confirmation check.
+This does not establish another-user acceptance/rejection or member-role changes.
+
+## Android persisted buyer-inquiry journey — 2026-10-27
+
+A fresh synthetic buyer inquiry submitted through the isolated public HTTP API
+appeared as Unread in the native inbox. Normal list/detail navigation displayed
+its message and submitted piano title. At 2x font scale, Mark as read persisted
+the first-read timestamp; returning to the list showed Read, and force-stopping
+and reopening the application retained that state. Read-only database checks
+confirmed the stored publication snapshot was identical before and after marking
+read and restart. This run did not edit or republish the source piano.
+
+The inspected detail and snapshot screenshots show readable wrapped message,
+contact information, first-read timestamp, piano title, exact price and description.
+Evidence is `android-inquiry-{unread,detail-large,snapshot-large,read-list,restart}`
+native trees, large-text screenshots and submission/persistence JSON in the local
+2026-10-25 evidence directory. Runtime provenance is the PR #102 development APK
+with primary Metro `fa2898e`, no overlays. Font scale was restored. Contact apps
+were not launched. This closes the named Android inbox path, not live CAPTCHA,
+public form interaction, pagination, spoken accessibility or iOS acceptance.
+
+PR #104 merged the shared choice-view corrections at `626c658` after both actual
+native builds passed run `40424324959`, exact source `eacce91`. The verification
+log reported only the authorized node-forge advisory, with all 21 mitigation
+tests passing. Acceptance routing skipped the real-service suite for this native
+UI-only change; it is not fresh backend acceptance evidence.
+
 ## Bundled iOS simulator interaction gate
 
 Run `40418370993` at `679afd1` passed host HEAD/manifest/bundle readiness and

@@ -985,3 +985,26 @@ native builds passed run `40424324959`, exact source `eacce91`. The verification
 log reported only the authorized node-forge advisory, with all 21 mitigation
 tests passing. Acceptance routing skipped the real-service suite for this native
 UI-only change; it is not fresh backend acceptance evidence.
+
+## Native lifecycle review choice marks
+
+Inventory-editor and QR-scan availability review must display an explicit radio
+mark for each status and sale-currency option, including an empty mark for
+unselected options. Retain the containing row's checked/disabled semantics and
+existing review-before-mutation behavior. Labels must wrap beside the mark.
+Android interaction acceptance must inspect current selection, change and reopen
+status/currency choices, and cancel without changing the published snapshot.
+This check does not establish iOS or spoken screen-reader acceptance.
+
+The Android editor baseline showed plain-text availability options with no
+visible current-selection mark. After reusing the decorative indicator, the
+1.5x-text interaction passed Available → Sold selection/reopen, USD → EUR
+selection/reopen, and cancellation with the public snapshot unchanged. Inspected
+screenshots and matching native trees are retained as
+`android-lifecycle-choice-editor-*` in the local 2026-10-25 evidence directory;
+`android-sale-choice-baseline.png` records the prior appearance. Runtime used the
+checksum-verified PR #104 development APK and primary Metro source `a88012b` with
+only the two lifecycle view files overlaid. Font scale and rotation were restored.
+Mobile type checking and structural/i18n checks pass, and the project critic
+found no confirmed blocker. QR-scan interaction and both fresh native builds
+remain pending for this correction.

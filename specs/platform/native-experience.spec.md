@@ -893,3 +893,29 @@ snapshot identical. Evidence is retained as `android-pr102-customer-dark-*`,
 night mode and rotation were restored and the app stopped. These bounded checks
 verify the installed development artifact with the recorded Metro source, not
 an embedded production Android bundle, physical-device or iOS acceptance.
+
+## Consistent native single-choice indicators
+
+Staff invitation role, inventory status filters and inventory field choices must
+show the same explicit selected/unselected radio mark as profile choices. Border
+weight and color alone are insufficient selection cues. Keep the containing row
+as the sole accessible radio with its existing checked/disabled state and action;
+the mark is decorative. Labels must wrap beside the fixed-size mark at large text.
+
+Android baseline inspection found the staff Viewer selection represented only by
+a thicker colored border (`android-staff-baseline.png` and matching native tree).
+Runtime checks must verify switching Viewer/Editor without creating an invitation,
+large-text reachability, and inventory filter/field choice state. These checks do
+not prove invitation creation, membership changes, or spoken accessibility.
+
+The Android staff check passed on 2026-10-27 using the checksum-verified PR #102
+development APK (source `ee8f9b3`) and Metro source `fa2898e` with only the three
+choice-view files from this change overlaid. After restarting Metro and the app,
+Viewer → Editor → Viewer preserved exact checked states at 2x font scale. The
+inspected `android-staff-choice-editor.png` shows the explicit selected dot and
+empty circle beside readable labels; expiry and creation controls remain visible.
+Matching native trees and the expiry screenshot are retained in the local
+2026-10-25 evidence directory. Font scale and source overlays were restored.
+Earlier attempts using a stale bundle or failing screenshot storage are excluded.
+TypeScript, structure and locale gates passed. Inventory field/filter runtime
+checks, iOS execution and spoken accessibility remain pending for this change.

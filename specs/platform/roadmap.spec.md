@@ -10,7 +10,7 @@ closure is tracked in `web-parity-audit.spec.md` and device evidence in
 | Client | Verified scope | Next required evidence |
 | --- | --- | --- |
 | Web | Recurring real-service dealer/staff, inventory fields/search/lifecycle, photos/publication, inquiry, profiles and public catalog journeys; public pagination in Chromium/Firefox/Linux WebKit | Dedicated speech/Turnstile provider integration, screen-reader and broader supported-browser/device acceptance |
-| Android | Real API photo recovery, publication/unpublish, profile/location persistence, landscape/large-text controls, invitation create/dismiss/revoke, and inquiry read persistence | Remaining full native field/staff/sharing journeys, spoken accessibility, provider and physical-device checks |
+| Android | Real API photo recovery, publication/unpublish, profile/location persistence, inventory date/money recovery, landscape/large-text controls, invitation create/dismiss/revoke, and inquiry read persistence | Remaining full native field/staff/sharing journeys, spoken accessibility, provider and physical-device checks |
 | iOS | Native builds have passed; profile interaction attempts have reached sign-in and editing but have not completed save/restart acceptance | Finish bundled-app profile/recovery acceptance, then inventory/capture/publication and the broader native journey matrix |
 
 PR #106 merged visible status/currency selection in editor and QR-scan reviews

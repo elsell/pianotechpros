@@ -32,14 +32,28 @@ final class ProfileInteractionTests: XCTestCase {
     func enter(_ label: String, _ value: String) {
         let field = app.textFields[label].firstMatch
         reach(field); field.tap(); field.typeText(value)
+        exactText(field, value, label)
         if button("Done").exists && button("Done").isHittable { button("Done").tap() }
+        exactText(field, value, label)
     }
     func replace(_ label: String, _ value: String) {
         let field = app.textFields[label].firstMatch
         reach(field); field.tap()
         let previous = field.value as? String ?? ""
         field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: previous.count) + value)
+        exactText(field, value, label)
         if button("Done").exists && button("Done").isHittable { button("Done").tap() }
+        exactText(field, value, label)
+    }
+    func exactText(_ field: XCUIElement, _ expected: String, _ label: String) {
+        let actual = field.value as? String
+        if actual != expected {
+            capture("incorrect-entry-\(label)")
+            let tree = XCTAttachment(string: app.debugDescription)
+            tree.name = "incorrect-entry-\(label)-tree"
+            tree.lifetime = .keepAlways; add(tree)
+        }
+        XCTAssertEqual(actual, expected, "Native entry must retain every character in \(label)")
     }
     func back() {
         let control = app.navigationBars.buttons.element(boundBy: 0)

@@ -1106,3 +1106,17 @@ matching native trees and screenshots are retained as `android-pr104-*` in the
 local 2026-10-25 evidence directory. Font scale was restored and the app stopped.
 This is a development APK plus Metro check, not an embedded production bundle,
 iOS, physical-device or spoken accessibility acceptance.
+
+## iOS exact text-entry regression — 2026-10-27
+
+Run `40427405957` at `a88012b` passed simulator identity/bundle validation and
+the create-profile test, but failed the restart test: customer name read back
+as `istomer` instead of the entered `iOS Customer`. The retained saved-location
+screenshot also shows region `M` after the test entered `MA`. This is not a
+passing profile round trip; neither the typing boundary nor persisted exact
+values were asserted by the creation helper. The cause remains under diagnosis.
+Native input acceptance must assert the exact entered/replaced value immediately
+after keyboard entry and after dismissal, retaining a screenshot and full UI
+tree on mismatch. Do not slow typing, retry replacement, disable correction, or
+relax expected values to conceal lost characters. Restart assertions remain
+required, and the later recovery/inventory journeys are not yet accepted.

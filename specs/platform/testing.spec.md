@@ -850,3 +850,13 @@ Info.plist capability explicitly to true in the generated application config,
 even when an inherited config supplies false. The post-prebuild gate must reject
 an absent or false value. Preserve per-screen light/dark styling; do not dismiss
 the native error or remove styling to make the interaction test advance.
+
+## Hosted browser dependency acquisition budget
+
+Acceptance retains a bounded 60-minute job budget for clean hosted runners. Run
+`40422404970` at `d4bfc01` exhausted the former 30-minute budget during Ubuntu
+browser-library downloads, before `make acceptance` began. The retained log shows
+continued package acquisition rather than an executed failing product assertion.
+The longer job budget covers dependency acquisition plus the unchanged full
+acceptance suite. It does not extend per-interaction deadlines, suppress setup
+failures, skip browser engines or permit an unexecuted suite to count as passing.

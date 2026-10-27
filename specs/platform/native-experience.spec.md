@@ -1070,3 +1070,32 @@ round trip did not complete without refresh and is not represented as such.
 The app stopped afterward. This establishes role administration with explicit
 refresh and removal cancellation, not confirmed removal or a second user's
 access after the role changes.
+
+## Native inventory date and exact-money recovery acceptance
+
+Create a synthetic private piano through native New without requiring photos or
+publication fields. Save identity and a year/month manufacture date, then enter
+an invalid day. Confirm the invalid text remains local while the persisted date
+remains valid. Force-stop and reopen through inventory search; require recovery
+of the exact invalid text, correct it, and explicitly save. Exercise asking-price
+JPY and acquisition-cost EUR values through native currency choices, and verify
+exact minor units plus saved internal fields in the isolated database. Reopen
+and compare displayed values. This does not establish the complete field matrix,
+iOS, physical-device or screen-reader acceptance.
+
+Android execution passed with the checksum-verified PR #104 development APK and
+Metro `a88012b`, without source overlays. Native New created a private Kawai K300
+draft with its synthetic title and saved manufacture year/month 1998/2. Invalid
+day 31 displayed field feedback without changing the saved record. Force-stop
+and ordinary inventory search restored day 31 and the paused-recovery notice.
+After correction and explicit Save now, the database contained 1998-02-28, JPY
+123456 minor units, EUR 10001 minor units, and the entered stock number, serial,
+location and private notes. A second restart/reopen displayed the saved date and
+JPY price without changing the persisted record. Anonymous lookup returned 404.
+Evidence is retained as `android-native-fields-*` in the local 2026-10-25
+directory, including native trees, partial/corrected database rows and inspected
+invalid-date/reopened-price screenshots. The initial attempt hit Expo's floating
+Tools overlay before entering fields; that development-only preference was
+temporarily disabled for the passing run and its exact original XML restored
+afterward. The app was stopped. This verifies the named fields and recovery path,
+not the complete native inventory matrix, iOS or a signed production artifact.

@@ -2,17 +2,34 @@
 
 ## Current milestone: feature-complete product
 
-Latest Android evidence (2026-10-26): confirmed customer location removal survived
-restart while preserving the linked piano and remaining-location guard. Native
-publication/unpublish/republish produced anonymous 200/404/200 responses with
-matching public fields/photos and a newer snapshot revision. PR #96 merged the
-control-contrast correction; PR #97 merged orientation adaptation after both
-native builds and real-service acceptance passed. The checksum-verified APK from
-run `40411305890` passed actual landscape photo inspection, resize-to-fit,
-zoom/reset/dismissal and portrait reopening. `native-experience.spec.md` records
-APK/source-overlay provenance and bounded assertions. Broader landscape screens,
-iOS interactions, spoken accessibility, providers and physical devices remain
-required; these checks do not complete native parity.
+Current acceptance position (2026-10-27): feature completeness is not yet proven.
+The detailed requirements remain in `product-parity.spec.md`; website-specific
+closure is tracked in `web-parity-audit.spec.md` and device evidence in
+`native-experience.spec.md`.
+
+| Client | Verified scope | Next required evidence |
+| --- | --- | --- |
+| Web | Recurring real-service dealer/staff, inventory fields/search/lifecycle, photos/publication, inquiry, profiles and public catalog journeys; public pagination in Chromium/Firefox/Linux WebKit | Dedicated speech/Turnstile provider integration, screen-reader and broader supported-browser/device acceptance |
+| Android | Real API photo recovery, publication/unpublish, profile/location persistence, landscape/large-text controls, invitation create/dismiss/revoke, and inquiry read persistence | Remaining full native field/staff/sharing journeys, spoken accessibility, provider and physical-device checks |
+| iOS | Native builds have passed; profile interaction attempts have reached sign-in and editing but have not completed save/restart acceptance | Finish bundled-app profile/recovery acceptance, then inventory/capture/publication and the broader native journey matrix |
+
+PRs #100–102 merged sale-entry layout and visible profile-choice corrections;
+PR #103 merged fresh-APK evidence. PR #104 merged explicit choice marks for staff
+and inventory at `626c658`. Both actual native builds passed run `40424324959`
+at source `eacce91`; verification reported only the authorized node-forge advisory
+with all 21 mitigation tests passing. Acceptance was routed out for this native
+UI change. Android runtime checks passed with recorded source overlays. New invitation and inquiry
+checks used the checksum-verified PR #102 development APK with primary Metro
+source `fa2898e`, without overlays. These are development-runtime observations,
+not embedded release or physical-device evidence.
+
+PR #66's bundled iOS run `40422404970` at `d4bfc01` remains active. Its separate
+Android build passed. Browser/API acceptance did not run: Ubuntu library downloads
+exhausted the 30-minute job budget. A reviewed local change gives acceptance a
+bounded 60-minute budget without changing assertions. The next inventory UI
+journey and timeout change are held locally to preserve the active iOS run.
+Provider configuration remains a separate external dependency; useful native
+work continues. Legacy hosting, GitOps, DNS and live data remain untouched.
 
 As of 2026-10-26, PR #80 merged the combined inventory browse, sale/unpublish
 lifecycle, public gallery/contact/sharing and showroom-filter journeys plus
@@ -29,12 +46,10 @@ at `745a0e5b22b7e4c2d07d371e05cc1d7da31a886b`. Run `40365056103` passed
 real-service acceptance and both native builds at source `84783cef`; verification
 reported only the authorized advisory with all 21 mitigation tests passing. iOS interaction PR #66 remains
 unmerged: native compilation has succeeded but its interaction test has not.
-The seventh run failed launch after manual re-signing. The eighth run
-`40381415182` at `a047105` preserved Xcode signing, passed embedded entitlement
-inspection and launched the development client, but timed out loading Metro
-before product Sign in appeared. Source `7579825` adds a post-build manifest and
-complete JavaScript bundle readiness check; its fresh hosted run `40387476671`
-is pending. No successful iOS interaction or Keychain use is claimed. Remaining
+Earlier attempts progressed from simulator signing failures through development
+launcher startup and profile editing. The current bundled-app attempt and its
+remaining acceptance scope are summarized above; historical build success does
+not establish profile save/restart or complete iOS interaction acceptance. Remaining
 release work includes that iOS interaction evidence, broader device/accessibility
 checks and dedicated non-production speech/Turnstile integration. Legacy hosting,
 GitOps, DNS and live data remain unchanged; signing and cutover stay deferred.

@@ -1099,3 +1099,30 @@ Tools overlay before entering fields; that development-only preference was
 temporarily disabled for the passing run and its exact original XML restored
 afterward. The app was stopped. This verifies the named fields and recovery path,
 not the complete native inventory matrix, iOS or a signed production artifact.
+
+## Native inventory identity and offering field acceptance
+
+Extend the isolated draft field journey to size, finish, piano type, condition,
+player system, public description, price visibility and featured placement.
+Use normal native controls, verify the persisted attributes, and reopen after
+process termination. The final verification must only read displayed fields and
+switch states; it must not correct a value while checking it. Existing date,
+money and internal attributes must remain unchanged, and the draft must remain
+unpublished. This verifies representative field persistence and presentation,
+not every option, validation boundary, publication effect or physical device.
+
+Android execution used the checksum-verified PR #104 development APK with Metro
+`b981b5c`, without overlays. The same synthetic draft advanced from revision 7
+to 15 with size `180cm`, finish `PolishedEbony`, Grand type, Restored condition,
+player system enabled, `SyntheticGrandDescription`, and price-visible/featured
+switches enabled. The earlier date, exact JPY/EUR amounts and internal attributes
+were unchanged. After the initial save/reopen check, a separate force-stop and
+read-only reopen asserted every named value and switch without invoking changes;
+the full persisted row remained identical. Anonymous public lookup returned 404.
+Evidence is retained as `android-native-fields-remaining-*` in the local
+2026-10-25 directory, including before/saved rows, read-only verification trees
+and inspected identity/offering screenshots. The development floating-button
+preference was temporarily disabled and its exact original XML restored after
+acceptance; the app was stopped. This complements the earlier date/money/internal
+field journey, not a claim of complete validation, iOS, publication or release
+acceptance.

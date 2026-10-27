@@ -1126,3 +1126,36 @@ preference was temporarily disabled and its exact original XML restored after
 acceptance; the app was stopped. This complements the earlier date/money/internal
 field journey, not a claim of complete validation, iOS, publication or release
 acceptance.
+
+## Native inventory access-denied presentation
+
+When a scoped inventory read confirms access denial, clear record rows and hide
+New piano, search, refresh and filter controls, including an open filter sheet.
+Retain the localized denial notice, explicit retry and normal back navigation.
+The API remains the authorization boundary; hidden controls are presentation,
+not a replacement for denial checks. A subsequent authorized retry must restore
+the ordinary inventory controls. Preserve confirmed denial while retrying and
+through transient retry failures until a current successful response revalidates
+access. A transient failure alone must not infer denial; stale successful
+responses must not clear a newer denial.
+
+Android baseline evidence `android-staff-access-removed.png` shows the denied
+notice and cleared rows alongside New piano and filters. This is a presentation
+gap despite correct API denial. The synthetic same-session journey confirmed
+editor creation, rejected writes after downgrade with continued viewer reads,
+and revoked inventory reads after removal. Fixture provisioning and owner role
+changes used ordinary API calls; the member signed in through the native browser
+flow. This does not prove native invitation acceptance or owner-side removal UI.
+
+Corrected Android execution (2026-10-27) passed denial, authorized retry and a
+second revocation against the real API in the same native member session.
+Inspected screenshots and UI trees show only feedback/retry/back when denied;
+authorized retry restores controls and the persisted draft. Evidence is retained
+as `android-inventory-denied-*` in the local 2026-10-25 directory. Execution
+used the checksum-verified PR #104 development APK with Metro `b981b5c` and
+exact working-source overlays of the inventory screen and shared inventory
+browser controller. This is development-runtime evidence, not an embedded release
+or iOS interaction result. Six controller regressions pass, including denial
+retention through pending/transient retries and suppression of stale success;
+the existing 475-test client-core suite, mobile TypeScript, structural and
+two-locale i18n gates also pass.

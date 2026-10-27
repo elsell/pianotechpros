@@ -1021,3 +1021,28 @@ and readable labels. Provenance matches the editor check, with the two view file
 from `7d085df` overlaid on Metro `a88012b`. Temporary overlays, font scale and
 rotation were restored, and the app stopped. This does not establish an actual
 sale submission, signed release, iOS interaction or spoken accessibility.
+
+## Native public-link sharing acceptance
+
+From a saved published piano, invoke the system share sheet through the ordinary
+public-link resolver. Verify the payload identifies the public showroom listing
+and contains no private label fragment, application credential or draft data.
+Dismiss without selecting a recipient or external application; the editor must
+remain usable without an error or persisted mutation. Repeat to prove the control
+is re-enabled. Record the platform and runtime source; this does not establish
+iOS, destination-application delivery or spoken accessibility acceptance.
+
+Android emulator execution passed at 1.5x text using the checksum-verified PR #104
+development APK with Metro `a88012b`, without overlays. The system
+`com.android.intentresolver` chooser displayed exactly the synthetic listing's
+canonical public URL, including its title slug, with no query, fragment or
+credentials. Back dismissed it without the localized sharing error; the same
+control reopened the chooser and returned cleanly again. Read-only comparison
+confirmed identical saved inventory values, and anonymous API reads confirmed
+the publication was unchanged. No recipient, external application or clipboard
+action was selected. Evidence is retained as `android-public-share-*` in the
+local 2026-10-25 directory; the chooser screenshot was inspected. The initial
+test assumptions of an ID-only URL and generic Android chooser package were
+corrected before the passing run; no application change was needed. Font scale
+and rotation were restored and the app stopped. This proves chooser payload and
+cancellation only, not delivery to another app or iOS sharing.

@@ -950,3 +950,13 @@ was captured while the code was displayed. The temporary raw tree was overwritte
 after execution. This proves native creation and explicit dismissal/teardown, not
 copy/share, another-user acceptance, revocation, clipboard policy, spoken
 accessibility or iOS.
+
+A subsequent native revocation check targeted that exact synthetic invitation ID
+in the confirmation dialog. Cancel preserved the database row's unrevoked and
+unconsumed state. Reopening the same confirmation and choosing Confirm revocation
+persisted revoked=true without consumption; the inspected list screenshot then
+showed the matching expiry card as Revoked without its revoke action. Thus the
+invitation is now revoked, superseding its earlier unrevoked observation. Retained
+`android-invitation-revoke-{dialog,cancelled,confirmed}` trees, dialog/confirmed
+screenshots and token-free result JSON support this separate confirmation check.
+This does not establish another-user acceptance/rejection or member-role changes.

@@ -979,3 +979,9 @@ native trees, large-text screenshots and submission/persistence JSON in the loca
 with primary Metro `fa2898e`, no overlays. Font scale was restored. Contact apps
 were not launched. This closes the named Android inbox path, not live CAPTCHA,
 public form interaction, pagination, spoken accessibility or iOS acceptance.
+
+PR #104 merged the shared choice-view corrections at `626c658` after both actual
+native builds passed run `40424324959`, exact source `eacce91`. The verification
+log reported only the authorized node-forge advisory, with all 21 mitigation
+tests passing. Acceptance routing skipped the real-service suite for this native
+UI-only change; it is not fresh backend acceptance evidence.

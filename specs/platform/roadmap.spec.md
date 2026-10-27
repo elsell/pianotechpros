@@ -14,9 +14,11 @@ closure is tracked in `web-parity-audit.spec.md` and device evidence in
 | iOS | Native builds have passed; profile interaction attempts have reached sign-in and editing but have not completed save/restart acceptance | Finish bundled-app profile/recovery acceptance, then inventory/capture/publication and the broader native journey matrix |
 
 PRs #100–102 merged sale-entry layout and visible profile-choice corrections;
-PR #103 merged fresh-APK evidence. PR #104 extends explicit choice marks to staff
-and inventory. Its Android runtime checks passed with recorded source overlays;
-exact-head native CI remains required before merge. New invitation and inquiry
+PR #103 merged fresh-APK evidence. PR #104 merged explicit choice marks for staff
+and inventory at `626c658`. Both actual native builds passed run `40424324959`
+at source `eacce91`; verification reported only the authorized node-forge advisory
+with all 21 mitigation tests passing. Acceptance was routed out for this native
+UI change. Android runtime checks passed with recorded source overlays. New invitation and inquiry
 checks used the checksum-verified PR #102 development APK with primary Metro
 source `fa2898e`, without overlays. These are development-runtime observations,
 not embedded release or physical-device evidence.

@@ -1,3 +1,4 @@
+import {NativeChoiceIndicator} from '../../src/native-choice-indicator';
 import {NativeButton as Button} from '../../src/native-button';
 import { useEffect, useRef, useState } from 'react';
 import {Alert,KeyboardAvoidingView,Platform,Pressable,RefreshControl,SectionList,Text,TextInput,View} from 'react-native';
@@ -67,7 +68,7 @@ function Staff({ id }: { id: string }) {
         {state.ready ? <View style={cardStyle}>
           <Text accessibilityRole="header" style={{ ...textStyle, fontSize: 22, fontWeight: '600' }}>{i18n.t('staff.invite')}</Text>
           <Text style={textStyle}>{i18n.t('staff.role')}</Text>
-          {(['viewer', 'editor'] as const).map((choice) => <Pressable key={choice} accessibilityRole="radio" accessibilityState={{ checked: role === choice, disabled: disabled || Boolean(state.issued) }} disabled={disabled || Boolean(state.issued)} onPress={() => setRole(choice)} style={{ minHeight: 48, padding: 12, borderWidth: role === choice ? 2 : 1, borderColor: role === choice ? theme.accent : theme.border, borderRadius: 8 }}><Text style={textStyle}>{i18n.t(choice === 'viewer' ? 'staff.viewer' : 'staff.editor')}</Text></Pressable>)}
+          {(['viewer', 'editor'] as const).map((choice) => <Pressable key={choice} accessibilityRole="radio" accessibilityState={{ checked: role === choice, disabled: disabled || Boolean(state.issued) }} disabled={disabled || Boolean(state.issued)} onPress={() => setRole(choice)} style={{ flexDirection: 'row', alignItems: 'center', minHeight: 48, padding: 12, borderWidth: role === choice ? 2 : 1, borderColor: role === choice ? theme.accent : theme.border, borderRadius: 8 }}><NativeChoiceIndicator checked={role === choice}/><Text style={{...textStyle,flex:1}}>{i18n.t(choice === 'viewer' ? 'staff.viewer' : 'staff.editor')}</Text></Pressable>)}
           <Text style={textStyle}>{i18n.t('staff.expiryHours')}</Text>
           <TextInput accessibilityLabel={i18n.t('staff.expiryHours')} keyboardType="number-pad" maxLength={3} value={hours} onChangeText={setHours} editable={!disabled && !state.issued} style={{ ...textStyle, padding: 12, minHeight: 48, borderWidth: 1, borderColor: theme.border, borderRadius: 8 }} />
           {!validHours ? <Text accessibilityRole="alert" style={textStyle}>{i18n.t('staff.invalidExpiry')}</Text> : null}

@@ -1084,3 +1084,12 @@ active/inactive filtering and bounded pagination. Fixture records must never be
 mistaken for real API/domain authorization evidence. Retain screenshots and
 assert actual native rows and empty states; source/tests alone do not establish
 an executed iOS interaction or complete inventory parity.
+
+Run `40422404970` at `d4bfc01` subsequently passed the Release test build but
+stopped before installation: its universal arm64/x86_64 executable was rejected
+by the thin-only entitlement parser. The exact log reports Invalid simulator
+executable; no create/restore journey or screenshot was produced. The follow-up
+parser validates all FAT32/FAT64 slices and requires matching XML entitlements,
+retaining each slice's XML/DER checks and exact synthetic identity validation.
+The new valid-universal regressions failed first; six parser, two identity and
+three bundle checks now pass locally. Hosted launch and interaction remain open.

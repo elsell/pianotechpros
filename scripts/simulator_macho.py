@@ -1,10 +1,10 @@
-"""Extract simulator XML entitlements from a thin little-endian Mach-O 64 binary."""
+"""Inspect simulator XML entitlements in thin or universal Mach-O executables."""
 from pathlib import Path
 import struct
 import sys
 
 
-def embedded_entitlements(data):
+def thin_entitlements(data):
     def require(condition):
         if not condition:
             raise ValueError('missing or malformed simulator entitlement sections')
@@ -36,6 +36,42 @@ def embedded_entitlements(data):
         position += length
     require(position == end and set(sections) == {b'__entitlements', b'__ents_der'})
     return sections[b'__entitlements']
+
+
+def embedded_entitlements(data):
+    if data[:4] == b'\xcf\xfa\xed\xfe':
+        return thin_entitlements(data)
+
+    def require(condition):
+        if not condition:
+            raise ValueError('missing or malformed universal simulator slices')
+
+    require(len(data) >= 8 and data[:4] in (b'\xca\xfe\xba\xbe', b'\xca\xfe\xba\xbf'))
+    wide = data[:4] == b'\xca\xfe\xba\xbf'
+    count = struct.unpack_from('>I', data, 4)[0]
+    entry_size = 32 if wide else 20
+    table_end = 8 + count * entry_size
+    require(0 < count <= (len(data) - 8) // entry_size)
+    architectures, ranges, payloads = set(), [], []
+    for index in range(count):
+        position = 8 + index * entry_size
+        if wide:
+            cpu, subtype, offset, size, alignment, reserved = struct.unpack_from('>IIQQII', data, position)
+            require(reserved == 0)
+        else:
+            cpu, subtype, offset, size, alignment = struct.unpack_from('>IIIII', data, position)
+        require((cpu, subtype) not in architectures)
+        architectures.add((cpu, subtype))
+        require(alignment <= (63 if wide else 31) and offset % (1 << alignment) == 0)
+        require(size >= 32 and offset >= table_end and offset + size <= len(data))
+        require(all(offset >= end or offset + size <= start for start, end in ranges))
+        ranges.append((offset, offset + size))
+        member = data[offset:offset + size]
+        require(member[:4] == b'\xcf\xfa\xed\xfe')
+        require(struct.unpack_from('<II', member, 4) == (cpu, subtype))
+        payloads.append(thin_entitlements(member))
+    require(all(payload == payloads[0] for payload in payloads))
+    return payloads[0]
 
 
 if __name__ == '__main__':

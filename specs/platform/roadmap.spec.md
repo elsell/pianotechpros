@@ -23,11 +23,15 @@ checks used the checksum-verified PR #102 development APK with primary Metro
 source `fa2898e`, without overlays. These are development-runtime observations,
 not embedded release or physical-device evidence.
 
-PR #66's bundled iOS run `40422404970` at `d4bfc01` remains active. Its separate
-Android build passed. Browser/API acceptance did not run: Ubuntu library downloads
-exhausted the 30-minute job budget. A reviewed local change gives acceptance a
-bounded 60-minute budget without changing assertions. The next inventory UI
-journey and timeout change are held locally to preserve the active iOS run.
+PR #66's bundled iOS run `40422404970` at `d4bfc01` passed Debug and Release
+builds, then failed before installation because the entitlement inspector accepted
+only thin binaries while Release produced a universal arm64/x86_64 executable.
+The correction validates every architecture and rejects malformed or inconsistent
+slices; six parser tests, two identity tests and three bundle tests pass locally.
+Hosted startup/profile recovery remain unproven. Its Android build passed.
+Browser/API acceptance did not run because Ubuntu library downloads exhausted
+the 30-minute job budget. The next run includes the bounded 60-minute acceptance
+budget and the previously reviewed inventory UI journey, with assertions intact.
 Provider configuration remains a separate external dependency; useful native
 work continues. Legacy hosting, GitOps, DNS and live data remain untouched.
 

@@ -860,3 +860,15 @@ continued package acquisition rather than an executed failing product assertion.
 The longer job budget covers dependency acquisition plus the unchanged full
 acceptance suite. It does not extend per-interaction deadlines, suppress setup
 failures, skip browser engines or permit an unexecuted suite to count as passing.
+
+## Universal simulator entitlement inspection
+
+The bundled Release product in run `40422404970` built successfully as a universal
+arm64/x86_64 executable. The existing thin-only entitlement reader cannot inspect
+that product. Accept thin Mach-O 64 or standard big-endian FAT32/FAT64 containers;
+validate every contained thin slice, require matching architecture declarations,
+nonoverlapping in-bounds aligned slices, and identical XML entitlement payloads.
+Reject empty, duplicate, nested, truncated or inconsistent slices. Preserve XML
+and DER section checks plus the separate exact synthetic identity/Keychain gate.
+Never modify the signed product or select a slice to evade a failing architecture.
+Format reference: [Apple fat.h](https://github.com/apple-oss-distributions/cctools/blob/main/include/mach-o/fat.h); no implementation is imported.

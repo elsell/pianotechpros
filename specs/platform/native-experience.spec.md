@@ -1120,3 +1120,117 @@ after keyboard entry and after dismissal, retaining a screenshot and full UI
 tree on mismatch. Do not slow typing, retry replacement, disable correction, or
 relax expected values to conceal lost characters. Restart assertions remain
 required, and the later recovery/inventory journeys are not yet accepted.
+
+## Native lifecycle review choice marks
+
+Inventory-editor and QR-scan availability review must display an explicit radio
+mark for each status and sale-currency option, including an empty mark for
+unselected options. Retain the containing row's checked/disabled semantics and
+existing review-before-mutation behavior. Labels must wrap beside the mark.
+Android interaction acceptance must inspect current selection, change and reopen
+status/currency choices, and cancel without changing the published snapshot.
+This check does not establish iOS or spoken screen-reader acceptance.
+
+The Android editor baseline showed plain-text availability options with no
+visible current-selection mark. After reusing the decorative indicator, the
+1.5x-text interaction passed Available → Sold selection/reopen, USD → EUR
+selection/reopen, and cancellation with the public snapshot unchanged. Inspected
+screenshots and matching native trees are retained as
+`android-lifecycle-choice-editor-*` in the local 2026-10-25 evidence directory;
+`android-sale-choice-baseline.png` records the prior appearance. Runtime used the
+checksum-verified PR #104 development APK and primary Metro source `a88012b` with
+only the two lifecycle view files overlaid. Font scale and rotation were restored.
+Mobile type checking and structural/i18n checks pass, and the project critic
+found no confirmed blocker. Both fresh native builds remain pending for this
+correction; subsequent QR-scan evidence follows.
+
+The same 1.5x-text check passed through normal manual QR-link entry: Draft →
+Sold selection/reopen, USD → EUR selection/reopen, then cancellation. The label
+resolves to a different synthetic Draft record than the editor publication; the
+initial Available expectation was a test-fixture error and was corrected before
+recording the passing run. A read-only query scoped to the exact label confirmed
+identical saved-record values after cancellation. Screenshots
+and native trees are retained as `android-lifecycle-choice-scan-*`; its persisted
+record evidence excludes the label token. The inspected images show clear marks
+and readable labels. Provenance matches the editor check, with the two view files
+from `7d085df` overlaid on Metro `a88012b`. Temporary overlays, font scale and
+rotation were restored, and the app stopped. This does not establish an actual
+sale submission, signed release, iOS interaction or spoken accessibility.
+
+## Native public-link sharing acceptance
+
+From a saved published piano, invoke the system share sheet through the ordinary
+public-link resolver. Verify the payload identifies the public showroom listing
+and contains no private label fragment, application credential or draft data.
+Dismiss without selecting a recipient or external application; the editor must
+remain usable without an error or persisted mutation. Repeat to prove the control
+is re-enabled. Record the platform and runtime source; this does not establish
+iOS, destination-application delivery or spoken accessibility acceptance.
+
+Android emulator execution passed at 1.5x text using the checksum-verified PR #104
+development APK with Metro `a88012b`, without overlays. The system
+`com.android.intentresolver` chooser displayed exactly the synthetic listing's
+canonical public URL, including its title slug, with no query, fragment or
+credentials. Back dismissed it without the localized sharing error; the same
+control reopened the chooser and returned cleanly again. Read-only comparison
+confirmed identical saved inventory values, and anonymous API reads confirmed
+the publication was unchanged. No recipient, external application or clipboard
+action was selected. Evidence is retained as `android-public-share-*` in the
+local 2026-10-25 directory; the chooser screenshot was inspected. The initial
+test assumptions of an ID-only URL and generic Android chooser package were
+corrected before the passing run; no application change was needed. Font scale
+and rotation were restored and the app stopped. This proves chooser payload and
+cancellation only, not delivery to another app or iOS sharing.
+
+## Native staff role administration acceptance
+
+As the owner of an isolated synthetic shop, change an existing synthetic member
+from Viewer to Editor and back through the native staff screen. Verify the exact
+member's persisted role/revision and completed authorization grant after each
+change; the owner must remain unchanged. Open removal, verify the dialog names
+the intended member, and cancel without mutation. This bounded check does not
+replace another-user interaction, confirmed removal or iOS acceptance.
+
+Android execution with the PR #104 development APK and unmodified Metro
+`a88012b` changed the synthetic member from Viewer revision 4 to Editor revision
+5. The database grant reached revision 5, but the screen retained its earlier
+pending snapshot and correctly disabled another role change. Reopening staff
+loaded the ready Editor state; the native action then restored Viewer revision 6
+and grant revision 6. Explicit Refresh staff refreshed the pending presentation.
+The removal dialog named the exact member; Cancel preserved all membership
+values, and the owner row remained unchanged. Evidence is retained as
+`android-staff-role-*`, including ready-Editor and removal-dialog screenshots,
+native trees and persisted before/after values for the restoration. The initial
+round trip did not complete without refresh and is not represented as such.
+The app stopped afterward. This establishes role administration with explicit
+refresh and removal cancellation, not confirmed removal or a second user's
+access after the role changes.
+
+## Native inventory date and exact-money recovery acceptance
+
+Create a synthetic private piano through native New without requiring photos or
+publication fields. Save identity and a year/month manufacture date, then enter
+an invalid day. Confirm the invalid text remains local while the persisted date
+remains valid. Force-stop and reopen through inventory search; require recovery
+of the exact invalid text, correct it, and explicitly save. Exercise asking-price
+JPY and acquisition-cost EUR values through native currency choices, and verify
+exact minor units plus saved internal fields in the isolated database. Reopen
+and compare displayed values. This does not establish the complete field matrix,
+iOS, physical-device or screen-reader acceptance.
+
+Android execution passed with the checksum-verified PR #104 development APK and
+Metro `a88012b`, without source overlays. Native New created a private Kawai K300
+draft with its synthetic title and saved manufacture year/month 1998/2. Invalid
+day 31 displayed field feedback without changing the saved record. Force-stop
+and ordinary inventory search restored day 31 and the paused-recovery notice.
+After correction and explicit Save now, the database contained 1998-02-28, JPY
+123456 minor units, EUR 10001 minor units, and the entered stock number, serial,
+location and private notes. A second restart/reopen displayed the saved date and
+JPY price without changing the persisted record. Anonymous lookup returned 404.
+Evidence is retained as `android-native-fields-*` in the local 2026-10-25
+directory, including native trees, partial/corrected database rows and inspected
+invalid-date/reopened-price screenshots. The initial attempt hit Expo's floating
+Tools overlay before entering fields; that development-only preference was
+temporarily disabled for the passing run and its exact original XML restored
+afterward. The app was stopped. This verifies the named fields and recovery path,
+not the complete native inventory matrix, iOS or a signed production artifact.

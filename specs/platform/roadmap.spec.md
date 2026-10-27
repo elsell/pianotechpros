@@ -10,8 +10,19 @@ closure is tracked in `web-parity-audit.spec.md` and device evidence in
 | Client | Verified scope | Next required evidence |
 | --- | --- | --- |
 | Web | Recurring real-service dealer/staff, inventory fields/search/lifecycle, photos/publication, inquiry, profiles and public catalog journeys; public pagination in Chromium/Firefox/Linux WebKit | Dedicated speech/Turnstile provider integration, screen-reader and broader supported-browser/device acceptance |
-| Android | Real API photo recovery, publication/unpublish, profile/location persistence, landscape/large-text controls, invitation create/dismiss/revoke, and inquiry read persistence | Remaining full native field/staff/sharing journeys, spoken accessibility, provider and physical-device checks |
+| Android | Real API photo recovery, publication/unpublish, profile/location persistence, inventory date/money recovery, landscape/large-text controls, invitation create/dismiss/revoke, and inquiry read persistence | Remaining full native field/staff/sharing journeys, spoken accessibility, provider and physical-device checks |
 | iOS | Native builds have passed; profile interaction attempts have reached sign-in and editing but have not completed save/restart acceptance | Finish bundled-app profile/recovery acceptance, then inventory/capture/publication and the broader native journey matrix |
+
+PR #106 merged visible status/currency selection in editor and QR-scan reviews
+at `103bda5`. Both native builds passed run `40428174526` at `7d085df`;
+verification reported only the authorized node-forge advisory with all 21
+mitigation tests passing. Real-service acceptance was routed out for this native
+UI-only change. Android interaction verified selection/reopen and cancellation
+without saved-state changes. Separate Android public-sharing checks verified the
+canonical chooser payload, dismissal/reopen and unchanged saved/public state.
+These checks do not establish iOS interaction or delivery to a recipient.
+Registry recheck on 2026-10-27 still found no published node-forge 1.4.1; the
+reviewed backport remains required and the audit finding remains visible.
 
 PRs #100–102 merged sale-entry layout and visible profile-choice corrections;
 PR #103 merged fresh-APK evidence. PR #104 merged explicit choice marks for staff

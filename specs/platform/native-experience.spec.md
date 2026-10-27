@@ -1127,6 +1127,28 @@ acceptance; the app was stopped. This complements the earlier date/money/interna
 field journey, not a claim of complete validation, iOS, publication or release
 acceptance.
 
+## Native confirmed staff removal acceptance
+
+Using an isolated synthetic shop, restore the synthetic member through fixture
+setup, then remove that member through the native owner staff screen. Verify the
+confirmation identifies the intended member, confirm removal, refresh/reopen,
+and check persisted inactive membership and completed authorization revocation.
+The owner and inventory must remain unchanged. This complements same-session
+member denial evidence; fixture setup does not prove native invitation acceptance.
+
+Android execution (2026-10-27) passed with the checksum-verified PR #104
+development APK and unmodified Metro `b981b5c`. The native confirmation displayed
+the intended synthetic member identifier; confirming advanced membership from
+active Editor revision 10 to inactive revision 11 with authorization revocation
+complete. The full inventory response was identical before and after. Reopened
+staff displayed Removed without member action controls, alongside the active
+Owner. Inspected confirmation/saved screenshots, reopened UI tree and sanitized
+API snapshots are retained as `android-owner-removal-*` in the local 2026-10-25
+evidence directory. The original synthetic owner was signed in through the
+normal browser flow; the development floating-button preference was restored
+and the app stopped. This establishes native confirmed removal for this fixture,
+not native invitation acceptance, iOS or physical-device acceptance.
+
 ## Native invitation acceptance execution contract
 
 A signed-in synthetic member must enter a valid invitation code through native

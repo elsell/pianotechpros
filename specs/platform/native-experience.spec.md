@@ -931,3 +931,22 @@ without editing the draft. Inspected screenshots and matching native trees are
 directory. This validates filter interaction and field rendering/dismissal, not
 field-value persistence, screen-reader speech or iOS. Source and font overrides
 were restored after the check.
+
+## Android invitation creation and code dismissal — 2026-10-27
+
+The checksum-verified PR #102 development APK with restored primary Metro source
+`fa2898e` (no choice overlays) created a Viewer invitation through Manage staff
+with expiry changed from 72 to 1 hour. The resulting one-time code was displayed
+exactly once. Explicit I have saved the code dismissal removed it; leaving and
+reopening the screen did not restore it. A read-only query of the isolated
+runtime database confirmed the created invitation's Viewer role, exact 3600-second
+lifetime and unused/unrevoked state. The one-hour synthetic invitation remains
+unconsumed; no real account was invited.
+
+Evidence consists of redacted `android-invitation-created`, `-dismissed`,
+`-reopened` native trees, an inspected reopened-screen screenshot and token-free
+result/persistence JSON in the local 2026-10-25 evidence directory. No screenshot
+was captured while the code was displayed. The temporary raw tree was overwritten
+after execution. This proves native creation and explicit dismissal/teardown, not
+copy/share, another-user acceptance, revocation, clipboard policy, spoken
+accessibility or iOS.

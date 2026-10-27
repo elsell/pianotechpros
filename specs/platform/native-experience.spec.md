@@ -1046,3 +1046,27 @@ test assumptions of an ID-only URL and generic Android chooser package were
 corrected before the passing run; no application change was needed. Font scale
 and rotation were restored and the app stopped. This proves chooser payload and
 cancellation only, not delivery to another app or iOS sharing.
+
+## Native staff role administration acceptance
+
+As the owner of an isolated synthetic shop, change an existing synthetic member
+from Viewer to Editor and back through the native staff screen. Verify the exact
+member's persisted role/revision and completed authorization grant after each
+change; the owner must remain unchanged. Open removal, verify the dialog names
+the intended member, and cancel without mutation. This bounded check does not
+replace another-user interaction, confirmed removal or iOS acceptance.
+
+Android execution with the PR #104 development APK and unmodified Metro
+`a88012b` changed the synthetic member from Viewer revision 4 to Editor revision
+5. The database grant reached revision 5, but the screen retained its earlier
+pending snapshot and correctly disabled another role change. Reopening staff
+loaded the ready Editor state; the native action then restored Viewer revision 6
+and grant revision 6. Explicit Refresh staff refreshed the pending presentation.
+The removal dialog named the exact member; Cancel preserved all membership
+values, and the owner row remained unchanged. Evidence is retained as
+`android-staff-role-*`, including ready-Editor and removal-dialog screenshots,
+native trees and persisted before/after values for the restoration. The initial
+round trip did not complete without refresh and is not represented as such.
+The app stopped afterward. This establishes role administration with explicit
+refresh and removal cancellation, not confirmed removal or a second user's
+access after the role changes.

@@ -1126,3 +1126,32 @@ preference was temporarily disabled and its exact original XML restored after
 acceptance; the app was stopped. This complements the earlier date/money/internal
 field journey, not a claim of complete validation, iOS, publication or release
 acceptance.
+
+## Native invitation acceptance execution contract
+
+A signed-in synthetic member must enter a valid invitation code through native
+Join shop, preview the exact shop and offered role, explicitly accept, and use
+Check access before entering the shop. Verify membership/grant persistence and
+code removal after acceptance. Reopen the app and reach the newly joined shop
+through normal navigation. Invitation provisioning may use the isolated owner
+API fixture and must be identified as such; never inject the member session or
+accept the invitation through a fixture API in this journey. Retain no reusable
+invitation code in screenshots, logs or committed evidence.
+
+Android execution (2026-10-27) passed using the checksum-verified PR #104
+development APK and unmodified Metro `b981b5c`. A synthetic Viewer invitation
+was provisioned through the owner API, then the member signed in through the
+normal native browser flow, entered the code, reviewed the exact shop/Viewer
+role and explicitly accepted in the app. The code input disappeared after
+acceptance; the screen showed pending access and Check shop access. That action
+entered the shop through the ordinary authorization check. The real API showed
+active Viewer membership with grant processing complete. Force-stop/relaunch
+then reached the joined shop through the home directory. No fixture session or
+API acceptance was used. Evidence is retained as `android-native-join-*` in the
+local 2026-10-25 directory: the preview tree redacts the token, and screenshots
+were captured only after the code disappeared. The accepted screenshot was
+inspected; the app stopped after the successful restart journey. An initial
+helper expected an uppercase navigation label and stopped before entering a
+code; correcting that helper matched the actual Join a shop navigation row.
+This proves the named Android development-runtime path, not iOS, physical-device
+or every invitation failure/expiry journey.

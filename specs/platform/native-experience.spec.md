@@ -858,3 +858,38 @@ provenance. TypeScript, structure and locale gates pass; read-only code review
 found no blocker. This verifies the shared marks on the technician surface;
 customer-specific runtime, iOS, dark-mode and spoken-screen-reader acceptance
 remain separate. Original source overlays, locale and font scale were restored.
+
+
+Customer-specific Android follow-up on 2026-10-26 passed in Spanish, dark mode
+and 2x text. Normal navigation opened saved Studio, then its timezone choice.
+Filtering for New_York retained the checked America/New_York row; the inspected
+screenshot shows its filled radio mark and full label without clipping. Back
+dismissed the sheet without changing or saving the profile. The first helper
+attempt incorrectly expected UTC and was stopped; the corrected run used the
+existing saved timezone. Evidence is `android-customer-dark-choice-radio.png`
+and matching filtered/dismissed native trees. This uses the same development APK
+and the three source overlays recorded for the visible-choice checks, not a new
+APK. Source, night mode, locale and font scale were restored and verified. This
+closes the named customer dark-mode rendering check only; iOS and spoken
+screen-reader acceptance remain open.
+
+## Fresh Android choice and sale artifact check
+
+The checksum-verified Android artifact `12697995811` from run `40420290621`,
+source `ee8f9b3`, was installed over the existing synthetic development client.
+Its installed APK SHA-256 is
+`326ba220c98eff74ae606069e87ad1dedca47ea97b553270af9c41c447db4cb5`.
+Using merged product source at `a23baf2` through Metro without source overlays,
+the customer Spanish dark-mode 2x-text timezone check passed, including the
+visible checked America/New_York row and Back dismissal. The initial helper
+inspected the underlying form before the sheet appeared and was excluded; the
+corrected helper waits for the named timezone search field.
+
+The same artifact passed sale entry at 1.5x text in landscape: label, currency,
+full input and Cancel remained visible with the keyboard. Typing changed the
+amount; rotating back retained it; cancelling left the anonymous published
+snapshot identical. Evidence is retained as `android-pr102-customer-dark-*`,
+`android-pr102-sale-*` and `android-pr102-apk-provenance.json`. Locale, text scale,
+night mode and rotation were restored and the app stopped. These bounded checks
+verify the installed development artifact with the recorded Metro source, not
+an embedded production Android bundle, physical-device or iOS acceptance.

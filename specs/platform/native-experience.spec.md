@@ -1093,3 +1093,16 @@ parser validates all FAT32/FAT64 slices and requires matching XML entitlements,
 retaining each slice's XML/DER checks and exact synthetic identity validation.
 The new valid-universal regressions failed first; six parser, two identity and
 three bundle checks now pass locally. Hosted launch and interaction remain open.
+## Fresh Android staff/inventory choice artifact — 2026-10-27
+
+Installed artifact `12698674244` from run `40424324959`, source `eacce91`, and
+verified its installed APK SHA-256 matches
+`fdc9a01179b0245c265c70fe5e461d21c8a8a8c15d79c54f702b23017ae4cb66`. With merged
+Metro source `5b73605` and no overlays, native staff Editor → Viewer switching
+and inventory Active selection/Back dismissal passed at 2x text. Inspected
+screenshots show explicit radio marks and readable labels. No invitation was
+created and no inventory value was changed by this check. Source provenance,
+matching native trees and screenshots are retained as `android-pr104-*` in the
+local 2026-10-25 evidence directory. Font scale was restored and the app stopped.
+This is a development APK plus Metro check, not an embedded production bundle,
+iOS, physical-device or spoken accessibility acceptance.

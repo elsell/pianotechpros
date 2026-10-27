@@ -1006,5 +1006,67 @@ screenshots and matching native trees are retained as
 checksum-verified PR #104 development APK and primary Metro source `a88012b` with
 only the two lifecycle view files overlaid. Font scale and rotation were restored.
 Mobile type checking and structural/i18n checks pass, and the project critic
-found no confirmed blocker. QR-scan interaction and both fresh native builds
-remain pending for this correction.
+found no confirmed blocker. Both fresh native builds remain pending for this
+correction; subsequent QR-scan evidence follows.
+
+The same 1.5x-text check passed through normal manual QR-link entry: Draft →
+Sold selection/reopen, USD → EUR selection/reopen, then cancellation. The label
+resolves to a different synthetic Draft record than the editor publication; the
+initial Available expectation was a test-fixture error and was corrected before
+recording the passing run. A read-only query scoped to the exact label confirmed
+identical saved-record values after cancellation. Screenshots
+and native trees are retained as `android-lifecycle-choice-scan-*`; its persisted
+record evidence excludes the label token. The inspected images show clear marks
+and readable labels. Provenance matches the editor check, with the two view files
+from `7d085df` overlaid on Metro `a88012b`. Temporary overlays, font scale and
+rotation were restored, and the app stopped. This does not establish an actual
+sale submission, signed release, iOS interaction or spoken accessibility.
+
+## Native public-link sharing acceptance
+
+From a saved published piano, invoke the system share sheet through the ordinary
+public-link resolver. Verify the payload identifies the public showroom listing
+and contains no private label fragment, application credential or draft data.
+Dismiss without selecting a recipient or external application; the editor must
+remain usable without an error or persisted mutation. Repeat to prove the control
+is re-enabled. Record the platform and runtime source; this does not establish
+iOS, destination-application delivery or spoken accessibility acceptance.
+
+Android emulator execution passed at 1.5x text using the checksum-verified PR #104
+development APK with Metro `a88012b`, without overlays. The system
+`com.android.intentresolver` chooser displayed exactly the synthetic listing's
+canonical public URL, including its title slug, with no query, fragment or
+credentials. Back dismissed it without the localized sharing error; the same
+control reopened the chooser and returned cleanly again. Read-only comparison
+confirmed identical saved inventory values, and anonymous API reads confirmed
+the publication was unchanged. No recipient, external application or clipboard
+action was selected. Evidence is retained as `android-public-share-*` in the
+local 2026-10-25 directory; the chooser screenshot was inspected. The initial
+test assumptions of an ID-only URL and generic Android chooser package were
+corrected before the passing run; no application change was needed. Font scale
+and rotation were restored and the app stopped. This proves chooser payload and
+cancellation only, not delivery to another app or iOS sharing.
+
+## Native staff role administration acceptance
+
+As the owner of an isolated synthetic shop, change an existing synthetic member
+from Viewer to Editor and back through the native staff screen. Verify the exact
+member's persisted role/revision and completed authorization grant after each
+change; the owner must remain unchanged. Open removal, verify the dialog names
+the intended member, and cancel without mutation. This bounded check does not
+replace another-user interaction, confirmed removal or iOS acceptance.
+
+Android execution with the PR #104 development APK and unmodified Metro
+`a88012b` changed the synthetic member from Viewer revision 4 to Editor revision
+5. The database grant reached revision 5, but the screen retained its earlier
+pending snapshot and correctly disabled another role change. Reopening staff
+loaded the ready Editor state; the native action then restored Viewer revision 6
+and grant revision 6. Explicit Refresh staff refreshed the pending presentation.
+The removal dialog named the exact member; Cancel preserved all membership
+values, and the owner row remained unchanged. Evidence is retained as
+`android-staff-role-*`, including ready-Editor and removal-dialog screenshots,
+native trees and persisted before/after values for the restoration. The initial
+round trip did not complete without refresh and is not represented as such.
+The app stopped afterward. This establishes role administration with explicit
+refresh and removal cancellation, not confirmed removal or a second user's
+access after the role changes.

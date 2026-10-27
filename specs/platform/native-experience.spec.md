@@ -919,3 +919,15 @@ Matching native trees and the expiry screenshot are retained in the local
 Earlier attempts using a stale bundle or failing screenshot storage are excluded.
 TypeScript, structure and locale gates passed. Inventory field/filter runtime
 checks, iOS execution and spoken accessibility remain pending for this change.
+
+The follow-up inventory check passed on 2026-10-27 with the same APK and primary
+Metro source, overlaying the three choice views at `eacce91`. At 2x font scale,
+Active → Sold → reopened Sold retained the correct checked state and visible
+radio mark; Active was restored afterward. At ordinary font scale, the existing
+CameraCancelAcceptance draft's Piano type sheet showed exactly one checked
+Not set option, with all other explicit radio marks empty; Back dismissed it
+without editing the draft. Inspected screenshots and matching native trees are
+`android-inventory-choice-active`, `-sold` and `-type` in the same local evidence
+directory. This validates filter interaction and field rendering/dismissal, not
+field-value persistence, screen-reader speech or iOS. Source and font overrides
+were restored after the check.

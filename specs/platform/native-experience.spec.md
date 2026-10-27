@@ -960,3 +960,22 @@ invitation is now revoked, superseding its earlier unrevoked observation. Retain
 `android-invitation-revoke-{dialog,cancelled,confirmed}` trees, dialog/confirmed
 screenshots and token-free result JSON support this separate confirmation check.
 This does not establish another-user acceptance/rejection or member-role changes.
+
+## Android persisted buyer-inquiry journey — 2026-10-27
+
+A fresh synthetic buyer inquiry submitted through the isolated public HTTP API
+appeared as Unread in the native inbox. Normal list/detail navigation displayed
+its message and submitted piano title. At 2x font scale, Mark as read persisted
+the first-read timestamp; returning to the list showed Read, and force-stopping
+and reopening the application retained that state. Read-only database checks
+confirmed the stored publication snapshot was identical before and after marking
+read and restart. This run did not edit or republish the source piano.
+
+The inspected detail and snapshot screenshots show readable wrapped message,
+contact information, first-read timestamp, piano title, exact price and description.
+Evidence is `android-inquiry-{unread,detail-large,snapshot-large,read-list,restart}`
+native trees, large-text screenshots and submission/persistence JSON in the local
+2026-10-25 evidence directory. Runtime provenance is the PR #102 development APK
+with primary Metro `fa2898e`, no overlays. Font scale was restored. Contact apps
+were not launched. This closes the named Android inbox path, not live CAPTCHA,
+public form interaction, pagination, spoken accessibility or iOS acceptance.

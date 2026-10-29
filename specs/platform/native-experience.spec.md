@@ -1121,6 +1121,25 @@ tree on mismatch. Do not slow typing, retry replacement, disable correction, or
 relax expected values to conceal lost characters. Restart assertions remain
 required, and the later recovery/inventory journeys are not yet accepted.
 
+Run `40433093231` at `b981b5c` now fails the new immediate entry assertion:
+XCTest types `iOS Customer` into Name, then reads `istomer` before Done, Save
+or restart. This reproduces character loss at the text-entry boundary; it does
+not establish a persistence defect. The create test stopped there, so restore
+and inventory interaction remain unexecuted. Artifact `12703673474` contains
+`create.log` and the `incorrect-entry-Name` screenshot/tree. On 2026-10-29 the
+small create log was read using explicit byte ranges without downloading the
+full artifact. Android build and real-service browser acceptance passed this
+run; iOS interaction remains failed.
+
+Customer native text entry must retain native ownership while editing rather than
+echoing each React snapshot into the input. Every change still synchronously
+updates the recovery editor. Non-editing synchronization and blur must read the
+current editor snapshot, not a potentially stale render closure; deliberate
+external replacements remain visible after editing ends. Preserve accessibility,
+keyboard behavior, validation focus and exact restart assertions. The immediate
+XCTest failure is the regression gate; no typing delay or autocorrection change
+is an acceptable substitute.
+
 ## Native lifecycle review choice marks
 
 Inventory-editor and QR-scan availability review must display an explicit radio

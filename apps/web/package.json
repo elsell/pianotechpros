@@ -11,17 +11,17 @@
     "@pianotechpros/api-client": "workspace:*",
     "@pianotechpros/client-core": "workspace:*",
     "@pianotechpros/i18n": "workspace:*",
-    "@sveltejs/kit": "3.0.1",
+    "@sveltejs/kit": "3.1.0",
     "svelte": "5.57.2",
-    "oidc-client-ts": "3.3.0"
+    "oidc-client-ts": "3.5.0"
   },
   "devDependencies": {
     "@sveltejs/adapter-node": "6.0.0",
-    "@sveltejs/vite-plugin-svelte": "7.1.2",
-    "@types/node": "24.13.1",
-    "svelte-check": "4.7.6",
-    "typescript": "6.0.3",
-    "vite": "8.1.6"
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "@types/node": "26.6.5",
+    "svelte-check": "4.7.7",
+    "typescript": "7.0.2",
+    "vite": "8.3.5"
   },
   "imports": {
     "#lib": "./src/lib/index.js",

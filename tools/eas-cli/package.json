@@ -3,9 +3,9 @@
   "private": true,
   "license": "Apache-2.0",
   "dependencies": {
-    "eas-cli": "21.0.2"
+    "eas-cli": "25.3.0"
   },
   "devDependencies": {
-    "typescript": "5.9.3"
+    "typescript": "7.0.2"
   }
 }

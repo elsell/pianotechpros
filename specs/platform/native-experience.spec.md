@@ -1022,6 +1022,50 @@ from `7d085df` overlaid on Metro `a88012b`. Temporary overlays, font scale and
 rotation were restored, and the app stopped. This does not establish an actual
 sale submission, signed release, iOS interaction or spoken accessibility.
 
+## Native persisted sale and correction acceptance
+
+For an isolated synthetic available piano with an exact USD asking price, open
+native availability review, choose Sold and verify the sale amount defaults to
+the asking price. Enter a different amount, review and explicitly confirm; verify
+the persisted sale event contains the exact minor-unit amount. Correct the sale
+back to Available with an explicit reason through the native UI and verify a new
+event, preserving the original sale event unchanged. This private fixture does
+not prove published snapshot behavior or all lifecycle transitions.
+
+Partial Android execution (2026-10-27), PR #104 development APK with unmodified
+Metro `b981b5c`: sale review defaulted to USD 1234.56; an explicit USD 1100.25
+sale persisted as 110025 minor units with unchanged inventory attributes.
+That attempt did not establish correction: entering `NativeSaleCorrection` returned the app to
+home before confirmation. A focused retry asserted the multiline input had focus
+and reproduced home navigation before any Back key. No JavaScript/runtime error
+was captured; development-client keyboard handling versus product behavior is
+still under investigation. Retained `android-native-sale-*` evidence includes
+the exact saved sale, inspected review screenshot and failed reason-entry state.
+That attempt alone does not establish a completed sale/correction journey.
+
+Follow-up source inspection (2026-10-29) found a plausible development-runtime
+cause for reason-entry navigation: React Native Modal forwards non-Back key-up
+events to the activity, whose development reload recognizer treats two R keys
+within 200 ms as reload unless the activity currentFocus is an EditText. Modal
+focus is separate, and the synthetic reason contains adjacent R characters.
+This matches the observed bundle reloads; source inspection alone does not
+establish the cause or a passing correction.
+
+
+Android software-keyboard follow-up (2026-10-29): the same PR #104 development
+APK, with Metro restarted on unmodified `fef96ea`, reopened the existing Sold
+fixture after normal owner browser sign-in. Tapping Gboard keys entered the exact
+`NativeSaleCorrection` reason; the visible field and review screen retained it.
+Native confirmation persisted Available with a new Sold-to-Available event and
+that exact reason. The original sale event and inventory attributes remained
+identical parsed API values. Retained `android-native-sale-ime-*`
+evidence includes keyboard/review screenshots, native trees and sanitized API
+history. The earlier USD 1100.25 sale and this correction occurred on different
+recorded Metro revisions; this is development-runtime evidence, not one embedded
+release run, physical-device acceptance, iOS interaction or public snapshot proof.
+The software-keyboard path passes; it does not independently prove that the
+hardware-keyboard development reload shortcut caused the earlier failure.
+
 ## Native public-link sharing acceptance
 
 From a saved published piano, invoke the system share sheet through the ordinary

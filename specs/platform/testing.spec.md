@@ -141,7 +141,7 @@ bounded subprocess; never run potentially unbounded parser inputs in the test
 runner itself. Keep the package's supported named/default CommonJS exports;
 Metro consumes its default export and passes a buffer, not a filesystem path.
 
-Pin decode-uri-component 0.5.0 to replace the unbounded malformed-percent decoder
+Pin decode-uri-component 0.5.1 to replace the unbounded malformed-percent decoder
 used by React Navigation's query-string adapter (GHSA-vcc3-ghjq-m6fr). Its fixed
 scanner must remain upstream-identical. A minimal reviewed packaging patch may
 retain callable CommonJS consumption by query-string: change the package module
@@ -151,6 +151,15 @@ Unicode, plus/escaped-plus, duplicate keys and malformed percent input. Bound
 adversarial subprocess execution and preserve non-throwing malformed-input
 behavior without executing any decoded content. Run compatibility, exports,
 contracts, full tests, age and native integration gates before release.
+The 0.5.1 follow-up also removes the distinct-percent-run quadratic replacement
+loop (GHSA-qr28-fpjm-wq7f). Exercise 32,000 distinct encoded runs plus a malformed
+suffix through query-string in a bounded subprocess, and verify decoded percent
+bytes are not decoded a second time. Keep the scanner upstream-identical and
+refresh the packaging-only patch and source hashes. The exact release has a
+fourteen-day age exception for this availability fix; no vulnerability waiver.
+The independent deepmerge advisory remains unresolved: on 2026-10-29 the audit
+reported a 4.3.2 fix, but the registry had no such release and GitHub listed no
+patched version. Preserve the failing audit until remediation is substantiated.
 
 Zod must use the exact 4.6.6 security release for both EAS and Expo CLI
 consumers (GHSA-mrhx-c7xc-m3w5). Test that leading array/set size limits reject

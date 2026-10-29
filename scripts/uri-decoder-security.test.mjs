@@ -36,10 +36,32 @@ test('navigation query parsing terminates for a long malformed encoded value', (
 });
 
 
+test('distinct encoded runs parse in bounded time without decoding output again', () => {
+  const result = spawnSync(process.execPath, ['--max-old-space-size=64', '-e', `
+    const assert = require('node:assert/strict');
+    const query = require(process.argv[1]);
+    let payload = '';
+    for (let i = 0; i < 32000; i++) {
+      payload += '%' + Math.floor(i / 256).toString(16).padStart(2, '0')
+        + '%' + (i % 256).toString(16).padStart(2, '0') + 'x';
+    }
+    const parsed = query.parse('value=' + payload + '%zz&title=%F0%9F%8E%B9');
+    assert.ok(parsed.value.endsWith('%zz'));
+    assert.equal(parsed.title, '🎹');
+    assert.equal(query.parse('value=%2541%zz').value, '%41%zz');
+    process.stdout.write('parsed');
+  `, queryPath], { encoding: 'utf8', timeout: 2000, killSignal: 'SIGKILL' });
+  assert.equal(result.error, undefined, result.error?.message);
+  assert.equal(result.signal, null, 'parser must neither exhaust memory nor crash');
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, 'parsed');
+});
+
+
 test('installed decoder matches the reviewed packaging-only patch', () => {
   const manifest = JSON.parse(readFileSync(new URL('../patches/decode-uri-component.json', import.meta.url)));
   const sha = (data) => createHash('sha256').update(data).digest('hex');
-  assert.equal(sha(readFileSync(new URL('../patches/decode-uri-component@0.5.0.patch', import.meta.url))), manifest.patchSHA256);
+  assert.equal(sha(readFileSync(new URL('../patches/decode-uri-component@0.5.1.patch', import.meta.url))), manifest.patchSHA256);
   const queryRequire = createRequire(queryPath);
   const root = dirname(queryRequire.resolve('decode-uri-component'));
   for (const [file, expected] of Object.entries(manifest.files)) {

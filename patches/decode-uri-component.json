@@ -1,11 +1,11 @@
 {
-  "version": "0.5.0",
-  "source": "https://registry.npmjs.org/decode-uri-component/0.5.0",
-  "advisory": "GHSA-vcc3-ghjq-m6fr",
+  "version": "0.5.1",
+  "source": "https://registry.npmjs.org/decode-uri-component/0.5.1",
+  "advisory": "GHSA-qr28-fpjm-wq7f",
   "purpose": "Retain callable CommonJS for query-string; upstream decoder algorithm unchanged.",
-  "patchSHA256": "cdd626a5bbe350f7d6d3fedfe089148743466b46fa747e97ac3b00a0e79dfca7",
+  "patchSHA256": "137924859be3e13225bc9eabd9cfb87245d70bdf30689b2c5ed5c8d3196f9f6b",
   "files": {
-    "index.js": "684ba79779327ba789733a3a563050370a928a57eb7dd33d19b346f43b32cbb7",
-    "package.json": "b38199f97218fa4a4b8436dd8bd25fa570cf0c4c4692a70e14c15eb0925a7c8b"
+    "index.js": "e82696ecdf0ee2c25bd90169cc7915e552d2ccb82a5006c55bc17aecdb55b919",
+    "package.json": "21b9de825f50631950b9c8c72200bd463b105361562665b6e3f5f6ae3675ed9b"
   }
 }

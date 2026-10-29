@@ -1135,7 +1135,7 @@ Customer native text entry must retain native ownership while editing rather tha
 echoing each React snapshot into the input. Every change still synchronously
 updates the recovery editor. Non-editing synchronization and blur must read the
 current editor snapshot, not a potentially stale render closure; deliberate
-external replacements remain visible after editing ends. Preserve accessibility,
+external replacements remain visible after editing ends. Explicitly choosing “Use saved version” must end native text editing before applying the replacement, even when Android Back hid the keyboard without blurring the input. Preserve accessibility,
 keyboard behavior, validation focus and exact restart assertions. The immediate
 XCTest failure is the regression gate; no typing delay or autocorrection change
 is an acceptable substitute.
@@ -1331,3 +1331,25 @@ helper expected an uppercase navigation label and stopped before entering a
 code; correcting that helper matched the actual Join a shop navigation row.
 This proves the named Android development-runtime path, not iOS, physical-device
 or every invitation failure/expiry journey.
+
+
+Focused customer replacement regression (2026-10-29): Android PR #104 development
+APK with Metro `fef96ea` retained exact rapid entry and applied a conflict's saved
+version after Name was blurred. With Name still focused after hiding the keyboard,
+the same native Save / Review latest version / Use saved version journey instead
+left `NativeLocalEdit` visible while reporting the profile up to date. The real
+API held `Native Saved Replacement`. Retained
+`android-customer-focused-replacement-*` evidence records the failing visible
+state. Explicit saved-version selection must dismiss editing before replacement;
+verify that exact focused journey again without weakening the value assertion.
+
+The focused journey then passed with the same APK and Metro `fef96ea` plus the
+single `Keyboard.dismiss()` change on Use saved version. Name remained focused
+after Android Back hid the keyboard; the fixture API advanced the saved profile,
+and native Save / Review latest version / Use saved version displayed exactly
+`Native Saved Replacement` in the existing Name input. Evidence is retained as
+`android-customer-focused-fixed-*`. The synthetic fixture was restored through
+the concurrency-guarded API helper at revision 20. Mobile type checking, the full
+mobile test suite, structural checks and i18n checks passed. This is Android
+development-runtime interaction evidence; the changed code still requires hosted
+native builds and iOS interaction acceptance.

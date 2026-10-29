@@ -1127,6 +1127,57 @@ acceptance; the app was stopped. This complements the earlier date/money/interna
 field journey, not a claim of complete validation, iOS, publication or release
 acceptance.
 
+## Native confirmed staff removal acceptance
+
+Using an isolated synthetic shop, restore the synthetic member through fixture
+setup, then remove that member through the native owner staff screen. Verify the
+confirmation identifies the intended member, confirm removal, refresh/reopen,
+and check persisted inactive membership and completed authorization revocation.
+The owner and inventory must remain unchanged. This complements same-session
+member denial evidence; fixture setup does not prove native invitation acceptance.
+
+Android execution (2026-10-27) passed with the checksum-verified PR #104
+development APK and unmodified Metro `b981b5c`. The native confirmation displayed
+the intended synthetic member identifier; confirming advanced membership from
+active Editor revision 10 to inactive revision 11 with authorization revocation
+complete. The full inventory response was identical before and after. Reopened
+staff displayed Removed without member action controls, alongside the active
+Owner. Inspected confirmation/saved screenshots, reopened UI tree and sanitized
+API snapshots are retained as `android-owner-removal-*` in the local 2026-10-25
+evidence directory. The original synthetic owner was signed in through the
+normal browser flow; the development floating-button preference was restored
+and the app stopped. This establishes native confirmed removal for this fixture,
+not native invitation acceptance, iOS or physical-device acceptance.
+
+## Native invitation acceptance execution contract
+
+A signed-in synthetic member must enter a valid invitation code through native
+Join shop, preview the exact shop and offered role, explicitly accept, and use
+Check access before entering the shop. Verify membership/grant persistence and
+code removal after acceptance. Reopen the app and reach the newly joined shop
+through normal navigation. Invitation provisioning may use the isolated owner
+API fixture and must be identified as such; never inject the member session or
+accept the invitation through a fixture API in this journey. Retain no reusable
+invitation code in screenshots, logs or committed evidence.
+
+Android execution (2026-10-27) passed using the checksum-verified PR #104
+development APK and unmodified Metro `b981b5c`. A synthetic Viewer invitation
+was provisioned through the owner API, then the member signed in through the
+normal native browser flow, entered the code, reviewed the exact shop/Viewer
+role and explicitly accepted in the app. The code input disappeared after
+acceptance; the screen showed pending access and Check shop access. That action
+entered the shop through the ordinary authorization check. The real API showed
+active Viewer membership with grant processing complete. Force-stop/relaunch
+then reached the joined shop through the home directory. No fixture session or
+API acceptance was used. Evidence is retained as `android-native-join-*` in the
+local 2026-10-25 directory: the preview tree redacts the token, and screenshots
+were captured only after the code disappeared. The accepted screenshot was
+inspected; the app stopped after the successful restart journey. An initial
+helper expected an uppercase navigation label and stopped before entering a
+code; correcting that helper matched the actual Join a shop navigation row.
+This proves the named Android development-runtime path, not iOS, physical-device
+or every invitation failure/expiry journey.
+
 ## Native inventory access-denied presentation
 
 When a scoped inventory read confirms access denial, clear record rows and hide

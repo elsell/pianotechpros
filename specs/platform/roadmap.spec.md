@@ -2,10 +2,24 @@
 
 ## Current milestone: feature-complete product
 
-Current acceptance position (2026-10-27): feature completeness is not yet proven.
+Current acceptance position (2026-10-29): feature completeness is not yet proven.
 The detailed requirements remain in `product-parity.spec.md`; website-specific
 closure is tracked in `web-parity-audit.spec.md` and device evidence in
 `native-experience.spec.md`.
+
+The immediate release prerequisite is renewed dependency remediation. CI on
+2026-10-29 reported decode-uri-component and deepmerge findings in addition to
+node-forge; the prior single-advisory exception cannot authorize these failures.
+PR #115 pins the decoder fix with a failing-then-passing bounded query regression.
+PR #116 replaces the temporary Forge backport with upstream 1.4.1 and adds six
+non-canonical signature regressions (27 candidate-source checks pass). A narrow
+unreleased deepmerge guard now passes ten candidate-source/consumer checks;
+its version and audit finding remain visible. Combined PR #117 now has passing
+frozen-graph mitigation checks, browser acceptance and native builds as recorded
+below. Its advisory disposition and subsequent combined native-change checks
+remain pending. Disk is constrained, so local candidate verification used
+installed consumers with isolated source overlays; those local results are not
+reported as installed-graph or native build passes.
 
 | Client | Verified scope | Next required evidence |
 | --- | --- | --- |
@@ -34,17 +48,25 @@ checks used the checksum-verified PR #102 development APK with primary Metro
 source `fa2898e`, without overlays. These are development-runtime observations,
 not embedded release or physical-device evidence.
 
-PR #66's bundled iOS run `40422404970` at `d4bfc01` passed Debug and Release
-builds, then failed before installation because the entitlement inspector accepted
-only thin binaries while Release produced a universal arm64/x86_64 executable.
-The correction validates every architecture and rejects malformed or inconsistent
-slices; six parser tests, two identity tests and three bundle tests pass locally.
-Hosted startup/profile recovery remain unproven. Its Android build passed.
-Browser/API acceptance did not run because Ubuntu library downloads exhausted
-the 30-minute job budget. The next run includes the bounded 60-minute acceptance
-budget and the previously reviewed inventory UI journey, with assertions intact.
-Provider configuration remains a separate external dependency; useful native
-work continues. Legacy hosting, GitOps, DNS and live data remain untouched.
+PR #66's later run `40433093231` failed an immediate exact-text assertion during
+iOS customer entry, before save/restart. The native text ownership fix is under
+run `40944776765` at `fef96ea`; Android compilation and browser acceptance passed,
+while the iOS interaction outcome remains unproven. A focused saved-version
+replacement regression was subsequently reproduced and fixed on Android; commit
+`7d136b8` still requires hosted native checks. PR #110's inventory authorization
+presentation correction passed actual Android/iOS builds and browser acceptance
+in run `40943947832`, but verification reports the new security findings.
+Neither candidate is merged. Provider configuration remains a separate external
+dependency; useful native work continues. Legacy hosting, GitOps, DNS and live
+data remain untouched.
+
+Combined security PR #117 at `dc27e0a` passed actual Android/iOS builds and browser
+acceptance in run `40946702782`. Frozen-install verification passed 27 Forge and
+10 deepmerge checks, then failed on the single remaining deepmerge advisory.
+The unchanged Ruby graph separately passed vulnerability checks for 45 gems.
+The patch's narrow merge exception has been requested and is not yet authorized;
+the advisory remains visible. No skipped verification step is counted as passed.
+
 
 
 As of 2026-10-26, PR #80 merged the combined inventory browse, sale/unpublish

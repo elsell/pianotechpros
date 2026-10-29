@@ -40,6 +40,17 @@ for(const [name,consumer] of consumers) {
  test(`${name} preserves optional NULL digest parameters`,()=>{
    for(const withNull of [false,true])assert.equal(publicKey.verify(digest().digest().getBytes(),privateKey.sign(der(withNull,[]),'NONE')),true);
  });
+ test(`${name} rejects non-canonical BER DigestInfo lengths`,()=>{
+   const canonical=der(true,[]);
+   const malformed=[
+     '\x30\x81'+canonical.slice(1), // Non-minimal outer length.
+     '\x30\x80'+canonical.slice(2)+'\x00\x00', // Indefinite outer length.
+   ];
+   for(const encoded of malformed) {
+     const signature=privateKey.sign(encoded,'NONE');
+     assert.throws(()=>publicKey.verify(digest().digest().getBytes(),signature),/DigestInfo/);
+   }
+ });
  test(`${name} rejects extra nested digest-algorithm children`,()=>{
    for(const withNull of [false,true])for(const extra of [a.create(u,t.OCTETSTRING,false,'garbage'),a.create(u,t.NULL,false,'')]) {
      if(!withNull&&extra.type===t.NULL)continue; // One NULL is a legitimate parameter.
@@ -49,12 +60,12 @@ for(const [name,consumer] of consumers) {
  });
 }
 
-test('all signing consumers use the reviewed patch and installed sources',()=>{
+test('all signing consumers use the reviewed upstream release and installed sources',()=>{
  const manifest=JSON.parse(readFileSync(new URL('../patches/node-forge.json',import.meta.url)));
  const sha=data=>createHash('sha256').update(data).digest('hex');
- assert.equal(sha(readFileSync(new URL('../patches/node-forge@1.4.0.patch',import.meta.url))),manifest.patchSHA256);
  for(const [,consumer] of consumers) {
   const root=dirname(consumer.resolve('node-forge/package.json'));
+  assert.equal(JSON.parse(readFileSync(join(root,'package.json'))).version,manifest.version);
   for(const [file,expected] of Object.entries(manifest.files))assert.equal(sha(readFileSync(join(root,file))),expected,file);
  }
 });

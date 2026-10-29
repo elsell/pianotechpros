@@ -5,9 +5,10 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
+  node-forge: 1.4.1
   expo-camera>barcode-detector: 3.2.2
   zod: 4.6.6
-  decode-uri-component: 0.5.0
+  decode-uri-component: 0.5.1
   image-size: 2.0.3
   moment: 2.31.0
   joi@17: 17.13.8
@@ -104,9 +105,9 @@ overrides:
   yargs: 17.7.2
 
 patchedDependencies:
+  deepmerge@4.3.1: 16476bc72dea6aff9a4be1857f373abb894a2999d3703445d8d8d7944849826c
   brace-expansion@5.0.12: c136bca8a6d8b2ddd2f117941434c1dfe9bf0bf7faa1bdf91a7d65c133e87880
-  decode-uri-component@0.5.0: cdd626a5bbe350f7d6d3fedfe089148743466b46fa747e97ac3b00a0e79dfca7
-  node-forge@1.4.0: 50d8e3f38443736858c2c81dc2b569c18083e687f81acc5f9c17a568a7e4f6f6
+  decode-uri-component@0.5.1: 137924859be3e13225bc9eabd9cfb87245d70bdf30689b2c5ed5c8d3196f9f6b
   react-native-screens@4.23.0: 860a71748751cc4caef98ed82700c7c723851e103a92c565b1ae98e3382d99a4
 
 importers:
@@ -2451,8 +2452,8 @@ packages:
       supports-color:
         optional: true
 
-  decode-uri-component@0.5.0:
-    resolution: {integrity: sha512-1BiQVoK8C9gUbQU6NzAtO/tkz2qOFpEObMWpcFvhx4fYnj4Oc5yzaJN/LD36ihkVUdXyh5ZekzX+yM+ty/SrPg==}
+  decode-uri-component@0.5.1:
+    resolution: {integrity: sha512-vWHQkXgg2cE3BB4rR0c+PYw9BCQzLoNIRMI7AunIkZst74tw/vpPp7VLoYtsR/cy1f55g3XDWUslfeCZjiZJyA==}
     engines: {node: '>=14.16'}
 
   deepmerge@4.3.1:
@@ -3817,8 +3818,8 @@ packages:
       encoding:
         optional: true
 
-  node-forge@1.4.0:
-    resolution: {integrity: sha512-LarFH0+6VfriEhqMMcLX2F7SwSXeWwnEAJEsYm5QKWchiVYVvJyV9v7UDvUv+w5HO23ZpQTXDv/GxdDdMyOuoQ==}
+  node-forge@1.4.1:
+    resolution: {integrity: sha512-w5/MfWaeMrpR/5ba6fZyAUTLSuE6aYz7H/3cYrqwZEmf5eQS3IaaLgJt4MBv7HglGFWmV22K8h4U18RJQmw/ow==}
     engines: {node: '>= 6.13.0'}
 
   node-int64@0.4.0:
@@ -5635,7 +5636,7 @@ snapshots:
       glob: 13.0.6
       lan-network: 0.2.1
       multitars: 1.0.2
-      node-forge: 1.4.0(patch_hash=50d8e3f38443736858c2c81dc2b569c18083e687f81acc5f9c17a568a7e4f6f6)
+      node-forge: 1.4.1
       npm-package-arg: 11.0.3
       ora: 3.4.0
       picomatch: 4.0.5
@@ -5672,12 +5673,12 @@ snapshots:
 
   '@expo/code-signing-certificates@0.0.5':
     dependencies:
-      node-forge: 1.4.0(patch_hash=50d8e3f38443736858c2c81dc2b569c18083e687f81acc5f9c17a568a7e4f6f6)
+      node-forge: 1.4.1
       nullthrows: 1.1.1
 
   '@expo/code-signing-certificates@0.0.6':
     dependencies:
-      node-forge: 1.4.0(patch_hash=50d8e3f38443736858c2c81dc2b569c18083e687f81acc5f9c17a568a7e4f6f6)
+      node-forge: 1.4.1
 
   '@expo/config-plugins@55.0.12':
     dependencies:
@@ -5705,7 +5706,7 @@ snapshots:
       '@expo/config-types': 55.0.5
       '@expo/json-file': 10.0.16
       '@expo/require-utils': 55.0.8(typescript@5.9.3)
-      deepmerge: 4.3.1
+      deepmerge: 4.3.1(patch_hash=16476bc72dea6aff9a4be1857f373abb894a2999d3703445d8d8d7944849826c)
       getenv: 2.0.0
       glob: 13.0.6
       resolve-workspace-root: 2.0.1
@@ -5927,7 +5928,7 @@ snapshots:
 
   '@expo/pkcs12@0.1.3':
     dependencies:
-      node-forge: 1.4.0(patch_hash=50d8e3f38443736858c2c81dc2b569c18083e687f81acc5f9c17a568a7e4f6f6)
+      node-forge: 1.4.1
 
   '@expo/plist@0.3.5':
     dependencies:
@@ -6809,7 +6810,7 @@ snapshots:
 
   '@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))':
     dependencies:
-      deepmerge: 4.3.1
+      deepmerge: 4.3.1(patch_hash=16476bc72dea6aff9a4be1857f373abb894a2999d3703445d8d8d7944849826c)
       magic-string: 0.30.21
       obug: 2.1.2
       svelte: 5.57.2
@@ -7420,9 +7421,9 @@ snapshots:
     optionalDependencies:
       supports-color: 8.1.1
 
-  decode-uri-component@0.5.0(patch_hash=cdd626a5bbe350f7d6d3fedfe089148743466b46fa747e97ac3b00a0e79dfca7): {}
+  decode-uri-component@0.5.1(patch_hash=137924859be3e13225bc9eabd9cfb87245d70bdf30689b2c5ed5c8d3196f9f6b): {}
 
-  deepmerge@4.3.1: {}
+  deepmerge@4.3.1(patch_hash=16476bc72dea6aff9a4be1857f373abb894a2999d3703445d8d8d7944849826c): {}
 
   defaults@1.0.4:
     dependencies:
@@ -7538,7 +7539,7 @@ snapshots:
       minizlib: 3.0.1
       nanoid: 3.3.18
       node-fetch: 2.6.7
-      node-forge: 1.4.0(patch_hash=50d8e3f38443736858c2c81dc2b569c18083e687f81acc5f9c17a568a7e4f6f6)
+      node-forge: 1.4.1
       node-stream-zip: 1.15.0
       nullthrows: 1.1.1
       ora: 5.1.0
@@ -8448,7 +8449,7 @@ snapshots:
 
   jks-js@1.1.0:
     dependencies:
-      node-forge: 1.4.0(patch_hash=50d8e3f38443736858c2c81dc2b569c18083e687f81acc5f9c17a568a7e4f6f6)
+      node-forge: 1.4.1
       node-int64: 0.4.0
       node-rsa: 1.1.1
 
@@ -9081,7 +9082,7 @@ snapshots:
     dependencies:
       whatwg-url: 5.0.0
 
-  node-forge@1.4.0(patch_hash=50d8e3f38443736858c2c81dc2b569c18083e687f81acc5f9c17a568a7e4f6f6): {}
+  node-forge@1.4.1: {}
 
   node-int64@0.4.0: {}
 
@@ -9313,7 +9314,7 @@ snapshots:
 
   query-string@7.1.3:
     dependencies:
-      decode-uri-component: 0.5.0(patch_hash=cdd626a5bbe350f7d6d3fedfe089148743466b46fa747e97ac3b00a0e79dfca7)
+      decode-uri-component: 0.5.1(patch_hash=137924859be3e13225bc9eabd9cfb87245d70bdf30689b2c5ed5c8d3196f9f6b)
       filter-obj: 1.1.0
       split-on-first: 1.1.0
       strict-uri-encode: 2.0.0

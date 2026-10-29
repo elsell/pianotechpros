@@ -37,6 +37,7 @@ check:
 	node --test scripts/fast-uri-security.test.mjs
 	node --test scripts/forge-security.test.mjs
 	node --test scripts/native-ui-fixture.test.mjs
+	node --test scripts/mobile-native-text-build.test.mjs
 	node --test scripts/deepmerge-security.test.mjs
 	node scripts/check-app-env.mjs
 	./scripts/plan-release_test.sh

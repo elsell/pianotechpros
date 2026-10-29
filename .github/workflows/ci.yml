@@ -75,6 +75,8 @@ jobs:
           node-version: 22.17.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - uses: ruby/setup-ruby@003a5c4d8d6321bd302e38f6f0ec593f77f06600 # v1
+        with: { ruby-version: "3.2.9", bundler: none }
       - run: make verify
       - if: needs.changes.outputs.api_image == 'true' || needs.changes.outputs.web_image == 'true'
         run: ./scripts/verify-docker-builds.sh

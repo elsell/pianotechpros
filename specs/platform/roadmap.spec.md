@@ -51,7 +51,9 @@ not embedded release or physical-device evidence.
 PR #66's later run `40433093231` failed an immediate exact-text assertion during
 iOS customer entry, before save/restart. The native text ownership fix is under
 run `40944776765` at `fef96ea`; Android compilation and browser acceptance passed,
-while the iOS interaction outcome remains unproven. A focused saved-version
+while iOS again lost Name characters (`iomer` instead of `iOS Customer`) before
+save/restart. A native attributed-text round-trip fix is under investigation;
+the JavaScript ownership correction alone is insufficient. A focused saved-version
 replacement regression was subsequently reproduced and fixed on Android; commit
 `7d136b8` still requires hosted native checks. PR #110's inventory authorization
 presentation correction passed actual Android/iOS builds and browser acceptance

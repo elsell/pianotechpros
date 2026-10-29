@@ -1353,3 +1353,32 @@ the concurrency-guarded API helper at revision 20. Mobile type checking, the ful
 mobile test suite, structural checks and i18n checks passed. This is Android
 development-runtime interaction evidence; the changed code still requires hosted
 native builds and iOS interaction acceptance.
+
+iOS run `40944776765` at `fef96ea` subsequently failed the unchanged immediate
+Name assertion: `iOS Customer` became `iomer`, confirmed by the retained native
+tree and screenshot. Save/restart and inventory journeys did not execute.
+The native-owned JavaScript wrapper alone therefore does not resolve the iOS
+failure. Diagnostics are retained under `pr66-ios-fef96ea`; only selected logs
+and attachments were fetched, not the complete build artifact.
+
+Investigate the native attributed-text round trip described in React Native
+issue [58904](https://github.com/react/react-native/issues/58904) and proposed
+PR [59197](https://github.com/react/react-native/pull/59197), pinned investigation
+head `a91468ffe62122bc49d964a08b493374f0af4775`. That proposal remains unmerged.
+Any backport must record provenance and source integrity, preserve real text and
+style changes, preserve multiline paragraph semantics and IME behavior, and be
+compiled into the actual native binary. Patching source while consuming an
+unmodified prebuilt core is insufficient. Keep rapid-entry exact-value assertions;
+do not mask loss with slower typing, repeated correction or clipboard insertion.
+Require native build and interaction evidence before accepting the mitigation.
+
+The candidate backport pins the three native implementation files from that PR
+in `patches/react-native@0.83.10.patch`; its manifest records original/patched
+SHA-256 values, license identity and the unmerged upstream revision. Only header
+context is adapted to the pinned 0.83.10 event-emitter alias. The prebuild plugin
+requires those patched sources and selects source compilation, overriding an
+inherited prebuilt-core default and clearing the test-only local core tarball
+override. Local build-guard tests reject original, tampered and wrong-version
+sources and conflicting generated Podfile assignments. Upstream unit tests have
+not been imported or run; this candidate is not accepted until the unchanged
+native journey passes.

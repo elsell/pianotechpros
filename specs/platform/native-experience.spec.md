@@ -1392,3 +1392,14 @@ no typing, save/restart or inventory result is claimed. Allow a bounded
 120-minute iOS job budget for both source builds and the full unchanged journey.
 Keep source-integrity enforcement, Release bundling and exact rapid-entry
 assertions intact. The larger budget is not acceptance evidence.
+
+iOS source-backport run `40960703462` at `4f9300c` completed both source builds.
+The create-profile journey passed exact rapid entry, customer/technician saves
+and protection of the incomplete `09:` availability draft. The restart journey
+verified the saved customer name, then failed its exact `Monday` button query.
+The inspected recording shows the restored-draft notice and a visible Monday
+row containing `Available · 09:–17:00 · UTC`; the row combines weekday and
+schedule text in its accessibility label. Query that unique composite row
+without removing its useful spoken summary. Preserve the exact reopened `09:`
+assertion and invalid-save keyboard/focus assertions. This recording proves the
+visible restored summary, not successful row activation or the remaining journey.

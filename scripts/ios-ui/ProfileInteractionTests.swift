@@ -107,7 +107,16 @@ final class ProfileInteractionTests: XCTestCase {
         tap("My customer profile")
         XCTAssertEqual(app.textFields["Name"].firstMatch.value as? String, "iOS Customer")
         back()
-        tap("Technician profile"); tap("Weekly availability"); tap("Monday")
+        tap("Technician profile"); tap("Weekly availability")
+        XCTAssertTrue(app.staticTexts["Your protected draft has been restored."].waitForExistence(timeout: 15))
+        let tree = XCTAttachment(string: app.debugDescription)
+        tree.name = "restored-weekday-row"; tree.lifetime = .keepAlways; add(tree)
+        let rows = app.buttons.matching(NSPredicate(
+            format: "label BEGINSWITH %@ AND label CONTAINS %@", "Monday", "09:"))
+        let monday = rows.firstMatch
+        reach(monday)
+        XCTAssertEqual(rows.count, 1, "The restored Monday schedule must identify one row")
+        monday.tap()
         let start = app.textFields["Start time"].firstMatch; reach(start)
         XCTAssertEqual(start.value as? String, "09:")
         capture("technician-restored-partial-draft")

@@ -355,5 +355,12 @@
     "version": "0.5.1",
     "reason": "Exact 2026-10-23 release correcting GHSA-qr28-fpjm-wq7f distinct-percent-run quadratic decoding. No vulnerability waiver.",
     "compensatingVerification": "Registry SHA512 verification, packaging-only CommonJS patch with installed-source hashes, bounded actual query-string adversarial regressions and valid-input compatibility, frozen-lock validation, age gate, full CI, Expo compatibility and hosted native builds before release."
+  },
+  {
+    "kind": "npm",
+    "name": "node-forge",
+    "version": "1.4.1",
+    "reason": "Exact 2026-10-27 upstream release fixing GHSA-86w9-cpqp-85rv with canonical DER validation; replaces temporary narrower patch. No advisory waiver.",
+    "compensatingVerification": "Registry SHA512 and installed-source hashes, six actual Expo/EAS consumer signature regression groups including non-canonical lengths, certificate signing, frozen graph, complete age/audit gates and actual hosted native compilation before release."
   }
 ]

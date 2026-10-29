@@ -5,6 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
+  node-forge: 1.4.1
   expo-camera>barcode-detector: 3.2.2
   zod: 4.6.6
   decode-uri-component: 0.5.1
@@ -106,7 +107,6 @@ overrides:
 patchedDependencies:
   brace-expansion@5.0.12: c136bca8a6d8b2ddd2f117941434c1dfe9bf0bf7faa1bdf91a7d65c133e87880
   decode-uri-component@0.5.1: 137924859be3e13225bc9eabd9cfb87245d70bdf30689b2c5ed5c8d3196f9f6b
-  node-forge@1.4.0: 50d8e3f38443736858c2c81dc2b569c18083e687f81acc5f9c17a568a7e4f6f6
   react-native-screens@4.23.0: 860a71748751cc4caef98ed82700c7c723851e103a92c565b1ae98e3382d99a4
 
 importers:
@@ -3817,8 +3817,8 @@ packages:
       encoding:
         optional: true
 
-  node-forge@1.4.0:
-    resolution: {integrity: sha512-LarFH0+6VfriEhqMMcLX2F7SwSXeWwnEAJEsYm5QKWchiVYVvJyV9v7UDvUv+w5HO23ZpQTXDv/GxdDdMyOuoQ==}
+  node-forge@1.4.1:
+    resolution: {integrity: sha512-w5/MfWaeMrpR/5ba6fZyAUTLSuE6aYz7H/3cYrqwZEmf5eQS3IaaLgJt4MBv7HglGFWmV22K8h4U18RJQmw/ow==}
     engines: {node: '>= 6.13.0'}
 
   node-int64@0.4.0:
@@ -5635,7 +5635,7 @@ snapshots:
       glob: 13.0.6
       lan-network: 0.2.1
       multitars: 1.0.2
-      node-forge: 1.4.0(patch_hash=50d8e3f38443736858c2c81dc2b569c18083e687f81acc5f9c17a568a7e4f6f6)
+      node-forge: 1.4.1
       npm-package-arg: 11.0.3
       ora: 3.4.0
       picomatch: 4.0.5
@@ -5672,12 +5672,12 @@ snapshots:
 
   '@expo/code-signing-certificates@0.0.5':
     dependencies:
-      node-forge: 1.4.0(patch_hash=50d8e3f38443736858c2c81dc2b569c18083e687f81acc5f9c17a568a7e4f6f6)
+      node-forge: 1.4.1
       nullthrows: 1.1.1
 
   '@expo/code-signing-certificates@0.0.6':
     dependencies:
-      node-forge: 1.4.0(patch_hash=50d8e3f38443736858c2c81dc2b569c18083e687f81acc5f9c17a568a7e4f6f6)
+      node-forge: 1.4.1
 
   '@expo/config-plugins@55.0.12':
     dependencies:
@@ -5927,7 +5927,7 @@ snapshots:
 
   '@expo/pkcs12@0.1.3':
     dependencies:
-      node-forge: 1.4.0(patch_hash=50d8e3f38443736858c2c81dc2b569c18083e687f81acc5f9c17a568a7e4f6f6)
+      node-forge: 1.4.1
 
   '@expo/plist@0.3.5':
     dependencies:
@@ -7538,7 +7538,7 @@ snapshots:
       minizlib: 3.0.1
       nanoid: 3.3.18
       node-fetch: 2.6.7
-      node-forge: 1.4.0(patch_hash=50d8e3f38443736858c2c81dc2b569c18083e687f81acc5f9c17a568a7e4f6f6)
+      node-forge: 1.4.1
       node-stream-zip: 1.15.0
       nullthrows: 1.1.1
       ora: 5.1.0
@@ -8448,7 +8448,7 @@ snapshots:
 
   jks-js@1.1.0:
     dependencies:
-      node-forge: 1.4.0(patch_hash=50d8e3f38443736858c2c81dc2b569c18083e687f81acc5f9c17a568a7e4f6f6)
+      node-forge: 1.4.1
       node-int64: 0.4.0
       node-rsa: 1.1.1
 
@@ -9081,7 +9081,7 @@ snapshots:
     dependencies:
       whatwg-url: 5.0.0
 
-  node-forge@1.4.0(patch_hash=50d8e3f38443736858c2c81dc2b569c18083e687f81acc5f9c17a568a7e4f6f6): {}
+  node-forge@1.4.1: {}
 
   node-int64@0.4.0: {}
 

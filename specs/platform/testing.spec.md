@@ -106,16 +106,17 @@ Regression coverage resolves both legacy EAS and modern Expo glob consumers,
 preserves their matching behavior and verifies bounded nesting through the real
 patched package. Run the complete audit, age gate, web build/browser journey,
 repository/contract tests, Expo compatibility/Doctor and native build gates.
-Until a fixed node-forge release exists, backport only the nested DigestAlgorithm
-element-count validation from upstream PR 1152, commit
-ceba34402e329f0365134f23fe19898756527d65, onto 1.4.0. Record source, license,
-patch and installed-source hashes. This is an unmerged upstream fix, requiring
-local adversarial coverage and review. Exercise actual Expo CLI and EAS consumers
-with ephemeral RSA keys: valid SHA-256 signatures, changed messages, signatures
-from another key, valid optional-NULL encodings and extra nested ASN.1 children.
-Malformed encodings must be rejected before digest comparison. Preserve the
-package version and audit finding; do not suppress the advisory or claim an
-upstream release. Native tooling checks remain required before merging.
+Pin node-forge 1.4.1, the 2026-10-27 upstream security release, across all
+Expo and EAS signing consumers. Retire the temporary 1.4.0 nested-element patch;
+record the upstream release, registry integrity and installed-source hashes.
+Retain adversarial coverage using ephemeral RSA keys: valid SHA-256 signatures,
+changed messages, another signer, valid optional-NULL encodings and extra nested
+ASN.1 children. Add non-minimal and indefinite BER length encodings: signature
+verification must reject these non-canonical DigestInfo values before digest
+comparison. Preserve actual Expo/EAS certificate and buffer signing workflows.
+The exact version has a fourteen-day age exception for urgent remediation of
+GHSA-86w9-cpqp-85rv, with registry verification, consumer tests, frozen dependency
+graph, full audit and hosted native build gates. No advisory suppression is added.
 
 The web runtime must use SvelteKit 3.0.1 and adapter-node 6.0.0 to remove
 GHSA-pfhg-q3qv-9q6r and GHSA-27mw-82g8-phjj. Pin compatible Svelte 5.57.2,

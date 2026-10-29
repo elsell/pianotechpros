@@ -1,15 +1,15 @@
 {
-  "version": "1.4.0",
-  "source": "https://github.com/digitalbazaar/forge/pull/1152",
-  "commit": "ceba34402e329f0365134f23fe19898756527d65",
-  "upstreamStatus": "unmerged",
+  "version": "1.4.1",
+  "source": "https://registry.npmjs.org/node-forge/1.4.1",
+  "commit": "8a917370ec51731e817c2d547b7329a58f8210af",
+  "upstreamStatus": "released",
   "advisory": "GHSA-86w9-cpqp-85rv",
   "license": "BSD-3-Clause (upstream dual-license choice)",
-  "purpose": "Reject unconsumed nested DigestAlgorithm children; upstream lib/rsa.js diff only. Package version and audit finding retained.",
-  "patchSHA256": "50d8e3f38443736858c2c81dc2b569c18083e687f81acc5f9c17a568a7e4f6f6",
+  "purpose": "Use unmodified upstream canonical DER DigestInfo verification; retire the temporary nested-element patch.",
+  "integrity": "sha512-w5/MfWaeMrpR/5ba6fZyAUTLSuE6aYz7H/3cYrqwZEmf5eQS3IaaLgJt4MBv7HglGFWmV22K8h4U18RJQmw/ow==",
   "files": {
-    "lib/rsa.js": "acc22e5d36e27832c34e02dd3933aad7977d45b047eead5016520735efedc9c5",
-    "package.json": "a907bca8a62d97478062f2bd8ed5cd47d00b79385d3f08a8cad1c3bd7e3eb5bf",
+    "lib/rsa.js": "6632e195295ce76f6bb9131ee770dcd6cc1ee4ffac7906302208b00faf95a87f",
+    "package.json": "6d5f46f222e0b7e2d2986694018cc9fcd86f8300d1b80fb446b659d8fd16a06a",
     "LICENSE": "f63ff0e4e239244aa79280da2dd4811a0469e5e201caf5cbc0d97c3a1dff8e82"
   }
 }

@@ -161,6 +161,20 @@ fourteen-day age exception for this availability fix; no vulnerability waiver.
 The independent deepmerge advisory remains unresolved: on 2026-10-29 the audit
 reported a 4.3.2 fix, but the registry had no such release and GitHub listed no
 patched version. Preserve the failing audit until remediation is substantiated.
+Backport only the `__proto__` key rejection from upstream PR 274 commit
+c5ad573121574db1c625b0aabcc6114ed7df6c5a into 4.3.1 source and both distributed
+entrypoints. This upstream proposal was closed without merging; record that
+status and MIT provenance explicitly. Reject the key before either target-copy
+or source-merge assignment, independently of target shape. Exercise the actual
+Expo and Svelte dependency resolutions with null-prototype targets, nested null
+and primitive placeholders, poisoned target keys, and array-contained objects.
+Assert the returned object's prototype as well as absence of injected inherited
+properties; checking global Object.prototype alone is insufficient. Preserve
+legitimate nested configuration, symbol keys, default array concatenation,
+custom array replacement and custom merge behavior. Verify installed source and
+patch hashes. Keep package version 4.3.1 and the audit finding visible; no new
+advisory waiver or blanket merge permission is introduced. Full installed-graph,
+web/Expo configuration and native gates remain required before release.
 
 Zod must use the exact 4.6.6 security release for both EAS and Expo CLI
 consumers (GHSA-mrhx-c7xc-m3w5). Test that leading array/set size limits reject

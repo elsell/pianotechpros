@@ -105,6 +105,7 @@ overrides:
   yargs: 17.7.2
 
 patchedDependencies:
+  deepmerge@4.3.1: 16476bc72dea6aff9a4be1857f373abb894a2999d3703445d8d8d7944849826c
   brace-expansion@5.0.12: c136bca8a6d8b2ddd2f117941434c1dfe9bf0bf7faa1bdf91a7d65c133e87880
   decode-uri-component@0.5.1: 137924859be3e13225bc9eabd9cfb87245d70bdf30689b2c5ed5c8d3196f9f6b
   react-native-screens@4.23.0: 860a71748751cc4caef98ed82700c7c723851e103a92c565b1ae98e3382d99a4
@@ -5705,7 +5706,7 @@ snapshots:
       '@expo/config-types': 55.0.5
       '@expo/json-file': 10.0.16
       '@expo/require-utils': 55.0.8(typescript@5.9.3)
-      deepmerge: 4.3.1
+      deepmerge: 4.3.1(patch_hash=16476bc72dea6aff9a4be1857f373abb894a2999d3703445d8d8d7944849826c)
       getenv: 2.0.0
       glob: 13.0.6
       resolve-workspace-root: 2.0.1
@@ -6809,7 +6810,7 @@ snapshots:
 
   '@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))':
     dependencies:
-      deepmerge: 4.3.1
+      deepmerge: 4.3.1(patch_hash=16476bc72dea6aff9a4be1857f373abb894a2999d3703445d8d8d7944849826c)
       magic-string: 0.30.21
       obug: 2.1.2
       svelte: 5.57.2
@@ -7422,7 +7423,7 @@ snapshots:
 
   decode-uri-component@0.5.1(patch_hash=137924859be3e13225bc9eabd9cfb87245d70bdf30689b2c5ed5c8d3196f9f6b): {}
 
-  deepmerge@4.3.1: {}
+  deepmerge@4.3.1(patch_hash=16476bc72dea6aff9a4be1857f373abb894a2999d3703445d8d8d7944849826c): {}
 
   defaults@1.0.4:
     dependencies:

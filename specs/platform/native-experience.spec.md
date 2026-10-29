@@ -1382,3 +1382,13 @@ override. Local build-guard tests reject original, tampered and wrong-version
 sources and conflicting generated Podfile assignments. Upstream unit tests have
 not been imported or run; this candidate is not accepted until the unchanged
 native journey passes.
+
+Source-build execution budget (2026-10-29): run `40951901793` at `5cc917d`
+passed the initial native iOS build, Android compilation and browser/API
+acceptance. Its interaction step was cancelled near the 60-minute job limit
+while the separate Release test application was still compiling React native
+sources. The retained artifact contains `build.log` but no test execution logs;
+no typing, save/restart or inventory result is claimed. Allow a bounded
+120-minute iOS job budget for both source builds and the full unchanged journey.
+Keep source-integrity enforcement, Release bundling and exact rapid-entry
+assertions intact. The larger budget is not acceptance evidence.

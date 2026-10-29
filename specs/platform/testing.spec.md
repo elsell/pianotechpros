@@ -106,16 +106,17 @@ Regression coverage resolves both legacy EAS and modern Expo glob consumers,
 preserves their matching behavior and verifies bounded nesting through the real
 patched package. Run the complete audit, age gate, web build/browser journey,
 repository/contract tests, Expo compatibility/Doctor and native build gates.
-Until a fixed node-forge release exists, backport only the nested DigestAlgorithm
-element-count validation from upstream PR 1152, commit
-ceba34402e329f0365134f23fe19898756527d65, onto 1.4.0. Record source, license,
-patch and installed-source hashes. This is an unmerged upstream fix, requiring
-local adversarial coverage and review. Exercise actual Expo CLI and EAS consumers
-with ephemeral RSA keys: valid SHA-256 signatures, changed messages, signatures
-from another key, valid optional-NULL encodings and extra nested ASN.1 children.
-Malformed encodings must be rejected before digest comparison. Preserve the
-package version and audit finding; do not suppress the advisory or claim an
-upstream release. Native tooling checks remain required before merging.
+Pin node-forge 1.4.1, the 2026-10-27 upstream security release, across all
+Expo and EAS signing consumers. Retire the temporary 1.4.0 nested-element patch;
+record the upstream release, registry integrity and installed-source hashes.
+Retain adversarial coverage using ephemeral RSA keys: valid SHA-256 signatures,
+changed messages, another signer, valid optional-NULL encodings and extra nested
+ASN.1 children. Add non-minimal and indefinite BER length encodings: signature
+verification must reject these non-canonical DigestInfo values before digest
+comparison. Preserve actual Expo/EAS certificate and buffer signing workflows.
+The exact version has a fourteen-day age exception for urgent remediation of
+GHSA-86w9-cpqp-85rv, with registry verification, consumer tests, frozen dependency
+graph, full audit and hosted native build gates. No advisory suppression is added.
 
 The web runtime must use SvelteKit 3.0.1 and adapter-node 6.0.0 to remove
 GHSA-pfhg-q3qv-9q6r and GHSA-27mw-82g8-phjj. Pin compatible Svelte 5.57.2,
@@ -141,7 +142,7 @@ bounded subprocess; never run potentially unbounded parser inputs in the test
 runner itself. Keep the package's supported named/default CommonJS exports;
 Metro consumes its default export and passes a buffer, not a filesystem path.
 
-Pin decode-uri-component 0.5.0 to replace the unbounded malformed-percent decoder
+Pin decode-uri-component 0.5.1 to replace the unbounded malformed-percent decoder
 used by React Navigation's query-string adapter (GHSA-vcc3-ghjq-m6fr). Its fixed
 scanner must remain upstream-identical. A minimal reviewed packaging patch may
 retain callable CommonJS consumption by query-string: change the package module
@@ -151,6 +152,29 @@ Unicode, plus/escaped-plus, duplicate keys and malformed percent input. Bound
 adversarial subprocess execution and preserve non-throwing malformed-input
 behavior without executing any decoded content. Run compatibility, exports,
 contracts, full tests, age and native integration gates before release.
+The 0.5.1 follow-up also removes the distinct-percent-run quadratic replacement
+loop (GHSA-qr28-fpjm-wq7f). Exercise 32,000 distinct encoded runs plus a malformed
+suffix through query-string in a bounded subprocess, and verify decoded percent
+bytes are not decoded a second time. Keep the scanner upstream-identical and
+refresh the packaging-only patch and source hashes. The exact release has a
+fourteen-day age exception for this availability fix; no vulnerability waiver.
+The independent deepmerge advisory remains unresolved: on 2026-10-29 the audit
+reported a 4.3.2 fix, but the registry had no such release and GitHub listed no
+patched version. Preserve the failing audit until remediation is substantiated.
+Backport only the `__proto__` key rejection from upstream PR 274 commit
+c5ad573121574db1c625b0aabcc6114ed7df6c5a into 4.3.1 source and both distributed
+entrypoints. This upstream proposal was closed without merging; record that
+status and MIT provenance explicitly. Reject the key before either target-copy
+or source-merge assignment, independently of target shape. Exercise the actual
+Expo and Svelte dependency resolutions with null-prototype targets, nested null
+and primitive placeholders, poisoned target keys, and array-contained objects.
+Assert the returned object's prototype as well as absence of injected inherited
+properties; checking global Object.prototype alone is insufficient. Preserve
+legitimate nested configuration, symbol keys, default array concatenation,
+custom array replacement and custom merge behavior. Verify installed source and
+patch hashes. Keep package version 4.3.1 and the audit finding visible; no new
+advisory waiver or blanket merge permission is introduced. Full installed-graph,
+web/Expo configuration and native gates remain required before release.
 
 Zod must use the exact 4.6.6 security release for both EAS and Expo CLI
 consumers (GHSA-mrhx-c7xc-m3w5). Test that leading array/set size limits reject

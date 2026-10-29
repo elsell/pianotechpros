@@ -2,10 +2,22 @@
 
 ## Current milestone: feature-complete product
 
-Current acceptance position (2026-10-27): feature completeness is not yet proven.
+Current acceptance position (2026-10-29): feature completeness is not yet proven.
 The detailed requirements remain in `product-parity.spec.md`; website-specific
 closure is tracked in `web-parity-audit.spec.md` and device evidence in
 `native-experience.spec.md`.
+
+The immediate release prerequisite is renewed dependency remediation. CI on
+2026-10-29 reported decode-uri-component and deepmerge findings in addition to
+node-forge; the prior single-advisory exception cannot authorize these failures.
+PR #115 pins the decoder fix with a failing-then-passing bounded query regression.
+PR #116 replaces the temporary Forge backport with upstream 1.4.1 and adds six
+non-canonical signature regressions (27 candidate-source checks pass). A narrow
+unreleased deepmerge guard now passes ten candidate-source/consumer checks;
+its version and audit finding remain visible. These candidates still require
+frozen installed-graph and hosted integration evidence. Disk is constrained, so
+local verification reuses installed consumers with isolated source overlays;
+those results are not reported as installed-graph or native build passes.
 
 | Client | Verified scope | Next required evidence |
 | --- | --- | --- |
@@ -34,13 +46,15 @@ checks used the checksum-verified PR #102 development APK with primary Metro
 source `fa2898e`, without overlays. These are development-runtime observations,
 not embedded release or physical-device evidence.
 
-PR #66's bundled iOS run `40422404970` at `d4bfc01` remains active. Its separate
-Android build passed. Browser/API acceptance did not run: Ubuntu library downloads
-exhausted the 30-minute job budget. A reviewed local change gives acceptance a
-bounded 60-minute budget without changing assertions. The next inventory UI
-journey and timeout change are held locally to preserve the active iOS run.
-Provider configuration remains a separate external dependency; useful native
-work continues. Legacy hosting, GitOps, DNS and live data remain untouched.
+PR #66's later run `40433093231` failed an immediate exact-text assertion during
+iOS customer entry, before save/restart. The native text ownership fix is under
+run `40944776765` at `fef96ea`; its iOS interaction outcome remains unproven.
+PR #110's inventory authorization presentation correction has passed actual
+Android and iOS compilation in run `40943947832`, while browser acceptance is
+still running and verification has the new security findings. Neither candidate
+is merged. Provider configuration remains a separate external dependency;
+useful native work continues. Legacy hosting, GitOps, DNS and live data remain
+untouched.
 
 As of 2026-10-26, PR #80 merged the combined inventory browse, sale/unpublish
 lifecycle, public gallery/contact/sharing and showroom-filter journeys plus

@@ -1805,3 +1805,34 @@ stack then passed fresh-profile, unauthenticated/malformed/provider-token reject
 synthetic profile creation and independent read-back checks. These were HTTP
 service checks, not native interaction evidence. macOS installation and iOS
 profile interaction remain pending hosted execution.
+
+### Real-service native inventory acceptance
+
+Extend the fresh-simulator service phase to inventory browsing/status/search,
+missing-publication guidance, complete field editing and process-restart reopening.
+Provision only synthetic owner/dealer/records through the actual authenticated
+API, including real lifecycle commands for available/sold records. Never insert
+inventory directly into PostgreSQL or let the forwarding provider supply domain
+responses. Discover generated IDs from an explicit seed manifest; do not rely on
+fixture UUIDs. Require a fresh owner without dealers before provisioning.
+
+Retain the existing XCTest assertions for normal navigation, native text/choice
+controls, exact money/date values, multiline keyboard dismissal and reopening.
+After editing, independently exchange a new application session and compare the
+actual persisted record with the complete expected attributes. Require the record
+to remain private/draft with no publication. A failed edit or persisted check must
+block dependent reopen acceptance; independent browse/readiness failures still
+fail the phase. This covers the named inventory workflows, not photo capture,
+provider voice, successful publication/sale interaction or full device parity.
+
+Route the explicitly enumerated iOS/native service harness scripts to native CI
+plus the always-run verification job. They do not change production API/web
+artifacts. Keep unknown paths, workflow changes and release runs fail-safe/full;
+do not suppress the native runtime gate to shorten feedback.
+
+Remote service validation of this inventory harness passed: the real API created
+all three lifecycle states without a publication. The persisted-edit checker
+failed against the untouched seed, then passed only after the full expected
+attributes were saved through the actual API. The final record remained draft,
+unpublished and revision-advanced. This validates provisioning/read-back behavior;
+XCTest execution on the built iOS app remains a separate required hosted gate.

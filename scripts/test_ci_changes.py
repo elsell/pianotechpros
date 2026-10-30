@@ -13,6 +13,15 @@ class Routing(unittest.TestCase):
             with self.subTest(path=path):
                 self.assertEqual(classify([path]), Plan(api_image=True, web_image=True))
 
+    def test_native_acceptance_scripts_select_native_gates(self):
+        for path in ['scripts/ios-ui-acceptance.sh', 'scripts/ios-journey-schedule.sh',
+                     'scripts/ios-journey-schedule.test.mjs', 'scripts/native-real-service-session.mjs',
+                     'scripts/seed-native-real-inventory.mjs', 'scripts/check-native-real-inventory.mjs',
+                     'scripts/check-native-real-profiles.mjs', 'scripts/install-native-acceptance-services.sh',
+                     'scripts/with-native-acceptance-services.sh']:
+            with self.subTest(path=path):
+                self.assertEqual(classify([path]), Plan(native=True))
+
     def test_uncertain_changes_run_everything(self):
         for paths in [[], ['new-component/file'], ['/absolute'], ['../escape'], ['docs/readme.md', 'unknown']]:
             with self.subTest(paths=paths): self.assertEqual(classify(paths), ALL)

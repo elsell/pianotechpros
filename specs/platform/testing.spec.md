@@ -929,3 +929,14 @@ fail. The existing BuildKit/cache tests remain. Actual hosted image scan results
 are required separately; fixture success is not a clean vulnerability report.
 Image-verification scripts and scanner installation changes select both image
 build gates; they do not change native artifacts. Unknown paths remain full-suite.
+
+### Runtime scan remediation baseline
+
+Run 41070478287 executed both production-image scans and failed the unchanged
+high-severity gate. The API image reports go-jose GHSA-mgcc-cww5-fp2q and a base
+certificate-package advisory; the web base contains additional Node, libc and
+SQLite findings. These are unresolved findings, not waived by callable Go scans.
+Upgrade go-jose to v4.1.6 (published 2026-10-14T22:46:21Z, outside fourteen days).
+A regression must reject private JWK parameters in untrusted JOSE headers while
+retaining ordinary signed public-JWK behavior. Keep existing OIDC adversarial
+coverage and require image scans on the final rebuilt artifacts.

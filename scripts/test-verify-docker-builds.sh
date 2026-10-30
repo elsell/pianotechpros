@@ -35,6 +35,12 @@ set -euo pipefail
 printf '%s\n' "$*" >>"$SCANNER_TEST_CALLS"
 if [[ "$1" == "${SCANNER_FAIL_IMAGE:-}" ]]; then exit "${SCANNER_FAIL_STATUS:-1}"; fi
 FAKE
+cat >"$test_dir/project/scripts/scan-web-image.sh" <<'FAKE'
+#!/usr/bin/env bash
+set -euo pipefail
+exec ./.bin/grype "docker:$1" --fail-on high
+FAKE
+chmod +x "$test_dir/project/scripts/scan-web-image.sh"
 chmod +x "$test_dir/project/scripts/install-grype.sh" "$test_dir/project/.bin/grype"
 export SCANNER_TEST_CALLS="$test_dir/scanner.calls"
 cat >"$test_dir/bin/docker" <<'FAKE'

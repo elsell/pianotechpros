@@ -28,9 +28,8 @@ docker run --rm -i --network none --entrypoint node pianotechpros-web:verificati
 
 ./scripts/install-grype.sh
 scan_status=0
-for image in pianotechpros-api:verification pianotechpros-web:verification; do
-  ./.bin/grype "docker:$image" --fail-on high || scan_status=1
-done
+./.bin/grype docker:pianotechpros-api:verification --fail-on high || scan_status=1
+./scripts/scan-web-image.sh pianotechpros-web:verification || scan_status=1
 if [[ "$scan_status" -ne 0 ]]; then
   echo "Production image vulnerability verification failed" >&2
   exit "$scan_status"

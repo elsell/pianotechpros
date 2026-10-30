@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import dns from 'node:dns';
 import tls from 'node:tls';
 import fs from 'node:fs';
+import {createHash} from 'node:crypto';
 if(process.argv.includes('--require-no-build-tools'))for(const path of ['/usr/bin/npm','/usr/bin/npx','/usr/lib/node_modules_24/npm'])assert.equal(fs.existsSync(path),false,'Build-only tooling remains: '+path);
 const invalid='localhost\0.example.test';
 for(const name of ['resolve','resolve4','resolve6','resolveTxt']){
@@ -19,4 +20,6 @@ for(const host of ['0127.0.0.1','0177.0.0.1','0x7f.0.0.1','2130706433','127.1','
 }
 assert.equal(tls.checkServerIdentity('127.0.0.1',{subjectaltname:'IP Address:127.0.0.1',subject:{}}),undefined);
 assert.equal(tls.checkServerIdentity('example.test',{subjectaltname:'DNS:example.test',subject:{}}),undefined);
-console.log(JSON.stringify({node:process.version,dns:'NUL rejected',tls:'non-canonical rejected; legitimate identities accepted'}));
+const hashes=Object.fromEntries(['/usr/bin/node-24','/usr/lib64/libnode.so.137'].map(path=>[path,createHash('sha256').update(fs.readFileSync(path)).digest('hex')]));
+assert.equal(process.getuid(),65532);
+console.log(JSON.stringify({node:process.version,architecture:process.arch,hashes,dns:'NUL rejected',tls:'non-canonical rejected; legitimate identities accepted'}));

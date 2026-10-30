@@ -1005,3 +1005,34 @@ It passes offline runtime/absence assertions. Grype 0.111.1 reports no
 brace-expansion matches; its remaining high matches are the two documented Node
 CVEs across five RPM records. This is base-runtime evidence, not a rebuilt
 application-image result or authorization to ignore the remaining findings.
+
+### Exact-runtime fixed-status reconciliation
+
+The raw scanner findings remain retained. Permit OpenVEX `fixed` reconciliation
+only for CVE-2026-105482 and CVE-2026-106069 in the reviewed amd64 Node 24.22.2
+RPM package versions, after offline behavioral checks and exact SHA256 checks of
+`/usr/bin/node-24` (`b942d31a91e21be08b5737ad064370569b03915477fec7f951db5647de9b7860`)
+and `/usr/lib64/libnode.so.137` (`d2debb699db612ad3825398c5c7a41ab057006b5382344348047a5069c7c0c87`).
+These bytes came from the signature-verified immutable Red Hat image reviewed
+above; upstream 24.22.1 identifies both fixes. This supersedes the earlier
+unresolved-discrepancy prohibition only for these exact verified artifacts.
+
+Grype 0.111.1 derives local-image VEX identities from tags/repository digests, not
+its reported imageID or manifestDigest. A temporary tag must therefore contain
+the full immutable Docker image ID, and its target must be checked before and
+after scanning. Bind the raw scan and runtime evidence to that same image ID;
+use exact RPM PURLs as subcomponents. Never generate package-wide or version-range
+statements. Reject unknown runtime hashes, non-amd64 evidence, missing fields,
+changed source IDs and unexpected preexisting ignored findings. Retain raw and
+reconciled reports, VEX and runtime evidence. The final Grype scan must retain
+`--fail-on high`; unrelated advisories, scanner errors and evidence failures block
+verification/publication. CI and manual release use the same web scanner. No
+legacy deployment hook or publication trigger is added.
+
+The pinned Grype 0.111.1 integration check against the stripped base image above
+retained 10 raw high matches and reconciled exactly those 10 fixed RPM/CVE
+matches, leaving zero high matches. A negative run changed every VEX package
+version: Grype retained the findings and exited 2 at the unchanged high threshold.
+Controlled boundary tests separately reject altered runtime evidence, retagging,
+scanner errors and unreviewed suppressions. This evidence does not replace the
+full application-image CI gate or establish general vulnerability absence.

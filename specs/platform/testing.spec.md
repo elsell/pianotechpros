@@ -1036,3 +1036,14 @@ version: Grype retained the findings and exited 2 at the unchanged high threshol
 Controlled boundary tests separately reject altered runtime evidence, retagging,
 scanner errors and unreviewed suppressions. This evidence does not replace the
 full application-image CI gate or establish general vulnerability absence.
+
+
+Full application-image verification passed in run `41077992488`, source
+`86a90166deb14d50453bef12781ea5a204fbf280`. Artifact `12988128443`
+(`production-image-security`) binds raw/reconciled reports to web image
+`sha256:2bbf9451607f06888c0b8e0fc5f26dffac20ecac0ee025ccfee9109199880566`.
+The raw report contains ten high matches; the reconciled report contains zero
+high matches and exactly ten ignored fixed matches. Both reports retain the same
+image ID. API scan passes its high threshold with GO-2026-6866 and GO-2026-6860
+still reported as unknown severity. This closes this candidate's image gate only;
+full run/merge and product/native acceptance remain separate requirements.

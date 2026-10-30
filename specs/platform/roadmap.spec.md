@@ -25,14 +25,21 @@ TalkBack or physical-device acceptance.
 
 Remaining delivery work:
 
-- Resolve production-image scan failures. Run `41070478287` executed both scans
-  and failed on the API dependency/base and web runtime findings. The current
-  candidate upgrades JOSE and reviewed, signed Red Hat base images. The updated
-  final API image passes the high threshold in run `41073803164`; two unknown
-  Go module findings remain. The web image still fails on two Node CVEs and
-  bundled brace-expansion. Exact-runtime offline DNS/TLS regressions now pass;
-  removal of unused runtime npm/npx is under validation. Scanner reconciliation
-  and final application/image results remain required. No scan is waived.
+- Production-image verification now passes in run `41077992488`, source
+  `86a90166deb14d50453bef12781ea5a204fbf280`. The final web image contains no
+  runtime npm tooling; retained artifact `12988128443` preserves ten raw Node
+  matches and ten exact-image/package fixed-status reconciliations, leaving zero
+  high matches. API still reports two unknown-severity Go findings. Full-run
+  native/acceptance gates and merge remain pending; do not claim vulnerability
+  absence or overall completion.
+- PR #143 merged at `86e9b53e95a108bd15934cea18dfdbd905166d3c` after run
+  `41074301517` passed. Real photo-management and dealer-settings/banner journeys
+  now pass Chromium, Firefox and Linux WebKit. This does not close whole-site
+  accessibility or physical Safari acceptance.
+- PR #144 adds a fresh-simulator iOS phase backed by actual API/PostgreSQL/SpiceDB
+  for profiles. The follow-up extends real-service coverage to inventory browsing,
+  readiness, complete field edits and reopening. Provisioning/read-back checks
+  passed on the remote host; hosted native results remain pending.
 
 1. Verify dedicated non-production identity, speech/extraction and Turnstile
    integrations. Configuration remains requested; never borrow legacy credentials.

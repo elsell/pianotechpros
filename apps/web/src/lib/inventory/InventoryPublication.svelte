@@ -2,11 +2,11 @@
  import {sessionScopedFailure} from '@pianotechpros/api-client';
  import {onMount,tick} from 'svelte';
  import {createInventoryPublicationApiClient,createInventoryPhotoApiClient,InventoryClientError,InventoryPublicationError,type InventoryPublicationState,type InventoryPhoto,type PublicationReadinessField} from '@pianotechpros/api-client';
- import {publicationSaleDefaults,createInventoryPublicationWorkspace,inventoryCurrencies,inventoryMoneyFromInput,type PublicationCommand,type InventoryFormWorkspace,type SessionCredential} from '@pianotechpros/client-core';
+ import {publicationReadiness,publicationSaleDefaults,createInventoryPublicationWorkspace,inventoryCurrencies,inventoryMoneyFromInput,type PublicationCommand,type InventoryFormWorkspace,type SessionCredential} from '@pianotechpros/client-core';
  import type {Translator,MessageKey} from '@pianotechpros/i18n';
  import {protectPendingNavigation} from '../browser-events';
  import PhotoImage from './PhotoImage.svelte';
- export let workspace:InventoryFormWorkspace;export let accountId:string;export let dealerID:string;export let recordID:string;export let apiURL:string;export let credential:SessionCredential;export let i18n:Translator;export let onSessionRejected:()=>void;export let onBusy:(value:boolean)=>void=()=>{};export let otherBusy=false;export let publishReady=true;
+ export let workspace:InventoryFormWorkspace;export let accountId:string;export let dealerID:string;export let recordID:string;export let apiURL:string;export let credential:SessionCredential;export let i18n:Translator;export let onSessionRejected:()=>void;export let onBusy:(value:boolean)=>void=()=>{};export let otherBusy=false;export let publishReady=true;export let onMissing:(field:PublicationReadinessField)=>void;
  type ReviewState=InventoryPublicationState&{photos:InventoryPhoto[]};
  let previewPage=0;let active=true;let dialog:HTMLDialogElement;let reviewHeading:HTMLHeadingElement;let target:Extract<PublicationCommand,{kind:'transition'}>['status']='available';let amount='';let saleSeeded=false;let currency:string=inventoryCurrencies[0];let reason='';let invalid=false;let missing:readonly PublicationReadinessField[]=[];
  const statuses=['draft','available','reserved','in_service','sold','archived'] as const;
@@ -21,6 +21,7 @@
  async function withPhotos(value:InventoryPublicationState):Promise<ReviewState>{const photos=await request((_,api)=>api.list(dealerID,recordID));if(photos.record.revision!==value.record.revision)throw new InventoryClientError('conflict',409);return {...value,photos:photos.photos};}
  const controller=createInventoryPublicationWorkspace<ReviewState>({userID:accountId,dealerID,recordID,active:()=>active&&workspace.recordID()===recordID&&!!workspace.snapshot().draft,copy:value=>JSON.parse(JSON.stringify(value)),
   withMutation:work=>workspace.withMediaMutation(work),get:async()=>withPhotos(await request(api=>api.get(dealerID,recordID))),
+  missing:value=>publicationReadiness(value.record.attributes,value.photos.length),
   execute:async(command,revision)=>({...await request(api=>command.kind==='publish'?api.publish(dealerID,recordID,revision):command.kind==='unpublish'?api.unpublish(dealerID,recordID,revision):api.transition(dealerID,recordID,revision,command.status,command.salePrice,command.reason)),photos:[]}),
   classify:error=>error instanceof InventoryClientError&&[401,403,404].includes(error.status)?'denied':error instanceof InventoryClientError&&error.code==='conflict'?'conflict':error instanceof InventoryClientError&&[400,422].includes(error.status)?'rejected':'uncertain',
  });
@@ -28,7 +29,7 @@
  $: onBusy(state.busy);
  $: disabled=otherBusy||state.busy||state.failure==='denied';
  async function run(work:()=>Promise<unknown>){missing=[];invalid=false;try{await work();}catch{/* Only localized, stable controller state is presented. */}}
- async function review(command:PublicationCommand){previewPage=0;await run(()=>controller.review(command));if(!active||!controller.snapshot().review)return;await tick();if(active){dialog.showModal();reviewHeading.focus({preventScroll:true});dialog.scrollTop=0;}}
+ async function review(command:PublicationCommand){previewPage=0;await run(()=>controller.review(command));if(!active)return;const snapshot=controller.snapshot();if(snapshot.missing.length){missing=snapshot.missing;await tick();if(active)onMissing(missing[0]!);return;}if(!snapshot.review)return;await tick();if(active){dialog.showModal();reviewHeading.focus({preventScroll:true});dialog.scrollTop=0;}}
  function cancel(){if(state.busy)return;controller.cancel();dialog.close();}
  async function confirm(){await run(()=>controller.confirm());if(active){dialog.close();if(controller.snapshot().outcome==='succeeded'){amount='';reason='';saleSeeded=false;}}}
  function chooseStatus(value:typeof target){target=value;if(value==='sold'&&!saleSeeded){saleSeeded=true;const defaults=publicationSaleDefaults(state.state?.record.attributes.asking_price,i18n.locale==='es'?',':'.');amount=defaults.amount;currency=defaults.currency;}}
@@ -38,14 +39,14 @@
   catch{invalid=true;return;}
   await review({kind:'transition',status:target,salePrice,reason:reason.trim()});
  }
- onMount(()=>{const unprotect=protectPendingNavigation(()=>state.busy);const unsubscribe=controller.subscribe(value=>{state=value;if(value.failure==='denied'){amount='';reason='';saleSeeded=false;}});void run(()=>controller.refresh());return()=>{active=false;unsubscribe();unprotect();controller.dispose();onBusy(false);};});
+ onMount(()=>{const unprotect=protectPendingNavigation(()=>state.busy);const unsubscribe=controller.subscribe(value=>{state=value;if(value.failure==='denied'){missing=[];amount='';reason='';saleSeeded=false;}});void run(()=>controller.refresh());return()=>{active=false;unsubscribe();unprotect();controller.dispose();onBusy(false);};});
 </script>
 <section class="publication" aria-labelledby="publication-heading">
  <h3 id="publication-heading">{t('heading')}</h3>
  {#if state.state}<p>{statusLabel(state.state.record.status)} · <span>{t(state.state.publication?.visible?'visible':state.state.publication?'hidden':'absent')}</span></p>{/if}
  {#if state.busy}<p role="status">{t('busy')}</p>{/if}
  {#if state.outcome==='unknown'}<p role="alert">{t('unknown')}</p>{:else if state.failure}<p role="alert">{state.failure==='denied'?i18n.t('inventory.denied'):t(state.failure==='conflict'?'conflict':'failed')}</p>{:else if state.outcome==='succeeded'}<p role="status">{t('success')}</p>{/if}
- {#each missing as field}<p role="alert">{t(`missing.${field}`)}</p>{/each}
+ {#each missing as field}<button type="button" disabled={disabled} onclick={()=>onMissing(field)}>{t(`missing.${field}`)}</button>{/each}
  {#if !publishReady}<p class="hint">{t('saveFirst')}</p>{/if}
  <div class="actions"><button disabled={disabled||!publishReady} onclick={()=>review({kind:'publish'})}>{t('publish')}</button><button disabled={disabled||!state.state?.publication?.visible} onclick={()=>review({kind:'unpublish'})}>{t('unpublish')}</button><button disabled={state.busy||otherBusy} onclick={()=>run(()=>controller.refresh())}>{t('refresh')}</button></div>
  <details><summary>{t('target')}</summary><form onsubmit={event=>{event.preventDefault();void changeStatus();}}>

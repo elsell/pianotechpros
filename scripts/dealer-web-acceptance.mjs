@@ -530,7 +530,15 @@ try {
   await page.getByRole('heading',{name:'Publicación y disponibilidad',exact:true}).waitFor();
   assert.equal(await page.getByRole('button',{name:'Revisar publicación',exact:true}).isDisabled(),true);
   await page.getByLabel('Precio de venta',{exact:true}).fill('1200,50');
-  await page.getByLabel('Tipo de piano',{exact:true}).selectOption('grand');await page.getByLabel('Estado del piano',{exact:true}).selectOption('used');
+  await page.getByRole('button',{name:'Guardar ahora',exact:true}).click();await page.getByText('Guardado',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Revisar publicación',exact:true}).click();
+  await page.waitForFunction(()=>document.activeElement?.id==='form');
+  assert.equal(await page.getByRole('dialog').count(),0);assert.equal(publicationCommands,0);
+  await page.getByLabel('Tipo de piano',{exact:true}).selectOption('grand');
+  await page.getByRole('button',{name:'Revisar publicación',exact:true}).click();
+  await page.waitForFunction(()=>document.activeElement?.id==='condition');
+  assert.equal(await page.getByRole('dialog').count(),0);assert.equal(publicationCommands,0);
+  await page.getByLabel('Estado del piano',{exact:true}).selectOption('used');
   await page.locator('summary').filter({hasText:'Datos internos'}).click();await page.getByLabel('Notas privadas',{exact:true}).fill('PRIVATE-PUBLICATION-REVIEW');
   await page.getByRole('button',{name:'Guardar ahora',exact:true}).click();await page.getByText('Guardado',{exact:true}).waitFor();
   const previewRecord=capturedRecords.get('captured-1');capturedRecords.set('captured-1',{...previewRecord,revision:previewRecord.revision+1});recordPhotos.set('captured-1',[...recordPhotos.get('captured-1'),...Array.from({length:6},(_,i)=>({id:`review-photo-${i}`,altText:`Review ${i}`}))]);

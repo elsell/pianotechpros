@@ -212,9 +212,9 @@ access denial or disposal resets this entry state. Explicit sale review and
 confirmation remain mandatory, and the selected sale price stays private history.
 
 
-## Native readiness before confirmation
+## Readiness before confirmation
 
-The native publish review must fetch a fresh authorized, saved record and photo
+Every client publish review must fetch a fresh authorized, saved record and photo
 collection through the existing serialized workspace before opening confirmation.
 Check piano type, condition, title-or-make, and at least one ready photo. Missing
 requirements produce no confirmable review and issue no publication command.
@@ -224,3 +224,6 @@ without opening a camera or requesting permission. Selecting another requirement
 uses the same navigation. Cancellation, denial and scope changes clear guidance.
 The API remains the final authority; server readiness rejection uses these same
 safe field identifiers and navigation. Saving and checking readiness never publish.
+
+Web uses the same readiness boundary and moves keyboard focus to the missing
+select/input or the labeled Photos region before any confirmation dialog.

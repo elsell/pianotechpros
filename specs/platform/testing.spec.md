@@ -940,3 +940,44 @@ Upgrade go-jose to v4.1.6 (published 2026-10-14T22:46:21Z, outside fourteen days
 A regression must reject private JWK parameters in untrusted JOSE headers while
 retaining ordinary signed public-JWK behavior. Keep existing OIDC adversarial
 coverage and require image scans on the final rebuilt artifacts.
+
+### Hardened image security refresh (2026-10-30)
+
+Refresh the Node builder/runtime and static API runtime to the exact reviewed
+releases below. Their age exceptions are security-only, not vulnerability waivers.
+Release identities and multi-platform index digests were verified with RSA/SHA256
+using Red Hat's official `63405576` public key; transparency-log inclusion was
+not verified. Per-platform SPDX layer bytes match their registry SHA256 digests.
+Catalog version aliases resolved to the same index digests before CVE review.
+
+- `registry.access.redhat.com/hi/nodejs:24.22.2-1793297445@sha256:873692b4d4b6107a9b831ed56333d29bc721fc441ac6dbc7839f49598be430d7`
+  - arm64 SPDX SHA256 `34f64535496b83f5ac353cc6abec07a1e318817d9eedc81b3cc576b43b3dd4e1` (245 packages).
+  - amd64 SPDX SHA256 `ac281ad736484587ad0b3a87837b1acba2be7c6bbd6be0af14c05c6d14e553b7` (245 packages).
+  - Catalog: 2 high, 9 medium, 1 low; no critical.
+- `registry.access.redhat.com/hi/nodejs:24.22.2-builder-1793297445@sha256:8f3b89ebd2f48f84e7d7adbd5ec0264cfb0bcf946b5a6cff86e99a137b2723bb`
+  - arm64 SPDX SHA256 `c618d7482ffaf2cfebc1f28857276e70edf1d634cb9e833514ecdcdf657b6089` (365 packages).
+  - amd64 SPDX SHA256 `508057abab0935a0994be92f027d85ef25efec980a4a5212b6be57c1b01fd131` (365 packages).
+  - Catalog: 9 high, 14 medium, 1 low; no critical.
+- `registry.access.redhat.com/hi/static:latest-1792647314@sha256:c51e17de4a96e3bd68361830ec54f3c43ffcf398b82765a1ce250bd4a0d99d1f`
+  - arm64 SPDX SHA256 `2c9691890b7dac51ade9a334bd029a3b36d22a032ee586dfb84b34466497267d` (19 packages).
+  - amd64 SPDX SHA256 `0722e321fff0930b775d8206286758a8263511ca427eb7284fe0743b36685569` (19 packages).
+  - s390x SPDX SHA256 `23b7bae108dbd85637cd87a28ca9985f3869ffc2ec518ad02b95839e0d4ab9bc` (18 packages).
+  - Catalog: 0 high, 0 medium, 0 low; no critical.
+
+The Node runtime SBOM contains Node 24.22.2, glibc 2.43-9.2.hum1,
+SQLite 3.54.1-1.hum1 and the updated 2026.2.92_v9.0.319-2.hum1 certificate
+bundle. The static image contains that same certificate bundle. Builder-only
+packages are not copied into the final web image; its findings do not establish
+a clean build environment. The seven additional builder high findings concern
+RPM parsing/macros (CVE-2026-95519, CVE-2026-95520, CVE-2026-95521,
+CVE-2026-103242), Cyrus SASL DIGEST-MD5 (CVE-2026-107161),
+rpm-sequoia key flags (CVE-2026-42784), and util-linux partition parsing
+(CVE-2026-53615). The Dockerfile does not install source/binary RPMs, probe disk
+images or configure SASL authentication. This limits direct build-path exposure
+but does not authorize processing untrusted inputs through those components.
+
+The Node catalog still reports CVE-2026-105482 and CVE-2026-106069, whereas
+[Node's 24.22.1 release notes](https://nodejs.org/en/blog/release/v24.22.1)
+identify both as fixed. Treat this as an unresolved metadata/runtime discrepancy.
+No ignore, VEX override or threshold change is authorized by this review. Require
+fresh final-image scans and inspect residual findings before merge or release.

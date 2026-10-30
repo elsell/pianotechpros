@@ -25,11 +25,11 @@ TalkBack or physical-device acceptance.
 
 Remaining delivery work:
 
-- Obtain production-image vulnerability results without publication. The current
-  candidate extends CI's loaded-image verification with pinned Grype scans of both
-  images and the unchanged high-severity gate. Local controlled-executable tests
-  prove failure propagation; hosted real-image results are still pending.
-  Passing dependency scans alone does not establish scanned release images.
+- Resolve production-image scan failures. Run `41070478287` executed both scans
+  and failed on the API dependency/base and web runtime findings. The current
+  candidate upgrades JOSE and reviewed, signed Red Hat base images. The updated
+  Node catalog still reports two high findings despite upstream fix notes; fresh
+  built-image results and reconciliation remain required. No scan is waived.
 
 1. Verify dedicated non-production identity, speech/extraction and Turnstile
    integrations. Configuration remains requested; never borrow legacy credentials.

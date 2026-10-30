@@ -362,5 +362,26 @@
     "version": "1.4.1",
     "reason": "Exact 2026-10-27 upstream release fixing GHSA-86w9-cpqp-85rv with canonical DER validation; replaces temporary narrower patch. No advisory waiver.",
     "compensatingVerification": "Registry SHA512 and installed-source hashes, six actual Expo/EAS consumer signature regression groups including non-canonical lengths, certificate signing, frozen graph, complete age/audit gates and actual hosted native compilation before release."
+  },
+  {
+    "kind": "image",
+    "name": "registry.access.redhat.com/hi/nodejs",
+    "version": "24.22.2-1793297445@sha256:873692b4d4b6107a9b831ed56333d29bc721fc441ac6dbc7839f49598be430d7",
+    "reason": "Exact hardened-image security refresh younger than fourteen days; see testing.spec.md. No vulnerability waiver.",
+    "compensatingVerification": "Exact immutable identity/index signature verified against official Red Hat 63405576 key; every platform SBOM hash and digest-matched catalog CVE report reviewed. Residual findings documented; final image scans retain high threshold and must pass before merge."
+  },
+  {
+    "kind": "image",
+    "name": "registry.access.redhat.com/hi/nodejs",
+    "version": "24.22.2-builder-1793297445@sha256:8f3b89ebd2f48f84e7d7adbd5ec0264cfb0bcf946b5a6cff86e99a137b2723bb",
+    "reason": "Exact hardened-image security refresh younger than fourteen days; see testing.spec.md. No vulnerability waiver.",
+    "compensatingVerification": "Exact immutable identity/index signature verified against official Red Hat 63405576 key; every platform SBOM hash and digest-matched catalog CVE report reviewed. Residual findings documented; final image scans retain high threshold and must pass before merge."
+  },
+  {
+    "kind": "image",
+    "name": "registry.access.redhat.com/hi/static",
+    "version": "latest-1792647314@sha256:c51e17de4a96e3bd68361830ec54f3c43ffcf398b82765a1ce250bd4a0d99d1f",
+    "reason": "Exact hardened-image security refresh younger than fourteen days; see testing.spec.md. No vulnerability waiver.",
+    "compensatingVerification": "Exact immutable identity/index signature verified against official Red Hat 63405576 key; every platform SBOM hash and digest-matched catalog CVE report reviewed. Residual findings documented; final image scans retain high threshold and must pass before merge."
   }
 ]

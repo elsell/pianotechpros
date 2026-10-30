@@ -72,3 +72,6 @@ run_journey restore testRestorePartialDraftAfterProcessRestart
 
 xcrun simctl terminate "$simulator" com.pianotechpros.pianotechpros || true
 run_journey inventory testBrowseInventoryThroughNormalNavigation
+
+xcrun simctl terminate "$simulator" com.pianotechpros.pianotechpros || true
+run_journey accessibility testPublicAccessibility

@@ -70,6 +70,17 @@ large text, rotation and iPad/window resizing before claiming tablet support.
 Use browser semantics and keyboard/focus behavior for web; do not impose mobile
 controls on desktop. Shared domain orchestration does not require shared markup.
 
+The hosted iOS interaction gate must also run XCTest accessibility audits of
+stable home, public directory/catalog/listing, empty-showroom visit information,
+and both upper/lower native buyer-form viewports. Run all audit categories without
+an issue-suppression handler. Retain a named screenshot and accessibility tree
+for every audited viewport, including failures. Require an audit-capable iOS
+runtime instead of silently skipping on older simulators. An audit failure fails
+the job. These automated checks do not establish VoiceOver spoken order,
+physical-device usability, all scroll positions or full application conformance.
+The audit contract follows Apple's
+[XCUIAccessibilityAuditType documentation](https://developer.apple.com/documentation/xcuiautomation/xcuiaccessibilityaudittype).
+
 For each interaction, record task, selected pattern, commit/cancel semantics,
 loading/empty/error/denied states, implementation adapter, and acceptance evidence.
 Custom substitutes need a concrete platform limitation and a revisit condition.

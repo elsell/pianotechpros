@@ -41,6 +41,14 @@ This is not a claim of three-client acceptance. Wider device
 and accessibility acceptance remain open. Provider configuration and spoken/physical-device acceptance are
 separate unresolved external/evidence requirements.
 
+A separate hosted iOS accessibility journey is now wired after the existing
+interaction journeys. It runs all XCTest audit categories without suppression on
+home, public directory/catalog/listing, empty-showroom visits and upper/lower
+buyer-form viewports, retaining screenshots and accessibility trees. Seventeen
+fixture/readiness tests and eleven simulator entitlement/bundle/Mach-O tests
+pass; shell validation and read-only review pass. Swift compilation and audit
+execution remain pending. This is new coverage, not accessibility acceptance.
+
 The native buyer form now identifies the piano and showroom using a fresh
 anonymous public listing read. Context is cleared/reloaded on foreground and
 submission is disabled while context is absent, without disposing contact input.

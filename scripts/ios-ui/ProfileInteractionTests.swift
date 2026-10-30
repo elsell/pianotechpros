@@ -74,6 +74,49 @@ final class ProfileInteractionTests: XCTestCase {
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = name; attachment.lifetime = .keepAlways; add(attachment)
     }
+    func auditAccessibility(_ name: String) throws {
+        capture("accessibility-" + name)
+        let tree = XCTAttachment(string: app.debugDescription)
+        tree.name = "accessibility-" + name + "-tree"
+        tree.lifetime = .keepAlways
+        add(tree)
+        if #available(iOS 17.0, *) {
+            try app.performAccessibilityAudit(for: .all)
+        } else {
+            XCTFail("Accessibility acceptance requires iOS 17 or later")
+        }
+    }
+    func testPublicAccessibility() throws {
+        XCTAssertTrue(button("Showrooms").waitForExistence(timeout: 60))
+        try auditAccessibility("home")
+        tap("Showrooms")
+        XCTAssertTrue(button("Native Empty Showroom").waitForExistence(timeout: 15))
+        try auditAccessibility("directory")
+        tap("Native Empty Showroom")
+        XCTAssertTrue(app.staticTexts["No pianos match these filters."].waitForExistence(timeout: 15))
+        try auditAccessibility("empty-catalog")
+        tap("About this showroom")
+        XCTAssertTrue(app.staticTexts["Please arrange a visit before travelling."].waitForExistence(timeout: 15))
+        try auditAccessibility("visit-top")
+        reach(app.staticTexts["Tuning is available by appointment."])
+        try auditAccessibility("visit-bottom")
+        back(); back(); tap("Native Public Showroom")
+        XCTAssertTrue(inventoryRow("Native Public Grand").waitForExistence(timeout: 15))
+        try auditAccessibility("catalog")
+        inventoryRow("Native Public Grand").tap()
+        XCTAssertTrue(app.staticTexts["Native Public Grand"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.images["Synthetic public piano photo"].waitForExistence(timeout: 15))
+        try auditAccessibility("listing-top")
+        tap("Ask about this piano")
+        XCTAssertTrue(app.staticTexts["Native Public Grand"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.textFields["Your name"].waitForExistence(timeout: 15))
+        try auditAccessibility("buyer-top")
+        reach(button("Send inquiry"))
+        try auditAccessibility("buyer-bottom")
+        back(); back(); back(); back()
+        XCTAssertTrue(button("Showrooms").waitForExistence(timeout: 15))
+    }
+
     func testBrowsePublicShowroomWithoutSigningIn() throws {
         XCTAssertTrue(button("Showrooms").waitForExistence(timeout: 60))
         tap("Showrooms"); tap("Native Empty Showroom")

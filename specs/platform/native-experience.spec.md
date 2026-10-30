@@ -1759,3 +1759,49 @@ These are simulator journeys against controlled HTTP fixtures. The persisted
 check reads fixture state. They are not production database, provider, spoken
 screen-reader, physical-device or complete native parity acceptance. The broader
 real-service/device requirements above remain in force.
+
+### Hosted iOS profiles against production services
+
+Add a second, isolated simulator phase for customer/technician creation, protected
+partial-draft restoration and independently authenticated persisted profile reads.
+Run the actual API, PostgreSQL and SpiceDB with the typed capability proxy and
+separate migration/runtime database roles. Keep the existing controlled-fixture
+journeys, including deliberate failure/retry assertions, intact.
+
+The synthetic OIDC provider may forward `/v1/` requests to a fixed loopback API;
+it must never answer those requests with fixture sessions or domain state in this
+mode. Validate the destination before listening, forward bounded request bodies,
+refuse upstream redirects, and surface dependency failure without fixture fallback.
+OIDC authorization/code/JWKS remain synthetic and cryptographically verified by
+the real API. No provider credentials or deployment endpoints are used. Native
+PostgreSQL/SpiceDB tooling must be exact and checksum-verified; download/build only
+on hosted CI or Paul. Record actual service versions and results. This phase
+proves only the exercised profile workflows, not all native parity.
+
+The native service baseline matches Compose's PostgreSQL 18.4 and SpiceDB 1.54.0.
+PostgreSQL source SHA256 is `81a81ec695fb0c7901407defaa1d2f7973617154cf27ba74e3a7ab8e64436094`
+from its official release directory (2026-05-11). SpiceDB's immutable 2026-06-18
+release supplies checksummed darwin-arm64/amd64 and linux-amd64 archives; these
+versions exceed fourteen days. Verify checksums before extraction/execution and
+versions afterward. Build PostgreSQL without optional ICU/readline/compression
+libraries to avoid unpinned package-manager installation; SQL storage, role
+separation and authorization behavior remain real. These are acceptance tools,
+not replacement deployment images or a claim that their full dependency graphs
+are vulnerability-free.
+
+The second phase reuses the verified application/test bundle on a fresh simulator;
+it cannot reuse the fixture session, profile database or keychain. It requires
+creation, partial-draft restart recovery and independently authenticated API reads.
+The read-back gate checks exact saved contact/location/service fields and confirms
+the incomplete weekday was not persisted. Failed creation blocks dependent tests;
+failed recovery or read-back fails the phase. Record separate real-service logs,
+journey results and screenshots. Fixed loopback ports default to 18082/18083;
+service-only remote validation may select different validated unprivileged ports.
+Never terminate an unrelated process to claim a port.
+
+On 2026-10-30, the checksum-verified PostgreSQL 18.4 and SpiceDB 1.54.0 native
+install completed on the remote Linux validation host. The real API/proxy/database
+stack then passed fresh-profile, unauthenticated/malformed/provider-token rejection,
+synthetic profile creation and independent read-back checks. These were HTTP
+service checks, not native interaction evidence. macOS installation and iOS
+profile interaction remain pending hosted execution.

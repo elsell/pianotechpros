@@ -94,6 +94,8 @@ def _classify_path(path: str) -> Plan | None:
         "scripts/native-real-service-session.mjs",
         "scripts/seed-native-real-inventory.mjs",
         "scripts/check-native-real-inventory.mjs",
+        "scripts/check-native-real-lifecycle.mjs",
+        "scripts/ios-ui/ProfileInteractionTests.swift",
         "scripts/check-native-real-profiles.mjs",
         "scripts/install-native-acceptance-services.sh",
         "scripts/with-native-acceptance-services.sh",

@@ -18,7 +18,8 @@ class Routing(unittest.TestCase):
                      'scripts/ios-journey-schedule.test.mjs', 'scripts/native-real-service-session.mjs',
                      'scripts/seed-native-real-inventory.mjs', 'scripts/check-native-real-inventory.mjs',
                      'scripts/check-native-real-profiles.mjs', 'scripts/install-native-acceptance-services.sh',
-                     'scripts/with-native-acceptance-services.sh']:
+                     'scripts/with-native-acceptance-services.sh', 'scripts/check-native-real-lifecycle.mjs',
+                     'scripts/ios-ui/ProfileInteractionTests.swift']:
             with self.subTest(path=path):
                 self.assertEqual(classify([path]), Plan(native=True))
 

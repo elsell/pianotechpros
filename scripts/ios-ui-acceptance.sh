@@ -90,6 +90,9 @@ verify_inventory() {
 verify_profiles() {
   node scripts/check-native-real-profiles.mjs > "$evidence/profiles-persisted.json"
 }
+verify_lifecycle() {
+  node scripts/check-native-real-lifecycle.mjs "$evidence/inventory-seed.json" "$1" "$evidence/sale-persisted.json" > "$evidence/$1-persisted.json"
+}
 record_journey() {
   printf '%s\t%s\n' "${journey_prefix:-}$1" "$2" >> "$evidence/journeys.tsv"
 }
@@ -97,8 +100,12 @@ record_journey() {
 source "$root/scripts/ios-journey-schedule.sh"
 if [[ "$mode" == --real-profiles ]]; then
   run_ios_real_profile_schedule
+  status=0
   journey_prefix=inventory-
-  run_ios_real_inventory_schedule
+  run_ios_real_inventory_schedule || status=1
+  journey_prefix=lifecycle-
+  run_ios_real_lifecycle_schedule || status=1
+  exit "$status"
 else
   status=0
   run_ios_journey_schedule || status=1

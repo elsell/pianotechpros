@@ -13,9 +13,10 @@ function run(failures = '', realProfiles = false) {
     restart_app() { echo restart; }
     run_journey() { echo "run $1"; [[ ",$FAILURES," != *",$1,"* ]]; }
     verify_inventory() { echo verify; [[ ",$FAILURES," != *",persisted,"* ]]; }
+    verify_lifecycle() { echo "verify-$1"; [[ ",$FAILURES," != *",$1-persisted,"* ]]; }
     verify_profiles() { echo verify-profiles; [[ ",$FAILURES," != *",persisted,"* ]]; }
     record_journey() { echo "$1 $2"; }
-    ${realProfiles === 'inventory' ? 'run_ios_real_inventory_schedule' : realProfiles ? 'run_ios_real_profile_schedule' : 'run_ios_journey_schedule'}
+    ${realProfiles === 'lifecycle' ? 'run_ios_real_lifecycle_schedule' : realProfiles === 'inventory' ? 'run_ios_real_inventory_schedule' : realProfiles ? 'run_ios_real_profile_schedule' : 'run_ios_journey_schedule'}
   `, 'schedule-test', scheduler], { encoding: 'utf8', env: { ...process.env, FAILURES: failures }, timeout: 5000 });
   assert.equal(result.error, undefined);
   assert.equal(result.stderr, '');
@@ -89,4 +90,15 @@ test('failed edit or independent persistence check blocks restart acceptance', (
     assert.ok(result.lines.includes('accessibility passed'));
     if (failure === 'edit') assert.ok(!result.lines.includes('verify'));
   }
+});
+
+test('sale and correction require separate read-back and preserve dependency order',()=>{
+ const passed=run('','lifecycle');assert.equal(passed.status,0);
+ assert.ok(passed.lines.indexOf('verify-sale')<passed.lines.indexOf('run correction'));
+ assert.ok(passed.lines.includes('correction-persisted passed'));
+ for(const failure of ['sale','sale-persisted','correction','correction-persisted']){
+  const result=run(failure,'lifecycle');assert.equal(result.status,1);
+  assert.ok(result.lines.includes(`${failure} failed`));
+  if(failure.startsWith('sale'))assert.ok(!result.lines.includes('run correction'));
+ }
 });

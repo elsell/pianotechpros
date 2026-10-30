@@ -30,6 +30,27 @@ run_ios_real_inventory_schedule() {
   fi
   return "$failed"
 }
+run_ios_real_lifecycle_schedule() {
+  if ! schedule_journey sale testSellAvailableInventory; then
+    record_journey sale-persisted blocked
+    record_journey correction blocked
+    record_journey correction-persisted blocked
+    return 1
+  fi
+  if verify_lifecycle sale; then record_journey sale-persisted passed || return 1
+  else
+    record_journey sale-persisted failed
+    record_journey correction blocked
+    record_journey correction-persisted blocked
+    return 1
+  fi
+  if ! schedule_journey correction testCorrectSoldInventoryAfterRestart; then
+    record_journey correction-persisted blocked
+    return 1
+  fi
+  if verify_lifecycle correction; then record_journey correction-persisted passed || return 1
+  else record_journey correction-persisted failed; return 1; fi
+}
 run_ios_real_profile_schedule() {
   local failed=0
   if restart_app && run_journey create testCreateProfilesAndProtectPartialDraft; then

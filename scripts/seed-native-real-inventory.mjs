@@ -14,7 +14,7 @@ const collection='/v1/dealers/'+dealer.id+'/inventory',records={};
 for(const [status,name,stock] of [['draft','Draft','UI-001'],['available','Available','UI-002'],['sold','Sold','UI-005']]){
  let record=await request(collection,{method:'POST',status:201});
  const path=collection+'/'+record.id;
- record=await request(path,{method:'PUT',body:{expectedRevision:record.revision,attributes:{...record.attributes,title:'UI '+name+' Piano',stock_number:stock,make:'Synthetic',model:name,featured:status==='draft'}}});
+ record=await request(path,{method:'PUT',body:{expectedRevision:record.revision,attributes:{...record.attributes,title:'UI '+name+' Piano',stock_number:stock,make:'Synthetic',model:name,featured:status==='draft',...(status==='available'?{asking_price:{minor_units:123456,currency:'USD'}}:{})}}});
  if(status!=='draft'){
   const result=await request(path+'/lifecycle',{method:'POST',body:{expectedRevision:record.revision,status,...(status==='sold'?{salePrice:{minor_units:100000,currency:'USD'}}:{})}});
   record=result.record;
@@ -22,6 +22,6 @@ for(const [status,name,stock] of [['draft','Draft','UI-001'],['available','Avail
  assert.equal(record.status,status);
  const publication=await request(path+'/publication');
  assert.equal(publication.publication,null,'Provisioning must not publish inventory');
- records[status]={id:record.id,revision:record.revision};
+ records[status]={id:record.id,revision:record.revision,attributes:record.attributes};
 }
 console.log(JSON.stringify({dealerID:dealer.id,records}));

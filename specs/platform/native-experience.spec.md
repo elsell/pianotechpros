@@ -1836,3 +1836,24 @@ failed against the untouched seed, then passed only after the full expected
 attributes were saved through the actual API. The final record remained draft,
 unpublished and revision-advanced. This validates provisioning/read-back behavior;
 XCTest execution on the built iOS app remains a separate required hosted gate.
+
+### Hosted native sale/correction sequence
+
+After real-service profile sign-in, exercise the available synthetic piano through
+the iOS availability UI. Assert the seeded USD 1234.56 asking price initializes
+the sale input, replace it with USD 1100.25, review and explicitly confirm. Read
+the real API history independently before permitting the correction journey.
+Restart the app, locate the now-sold piano using the Sold filter, select Available,
+enter an exact correction reason and confirm it from review. Read history again:
+the sale event must be byte-for-byte equivalent as parsed JSON, the correction
+must be a new event with the exact reason, and inventory attributes must remain
+unchanged. Neither operation publishes the fixture. Record separate UI and API
+results; a sale failure blocks dependent correction. Run this independently of
+inventory-field editing once authenticated profile setup succeeded.
+
+Remote real-service validation passed for this gate: the untouched available seed
+failed sale acceptance; the USD 1100.25 transition passed sale read-back; missing
+correction failed correction acceptance; the actual Sold-to-Available command
+passed; altering the saved original sale evidence caused correction verification
+to fail. These checks exercised API/PostgreSQL/SpiceDB and the read-back scripts,
+not the new XCTest interactions, which remain pending hosted execution.

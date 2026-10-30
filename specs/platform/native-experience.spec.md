@@ -1646,3 +1646,15 @@ job limit interrupted evidence retention after the complete schedule ran; the
 Release interaction build alone took about 69 minutes. This job budget changes
 no individual assertion deadline, required journey, failure propagation or retry
 policy, and does not convert a failing result into a pass.
+
+## Public photo accessibility semantics
+
+A successfully loaded public photo must expose one labeled native image element,
+not an unlabeled picture or a generic accessibility element. Keep its preview
+button separate and actionable. A semantic container may own the image role and
+label while its rendering child stays hidden from accessibility to prevent
+repeated announcements. Loading/error states and retry behavior remain unchanged.
+Run `41022035854` rendered the priced catalog/listing after the currency fix, but
+the visible photo appeared in the retained iOS hierarchy as Other with its alt
+label; the required image query failed in both public and accessibility journeys.
+Preserve the image-role assertion and verify the correction on the hosted device.

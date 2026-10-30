@@ -7,6 +7,16 @@ The detailed requirements remain in `product-parity.spec.md`; website-specific
 closure is tracked in `web-parity-audit.spec.md` and device evidence in
 `native-experience.spec.md`.
 
+Run `41022035854` confirms that the iOS currency crash is corrected: the
+public journey reaches the filtered sold listing with its $1,250.00 price and
+rendered photo. Both public and accessibility journeys then fail the image-role
+assertion: retained hierarchy exposes the labeled photo as Other. Move semantic
+image ownership to a native View and hide only its rendering child from
+accessibility; keep the preview button separate and retain the image assertion.
+This correction still requires native execution. The same run again passed
+profile creation, draft restoration, inventory browsing and publication readiness;
+editing encountered the upward-only harness issue addressed in the newer branch.
+
 Combined run `41017531680` passed controlled-fixture iOS profile creation,
 partial-draft process restoration, normal inventory browsing and incomplete
 publication focus. Full editing failed because the harness scrolled away from

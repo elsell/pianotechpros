@@ -5,6 +5,8 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
+  '@expo/config@55.0.21>deepmerge': '-'
+  '@sveltejs/vite-plugin-svelte@7.1.2>deepmerge': '-'
   node-forge: 1.4.1
   expo-camera>barcode-detector: 3.2.2
   zod: 4.6.6
@@ -104,10 +106,13 @@ overrides:
   ws@8: 8.21.0
   yargs: 17.7.2
 
+packageExtensionsChecksum: sha256-p8phLg3kEHh1SeG2uEvsDX0V65228tF8hRBXTyLWRB0=
+
 patchedDependencies:
+  '@expo/config@55.0.21': df24eee92436c615604f3971b6238adf87a87a4f68ecf8dc095e9f9a29c4badc
+  '@sveltejs/vite-plugin-svelte@7.1.2': 53cc6d3ca05e0960fc49e474126040fc97ce41bcebe28b1d9489f32048694058
   brace-expansion@5.0.12: c136bca8a6d8b2ddd2f117941434c1dfe9bf0bf7faa1bdf91a7d65c133e87880
   decode-uri-component@0.5.1: 137924859be3e13225bc9eabd9cfb87245d70bdf30689b2c5ed5c8d3196f9f6b
-  deepmerge@4.3.1: 16476bc72dea6aff9a4be1857f373abb894a2999d3703445d8d8d7944849826c
   react-native-screens@4.23.0: 860a71748751cc4caef98ed82700c7c723851e103a92c565b1ae98e3382d99a4
   react-native@0.83.10: 6c0d9c94fe0a957aec31ec8a26b7cfeca853c2ff5ad05debc01cd270b81c0331
 
@@ -241,7 +246,7 @@ importers:
         version: link:../../packages/i18n
       '@sveltejs/kit':
         specifier: 3.0.1
-        version: 3.0.1(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.57.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
+        version: 3.0.1(@sveltejs/vite-plugin-svelte@7.1.2(patch_hash=53cc6d3ca05e0960fc49e474126040fc97ce41bcebe28b1d9489f32048694058)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.57.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
       oidc-client-ts:
         specifier: 3.3.0
         version: 3.3.0
@@ -251,10 +256,10 @@ importers:
     devDependencies:
       '@sveltejs/adapter-node':
         specifier: 6.0.0
-        version: 6.0.0(@sveltejs/kit@3.0.1(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.57.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))
+        version: 6.0.0(@sveltejs/kit@3.0.1(@sveltejs/vite-plugin-svelte@7.1.2(patch_hash=53cc6d3ca05e0960fc49e474126040fc97ce41bcebe28b1d9489f32048694058)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.57.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))
       '@sveltejs/vite-plugin-svelte':
         specifier: 7.1.2
-        version: 7.1.2(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
+        version: 7.1.2(patch_hash=53cc6d3ca05e0960fc49e474126040fc97ce41bcebe28b1d9489f32048694058)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
       '@types/node':
         specifier: 24.13.1
         version: 24.13.1
@@ -1245,6 +1250,9 @@ packages:
   '@expo/xcpretty@4.4.4':
     resolution: {integrity: sha512-4aQzz9vgxcNXFfo/iyNgDDYfsU5XGKKxWxZopw0cVotHiW+U8IJbIxMaxsINs6bHhtkG3StKNPcOrn3eBuxKPw==}
     hasBin: true
+
+  '@fastify/deepmerge@3.2.2':
+    resolution: {integrity: sha512-155eqA/WMQdN6gUD4RrhS2K0Pcz2Ou9pQ86L0sipOpP9ONbTA6oYw/hW4VdBjR4egcDHqmWUK9x80oUX7S1mDQ==}
 
   '@hapi/hoek@9.3.0':
     resolution: {integrity: sha512-/c6rf4UJlmHlC9b5BaNvzAcFv7HZ2QHaV0D4/HNlBdvFnvQq8RI4kYdhyPCl7Xj+oWvTWQ8ujhqS53LIgAe6KQ==}
@@ -2459,10 +2467,6 @@ packages:
   decode-uri-component@0.5.1:
     resolution: {integrity: sha512-vWHQkXgg2cE3BB4rR0c+PYw9BCQzLoNIRMI7AunIkZst74tw/vpPp7VLoYtsR/cy1f55g3XDWUslfeCZjiZJyA==}
     engines: {node: '>=14.16'}
-
-  deepmerge@4.3.1:
-    resolution: {integrity: sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==}
-    engines: {node: '>=0.10.0'}
 
   defaults@1.0.4:
     resolution: {integrity: sha512-eFuaLoy/Rxalv2kr+lqMlUnrDWV+3j4pljOIJgLIhI058IQfWJ7vXhyEIHu+HtC738klGALYxOKDO0bQP3tg8A==}
@@ -5607,7 +5611,7 @@ snapshots:
   '@expo/cli@55.0.37(@expo/dom-webview@55.0.6)(@expo/metro-runtime@55.0.12)(expo-constants@55.0.17)(expo-font@55.0.8)(expo-router@55.0.18)(expo@55.0.32)(react-dom@19.2.0(react@19.2.0))(react-native@0.83.10(patch_hash=6c0d9c94fe0a957aec31ec8a26b7cfeca853c2ff5ad05debc01cd270b81c0331)(@babel/core@7.29.7)(@types/react@19.2.17)(react@19.2.0))(react@19.2.0)(typescript@5.9.3)':
     dependencies:
       '@expo/code-signing-certificates': 0.0.6
-      '@expo/config': 55.0.21(typescript@5.9.3)
+      '@expo/config': 55.0.21(patch_hash=df24eee92436c615604f3971b6238adf87a87a4f68ecf8dc095e9f9a29c4badc)(typescript@5.9.3)
       '@expo/config-plugins': 55.0.12
       '@expo/devcert': 1.2.1
       '@expo/env': 2.1.3
@@ -5710,13 +5714,13 @@ snapshots:
 
   '@expo/config-types@55.0.5': {}
 
-  '@expo/config@55.0.21(typescript@5.9.3)':
+  '@expo/config@55.0.21(patch_hash=df24eee92436c615604f3971b6238adf87a87a4f68ecf8dc095e9f9a29c4badc)(typescript@5.9.3)':
     dependencies:
       '@expo/config-plugins': 55.0.12
       '@expo/config-types': 55.0.5
       '@expo/json-file': 10.0.16
       '@expo/require-utils': 55.0.8(typescript@5.9.3)
-      deepmerge: 4.3.1(patch_hash=16476bc72dea6aff9a4be1857f373abb894a2999d3703445d8d8d7944849826c)
+      '@fastify/deepmerge': 3.2.2
       getenv: 2.0.0
       glob: 13.0.6
       resolve-workspace-root: 2.0.1
@@ -5834,7 +5838,7 @@ snapshots:
 
   '@expo/local-build-cache-provider@55.0.16(typescript@5.9.3)':
     dependencies:
-      '@expo/config': 55.0.21(typescript@5.9.3)
+      '@expo/config': 55.0.21(patch_hash=df24eee92436c615604f3971b6238adf87a87a4f68ecf8dc095e9f9a29c4badc)(typescript@5.9.3)
       chalk: 4.1.2
     transitivePeerDependencies:
       - supports-color
@@ -5859,7 +5863,7 @@ snapshots:
       '@babel/code-frame': 7.29.7
       '@babel/core': 7.29.7
       '@babel/generator': 7.29.7
-      '@expo/config': 55.0.21(typescript@5.9.3)
+      '@expo/config': 55.0.21(patch_hash=df24eee92436c615604f3971b6238adf87a87a4f68ecf8dc095e9f9a29c4badc)(typescript@5.9.3)
       '@expo/env': 2.1.3
       '@expo/json-file': 10.0.16
       '@expo/metro': 55.1.2
@@ -5980,7 +5984,7 @@ snapshots:
 
   '@expo/prebuild-config@55.0.22(expo@55.0.32)(typescript@5.9.3)':
     dependencies:
-      '@expo/config': 55.0.21(typescript@5.9.3)
+      '@expo/config': 55.0.21(patch_hash=df24eee92436c615604f3971b6238adf87a87a4f68ecf8dc095e9f9a29c4badc)(typescript@5.9.3)
       '@expo/config-plugins': 55.0.12
       '@expo/config-types': 55.0.5
       '@expo/image-utils': 0.8.17(typescript@5.9.3)
@@ -6082,6 +6086,8 @@ snapshots:
       '@babel/code-frame': 7.29.7
       chalk: 4.1.2
       js-yaml: 4.3.2
+
+  '@fastify/deepmerge@3.2.2': {}
 
   '@hapi/hoek@9.3.0': {}
 
@@ -6796,15 +6802,15 @@ snapshots:
     dependencies:
       acorn: 8.16.0
 
-  '@sveltejs/adapter-node@6.0.0(@sveltejs/kit@3.0.1(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.57.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))':
+  '@sveltejs/adapter-node@6.0.0(@sveltejs/kit@3.0.1(@sveltejs/vite-plugin-svelte@7.1.2(patch_hash=53cc6d3ca05e0960fc49e474126040fc97ce41bcebe28b1d9489f32048694058)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.57.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))':
     dependencies:
-      '@sveltejs/kit': 3.0.1(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.57.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
+      '@sveltejs/kit': 3.0.1(@sveltejs/vite-plugin-svelte@7.1.2(patch_hash=53cc6d3ca05e0960fc49e474126040fc97ce41bcebe28b1d9489f32048694058)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.57.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
 
-  '@sveltejs/kit@3.0.1(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.57.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))':
+  '@sveltejs/kit@3.0.1(@sveltejs/vite-plugin-svelte@7.1.2(patch_hash=53cc6d3ca05e0960fc49e474126040fc97ce41bcebe28b1d9489f32048694058)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.57.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))':
     dependencies:
       '@rolldown/pluginutils': 1.0.1
       '@standard-schema/spec': 1.1.0
-      '@sveltejs/vite-plugin-svelte': 7.1.2(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
+      '@sveltejs/vite-plugin-svelte': 7.1.2(patch_hash=53cc6d3ca05e0960fc49e474126040fc97ce41bcebe28b1d9489f32048694058)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
       cookie: 2.0.1
       devalue: 5.9.3
       esm-env: 1.2.2
@@ -6818,9 +6824,9 @@ snapshots:
 
   '@sveltejs/load-config@0.2.3': {}
 
-  '@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))':
+  '@sveltejs/vite-plugin-svelte@7.1.2(patch_hash=53cc6d3ca05e0960fc49e474126040fc97ce41bcebe28b1d9489f32048694058)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))':
     dependencies:
-      deepmerge: 4.3.1(patch_hash=16476bc72dea6aff9a4be1857f373abb894a2999d3703445d8d8d7944849826c)
+      '@fastify/deepmerge': 3.2.2
       magic-string: 0.30.21
       obug: 2.1.2
       svelte: 5.57.2
@@ -7433,8 +7439,6 @@ snapshots:
 
   decode-uri-component@0.5.1(patch_hash=137924859be3e13225bc9eabd9cfb87245d70bdf30689b2c5ed5c8d3196f9f6b): {}
 
-  deepmerge@4.3.1(patch_hash=16476bc72dea6aff9a4be1857f373abb894a2999d3703445d8d8d7944849826c): {}
-
   defaults@1.0.4:
     dependencies:
       clone: 1.0.4
@@ -7488,7 +7492,7 @@ snapshots:
     dependencies:
       '@expo/apple-utils': 2.1.22
       '@expo/code-signing-certificates': 0.0.5
-      '@expo/config': 55.0.21(typescript@5.9.3)
+      '@expo/config': 55.0.21(patch_hash=df24eee92436c615604f3971b6238adf87a87a4f68ecf8dc095e9f9a29c4badc)(typescript@5.9.3)
       '@expo/config-plugins': 55.0.12
       '@expo/eas-build-job': 21.0.2
       '@expo/eas-json': 21.0.2
@@ -7973,7 +7977,7 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.29.7
       '@expo/cli': 55.0.37(@expo/dom-webview@55.0.6)(@expo/metro-runtime@55.0.12)(expo-constants@55.0.17)(expo-font@55.0.8)(expo-router@55.0.18)(expo@55.0.32)(react-dom@19.2.0(react@19.2.0))(react-native@0.83.10(patch_hash=6c0d9c94fe0a957aec31ec8a26b7cfeca853c2ff5ad05debc01cd270b81c0331)(@babel/core@7.29.7)(@types/react@19.2.17)(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
-      '@expo/config': 55.0.21(typescript@5.9.3)
+      '@expo/config': 55.0.21(patch_hash=df24eee92436c615604f3971b6238adf87a87a4f68ecf8dc095e9f9a29c4badc)(typescript@5.9.3)
       '@expo/config-plugins': 55.0.12
       '@expo/devtools': 55.0.3(react-native@0.83.10(patch_hash=6c0d9c94fe0a957aec31ec8a26b7cfeca853c2ff5ad05debc01cd270b81c0331)(@babel/core@7.29.7)(@types/react@19.2.17)(react@19.2.0))(react@19.2.0)
       '@expo/fingerprint': 0.16.8

@@ -158,23 +158,24 @@ suffix through query-string in a bounded subprocess, and verify decoded percent
 bytes are not decoded a second time. Keep the scanner upstream-identical and
 refresh the packaging-only patch and source hashes. The exact release has a
 fourteen-day age exception for this availability fix; no vulnerability waiver.
-The independent deepmerge advisory remains unresolved: on 2026-10-29 the audit
-reported a 4.3.2 fix, but the registry had no such release and GitHub listed no
-patched version. Preserve the failing audit until remediation is substantiated.
-Backport only the `__proto__` key rejection from upstream PR 274 commit
-c5ad573121574db1c625b0aabcc6114ed7df6c5a into 4.3.1 source and both distributed
-entrypoints. This upstream proposal was closed without merging; record that
-status and MIT provenance explicitly. Reject the key before either target-copy
-or source-merge assignment, independently of target shape. Exercise the actual
-Expo and Svelte dependency resolutions with null-prototype targets, nested null
-and primitive placeholders, poisoned target keys, and array-contained objects.
-Assert the returned object's prototype as well as absence of injected inherited
-properties; checking global Object.prototype alone is insufficient. Preserve
-legitimate nested configuration, symbol keys, default array concatenation,
-custom array replacement and custom merge behavior. Verify installed source and
-patch hashes. Keep package version 4.3.1 and the audit finding visible; no new
-advisory waiver or blanket merge permission is introduced. Full installed-graph,
-web/Expo configuration and native gates remain required before release.
+Replace the vulnerable deepmerge dependency in its exact Expo 55.0.21 and
+Svelte Vite plugin 7.1.2 consumers with @fastify/deepmerge 3.2.2. Use scoped
+package extensions and dependency removals, plus reviewed source patches that
+adapt each consumer to the replacement factory. Do not alias vulnerable source
+under another package name or suppress the advisory. Remove the earlier
+closed-unmerged PR 274 backport only when the installed graph no longer contains
+deepmerge. Keep the audit gate unchanged.
+Preserve Expo nested configuration and plugin property merging (including array
+concatenation), and Svelte compiler/preprocessor options with array replacement.
+Exercise the actual installed Expo, EAS and Svelte consumer paths; test symbols,
+functions, dates, regular expressions, null placeholders, unchanged inputs and
+prototype-key attacks. Reject __proto__, constructor and prototype payloads at
+nested and array boundaries. Verify the returned prototype and own keys as well
+as global Object.prototype. Record replacement release, MIT provenance, integrity
+and patch/source hashes. Run the fourteen-day age gate without a new exception,
+full audit, web/Expo configuration checks and native CI before release. The
+replacement is a scoped consumer migration, not a promise of general deepmerge
+API compatibility (customMerge/all are not used by these consumers).
 
 Zod must use the exact 4.6.6 security release for both EAS and Expo CLI
 consumers (GHSA-mrhx-c7xc-m3w5). Test that leading array/set size limits reject

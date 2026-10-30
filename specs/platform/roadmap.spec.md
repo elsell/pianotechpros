@@ -7,6 +7,15 @@ The detailed requirements remain in `product-parity.spec.md`; website-specific
 closure is tracked in `web-parity-audit.spec.md` and device evidence in
 `native-experience.spec.md`.
 
+The dependency remediation candidate now removes deepmerge from the frozen npm
+graph and migrates its actual Expo/EAS and Svelte consumers to pinned
+@fastify/deepmerge 3.2.2. The unchanged low-threshold audit reports no known
+vulnerabilities. Eleven installed-consumer regression tests, web checks/build,
+Expo compatibility, structural checks and the npm fourteen-day age gate pass.
+No new advisory waiver or age exception is introduced. Required review and full
+hosted verification/native acceptance remain merge prerequisites; this local
+result does not establish three-client parity or close provider/accessibility work.
+
 The iOS gate now includes full private-record editing and a separate app-restart
 reopen journey. Before restart, an independently authenticated fixture read must
 match every expected attribute, preventing local draft recovery from masquerading

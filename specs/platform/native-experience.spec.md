@@ -1683,3 +1683,23 @@ This is Android development-runtime evidence with the stated JavaScript/native
 build combination. It does not establish embedded release behavior, iOS image
 semantics, spoken TalkBack/VoiceOver order or physical-device usability. Hosted
 iOS assertions remain unchanged and must pass separately.
+
+
+## Android public journey at 200% text — 2026-10-30
+
+Using the same JavaScript and native APK combination as the preceding public
+photo check, the remote API 36 emulator ran at system `font_scale=2.0` against
+the isolated real API. Home, showroom directory, catalog and listing navigation
+remained usable. Photo inspection exposed reachable close, zoom and reset actions;
+the captured zoom state was 150%. The inquiry form scrolled to its contact choices
+and Send inquiry action. Submitting empty fields returned focus to Your name,
+opened the keyboard and displayed readable name/email validation. Screenshots
+of the enlarged preview, bottom of the form and focused validation were inspected.
+
+Evidence is retained under
+`~/.cache/pianotechpros-evidence/2026-10-30/public-large-text/`, including XML,
+screenshots, the runtime script and build/scale receipt. No valid inquiry was
+submitted. Font scale was restored to 1.0, and the temporary emulator, Metro and
+tunnel were stopped. This establishes only the named Android large-text journey;
+spoken screen-reader order, iOS Dynamic Type, physical devices, all other product
+screens and enabled-provider acceptance remain separate requirements.

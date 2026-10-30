@@ -76,7 +76,19 @@ final class ProfileInteractionTests: XCTestCase {
     }
     func testBrowsePublicShowroomWithoutSigningIn() throws {
         XCTAssertTrue(button("Showrooms").waitForExistence(timeout: 60))
-        tap("Showrooms"); tap("Native Public Showroom")
+        tap("Showrooms"); tap("Native Empty Showroom")
+        XCTAssertTrue(app.staticTexts["No pianos match these filters."].waitForExistence(timeout: 15))
+        XCTAssertFalse(button("Refine your search").exists)
+        XCTAssertFalse(app.textFields["Search pianos"].exists)
+        tap("About this showroom")
+        XCTAssertTrue(app.staticTexts["Please arrange a visit before travelling."].waitForExistence(timeout: 15))
+        reach(app.staticTexts["Ask about regional delivery."])
+        reach(app.staticTexts["Warranty details are available before purchase."])
+        reach(app.staticTexts["Tuning is available by appointment."])
+        capture("public-empty-showroom-visit")
+        back(); tap("Include sold pianos")
+        XCTAssertTrue(button("Refine your search").waitForExistence(timeout: 15))
+        back(); tap("Native Public Showroom")
         XCTAssertTrue(inventoryRow("Native Public Grand").waitForExistence(timeout: 15))
         let search = app.textFields["Search pianos"].firstMatch
         reach(search); search.tap(); search.typeText("UI-PUBLIC-3\n")

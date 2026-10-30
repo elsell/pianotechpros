@@ -11,3 +11,7 @@ export function showroomFilters(fields:ShowroomFilterFields,decimal:'.'|','){
  if(fields.cursor){if(fields.cursor.length>4096||!/^[A-Za-z0-9_-]+$/.test(fields.cursor))fail();result.cursor=fields.cursor;}
  return result;
 }
+/** Keep recovery controls after filtering, but keep tiny initial catalogs quiet. */
+export function showroomFilterControlsVisible(fields:ShowroomFilterFields,count:number,hasContinuation:boolean,editedSearch=''):boolean{
+ return !!editedSearch||count>1||hasContinuation||Object.values(fields).some(value=>!!value?.trim());
+}

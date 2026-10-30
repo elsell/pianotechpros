@@ -770,5 +770,6 @@
   "technician.kind.available": "Disponible",
   "technician.kind.unavailable": "No disponible",
   "technician.done": "Listo",
-  "technician.noChoices": "No hay opciones coincidentes. Prueba otra búsqueda."
+  "technician.noChoices": "No hay opciones coincidentes. Prueba otra búsqueda.",
+  "showroom.about": "Acerca de esta tienda"
 }

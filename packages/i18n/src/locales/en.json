@@ -770,5 +770,6 @@
   "technician.kind.available": "Available",
   "technician.kind.unavailable": "Unavailable",
   "technician.done": "Done",
-  "technician.noChoices": "No matching options. Try a different search."
+  "technician.noChoices": "No matching options. Try a different search.",
+  "showroom.about": "About this showroom"
 }

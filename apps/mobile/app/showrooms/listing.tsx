@@ -1,5 +1,5 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
-import {Linking,RefreshControl,ScrollView,Text,View} from 'react-native';
+import {RefreshControl,ScrollView,Text,View} from 'react-native';
 import {useLocalSearchParams,useRouter} from 'expo-router';
 import {createShowroomApiClient,type PublicPiano,type PublicShowroomProfile} from '@pianotechpros/api-client';
 import {createPublicResource,publicPianoID,publicPianoPath,relatedPublicPianos,sharePublicLink} from '@pianotechpros/client-core';
@@ -10,6 +10,7 @@ import {useNativeTheme} from '../../src/native-theme';
 import {nativePublicSharing} from '../../src/public-share';
 import {usePublicState} from '../../src/showroom/public-read';
 import {PublicImage} from '../../src/showroom/PublicImage';
+import {ShowroomDetails} from '../../src/showroom/ShowroomDetails';
 import {PianoCard} from '../../src/showroom/PianoCard';
 function ListingContent({profile,piano,related,relatedFailed}:{profile:PublicShowroomProfile;piano:PublicPiano;related:PublicPiano[];relatedFailed:boolean}){
  const {i18n,webURL}=useMobileSession();const theme=useNativeTheme();const router=useRouter();const [selected,setSelected]=useState(0),[busy,setBusy]=useState(false),[failed,setFailed]=useState(false);
@@ -28,12 +29,7 @@ function ListingContent({profile,piano,related,relatedFailed}:{profile:PublicSho
  <Text accessibilityRole="header" style={heading}>{t('details')}</Text>{piano.description?<Text selectable style={text}>{piano.description}</Text>:null}
  {facts.filter(fact=>fact.value).map(fact=><View key={fact.label} style={{gap:6,paddingVertical:8,borderBottomWidth:1,borderColor:theme.border}}><Text style={{color:theme.secondary,fontSize:16}}>{i18n.t(fact.label)}</Text><Text selectable style={text}>{fact.value}</Text></View>)}
  <NativeButton title={i18n.t('inquiry.heading')} onPress={()=>router.push({pathname:'/showrooms/inquiry',params:{slug:profile.slug,id:piano.id}})}/>
- <Text accessibilityRole="header" style={heading}>{profile.name}</Text>{profile.description?<Text style={text}>{profile.description}</Text>:null}
- {profile.phone?<NativeButton title={t('call')} disabled={busy} onPress={()=>void action(()=>Linking.openURL('tel:'+profile.phone.replace(/[^+0-9]/g,'')))}/>:null}
- <NativeButton title={t('email')} disabled={busy} onPress={()=>void action(()=>Linking.openURL('mailto:'+encodeURIComponent(profile.email)+'?subject='+encodeURIComponent(piano.title)))}/>
- {profile.website_url?<NativeButton title={t('website')} disabled={busy} onPress={()=>void action(()=>Linking.openURL(profile.website_url))}/>:null}
- <Text accessibilityRole="header" style={heading}>{t('visit')}</Text><Text selectable style={text}>{[profile.street_address_1,profile.street_address_2,profile.city,profile.region,profile.postal_code].filter(Boolean).join('\n')}</Text>
- {(['appointment','delivery','warranty','service'] as const).map(key=>{const note=profile[`${key}_note`];return note?<View key={key} style={{gap:8}}>{key!=='appointment'?<Text accessibilityRole="header" style={heading}>{t(key)}</Text>:null}<Text style={text}>{note}</Text></View>:null;})}
+ <ShowroomDetails profile={profile} subject={piano.title}/>
  <Text accessibilityRole="header" style={heading}>{t('related')}</Text>{relatedFailed?<Text style={text}>{t('relatedUnavailable')}</Text>:null}
  {related.map(other=><PianoCard key={other.id} slug={profile.slug} piano={other} open={()=>router.push({pathname:'/showrooms/listing',params:{slug:profile.slug,id:other.id}})}/>)}
  <NativeButton title={t('back')} onPress={()=>router.navigate({pathname:'/showrooms/catalog',params:{slug:profile.slug}})}/>

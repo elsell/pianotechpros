@@ -349,3 +349,23 @@ filters before the authenticated profile journeys. Its loopback public fixture
 rejects credential-bearing public requests and contains only synthetic published
 projections. This presentation proof supplements, rather than replaces, real API
 visibility/authorization tests and Android real-service interaction evidence.
+
+### Native showroom visit and small collections
+
+Public showroom contact, address, description, appointment, delivery, warranty
+and service notes must remain reachable when the published collection is empty.
+The native catalog offers a labeled About this showroom action opening a pushed
+screen, with only the public slug in navigation state. Refresh visibility through
+the anonymous API on focus/foreground; failure or hiding clears all retained
+profile content. Use the same contact/visit presentation on individual listings.
+Email/phone/site actions remain deliberate native actions, use sanitized URLs,
+and report unavailable handlers without discarding the published page.
+
+Hide search/filter controls for an initial zero/one-piano collection without a
+continuation. Preserve controls whenever filters or pagination are active, so an
+empty filtered result can be recovered. Keep Include sold pianos available even
+when the filter panel is hidden. Typed but unsubmitted search remains visible.
+This is the same product threshold as web, expressed through native navigation
+and sheets. Test empty/one/many, continuation, active and cleared filters, and
+normal signed-out navigation to visit notes; source presence alone does not
+establish native interaction acceptance.

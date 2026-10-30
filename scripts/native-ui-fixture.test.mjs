@@ -117,3 +117,9 @@ test('native inquiry fake preserves explicit retry and rejects credentials and h
  assert.equal((await api(f,path,body)).status,503);
  const accepted=await api(f,path,body);assert.equal(accepted.status,204);assert.equal(await accepted.text(),'');
 });
+test('published empty showroom still exposes visit information anonymously',async t=>{
+ const f=await startNativeUIFixture({inventory:true});t.after(()=>f.close());
+ const response=await api(f,'/v1/showrooms/native-empty-shop/pianos?limit=1');assert.equal(response.status,200);
+ const value=await response.json();assert.equal(value.data.pianos.length,0);assert.equal(value.data.profile.name,'Native Empty Showroom');assert.equal(value.data.profile.appointment_note,'Please arrange a visit before travelling.');
+ assert.equal((await api(f,'/v1/showrooms/native-empty-shop/pianos?limit=1',undefined,'private-session')).status,400);
+});

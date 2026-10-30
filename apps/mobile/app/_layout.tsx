@@ -6,6 +6,7 @@ function Navigation() {
   const theme = useNativeTheme();
   return <Stack screenOptions={{ statusBarStyle: theme.statusBarStyle, headerTintColor: theme.text, headerStyle: { backgroundColor: theme.surface }, contentStyle: { backgroundColor: theme.background } }}>
     <Stack.Screen name="showrooms/index" options={{title:i18n.t('showroom.discovery.showrooms')}}/>
+    <Stack.Screen name="showrooms/about" options={{title:i18n.t('showroom.about')}}/>
     <Stack.Screen name="showrooms/catalog" options={{title:i18n.t('showroom.inventory')}}/>
     <Stack.Screen name="showrooms/inquiry" options={{title:i18n.t('inquiry.heading')}}/>
     <Stack.Screen name="showrooms/listing" options={{title:i18n.t('showroom.details')}}/>

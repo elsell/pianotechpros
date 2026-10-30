@@ -1427,3 +1427,13 @@ render-captured React search state; use the native submit event text and retain
 the unchanged keyboard-submission journey to verify the correction. This does
 not establish inventory acceptance. Verification still fails only on the visible
 deepmerge advisory; no remaining gate is waived.
+
+
+Run `40990491199` at `bde7ccdc1b6de63886c5ae56e8d6b68730619afb`
+is terminal with iOS native compilation and the configured create, restore and
+inventory journeys passing. Exact profile typing, saved/partial draft reopening,
+invalid-time focus and submitted native-event search remain asserted. Android
+native compilation and browser/API acceptance also passed. Verify still fails
+on the single deepmerge advisory; no skipped verification step is evidence.
+This supersedes the prior search failure for that specific journey, not broader
+iOS/public/inquiry/voice/accessibility acceptance.

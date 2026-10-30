@@ -2,6 +2,7 @@ import {readFileSync} from 'node:fs';
 // Synthetic anonymous projections only; production visibility is tested at the real API.
 export function createNativePublicFixture(){
  const profile={id:'public-shop',slug:'native-public-shop',name:'Native Public Showroom',email:'public@example.test',phone:'',website_url:'',tagline:'Synthetic public collection',description:'',street_address_1:'',street_address_2:'',city:'',region:'',postal_code:'',appointment_note:'',delivery_note:'',warranty_note:'',service_note:'',banner_alt_text:'',accent_color:'#245b43',banner:null};
+ const emptyProfile={...profile,id:'empty-shop',slug:'native-empty-shop',name:'Native Empty Showroom',description:'A public showroom between collections.',street_address_1:'12 Example Street',city:'Portland',region:'OR',postal_code:'97201',appointment_note:'Please arrange a visit before travelling.',delivery_note:'Ask about regional delivery.',warranty_note:'Warranty details are available before purchase.',service_note:'Tuning is available by appointment.'};
  const pianos=['grand','reserved','sold'].map((kind,index)=>({id:'public-'+kind,dealer_id:profile.id,publication_revision:1,status:kind==='grand'?'available':kind,stock_number:`UI-PUBLIC-${index+1}`,title:kind==='grand'?'Native Public Grand':`Native Public ${kind}`,featured:false,form:'grand',player_system:false,condition:'used',make:'Synthetic',model:'',manufactured:null,size:'',finish:'',description:'Published synthetic piano',price:{minor_units:125000,currency:'USD'},photos:[{id:'front',alt_text:'Synthetic public piano photo'}]}));
  const photo=readFileSync(new URL('./fixtures/showroom.jpg',import.meta.url));
  const inquiryAttempts=new Map();
@@ -23,7 +24,8 @@ export function createNativePublicFixture(){
    return true;
   }
   if(req.method!=='GET'){send(405,{code:'bad_request'});return true;}
-  if(url.pathname==='/v1/showroom-discovery'){send(200,{data:{shops:[{id:profile.id,slug:profile.slug,name:profile.name}]}});return true;}
+  if(url.pathname==='/v1/showroom-discovery'){send(200,{data:{shops:[profile,emptyProfile].map(({id,slug,name})=>({id,slug,name}))}});return true;}
+  if(url.pathname==='/v1/showrooms/'+emptyProfile.slug+'/pianos'){send(200,{data:{profile:emptyProfile,pianos:[]},meta:{}});return true;}
   const base='/v1/showrooms/'+profile.slug+'/pianos';
   if(url.pathname===base){
    const q=url.searchParams,availability=q.get('availability'),search=(q.get('search')??'').trim().toLowerCase();

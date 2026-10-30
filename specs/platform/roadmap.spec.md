@@ -38,6 +38,17 @@ these are implementation evidence, not a claim of three-client acceptance. Wider
 and accessibility acceptance remain open. Provider configuration and spoken/physical-device acceptance are
 separate unresolved external/evidence requirements.
 
+The native catalog review also found contact/visit information unreachable when
+a showroom has no listings. A dedicated About this showroom route now exposes
+public description, contact actions, address and trust notes independently of
+inventory, sharing its presentation with listings. Small initial collections hide
+unhelpful filters while preserving sold discovery; applied filters and editable
+search independently retain recovery controls. A review-found clear-search race
+has failing-then-passing regression coverage. The 512 shared tests, ten native
+fixture tests, mobile/core types, structure/i18n and review pass. Signed-out iOS
+empty-showroom navigation assertions are added; native runtime evidence is still
+pending, so this is not SH-01/SH-02 completion.
+
 PR #66 run `40982410120` at `7c96772` passed both iOS profile journeys, including
 exact entry, saves, restart recovery and invalid-time focus. Inventory keyboard
 search then failed with exact input retained but stale results. Follow-up

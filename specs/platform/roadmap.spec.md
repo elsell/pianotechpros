@@ -7,6 +7,17 @@ The detailed requirements remain in `product-parity.spec.md`; website-specific
 closure is tracked in `web-parity-audit.spec.md` and device evidence in
 `native-experience.spec.md`.
 
+The delivery branch now integrates the native typing/acceptance stack, public
+showroom/inquiry/photo workflows, inventory access-denial handling and recorded
+sale-correction evidence. The inventory merge retains native submit-event text
+and denial until successful revalidation. All task-owned open PR heads through
+#130 are ancestors of this integration; a single PR against main must pass full
+CI before merge. Earlier per-branch results are supporting evidence, not a waiver
+for the combined result. The corrected security candidate run `41015317303`
+has passed full hosted verification and Android compilation. Its checksum-matched
+APK also passes signed-out real-API listing/photo zoom/reset/foreground checks on
+Paul; iOS and the remaining full acceptance are still pending.
+
 The dependency remediation candidate now removes deepmerge from the frozen npm
 graph and migrates its actual Expo/EAS and Svelte consumers to pinned
 @fastify/deepmerge 3.2.2. The unchanged low-threshold audit reports no known

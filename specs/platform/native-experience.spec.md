@@ -1403,3 +1403,15 @@ schedule text in its accessibility label. Query that unique composite row
 without removing its useful spoken summary. Preserve the exact reopened `09:`
 assertion and invalid-save keyboard/focus assertions. This recording proves the
 visible restored summary, not successful row activation or the remaining journey.
+
+
+Run `40973187094` at `8637ceb` passed native builds and browser/API acceptance,
+but the create-profile test queried Location name before the protected Add
+location transition completed. Its recording at 60 seconds shows the new
+location editor at the top with Location name visible and the keyboard dismissed;
+the subsequent unconditional upward swipes move past that field. The harness
+must wait for a target to exist before scrolling. After Add location, explicitly
+wait for the first field to be hittable without scrolling, asserting the product
+requirement that a new section opens at the top. Retain exact text-value checks
+and capture the accessibility tree and screenshot on reach failures. This
+correction still requires a full native CI journey; it is not acceptance evidence.

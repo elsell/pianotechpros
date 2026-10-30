@@ -9,10 +9,14 @@ final class ProfileInteractionTests: XCTestCase {
     }
     func button(_ name: String) -> XCUIElement { app.buttons[name].firstMatch }
     func reach(_ element: XCUIElement) {
+        XCTAssertTrue(element.waitForExistence(timeout: 15), "Control must appear before scrolling")
         for _ in 0..<10 {
             if element.exists && element.isHittable { return }
             app.swipeUp()
         }
+        capture("unreachable-control")
+        let tree = XCTAttachment(string: app.debugDescription)
+        tree.name = "unreachable-control-tree"; tree.lifetime = .keepAlways; add(tree)
         XCTAssertTrue(element.exists && element.isHittable, "Control must be reachable")
     }
     func tap(_ name: String) { let element = button(name); reach(element); element.tap() }
@@ -87,7 +91,13 @@ final class ProfileInteractionTests: XCTestCase {
         else { systemConsent.tap() }
         XCTAssertTrue(button("My customer profile").waitForExistence(timeout: 45))
         tap("My customer profile"); enter("Name", "iOS Customer"); enter("Email", "customer@example.test")
-        tap("Add location"); enter("Location name", "Home"); enter("Street address", "1 Test Street")
+        tap("Add location")
+        let locationName = app.textFields["Location name"].firstMatch
+        let locationReady = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in locationName.exists && locationName.isHittable }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [locationReady], timeout: 15), .completed,
+                       "A new location must open with its first field visible without scrolling")
+        enter("Location name", "Home"); enter("Street address", "1 Test Street")
         enter("City", "Boston"); enter("State or region", "MA"); enter("Postal code", "02110")
         tap("Timezone"); selectChoice("UTC", role: "radio button"); tap("Save profile"); saved(); capture("customer-saved")
         back(); back()

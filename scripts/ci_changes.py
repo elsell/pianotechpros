@@ -88,6 +88,15 @@ def _classify_path(path: str) -> Plan | None:
     }:
         return Plan(acceptance=True)
     if path in {
+        "scripts/ios-ui-acceptance.sh",
+        "scripts/ios-journey-schedule.sh",
+        "scripts/ios-journey-schedule.test.mjs",
+        "scripts/native-real-service-session.mjs",
+        "scripts/seed-native-real-inventory.mjs",
+        "scripts/check-native-real-inventory.mjs",
+        "scripts/check-native-real-profiles.mjs",
+        "scripts/install-native-acceptance-services.sh",
+        "scripts/with-native-acceptance-services.sh",
         "scripts/build-ios-simulator.sh",
         "scripts/run-eas.mjs",
         "scripts/run-eas.test.mjs",

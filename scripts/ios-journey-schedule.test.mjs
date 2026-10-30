@@ -15,7 +15,7 @@ function run(failures = '', realProfiles = false) {
     verify_inventory() { echo verify; [[ ",$FAILURES," != *",persisted,"* ]]; }
     verify_profiles() { echo verify-profiles; [[ ",$FAILURES," != *",persisted,"* ]]; }
     record_journey() { echo "$1 $2"; }
-    ${realProfiles ? 'run_ios_real_profile_schedule' : 'run_ios_journey_schedule'}
+    ${realProfiles === 'inventory' ? 'run_ios_real_inventory_schedule' : realProfiles ? 'run_ios_real_profile_schedule' : 'run_ios_journey_schedule'}
   `, 'schedule-test', scheduler], { encoding: 'utf8', env: { ...process.env, FAILURES: failures }, timeout: 5000 });
   assert.equal(result.error, undefined);
   assert.equal(result.stderr, '');
@@ -31,6 +31,20 @@ test('real profiles require creation, protected recovery and independent persist
     assert.equal(rejected.status,1);
     assert.ok(rejected.lines.includes(`${failure} failed`));
     if(failure==='create')assert.ok(!rejected.lines.includes('run restore'));
+  }
+});
+
+test('real inventory keeps browse/readiness failures and gates reopen on persistence', () => {
+  const result=run('','inventory');
+  assert.equal(result.status,0);
+  assert.equal(result.lines.filter(line=>line.endsWith(' passed')).length,5);
+  assert.ok(result.lines.indexOf('verify')<result.lines.indexOf('run reopen'));
+  for(const failure of ['inventory','readiness','edit','persisted','reopen']){
+    const rejected=run(failure,'inventory');
+    assert.equal(rejected.status,1);
+    assert.ok(rejected.lines.includes(`${failure} failed`));
+    if(['edit','persisted'].includes(failure))assert.ok(!rejected.lines.includes('run reopen'));
+    else if(failure!=='reopen')assert.ok(rejected.lines.includes('reopen passed'));
   }
 });
 

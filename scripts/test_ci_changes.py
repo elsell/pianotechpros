@@ -8,6 +8,10 @@ class Routing(unittest.TestCase):
         self.assertEqual(classify(['apps/api/internal/app/example/service.go']), Plan(acceptance=True, api_image=True))
         self.assertEqual(classify(['apps/mobile/app/index.tsx']), Plan(native=True))
         self.assertEqual(classify(['packages/client-core/src/index.ts']), Plan(acceptance=True, web_image=True, native=True))
+    def test_authenticated_browser_matrix_selects_real_service_acceptance(self):
+        for path in ['scripts/photo-management-persisted-acceptance.mjs', 'scripts/dealer-profile-persisted-acceptance.mjs']:
+            with self.subTest(path=path):
+                self.assertEqual(classify([path]), Plan(acceptance=True))
     def test_uncertain_changes_run_everything(self):
         for paths in [[], ['new-component/file'], ['/absolute'], ['../escape'], ['docs/readme.md', 'unknown']]:
             with self.subTest(paths=paths): self.assertEqual(classify(paths), ALL)

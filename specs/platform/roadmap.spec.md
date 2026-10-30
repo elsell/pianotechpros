@@ -25,6 +25,10 @@ TalkBack or physical-device acceptance.
 
 Remaining delivery work:
 
+- Run the production-image vulnerability scans without publication. CI verifies
+  container builds; Grype scans currently run only in the manual release workflow.
+  Passing dependency scans alone does not establish scanned release images.
+
 1. Verify dedicated non-production identity, speech/extraction and Turnstile
    integrations. Configuration remains requested; never borrow legacy credentials.
 2. Complete broader native journeys against real services and the device,

@@ -42,3 +42,29 @@ test('history copy interpolates revisions and origins in each supported locale',
   assert.ok(!/[{}]/.test(origin));
  }
 });
+
+test('currency rendering retains exact amounts without the optional formatToParts capability',()=>{
+ const descriptor=Object.getOwnPropertyDescriptor(Intl.NumberFormat.prototype,'formatToParts')!;
+ const cases:Array<[number,string]>=[[0,'USD'],[1,'USD'],[123456,'USD'],[9007199254740991,'USD'],[1200,'JPY'],[9007199254740991,'JPY'],[1,'KWD'],[9007199254740991,'KWD']];
+ const expected=['en','es'].map(locale=>cases.map(([amount,currency])=>createTranslator([locale]).money(amount,currency)));
+ try{
+  Reflect.deleteProperty(Intl.NumberFormat.prototype,'formatToParts');
+  for(const [index,locale] of ['en','es'].entries()){
+   assert.deepEqual(cases.map(([amount,currency])=>createTranslator([locale]).money(amount,currency)),expected[index]);
+  }
+ }finally{Object.defineProperty(Intl.NumberFormat.prototype,'formatToParts',descriptor);}
+});
+
+
+test('exact native money layout agrees with Intl parts across supported locales and currency scales',()=>{
+ for(const locale of ['en','es'])for(const currency of ['USD','EUR','JPY','KWD','BHD','CLF']){
+  const formatter=new Intl.NumberFormat(locale,{style:'currency',currency});
+  const digits=formatter.resolvedOptions().maximumFractionDigits!;
+  const base=10n**BigInt(digits);
+  for(const amount of [0,1,9,10,99,100,999,1000,123456,9007199254740991]){
+   const units=BigInt(amount),fraction=(units%base).toString().padStart(digits,'0');
+   const expected=formatter.formatToParts(Number(units/base)).map(part=>part.type==='fraction'?fraction:part.value).join('');
+   assert.equal(createTranslator([locale]).money(amount,currency),expected,`${locale} ${currency} ${amount}`);
+  }
+ }
+});

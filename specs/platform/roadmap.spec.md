@@ -7,6 +7,16 @@ The detailed requirements remain in `product-parity.spec.md`; website-specific
 closure is tracked in `web-parity-audit.spec.md` and device evidence in
 `native-experience.spec.md`.
 
+The first corrected iOS public-flow run `41013141538` is terminal and exposed
+an application crash when rendering a priced catalog card. Retained xcresult
+stderr identifies an undefined function in PianoCard; the shared exact-money
+formatter used `Intl.NumberFormat.formatToParts`, unavailable in iOS Hermes.
+The correction uses Intl's integer currency layout and decimal suffix while
+preserving exact minor units. A capability-limited regression failed before the
+fix; both supported locales and zero-/two-/three-/four-decimal currencies are
+covered. Native execution of the correction remains required. This is a product
+runtime defect, not a reason to weaken the existing priced-catalog assertion.
+
 The delivery branch now integrates the native typing/acceptance stack, public
 showroom/inquiry/photo workflows, inventory access-denial handling and recorded
 sale-correction evidence. The inventory merge retains native submit-event text

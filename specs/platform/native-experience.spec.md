@@ -1616,3 +1616,14 @@ or iOS interaction result. Six controller regressions pass, including denial
 retention through pending/transient retries and suppression of stale success;
 the existing 475-test client-core suite, mobile TypeScript, structural and
 two-locale i18n gates also pass.
+
+## Exact currency formatting on native engines
+
+Public catalog, listing, inquiry and private review prices must render on iOS
+Hermes without `Intl.NumberFormat.prototype.formatToParts`, which is unavailable
+on that platform. Shared formatting must preserve every safe integer minor unit,
+including zero-, two- and three-decimal currencies, for both supported locales.
+Use the runtime's currency layout and grouping; never round the minor-unit value
+through floating-point division. A capability-limited regression must exercise
+both locales and maximum safe values. The existing priced iOS catalog journey
+remains required; a Node regression alone does not prove native acceptance.

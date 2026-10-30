@@ -1742,3 +1742,20 @@ single-line decimal fields retain their accessory. The existing controlled-fixtu
 journey must verify keyboard dismissal and exact retained text for both multiline
 fields before continuing through persistence and reopening. Hosted runtime
 acceptance remains pending; a type check is not interaction evidence.
+
+## Integrated iOS acceptance — 2026-10-30
+
+PR #138, source `80adf0254e8d5ebc286cdf80e528b5799d36e226`, passed run
+`41054344257` and merged at `eb885669cf98c8cbb8f13c661d1d917d45ceb78d`.
+Artifact `ios-interaction-9d7e7a2bc30a709cae0c0075eaf4bdd799c4b2ba`
+(ID 12983686000) retains the journey table, logs, screenshots and xcresults.
+Every scheduled outcome passed: public, create, restore, inventory, readiness,
+edit, persisted, reopen and accessibility. The edit test verifies Done dismisses
+both multiline keyboards without losing exact text; the reopened app verifies
+the complete inventory field values. The public automated audit passes with the
+contextual price label; its assertions were not filtered or weakened.
+
+These are simulator journeys against controlled HTTP fixtures. The persisted
+check reads fixture state. They are not production database, provider, spoken
+screen-reader, physical-device or complete native parity acceptance. The broader
+real-service/device requirements above remain in force.

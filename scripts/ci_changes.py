@@ -75,6 +75,8 @@ def _classify_path(path: str) -> Plan | None:
 
     if path in {
         "scripts/live-acceptance.sh",
+        "scripts/photo-management-persisted-acceptance.mjs",
+        "scripts/dealer-profile-persisted-acceptance.mjs",
         "scripts/scalar-browser-acceptance.mjs",
         "scripts/scalar-try-retry.mjs",
         "scripts/scalar-try-retry.test.mjs",

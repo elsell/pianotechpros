@@ -50,7 +50,7 @@ export async function startNativeUIFixture({port=0,now=Date.now,onAuthResponse=(
    const bearer=req.headers.authorization?.replace(/^Bearer /,''),session=sessions.get(bearer);
    if(!session||req.headers.authorization!=='Bearer '+bearer)return send(401,{code:'unauthenticated'});
    if(req.method==='GET'&&path==='/v1/me')return send(200,{data:{id:'native-ui-owner',email:'owner@example.test',displayName:'Native UI Owner'}});
-   if(inventoryRoutes?.(req,url,send))return;
+   if(await inventoryRoutes?.(req,url,send,body))return;
    if(req.method==='GET'&&path==='/v1/dealers')return send(200,{data:[],meta:{}});
    if(req.method==='POST'&&path==='/v1/session/refresh'){sessions.delete(bearer);const token=opaque();sessions.set(token,session);return send(200,{data:{token,expiresAt:new Date(session.expires).toISOString()}});}
    const match=/^\/v1\/(customer|technician)-profile(\/timezones)?$/.exec(path);

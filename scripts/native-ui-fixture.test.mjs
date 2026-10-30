@@ -142,3 +142,28 @@ test('native editor fixture exposes consistent scoped read-only readiness state'
  assert.equal((await api(f,path+'/publish',{expectedRevision:record.revision},session)).status,404);
  assert.deepEqual(await read(''),record);
 });
+
+test('inventory fixture retains edits across sessions and rejects stale or malformed writes',async t=>{
+ const f=await startNativeUIFixture({inventory:true});t.after(()=>f.close());
+ const session=(await (await api(f,'/v1/sessions',{identityToken:await login(f)})).json()).data.token;
+ const root='/v1/dealers/00000000-0000-4000-8000-000000000001/inventory';
+ const path=root+'/00000000-0000-4000-8001-000000000001';
+ const original=(await (await api(f,path,undefined,session)).json()).data;
+ const attributes={...original.attributes,title:'Edited native piano',make:'Example',model:'Grand',location:'Workshop',private_notes:'Keep private'};
+ const put=(input,credential=session,target=path)=>fetch(f.origin+target,{method:'PUT',headers:{'content-type':'application/json',...(credential?{authorization:'Bearer '+credential}:{})},body:JSON.stringify(input)});
+ const input={attributes,expectedRevision:original.revision};
+ assert.equal((await put(input,'')).status,401);
+ assert.equal((await put(input,session,path.replace(original.id,'missing'))).status,404);
+ for(const invalid of [null,[],{}, {...input,attributes:null},{...input,attributes:[]},{...input,attributes:{title:'No stock'}}])assert.equal((await put(invalid)).status,400);
+ assert.equal((await put({...input,expectedRevision:0})).status,409);
+ let response=await put(input);assert.equal(response.status,200);
+ const saved=(await response.json()).data;
+ assert.equal(saved.revision,2);assert.deepEqual(saved.attributes,attributes);assert.equal(saved.status,'draft');
+ assert.equal((await put(input)).status,409);
+ response=await put({...input,expectedRevision:2});assert.equal(response.status,200);assert.deepEqual((await response.json()).data,saved);
+ const reopenedSession=(await (await api(f,'/v1/sessions',{identityToken:await login(f)})).json()).data.token;
+ assert.deepEqual((await (await api(f,path,undefined,reopenedSession)).json()).data,saved);
+ assert.deepEqual((await (await api(f,root+'?search=Edited',undefined,reopenedSession)).json()).data,[saved]);
+ for(const surface of ['photos','publication'])assert.deepEqual((await (await api(f,path+'/'+surface,undefined,reopenedSession)).json()).data.record,saved);
+ assert.equal((await api(f,path+'/publish',{},session)).status,404);
+});

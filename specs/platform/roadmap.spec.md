@@ -7,6 +7,13 @@ The detailed requirements remain in `product-parity.spec.md`; website-specific
 closure is tracked in `web-parity-audit.spec.md` and device evidence in
 `native-experience.spec.md`.
 
+The iOS gate now includes full private-record editing and a separate app-restart
+reopen journey. Before restart, an independently authenticated fixture read must
+match every expected attribute, preventing local draft recovery from masquerading
+as a server save. Controlled HTTP and production-adapter regressions pass;
+execution of these new native journeys is pending CI. This does not close real
+API persistence or the overall native acceptance milestone.
+
 A renewed native implementation review found three product gaps, distinct from
 missing device evidence: actionable publication readiness before confirmation,
 field-specific voice ambiguity clarification, and public showroom/listing

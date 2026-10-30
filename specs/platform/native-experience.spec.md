@@ -1502,3 +1502,19 @@ publications valid revision 2 and run the contract regression before the expensi
 iOS build: directory, catalog, detail, sold search and empty-shop profile must
 pass the production adapter. Preserve strict client validation. This diagnosis
 and fixture correction are not a successful iOS interaction result.
+
+## iOS inventory editing and restart acceptance
+
+The iOS interaction gate must edit a private inventory record through ordinary
+navigation, including identity, piano type and condition, manufacture date,
+public description and price, and internal stock/location/cost/notes. It must
+save, terminate the application, reopen the record and assert exact persisted
+values and selected choices. Independently read and compare the complete saved
+fixture record before restart so local draft recovery cannot impersonate a
+server save. Capture accessibility trees and screenshots.
+
+The controlled HTTP fixture may retain revision-checked inventory edits across
+application restarts, but never manufacture publication or upload success.
+Conflicting revisions and malformed commands must not alter saved data. Fixture
+interaction evidence establishes native control behavior only; real API
+persistence, ownership, audit and publication acceptance remain separate gates.

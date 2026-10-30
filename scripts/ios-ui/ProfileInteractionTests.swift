@@ -276,6 +276,84 @@ final class ProfileInteractionTests: XCTestCase {
         XCTAssertTrue(button("My customer profile").waitForExistence(timeout: 15))
     }
 
+    func inventoryMultiline(_ label: String, _ value: String) {
+        let field = app.textViews[label].firstMatch
+        reach(field); field.tap(); field.typeText(value)
+        exactText(field, value, label); tap("Done")
+    }
+    func setInventorySwitch(_ label: String, enabled: Bool) {
+        let control = app.switches[label].firstMatch
+        reach(control)
+        if (control.value as? String == "1") != enabled { control.tap() }
+        XCTAssertEqual(control.value as? String, enabled ? "1" : "0")
+    }
+    func assertInventoryChoice(_ label: String, _ value: String) {
+        tap("Choose " + label)
+        let selected = choice(value, role: "radio button")
+        XCTAssertTrue(selected.waitForExistence(timeout: 10))
+        XCTAssertEqual(selected.value as? String, "radio button, checked")
+        tap("Done")
+    }
+    func testEditInventoryRecord() throws {
+        XCTAssertTrue(button("Native UI Shop").waitForExistence(timeout: 60))
+        tap("Native UI Shop"); tap("Browse inventory")
+        let draft = inventoryRow("UI Draft Piano"); reach(draft); draft.tap()
+        replace("Make", "Example"); replace("Model", "Concert")
+        replace("Display title", "Edited native piano")
+        enter("Size", "180 cm"); enter("Finish", "Satin ebony")
+        tap("Choose Piano type"); selectChoice("Grand", role: "radio button")
+        tap("Choose Condition"); selectChoice("Restored", role: "radio button")
+        setInventorySwitch("Player system", enabled: true)
+        enter("Year", "1998"); enter("Month", "6"); enter("Day", "15")
+        inventoryMultiline("Public description", "Prepared for a new home.")
+        enter("Asking price", "12500.50")
+        tap("Choose Price currency"); selectChoice("USD", role: "radio button")
+        setInventorySwitch("Show asking price", enabled: true)
+        setInventorySwitch("Feature in showroom", enabled: false)
+        tap("Internal details")
+        replace("Stock number", "UI-EDIT-001"); enter("Serial number", "SN12345")
+        enter("Location", "Workshop"); enter("Acquisition cost", "8000.25")
+        tap("Choose Cost currency"); selectChoice("USD", role: "radio button")
+        inventoryMultiline("Private notes", "Keep this note private.")
+        tap("Save now")
+        XCTAssertTrue(app.staticTexts["Saved"].waitForExistence(timeout: 20))
+        capture("inventory-edited")
+        back(); XCTAssertTrue(inventoryRow("Edited native piano").waitForExistence(timeout: 15))
+        back(); back()
+    }
+    func testReopenEditedInventoryAfterProcessRestart() throws {
+        XCTAssertTrue(button("Native UI Shop").waitForExistence(timeout: 60))
+        tap("Native UI Shop"); tap("Browse inventory")
+        let draft = inventoryRow("Edited native piano"); reach(draft); draft.tap()
+        for (label, value) in [("Make", "Example"), ("Model", "Concert"),
+                               ("Display title", "Edited native piano"), ("Size", "180 cm"), ("Finish", "Satin ebony")] {
+            let field = app.textFields[label].firstMatch; reach(field); exactText(field, value, label)
+        }
+        assertInventoryChoice("Piano type", "Grand"); assertInventoryChoice("Condition", "Restored")
+        let player = app.switches["Player system"].firstMatch; reach(player)
+        XCTAssertEqual(player.value as? String, "1")
+        for (label, value) in [("Year", "1998"), ("Month", "6"), ("Day", "15")] {
+            let field = app.textFields[label].firstMatch; reach(field); exactText(field, value, label)
+        }
+        let description = app.textViews["Public description"].firstMatch; reach(description)
+        exactText(description, "Prepared for a new home.", "public description")
+        let price = app.textFields["Asking price"].firstMatch; reach(price); exactText(price, "12500.50", "price")
+        assertInventoryChoice("Price currency", "USD")
+        for (label, value) in [("Show asking price", "1"), ("Feature in showroom", "0")] {
+            let control = app.switches[label].firstMatch; reach(control); XCTAssertEqual(control.value as? String, value)
+        }
+        tap("Internal details")
+        for (label, value) in [("Stock number", "UI-EDIT-001"), ("Serial number", "SN12345"),
+                               ("Location", "Workshop"), ("Acquisition cost", "8000.25")] {
+            let field = app.textFields[label].firstMatch; reach(field); exactText(field, value, label)
+        }
+        assertInventoryChoice("Cost currency", "USD")
+        let notes = app.textViews["Private notes"].firstMatch; reach(notes)
+        exactText(notes, "Keep this note private.", "private notes")
+        capture("inventory-reopened-after-restart")
+        back(); back(); back()
+    }
+
     func testBrowseInventoryThroughNormalNavigation() throws {
         XCTAssertTrue(button("Native UI Shop").waitForExistence(timeout: 60))
         tap("Native UI Shop"); tap("Browse inventory")

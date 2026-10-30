@@ -223,6 +223,11 @@ current piano and non-available records. Conflicting showroom identity or malfor
 results fail closed. Optional related-content failure leaves the main listing
 usable with a localized unavailable notice and an ordinary showroom link; it
 must never synthesize candidates from private inventory or cached editor data.
+Native listing reads must expose the primary publication immediately after it
+loads, without awaiting optional related requests. Refresh, route loss and
+backgrounding clear both projections and cancel their requests; late related
+responses cannot attach to a newer listing. A secondary failure must not clear
+primary content or prevent contact, inquiry or sharing actions.
 Cards use publication-derived readable links and scoped public thumbnails. All
 copy and photo accessibility labels use the shared catalog.
 

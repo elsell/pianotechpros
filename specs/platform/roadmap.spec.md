@@ -14,6 +14,12 @@ as a server save. Controlled HTTP and production-adapter regressions pass;
 execution of these new native journeys is pending CI. This does not close real
 API persistence or the overall native acceptance milestone.
 
+Native listing content now loads independently of optional related pianos.
+A stalled or failed related request no longer withholds primary details and
+contact actions. Refresh/background cancellation suppresses late secondary
+results, and malformed routes retain unavailable-state handling. Shared-model
+regressions pass; native interaction confirmation remains pending CI.
+
 A renewed native implementation review found three product gaps, distinct from
 missing device evidence: actionable publication readiness before confirmation,
 field-specific voice ambiguity clarification, and public showroom/listing

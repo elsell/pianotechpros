@@ -285,3 +285,5 @@ export {publicationReadiness} from './publication-readiness';
 export * from './public-resource';
 export * from './showroom-browser';
 export * from './inquiry-proof';
+
+export * from './public-listing-resource';

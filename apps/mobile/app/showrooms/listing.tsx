@@ -2,7 +2,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {RefreshControl,ScrollView,Text,View} from 'react-native';
 import {useLocalSearchParams,useRouter} from 'expo-router';
 import {createShowroomApiClient,type PublicPiano,type PublicShowroomProfile} from '@pianotechpros/api-client';
-import {createPublicResource,publicPianoID,publicPianoPath,relatedPublicPianos,sharePublicLink} from '@pianotechpros/client-core';
+import {createPublicListingResource,publicPianoID,publicPianoPath,relatedPublicPianos,sharePublicLink} from '@pianotechpros/client-core';
 import type {MessageKey} from '@pianotechpros/i18n';
 import {NativeButton} from '../../src/native-button';
 import {useMobileSession} from '../../src/session-provider';
@@ -12,7 +12,7 @@ import {usePublicState} from '../../src/showroom/public-read';
 import {PublicImage} from '../../src/showroom/PublicImage';
 import {ShowroomDetails} from '../../src/showroom/ShowroomDetails';
 import {PianoCard} from '../../src/showroom/PianoCard';
-function ListingContent({profile,piano,related,relatedFailed}:{profile:PublicShowroomProfile;piano:PublicPiano;related:PublicPiano[];relatedFailed:boolean}){
+function ListingContent({profile,piano,related,relatedFailed,relatedLoading}:{profile:PublicShowroomProfile;piano:PublicPiano;related:PublicPiano[];relatedFailed:boolean;relatedLoading:boolean}){
  const {i18n,webURL}=useMobileSession();const theme=useNativeTheme();const router=useRouter();const [selected,setSelected]=useState(0),[busy,setBusy]=useState(false),[failed,setFailed]=useState(false);
  const lifetime=useRef({active:true,busy:false});useEffect(()=>{const scope={active:true,busy:false};lifetime.current=scope;return()=>{scope.active=false;};},[]);
  const text={color:theme.text,fontSize:17},heading={...text,fontSize:24,fontWeight:'600' as const};const t=(key:string)=>i18n.t(`showroom.${key}` as MessageKey);
@@ -30,7 +30,7 @@ function ListingContent({profile,piano,related,relatedFailed}:{profile:PublicSho
  {facts.filter(fact=>fact.value).map(fact=><View key={fact.label} style={{gap:6,paddingVertical:8,borderBottomWidth:1,borderColor:theme.border}}><Text style={{color:theme.secondary,fontSize:16}}>{i18n.t(fact.label)}</Text><Text selectable style={text}>{fact.value}</Text></View>)}
  <NativeButton title={i18n.t('inquiry.heading')} onPress={()=>router.push({pathname:'/showrooms/inquiry',params:{slug:profile.slug,id:piano.id}})}/>
  <ShowroomDetails profile={profile} subject={piano.title}/>
- <Text accessibilityRole="header" style={heading}>{t('related')}</Text>{relatedFailed?<Text style={text}>{t('relatedUnavailable')}</Text>:null}
+ <Text accessibilityRole="header" style={heading}>{t('related')}</Text>{relatedLoading?<Text accessibilityLiveRegion="polite" style={text}>{i18n.t('common.loading')}</Text>:null}{relatedFailed?<Text style={text}>{t('relatedUnavailable')}</Text>:null}
  {related.map(other=><PianoCard key={other.id} slug={profile.slug} piano={other} open={()=>router.push({pathname:'/showrooms/listing',params:{slug:profile.slug,id:other.id}})}/>)}
  <NativeButton title={t('back')} onPress={()=>router.navigate({pathname:'/showrooms/catalog',params:{slug:profile.slug}})}/>
  </View>;
@@ -38,12 +38,12 @@ function ListingContent({profile,piano,related,relatedFailed}:{profile:PublicSho
 export default function PublicListing(){
  const params=useLocalSearchParams<{slug:string;id:string}>();const slug=typeof params.slug==='string'?params.slug:'',segment=typeof params.id==='string'?params.id:'';
  const {apiURL,i18n}=useMobileSession();const theme=useNativeTheme();
- const model=useMemo(()=>createPublicResource(async(signal)=>{
-  const api=createShowroomApiClient(apiURL),id=publicPianoID(segment);const listing=await api.listing(slug,id,signal);let related:PublicPiano[]=[],relatedFailed=false;
-  try{if(signal.aborted)throw Error('cancelled');related=await relatedPublicPianos(listing.piano,query=>api.list(slug,query,signal));}catch{relatedFailed=true;}
-  return {...listing,related,relatedFailed};
- }),[apiURL,slug,segment]);const state=usePublicState(model);
+ const model=useMemo(()=>{
+  const api=createShowroomApiClient(apiURL);
+  return createPublicListingResource(signal=>api.listing(slug,publicPianoID(segment),signal),
+   (listing,signal)=>relatedPublicPianos(listing.piano,query=>api.list(slug,query,signal)));
+ },[apiURL,slug,segment]);const state=usePublicState(model);
  return <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{padding:20,gap:16}} refreshControl={<RefreshControl refreshing={state.loading} onRefresh={()=>void model.refresh()} tintColor={theme.accent}/>}>
- {state.value?<ListingContent key={slug+':'+segment} {...state.value}/>:state.failure?<><Text accessibilityRole="alert" style={{color:theme.text,fontSize:17}}>{i18n.t('showroom.unavailable')}</Text><NativeButton title={i18n.t('dealer.retry')} onPress={()=>void model.refresh()}/></>:null}
+ {state.value?<ListingContent key={slug+':'+segment} {...state.value} related={state.related} relatedFailed={state.relatedFailure} relatedLoading={state.relatedLoading}/>:state.failure?<><Text accessibilityRole="alert" style={{color:theme.text,fontSize:17}}>{i18n.t('showroom.unavailable')}</Text><NativeButton title={i18n.t('dealer.retry')} onPress={()=>void model.refresh()}/></>:null}
  </ScrollView>;
 }

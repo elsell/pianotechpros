@@ -12,7 +12,7 @@ cleanup() {
   if [[ -n "$simulator" ]]; then xcrun simctl shutdown "$simulator" >/dev/null 2>&1 || true; xcrun simctl delete "$simulator"; fi
 }
 trap cleanup EXIT
-node --test scripts/native-ui-fixture.test.mjs scripts/ios-metro-ready.test.mjs
+node --test scripts/native-ui-fixture.test.mjs scripts/ios-metro-ready.test.mjs scripts/ios-journey-schedule.test.mjs
 pnpm --dir packages/api-client exec tsx --test ../../scripts/native-public-contract.test.mjs ../../scripts/native-inventory-contract.test.mjs
 python3 scripts/test_ios_simulator_entitlements.py
 python3 scripts/test_ios_ui_bundle.py
@@ -61,25 +61,21 @@ run_journey() {
   local name="$1" method="$2" result=0
   xcodebuild "${args[@]}" test-without-building -parallel-testing-enabled NO "-only-testing:PianoInteractionTests/ProfileInteractionTests/$method" -resultBundlePath "$evidence/$name.xcresult" > "$evidence/$name.log" 2>&1 || result=$?
   if [[ -d "$evidence/$name.xcresult" ]]; then
-    xcrun xcresulttool export attachments --path "$evidence/$name.xcresult" --output-path "$evidence/$name-screenshots"
+    xcrun xcresulttool export attachments --path "$evidence/$name.xcresult" --output-path "$evidence/$name-screenshots" || result=1
   fi
   return "$result"
 }
-run_journey public testBrowsePublicShowroomWithoutSigningIn
-xcrun simctl terminate "$simulator" com.pianotechpros.pianotechpros || true
-run_journey create testCreateProfilesAndProtectPartialDraft
-xcrun simctl terminate "$simulator" com.pianotechpros.pianotechpros || true
-run_journey restore testRestorePartialDraftAfterProcessRestart
-
-xcrun simctl terminate "$simulator" com.pianotechpros.pianotechpros || true
-run_journey inventory testBrowseInventoryThroughNormalNavigation
-
-xcrun simctl terminate "$simulator" com.pianotechpros.pianotechpros || true
-run_journey readiness testIncompletePublicationReturnsToRequiredControls
-xcrun simctl terminate "$simulator" com.pianotechpros.pianotechpros || true
-run_journey edit testEditInventoryRecord
-node scripts/check-native-inventory-edit.mjs > "$evidence/inventory-persisted.json"
-xcrun simctl terminate "$simulator" com.pianotechpros.pianotechpros || true
-run_journey reopen testReopenEditedInventoryAfterProcessRestart
-xcrun simctl terminate "$simulator" com.pianotechpros.pianotechpros || true
-run_journey accessibility testPublicAccessibility
+restart_app() {
+  # Terminating an already stopped app is harmless; launch readiness is asserted
+  # by XCTest's setUpWithError for every journey.
+  xcrun simctl terminate "$simulator" com.pianotechpros.pianotechpros >/dev/null 2>&1 || true
+}
+verify_inventory() {
+  node scripts/check-native-inventory-edit.mjs > "$evidence/inventory-persisted.json"
+}
+record_journey() {
+  printf '%s\t%s\n' "$1" "$2" >> "$evidence/journeys.tsv"
+}
+: > "$evidence/journeys.tsv"
+source "$root/scripts/ios-journey-schedule.sh"
+run_ios_journey_schedule

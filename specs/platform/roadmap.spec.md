@@ -22,6 +22,13 @@ No new advisory waiver or age exception is introduced. Required review and full
 hosted verification/native acceptance remain merge prerequisites; this local
 result does not establish three-client parity or close provider/accessibility work.
 
+Hosted iOS scheduling now collects independent journey failures within one build
+instead of stopping after the first public-flow failure. Failed profile setup
+blocks dependent authenticated checks; failed inventory editing or independent
+persistence verification blocks restart acceptance. Accessibility still runs,
+and any failed or blocked required journey fails the job. Scheduler regression
+checks pass; this is feedback coverage, not new device acceptance evidence.
+
 The iOS gate now includes full private-record editing and a separate app-restart
 reopen journey. Before restart, an independently authenticated fixture read must
 match every expected attribute, preventing local draft recovery from masquerading

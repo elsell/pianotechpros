@@ -90,6 +90,16 @@ physical-device usability, all scroll positions or full application conformance.
 The audit contract follows Apple's
 [XCUIAccessibilityAuditType documentation](https://developer.apple.com/documentation/xcuiautomation/xcuiaccessibilityaudittype).
 
+The hosted journey scheduler must retain independent failure evidence in one
+build. A failed public journey must not prevent profile or accessibility checks;
+a failed profile setup blocks its restoration and authenticated inventory chain.
+Inventory browsing and readiness remain independent after successful profile
+setup. Inventory restart verification requires both successful editing and the
+independent persisted-state check. Record passed, failed and blocked results;
+any failed or blocked required journey fails the overall gate. Restart the app
+between journeys and preserve result attachments even on failures. This changes
+execution scheduling, never assertion strength or acceptance scope.
+
 For each interaction, record task, selected pattern, commit/cancel semantics,
 loading/empty/error/denied states, implementation adapter, and acceptance evidence.
 Custom substitutes need a concrete platform limitation and a revisit condition.

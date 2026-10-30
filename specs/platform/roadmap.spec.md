@@ -27,6 +27,13 @@ now checks zoom, reset, dismissal and foreground non-reopening. Type checks,
 shared viewport/resource regressions and locale checks pass; device acceptance
 of this public-photo presentation remains pending CI.
 
+The older iOS visit journey exposed a harness failure before catalog loading:
+read-only delivery text was fully visible in retained screenshot/tree evidence,
+but the test incorrectly required it to be tappable. Exact text/viewport checks
+now cover visit notes; interactive controls keep hit-testing requirements. The
+corrected journey still requires CI execution, including later accessibility
+and inventory checks.
+
 A renewed native implementation review found three product gaps, distinct from
 missing device evidence: actionable publication readiness before confirmation,
 field-specific voice ambiguity clarification, and public showroom/listing

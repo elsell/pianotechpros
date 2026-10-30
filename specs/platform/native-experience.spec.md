@@ -1518,3 +1518,14 @@ application restarts, but never manufacture publication or upload success.
 Conflicting revisions and malformed commands must not alter saved data. Fixture
 interaction evidence establishes native control behavior only; real API
 persistence, ownership, audit and publication acceptance remain separate gates.
+
+## Read-only iOS visit text acceptance — 2026-10-30
+
+Run 41005082780 failed on the delivery note's `isHittable` assertion even though
+its retained screenshot and accessibility tree show all visit notes fully visible
+inside the scroll view. Read-only selectable text can expose nested static text
+nodes and is not an interactive control. Assert the exact note exists and its
+nonempty frame fits inside the visible scroll viewport, scrolling only when
+needed; retain screenshots and diagnostics. Buttons, inputs and choice controls
+still require hit testing before interaction. This corrects test semantics and
+does not waive accessibility audits or establish a successful native journey.

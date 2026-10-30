@@ -19,6 +19,23 @@ final class ProfileInteractionTests: XCTestCase {
         tree.name = "unreachable-control-tree"; tree.lifetime = .keepAlways; add(tree)
         XCTAssertTrue(element.exists && element.isHittable, "Control must be reachable")
     }
+    func readVisibleText(_ label: String) {
+        let matches = app.staticTexts.matching(NSPredicate(format: "label == %@", label))
+        XCTAssertTrue(matches.firstMatch.waitForExistence(timeout: 15))
+        let scroll = app.scrollViews.firstMatch
+        XCTAssertTrue(scroll.waitForExistence(timeout: 10))
+        for _ in 0..<10 {
+            let viewport = scroll.frame.intersection(app.windows.firstMatch.frame)
+            if !viewport.isEmpty && matches.allElementsBoundByIndex.contains(where: {
+                $0.exists && !$0.frame.isEmpty && viewport.contains($0.frame)
+            }) { return }
+            scroll.swipeUp()
+        }
+        capture("unreadable-visit-text")
+        let tree = XCTAttachment(string: app.debugDescription)
+        tree.name = "unreadable-visit-text-tree"; tree.lifetime = .keepAlways; add(tree)
+        XCTFail("Exact visit text must fit inside the visible scroll viewport: " + label)
+    }
     func tap(_ name: String) { let element = button(name); reach(element); element.tap() }
     func choice(_ name: String, role: String) -> XCUIElement {
         let predicate = NSPredicate(format: "label == %@ AND (value == %@ OR value == %@)",
@@ -101,7 +118,7 @@ final class ProfileInteractionTests: XCTestCase {
         tap("About this showroom")
         XCTAssertTrue(app.staticTexts["Please arrange a visit before travelling."].waitForExistence(timeout: 15))
         try auditAccessibility("visit-top")
-        reach(app.staticTexts["Tuning is available by appointment."])
+        readVisibleText("Tuning is available by appointment.")
         try auditAccessibility("visit-bottom")
         back(); back(); tap("Native Public Showroom")
         XCTAssertTrue(inventoryRow("Native Public Grand").waitForExistence(timeout: 15))
@@ -128,9 +145,9 @@ final class ProfileInteractionTests: XCTestCase {
         XCTAssertFalse(app.textFields["Search pianos"].exists)
         tap("About this showroom")
         XCTAssertTrue(app.staticTexts["Please arrange a visit before travelling."].waitForExistence(timeout: 15))
-        reach(app.staticTexts["Ask about regional delivery."])
-        reach(app.staticTexts["Warranty details are available before purchase."])
-        reach(app.staticTexts["Tuning is available by appointment."])
+        readVisibleText("Ask about regional delivery.")
+        readVisibleText("Warranty details are available before purchase.")
+        readVisibleText("Tuning is available by appointment.")
         capture("public-empty-showroom-visit")
         back(); tap("Include sold pianos")
         XCTAssertTrue(button("Refine your search").waitForExistence(timeout: 15))

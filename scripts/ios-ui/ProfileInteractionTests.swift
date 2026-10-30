@@ -150,6 +150,7 @@ final class ProfileInteractionTests: XCTestCase {
         XCTAssertFalse(inventoryRow("UI Draft Piano").exists)
         let search = app.textFields["Search stock, title, make or model"].firstMatch
         reach(search); search.tap(); search.typeText("UI-002\n")
+        exactText(search, "UI-002", "inventory search")
         XCTAssertTrue(app.staticTexts["No pianos match these filters."].waitForExistence(timeout: 15))
         tap("Status: Sold"); selectChoice("Available", role: "radio button")
         XCTAssertTrue(inventoryRow("UI Available Piano").waitForExistence(timeout: 15))

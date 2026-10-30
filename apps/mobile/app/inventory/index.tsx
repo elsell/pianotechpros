@@ -24,13 +24,13 @@ function Inventory({dealerID}:{dealerID:string}){
  const [state,setState]=useState(browser.snapshot());const pull=usePullRefresh(()=>browser.refresh());
  useEffect(()=>{const unsubscribe=browser.subscribe(setState);return()=>{unsubscribe();browser.dispose();};},[browser]);
  useFocusEffect(useCallback(()=>{void browser.filter(browser.snapshot().filters);},[browser]));
- function apply(status:InventoryBrowseStatus){setFiltersOpen(false);void browser.filter({search,status});}
+ function apply(status:InventoryBrowseStatus,submittedSearch=search){setFiltersOpen(false);void browser.filter({search:submittedSearch,status});}
  return <><Stack.Screen options={{title:i18n.t('inventory.heading'),headerLargeTitle:true,headerRight:()=><Button title={i18n.t('inventory.edit.new')}  onPress={()=>router.push({pathname:'/inventory/[id]',params:{id:'new',dealerID}})} />}} />
  <FlatList data={state.items} keyExtractor={item=>item.id} contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled" contentContainerStyle={{padding:20,flexGrow:1}}
   refreshControl={<RefreshControl refreshing={pull.refreshing} onRefresh={()=>{void pull.refresh();}} tintColor={theme.accent} />}
   ListHeaderComponent={<View style={{gap:12,marginBottom:20}}>
    <Text style={{color:theme.secondary,fontSize:16}}>{i18n.t('inventory.search')}</Text>
-   <TextInput accessibilityLabel={i18n.t('inventory.search')} value={search} onChangeText={setSearch} returnKeyType="search" autoCorrect={false} maxLength={120} onSubmitEditing={()=>apply(state.filters.status)} style={{color:theme.text,backgroundColor:theme.surface,borderColor:theme.border,borderWidth:1,borderRadius:10,padding:12,minHeight:48,fontSize:17}} />
+   <TextInput accessibilityLabel={i18n.t('inventory.search')} value={search} onChangeText={setSearch} returnKeyType="search" autoCorrect={false} maxLength={120} onSubmitEditing={({nativeEvent})=>{setSearch(nativeEvent.text);apply(state.filters.status,nativeEvent.text);}} style={{color:theme.text,backgroundColor:theme.surface,borderColor:theme.border,borderWidth:1,borderRadius:10,padding:12,minHeight:48,fontSize:17}} />
    <Button title={i18n.t('inventory.submitSearch')}  onPress={()=>apply(state.filters.status)} />
    <Button title={i18n.t('inventory.filterButton',{status:i18n.t(statusKey(state.filters.status))})}  onPress={()=>setFiltersOpen(true)} />
    <Button title={i18n.t('inventory.refresh')}  disabled={state.busy} onPress={()=>{void browser.refresh();}} />

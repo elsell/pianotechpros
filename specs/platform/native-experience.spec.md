@@ -1415,3 +1415,15 @@ wait for the first field to be hittable without scrolling, asserting the product
 requirement that a new section opens at the top. Retain exact text-value checks
 and capture the accessibility tree and screenshot on reach failures. This
 correction still requires a full native CI journey; it is not acceptance evidence.
+
+
+Run `40982410120` at `7c96772` passed native compilation, browser/API acceptance,
+and both iOS profile journeys: exact rapid entry, saves, restart restoration of
+`09:`, and invalid-time keyboard/focus assertions. Inventory navigation and Sold
+selection passed, but typing `UI-002` and Return did not yield the empty result.
+The failure accessibility tree retains exact `UI-002` in the search field with
+Status: Sold and the old UI Sold Piano row visible. Submission currently reads
+render-captured React search state; use the native submit event text and retain
+the unchanged keyboard-submission journey to verify the correction. This does
+not establish inventory acceptance. Verification still fails only on the visible
+deepmerge advisory; no remaining gate is waived.

@@ -64,3 +64,13 @@ and retry the failed operation. Explicit access rejection removes all rows and
 continuations. Disposal clears private state and suppresses late completion.
 Platform components remain responsible for navigation and native interaction design.
 Browsing alone does not complete capture, editing, photos or publication journeys.
+
+
+Native keyboard search submission uses the text carried by the native submit
+event, rather than a render-captured search value. Rapid typing and Return can
+arrive before React commits the last change event; submitting stale state must
+not leave the old unfiltered rows visible. Keep the displayed search synchronized
+with the submitted value and preserve it through status changes. The native
+acceptance journey types `UI-002` and Return while Sold is selected, requires an
+empty result, then selects Available and requires the matching piano without
+retyping. Exact text retention remains part of the assertion.

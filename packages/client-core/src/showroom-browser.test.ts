@@ -15,6 +15,6 @@ test('invalid filters do not dispatch and clear old results',async()=>{
 });
 test('filter changes abort a pending page and reject its late completion',async()=>{
  let finish!:(value:ReturnType<typeof page>)=>void;let signal!:AbortSignal;
- const b=createShowroomBrowser('atelier','.',async(q,s)=>{if(q.cursor){signal=s;return new Promise(resolve=>{finish=resolve;});}return page(q.search||'one','next');});
+ const b=createShowroomBrowser('atelier','.',async(q,s)=>{if(q.cursor){signal=s;return new Promise<ReturnType<typeof page>>(resolve=>{finish=resolve;});}return page(q.search||'one','next');});
  await b.refresh();const more=b.more();await b.filter({search:'new'});assert.equal(signal.aborted,true);finish(page('old'));await more;assert.deepEqual(b.snapshot().value?.pianos.map(p=>p.id),['new']);
 });

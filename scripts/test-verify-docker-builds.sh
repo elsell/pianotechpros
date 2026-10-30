@@ -20,7 +20,7 @@ fi
 
 mkdir -p "$test_dir/bin" "$test_dir/logs" "$test_dir/project/scripts" "$test_dir/project/.bin"
 readonly subject="$test_dir/project/scripts/verify-docker-builds.sh"
-for script in verify-docker-builds.sh install-docker-buildx.sh require-docker-buildkit.sh assert-buildkit-cache-hit.sh; do
+for script in verify-docker-builds.sh install-docker-buildx.sh require-docker-buildkit.sh assert-buildkit-cache-hit.sh check-node-runtime-security.mjs; do
   cp "$root/scripts/$script" "$test_dir/project/scripts/$script"
 done
 cat >"$test_dir/project/scripts/install-grype.sh" <<'FAKE'
@@ -42,6 +42,7 @@ cat >"$test_dir/bin/docker" <<'FAKE'
 set -euo pipefail
 printf '%s\n' "$*" >>"$DOCKER_TEST_CALLS"
 case "$*" in
+  "run --rm -i --network none --entrypoint node pianotechpros-web:verification --input-type=module - --require-no-build-tools") cat >/dev/null; exit "${RUNTIME_SECURITY_STATUS:-0}" ;;
   "buildx version") printf '%s\n' 'github.com/docker/buildx v0.35.0 fixture' ;;
   "buildx inspect default --bootstrap"|"compose build api web"|"image inspect "*-api:verification" "*-web:verification) ;;
   "buildx build --builder default --load --progress plain --file apps/api/Dockerfile"*)
@@ -89,3 +90,9 @@ if SCANNER_INSTALL_STATUS=1 DOCKER_TEST_CALLS="$test_dir/docker.calls" TMPDIR="$
 fi
 test "$(cat "$SCANNER_TEST_CALLS")" = install
 echo "Docker verification shares BuildKit cache, scans both images and fails closed"
+
+: >"$SCANNER_TEST_CALLS"
+if RUNTIME_SECURITY_STATUS=9 DOCKER_TEST_CALLS="$test_dir/docker.calls" TMPDIR="$test_dir/logs" PATH="$test_dir/bin:$PATH" "$subject" >"$test_dir/runtime-failed.out" 2>&1; then
+  echo "Runtime security regression failure must fail verification" >&2; exit 1
+fi
+test ! -s "$SCANNER_TEST_CALLS"

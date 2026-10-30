@@ -981,3 +981,27 @@ The Node catalog still reports CVE-2026-105482 and CVE-2026-106069, whereas
 identify both as fixed. Treat this as an unresolved metadata/runtime discrepancy.
 No ignore, VEX override or threshold change is authorized by this review. Require
 fresh final-image scans and inspect residual findings before merge or release.
+
+For the remaining Node discrepancy, execute bounded offline regressions in the
+exact pinned runtime: callback/promise DNS resolution must reject embedded NUL
+before resolution; TLS identity checking must reject non-canonical numeric hosts
+while accepting canonical IP and ordinary DNS SAN matches. These checks establish
+specific fixed behavior only; they do not suppress findings or change the scan.
+Run 41073803164 passes the API high-severity threshold (two uncalled/unknown Go
+module findings remain), but the web scan still fails on the two Node CVEs and
+bundled brace-expansion 5.0.9. Do not call either dependency graph vulnerability-free.
+
+The exact amd64 Node 24.22.2 runtime passes the offline DNS/TLS regressions on
+Paul with networking disabled. This supports the upstream fix claim for those
+specific CVEs; scanner reconciliation is still required. Remove the unused npm
+and npx commands and their `/usr/lib/node_modules_24/npm` dependency tree from
+the final web stage, after all installation/build/deploy work. Runtime remains
+UID 65532. Assert the tools are absent and rerun actual application/image gates;
+do not remove application dependencies or suppress their findings.
+
+A stripped-base check built with BuildKit on Paul produced image ID
+`sha256:ed6a7aea96e0964de8af451638d08c951931ef951faf3bac452b1d939be7ee89`.
+It passes offline runtime/absence assertions. Grype 0.111.1 reports no
+brace-expansion matches; its remaining high matches are the two documented Node
+CVEs across five RPM records. This is base-runtime evidence, not a rebuilt
+application-image result or authorization to ignore the remaining findings.

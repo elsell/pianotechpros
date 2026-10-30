@@ -28,8 +28,11 @@ Remaining delivery work:
 - Resolve production-image scan failures. Run `41070478287` executed both scans
   and failed on the API dependency/base and web runtime findings. The current
   candidate upgrades JOSE and reviewed, signed Red Hat base images. The updated
-  Node catalog still reports two high findings despite upstream fix notes; fresh
-  built-image results and reconciliation remain required. No scan is waived.
+  final API image passes the high threshold in run `41073803164`; two unknown
+  Go module findings remain. The web image still fails on two Node CVEs and
+  bundled brace-expansion. Exact-runtime offline DNS/TLS regressions now pass;
+  removal of unused runtime npm/npx is under validation. Scanner reconciliation
+  and final application/image results remain required. No scan is waived.
 
 1. Verify dedicated non-production identity, speech/extraction and Turnstile
    integrations. Configuration remains requested; never borrow legacy credentials.

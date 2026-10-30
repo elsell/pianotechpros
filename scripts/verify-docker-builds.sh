@@ -24,6 +24,8 @@ docker buildx build --builder "$BUILDX_BUILDER" --load --progress plain --file a
 ./scripts/assert-buildkit-cache-hit.sh "$web_build_log" 'pnpm --dir apps/web build'
 docker image inspect pianotechpros-api:verification pianotechpros-web:verification >/dev/null
 
+docker run --rm -i --network none --entrypoint node pianotechpros-web:verification --input-type=module - --require-no-build-tools < scripts/check-node-runtime-security.mjs
+
 ./scripts/install-grype.sh
 scan_status=0
 for image in pianotechpros-api:verification pianotechpros-web:verification; do

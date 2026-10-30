@@ -19,6 +19,8 @@ RUN pnpm --dir apps/web build
 RUN pnpm --filter @pianotechpros/web deploy --legacy --prod /app/prod
 
 FROM registry.access.redhat.com/hi/nodejs:24.22.2-1793297445@sha256:873692b4d4b6107a9b831ed56333d29bc721fc441ac6dbc7839f49598be430d7
+USER 0
+RUN ["node", "-e", "for (const p of ['/usr/bin/npm','/usr/bin/npx','/usr/lib/node_modules_24/npm']) require('node:fs').rmSync(p,{recursive:true})"]
 ENV NODE_ENV=production PIANOTECHPROS_APP_ENV=production HOST=0.0.0.0 PORT=3000
 WORKDIR /app
 COPY --from=build --chown=65532:0 /app/prod ./

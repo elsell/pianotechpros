@@ -9,7 +9,7 @@ class Routing(unittest.TestCase):
         self.assertEqual(classify(['apps/mobile/app/index.tsx']), Plan(native=True))
         self.assertEqual(classify(['packages/client-core/src/index.ts']), Plan(acceptance=True, web_image=True, native=True))
     def test_image_verification_selects_both_images(self):
-        for path in ['scripts/verify-docker-builds.sh', 'scripts/test-verify-docker-builds.sh', 'scripts/install-grype.sh']:
+        for path in ['scripts/verify-docker-builds.sh', 'scripts/test-verify-docker-builds.sh', 'scripts/install-grype.sh', 'scripts/check-node-runtime-security.mjs']:
             with self.subTest(path=path):
                 self.assertEqual(classify([path]), Plan(api_image=True, web_image=True))
 

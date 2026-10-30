@@ -912,3 +912,20 @@ closing each ephemeral allocation immediately, then failed with EADDRINUSE.
 Real-socket tests must prove distinct ports remain occupied until release and can
 be rebound afterward. This is harness isolation, not a reason to retry or waive
 browser behavior assertions.
+
+## Production image scans before publication
+
+The existing standalone production-image verification must scan both loaded API
+and web images with the checksum-verified, pinned Grype installer already used by
+release. Use the Docker image source explicitly so a missing local image cannot
+silently turn into a registry scan. Fail on high/critical findings, matching the
+release gate, and fail closed on scanner or database errors. Attempt both scans
+so a failure in the first image does not hide the second report. Never publish,
+tag a release, load credentials or touch GitOps to obtain this evidence.
+
+Controlled executable fixtures must prove both scans occur, the unchanged high
+threshold is passed, and either an advisory or scanner failure makes verification
+fail. The existing BuildKit/cache tests remain. Actual hosted image scan results
+are required separately; fixture success is not a clean vulnerability report.
+Image-verification scripts and scanner installation changes select both image
+build gates; they do not change native artifacts. Unknown paths remain full-suite.

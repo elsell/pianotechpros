@@ -24,4 +24,13 @@ docker buildx build --builder "$BUILDX_BUILDER" --load --progress plain --file a
 ./scripts/assert-buildkit-cache-hit.sh "$web_build_log" 'pnpm --dir apps/web build'
 docker image inspect pianotechpros-api:verification pianotechpros-web:verification >/dev/null
 
-echo "BuildKit cache reuse and loaded production images verified"
+./scripts/install-grype.sh
+scan_status=0
+for image in pianotechpros-api:verification pianotechpros-web:verification; do
+  ./.bin/grype "docker:$image" --fail-on high || scan_status=1
+done
+if [[ "$scan_status" -ne 0 ]]; then
+  echo "Production image vulnerability verification failed" >&2
+  exit "$scan_status"
+fi
+echo "BuildKit cache reuse and scanned production images verified"

@@ -55,6 +55,8 @@ def _classify_path(path: str) -> Plan | None:
         return Plan()
     if path in {".github/workflows/ci.yml", "Makefile"}:
         return ALL
+    if path in {"scripts/verify-docker-builds.sh", "scripts/test-verify-docker-builds.sh", "scripts/install-grype.sh"}:
+        return Plan(api_image=True, web_image=True)
     if _starts_with(path, "apps/api/"):
         return Plan(acceptance=True, api_image=True)
     if _starts_with(path, "apps/web/"):

@@ -25,8 +25,10 @@ TalkBack or physical-device acceptance.
 
 Remaining delivery work:
 
-- Run the production-image vulnerability scans without publication. CI verifies
-  container builds; Grype scans currently run only in the manual release workflow.
+- Obtain production-image vulnerability results without publication. The current
+  candidate extends CI's loaded-image verification with pinned Grype scans of both
+  images and the unchanged high-severity gate. Local controlled-executable tests
+  prove failure propagation; hosted real-image results are still pending.
   Passing dependency scans alone does not establish scanned release images.
 
 1. Verify dedicated non-production identity, speech/extraction and Turnstile

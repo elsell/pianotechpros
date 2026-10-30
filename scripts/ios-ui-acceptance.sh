@@ -5,11 +5,16 @@ set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$root"
 evidence="$root/build/ios-ui-evidence"
+mode="${1:-fixtures}"
+[[ "$mode" == fixtures || "$mode" == --real-profiles ]] || exit 1
+if [[ "$mode" == --real-profiles ]]; then evidence="$evidence/real-profiles"; fi
 mkdir -p "$evidence"
-fixture_pid='' simulator=''
+fixture_pid='' simulator='' services_dir=''
 cleanup() {
-  if [[ -n "$fixture_pid" ]]; then kill "$fixture_pid" 2>/dev/null || true; fi
+  if [[ -n "$fixture_pid" ]]; then kill "$fixture_pid" 2>/dev/null || true; wait "$fixture_pid" 2>/dev/null || true; fixture_pid=''; fi
   if [[ -n "$simulator" ]]; then xcrun simctl shutdown "$simulator" >/dev/null 2>&1 || true; xcrun simctl delete "$simulator"; fi
+  simulator=''
+  if [[ -n "$services_dir" ]]; then rm -rf "$services_dir"; services_dir=''; fi
 }
 trap cleanup EXIT
 node --test scripts/native-ui-fixture.test.mjs scripts/ios-metro-ready.test.mjs scripts/ios-journey-schedule.test.mjs
@@ -17,8 +22,12 @@ pnpm --dir packages/api-client exec tsx --test ../../scripts/native-public-contr
 python3 scripts/test_ios_simulator_entitlements.py
 python3 scripts/test_ios_ui_bundle.py
 python3 scripts/test_simulator_macho.py
-node scripts/run-native-ui-fixture.mjs 18082 > "$evidence/fixture.log" 2>&1 &
-fixture_pid=$!
+if [[ "$mode" == fixtures ]]; then
+  node scripts/run-native-ui-fixture.mjs 18082 > "$evidence/fixture.log" 2>&1 &
+  fixture_pid=$!
+else
+  node scripts/check-native-real-profiles.mjs --empty > "$evidence/fresh-profiles.log"
+fi
 export PIANOTECHPROS_APP_ENV=development PIANOTECHPROS_API_URL=http://127.0.0.1:18082
 export PIANOTECHPROS_OIDC_ISSUER=http://127.0.0.1:18082/oidc PIANOTECHPROS_MOBILE_OIDC_CLIENT_ID=pianotechpros-mobile
 export PIANOTECHPROS_INQUIRY_CHALLENGE_POLICY=disabled
@@ -47,7 +56,7 @@ xcrun simctl spawn "$simulator" defaults write NSGlobalDomain AppleLanguages -ar
 workspace="$(find apps/mobile/ios -maxdepth 1 -name '*.xcworkspace' -print -quit)"
 test -n "$workspace"
 args=(-workspace "$workspace" -scheme PianoInteractionTests -configuration Release -sdk iphonesimulator -destination "platform=iOS Simulator,id=$simulator" -derivedDataPath build/ios-simulator CODE_SIGNING_ALLOWED=YES CODE_SIGNING_REQUIRED=YES CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=)
-xcodebuild "${args[@]}" build-for-testing > "$evidence/build.log" 2>&1
+if [[ "$mode" == fixtures ]]; then xcodebuild "${args[@]}" build-for-testing > "$evidence/build.log" 2>&1; fi
 application="$(find build/ios-simulator/Build/Products/Release-iphonesimulator -maxdepth 1 -name '*.app' ! -name '*Runner.app' -print -quit)"
 test -n "$application"
 # Simulator entitlements live in Mach-O sections, not the host code signature.
@@ -73,9 +82,23 @@ restart_app() {
 verify_inventory() {
   node scripts/check-native-inventory-edit.mjs > "$evidence/inventory-persisted.json"
 }
+verify_profiles() {
+  node scripts/check-native-real-profiles.mjs > "$evidence/profiles-persisted.json"
+}
 record_journey() {
   printf '%s\t%s\n' "$1" "$2" >> "$evidence/journeys.tsv"
 }
 : > "$evidence/journeys.tsv"
 source "$root/scripts/ios-journey-schedule.sh"
-run_ios_journey_schedule
+if [[ "$mode" == --real-profiles ]]; then
+  run_ios_real_profile_schedule
+else
+  status=0
+  run_ios_journey_schedule || status=1
+  cleanup
+  services_dir="$(mktemp -d "${TMPDIR:-/tmp}/piano-native-tools.XXXXXX")"
+  rmdir "$services_dir"
+  ./scripts/install-native-acceptance-services.sh "$services_dir" > "$evidence/service-install.log" 2>&1
+  ./scripts/with-native-acceptance-services.sh "$services_dir" ./scripts/ios-ui-acceptance.sh --real-profiles || status=1
+  exit "$status"
+fi

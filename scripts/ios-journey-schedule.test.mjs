@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 const scheduler = fileURLToPath(new URL('./ios-journey-schedule.sh', import.meta.url));
-function run(failures = '') {
+function run(failures = '', realProfiles = false) {
   // Controlled command runner: exercises the shell scheduling boundary without
   // pretending that Xcode, an app or a simulator has executed.
   const result = spawnSync('bash', ['-c', `
@@ -13,13 +13,26 @@ function run(failures = '') {
     restart_app() { echo restart; }
     run_journey() { echo "run $1"; [[ ",$FAILURES," != *",$1,"* ]]; }
     verify_inventory() { echo verify; [[ ",$FAILURES," != *",persisted,"* ]]; }
+    verify_profiles() { echo verify-profiles; [[ ",$FAILURES," != *",persisted,"* ]]; }
     record_journey() { echo "$1 $2"; }
-    run_ios_journey_schedule
+    ${realProfiles ? 'run_ios_real_profile_schedule' : 'run_ios_journey_schedule'}
   `, 'schedule-test', scheduler], { encoding: 'utf8', env: { ...process.env, FAILURES: failures }, timeout: 5000 });
   assert.equal(result.error, undefined);
   assert.equal(result.stderr, '');
   return { status: result.status, lines: result.stdout.trim().split('\n') };
 }
+
+test('real profiles require creation, protected recovery and independent persisted read', () => {
+  const result=run('',true);
+  assert.equal(result.status,0);
+  assert.deepEqual(result.lines,['restart','run create','create passed','restart','run restore','restore passed','verify-profiles','persisted passed']);
+  for(const failure of ['create','restore','persisted']){
+    const rejected=run(failure,true);
+    assert.equal(rejected.status,1);
+    assert.ok(rejected.lines.includes(`${failure} failed`));
+    if(failure==='create')assert.ok(!rejected.lines.includes('run restore'));
+  }
+});
 
 test('all required journeys pass only after persisted verification and app restarts', () => {
   const result = run();

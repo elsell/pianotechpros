@@ -1,6 +1,26 @@
 #!/usr/bin/env bash
 # Sourced by the macOS runner. The caller supplies run_journey, restart_app,
 # verify_inventory and record_journey; each must return its actual exit status.
+run_ios_real_profile_schedule() {
+  local failed=0
+  if restart_app && run_journey create testCreateProfilesAndProtectPartialDraft; then
+    record_journey create passed || return 1
+  else
+    record_journey create failed
+    record_journey restore blocked
+    record_journey persisted blocked
+    return 1
+  fi
+  if restart_app && run_journey restore testRestorePartialDraftAfterProcessRestart; then
+    record_journey restore passed || return 1
+  else
+    record_journey restore failed || return 1
+    failed=1
+  fi
+  if verify_profiles; then record_journey persisted passed || return 1
+  else record_journey persisted failed || return 1; failed=1; fi
+  return "$failed"
+}
 run_ios_journey_schedule() {
   local failed=0 profile_ready=false edit_ready=false
   schedule_journey() {

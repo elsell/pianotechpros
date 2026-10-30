@@ -7,7 +7,12 @@ import {createHash,generateKeyPairSync,randomBytes,sign} from 'node:crypto';
 const client='pianotechpros-mobile',callback='pianotechpros://callback';
 const opaque=()=>randomBytes(32).toString('base64url');
 const object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
-export async function startNativeUIFixture({port=0,now=Date.now,onAuthResponse=()=>{},inventory=false}={}){
+export async function startNativeUIFixture({port=0,now=Date.now,onAuthResponse=()=>{},inventory=false,apiOrigin}={}){
+ if(apiOrigin!==undefined){
+  let target;try{target=new URL(apiOrigin);}catch{throw new Error('Invalid native API origin');}
+  if(target.protocol!=='http:'||target.hostname!=='127.0.0.1'||!target.port||Number(target.port)<1024||target.username||target.password||target.pathname!=='/'||target.search||target.hash||Number(target.port)===port)throw new Error('Invalid native API origin');
+  apiOrigin=target.origin;
+ }
  const publicRoutes=inventory?createNativePublicFixture():null;
  const inventoryRoutes=inventory?createNativeInventoryFixture(now):null;
  const {privateKey,publicKey}=generateKeyPairSync('rsa',{modulusLength:2048});
@@ -39,6 +44,14 @@ export async function startNativeUIFixture({port=0,now=Date.now,onAuthResponse=(
     if(identities.size>=128)return send(429,{error:'temporarily_unavailable'});
     const issued=Math.floor(now()/1000),claims={iss:origin+'/oidc',aud:client,sub:'native-ui-owner',iat:issued,exp:issued+300,jti:opaque(),email:'owner@example.test',name:'Native UI Owner',...(record.nonce?{nonce:record.nonce}:{})};
     const unsigned=[{alg:'RS256',kid:jwk.kid,typ:'JWT'},claims].map(v=>Buffer.from(JSON.stringify(v)).toString('base64url')).join('.');const idToken=unsigned+'.'+sign('RSA-SHA256',Buffer.from(unsigned),privateKey).toString('base64url');identities.set(idToken,{expires:(issued+300)*1000});return send(200,{id_token:idToken,access_token:opaque(),token_type:'Bearer',expires_in:300});
+   }
+   if(apiOrigin&&path.startsWith('/v1/')){
+    const payload=['GET','HEAD'].includes(req.method)?undefined:await body();
+    const headers={};for(const name of ['content-type','authorization','idempotency-key','accept'])if(req.headers[name])headers[name]=req.headers[name];
+    let upstream,bytes;
+    try{upstream=await fetch(apiOrigin+path+url.search,{method:req.method,headers,body:payload,redirect:'error',signal:AbortSignal.timeout(10000)});bytes=Buffer.from(await upstream.arrayBuffer());}
+    catch{return send(503,{code:'unavailable'});}
+    res.writeHead(upstream.status,{'Content-Type':upstream.headers.get('content-type')??'application/json'});res.end(bytes);return;
    }
    if(req.method==='POST'&&path==='/v1/sessions'){
     const input=JSON.parse(await body());if(!object(input)||typeof input.identityToken!=='string')return send(400,{code:'bad_request'});

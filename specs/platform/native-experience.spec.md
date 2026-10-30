@@ -1658,3 +1658,28 @@ Run `41022035854` rendered the priced catalog/listing after the currency fix, bu
 the visible photo appeared in the retained iOS hierarchy as Other with its alt
 label; the required image query failed in both public and accessibility journeys.
 Preserve the image-role assertion and verify the correction on the hosted device.
+
+
+## Android public photo semantics and inspection — 2026-10-30
+
+JavaScript `e33a3e6bbf89fa29f12035e5507943e34566ce02` ran on a remote API 36
+emulator using the development APK from source
+`3acc88d74aec27b272c80c741e058665058e3b43`, SHA-256
+`86a245ec6668151b3cab45e6ba99b052df3be8b5bc96a66dddfba28525aadb7a`.
+The signed-out client loaded a synthetic publication through the isolated real
+API; no HTTP responses were substituted.
+
+The loaded primary photo exposed exactly one labeled `android.widget.ImageView`.
+Preview remained a separate actionable control. Inspection opened at 100%, zoomed
+to 150%, reset to 100%, and closed while preserving the listing and selected
+photo. Backgrounding closed inspection without reopening it on foregrounding.
+Screenshots and accessibility trees were retained and inspected under
+`~/.cache/pianotechpros-evidence/2026-10-30/public-photo-semantics/`, alongside
+`result.json`, APK identity and the runtime check script. The synthetic color-block
+image establishes processing/layout, not photographic detail. The temporary
+emulator, Metro server and tunnel were stopped after execution.
+
+This is Android development-runtime evidence with the stated JavaScript/native
+build combination. It does not establish embedded release behavior, iOS image
+semantics, spoken TalkBack/VoiceOver order or physical-device usability. Hosted
+iOS assertions remain unchanged and must pass separately.

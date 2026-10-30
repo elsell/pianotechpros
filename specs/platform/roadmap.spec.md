@@ -7,6 +7,20 @@ The detailed requirements remain in `product-parity.spec.md`; website-specific
 closure is tracked in `web-parity-audit.spec.md` and device evidence in
 `native-experience.spec.md`.
 
+Run `41031001582`, source `50dff0650c0630eb794b741aed903fee6dab1baf`,
+has passed verification, real-service acceptance and Android compilation; its
+iOS gate is still running. The newer integrated photo-semantics candidate,
+source `e33a3e6bbf89fa29f12035e5507943e34566ce02`, has passed verification in
+run `41032889517`; remaining hosted gates are pending. Neither result authorizes
+a merge until the complete candidate passes all required checks.
+
+The newer candidate's public photo semantics and inspection passed on a remote
+Android API 36 emulator against the isolated real API: one labeled image element,
+a separate Preview action, zoom/reset, preserved selection on close and cleared
+inspection after backgrounding. Exact JavaScript/APK identity and limitations are
+recorded in `native-experience.spec.md`. This closes that Android interaction
+check only; iOS, spoken screen-reader and physical-device acceptance remain open.
+
 Run `41022035854` confirms that the iOS currency crash is corrected: the
 public journey reaches the filtered sold listing with its $1,250.00 price and
 rendered photo. Both public and accessibility journeys then fail the image-role

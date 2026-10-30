@@ -2,6 +2,50 @@
 
 ## Current milestone: feature-complete product
 
+PR #138 merged at `eb885669cf98c8cbb8f13c661d1d917d45ceb78d` on
+2026-10-30. It integrates the native typing/recovery, showroom, buyer inquiry,
+photo inspection, publication guidance and dependency-security corrections.
+All task-owned PR heads through #138 are ancestors of that merge. Superseded
+proposals are closed only after confirming their commits are in main.
+
+Run [41054344257](https://github.com/elsell/pianotechpros/actions/runs/41054344257)
+on source `80adf0254e8d5ebc286cdf80e528b5799d36e226` passed verification,
+real-service web acceptance, Android compilation and iOS builds/interactions.
+Verification passed one unchanged-job retry after a Go module-graph lookup
+exceeded its deadline. No age/security checks or product assertions were waived.
+The retained iOS report marks all nine outcomes passed: public, create, restore,
+inventory, readiness, edit, persisted, reopen and accessibility. This closes the
+missing multiline Done control and symbolic-price accessibility failures.
+
+Feature completeness is still unproven. The native XCTest journeys use controlled
+HTTP fixtures; their persisted assertion checks fixture state, not the production
+API/database. Android has separately recorded real-API interaction evidence.
+The automated iOS public accessibility audit does not replace spoken VoiceOver,
+TalkBack or physical-device acceptance.
+
+Remaining delivery work:
+
+- Run the production-image vulnerability scans without publication. CI verifies
+  container builds; Grype scans currently run only in the manual release workflow.
+  Passing dependency scans alone does not establish scanned release images.
+
+1. Verify dedicated non-production identity, speech/extraction and Turnstile
+   integrations. Configuration remains requested; never borrow legacy credentials.
+2. Complete broader native journeys against real services and the device,
+   screen-reader, large-text and interruption matrix in `native-experience.spec.md`.
+3. Close the outstanding supported-browser/accessibility rows in
+   `web-parity-audit.spec.md`, then audit every requirement in
+   `product-parity.spec.md` before claiming parity.
+
+Legacy deployment, GitOps, DNS and live data remain unchanged. Store credentials,
+signing and production cutover remain deferred as requested.
+
+## Historical integration evidence
+
+The entries below record prior candidates and their then-current limitations.
+The merged result above supersedes pending/failure statements for the same
+assertions; historical successes do not close broader requirements.
+
 Current acceptance position (2026-10-30): feature completeness is not yet proven.
 The detailed requirements remain in `product-parity.spec.md`; website-specific
 closure is tracked in `web-parity-audit.spec.md` and device evidence in

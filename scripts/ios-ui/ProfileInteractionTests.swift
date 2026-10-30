@@ -74,6 +74,26 @@ final class ProfileInteractionTests: XCTestCase {
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = name; attachment.lifetime = .keepAlways; add(attachment)
     }
+    func testBrowsePublicShowroomWithoutSigningIn() throws {
+        XCTAssertTrue(button("Showrooms").waitForExistence(timeout: 60))
+        tap("Showrooms"); tap("Native Public Showroom")
+        XCTAssertTrue(inventoryRow("Native Public Grand").waitForExistence(timeout: 15))
+        let search = app.textFields["Search pianos"].firstMatch
+        reach(search); search.tap(); search.typeText("UI-PUBLIC-3\n")
+        exactText(search, "UI-PUBLIC-3", "public search")
+        XCTAssertTrue(app.staticTexts["No pianos match these filters."].waitForExistence(timeout: 15))
+        tap("Refine your search"); tap("Availability")
+        selectChoice("Sold", role: "radio button"); tap("Show pianos")
+        XCTAssertTrue(inventoryRow("Native Public sold").waitForExistence(timeout: 15))
+        XCTAssertFalse(inventoryRow("Native Public Grand").exists)
+        inventoryRow("Native Public sold").tap()
+        XCTAssertTrue(app.staticTexts["Native Public sold"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.images["Synthetic public piano photo"].waitForExistence(timeout: 15))
+        capture("public-listing-signed-out")
+        back(); back(); back()
+        XCTAssertTrue(button("Sign in").waitForExistence(timeout: 15))
+    }
+
     func testCreateProfilesAndProtectPartialDraft() throws {
         let signIn = button("Sign in")
         XCTAssertTrue(signIn.waitForExistence(timeout: 90))

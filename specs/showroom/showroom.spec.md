@@ -316,3 +316,36 @@ the reviewed legacy crawler routes; no legacy code is imported.
 
 Protocol references: https://www.sitemaps.org/protocol.html and
 https://developers.google.com/search/docs/crawling-indexing/robots/intro.
+
+## Native public browsing
+
+The native home offers public showroom discovery without requiring a restored
+session or OIDC discovery. A native navigation stack leads from published shops
+to a photo-led collection and a published listing. Use the anonymous public API
+adapter, never private inventory or an application credential. Back navigation,
+pull-to-refresh, explicit pagination and field-labeled filter controls remain
+native. Filtering supports literal search, piano form, availability, currency and
+localized inclusive price bounds through the shared filter parser.
+
+Public read orchestration lives in client-core. Each route owns its lifetime;
+refresh/filter changes abort prior work, clear old content, and suppress late
+responses. Failed reads must not leave previously public content visible. Page
+continuations preserve showroom identity and filters; duplicate records or
+repeated cursors fail closed. Copy snapshots and inputs. Navigation/background
+loss clears public data and aborts media/read work; returning revalidates visibility.
+
+Listing presentation includes ordered photos with accessible selection, published
+attributes and price, availability, dealer contact/visit/service information,
+canonical sharing, and related available pianos. Public media must use the
+validated anonymous byte adapter with ephemeral display storage and cleanup.
+Do not reuse protected editor photo caches. Provider-backed inquiry submission
+remains a separate native acceptance requirement; a browser handoff does not
+prove native inquiry parity. Both platforms require interaction acceptance,
+including signed-out navigation, filters/pagination, unpublished content, large
+text, screen-reader order, contact actions and share-sheet dismissal.
+
+CI exercises signed-out directory, catalog search, listing media and availability
+filters before the authenticated profile journeys. Its loopback public fixture
+rejects credential-bearing public requests and contains only synthetic published
+projections. This presentation proof supplements, rather than replaces, real API
+visibility/authorization tests and Android real-service interaction evidence.

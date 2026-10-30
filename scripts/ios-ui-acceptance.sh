@@ -63,6 +63,8 @@ run_journey() {
   fi
   return "$result"
 }
+run_journey public testBrowsePublicShowroomWithoutSigningIn
+xcrun simctl terminate "$simulator" com.pianotechpros.pianotechpros || true
 run_journey create testCreateProfilesAndProtectPartialDraft
 xcrun simctl terminate "$simulator" com.pianotechpros.pianotechpros || true
 run_journey restore testRestorePartialDraftAfterProcessRestart

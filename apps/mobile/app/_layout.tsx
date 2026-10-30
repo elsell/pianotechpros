@@ -5,6 +5,9 @@ function Navigation() {
   const { i18n } = useMobileSession();
   const theme = useNativeTheme();
   return <Stack screenOptions={{ statusBarStyle: theme.statusBarStyle, headerTintColor: theme.text, headerStyle: { backgroundColor: theme.surface }, contentStyle: { backgroundColor: theme.background } }}>
+    <Stack.Screen name="showrooms/index" options={{title:i18n.t('showroom.discovery.showrooms')}}/>
+    <Stack.Screen name="showrooms/catalog" options={{title:i18n.t('showroom.inventory')}}/>
+    <Stack.Screen name="showrooms/listing" options={{title:i18n.t('showroom.details')}}/>
     <Stack.Screen name="customer" options={{ title: i18n.t('customer.heading'), gestureEnabled:false }} />
     <Stack.Screen name="technician" options={{ title: i18n.t('technician.heading'), gestureEnabled:false }} />
     <Stack.Screen name="inventory/[id]" options={{ title: i18n.t('inventory.edit.editor') }} />

@@ -96,3 +96,14 @@ test('optional inventory fixture supports scoped browsing, search, status and bo
  const last=await read('?includeInactive=true&limit=2&cursor='+encodeURIComponent(second.meta.nextCursor));assert.equal(last.data.length,2);assert.deepEqual(last.meta,{});
  for(const query of ['?limit=0','?limit=101','?cursor=foreign','?status=unknown'])assert.equal((await api(f,path+query,undefined,session)).status,400);
 });
+test('public native fixture exposes only anonymous synthetic publications',async t=>{
+ const f=await startNativeUIFixture({inventory:true});t.after(()=>f.close());
+ const directory=await api(f,'/v1/showroom-discovery');assert.equal(directory.status,200);
+ assert.equal((await directory.json()).data.shops[0].slug,'native-public-shop');
+ assert.equal((await api(f,'/v1/showroom-discovery',undefined,'arbitrary')).status,400);
+ const list=await (await api(f,'/v1/showrooms/native-public-shop/pianos?search=UI-PUBLIC-1')).json();assert.equal(list.data.pianos.length,1);assert.equal(list.data.pianos[0].title,'Native Public Grand');assert.equal(list.data.pianos[0].private_notes,undefined);
+ assert.equal((await api(f,'/v1/showrooms/hidden/pianos')).status,404);
+ assert.equal((await api(f,'/v1/showrooms/native-public-shop/pianos/hidden')).status,404);
+ const image=await api(f,'/v1/showrooms/native-public-shop/pianos/public-grand/photos/front');assert.equal(image.headers.get('content-type'),'image/jpeg');assert.ok((await image.arrayBuffer()).byteLength>4);
+ assert.equal((await api(f,'/v1/dealers')).status,401);
+});

@@ -326,6 +326,8 @@
   "inventory.publication.missing.title": "Add a title or manufacturer before publishing.",
   "inventory.publication.missing.photo": "Upload at least one photo before publishing.",
   "inventory.publication.saveFirst": "Save or resolve your private draft before reviewing publication.",
+  "showroom.directoryEmpty": "No public showrooms are available yet.",
+  "showroom.contactFailed": "This action could not be completed. Please try again.",
   "showroom.title": "Find your next piano",
   "showroom.inventory": "Explore the collection",
   "showroom.filters": "Refine your search",

@@ -326,6 +326,8 @@
   "inventory.publication.missing.title": "Añade un título o fabricante antes de publicar.",
   "inventory.publication.missing.photo": "Carga al menos una foto antes de publicar.",
   "inventory.publication.saveFirst": "Guarda o resuelve el borrador privado antes de revisar la publicación.",
+  "showroom.directoryEmpty": "Todavía no hay salas de exposición públicas disponibles.",
+  "showroom.contactFailed": "No se pudo completar esta acción. Inténtalo de nuevo.",
   "showroom.title": "Encuentre su próximo piano",
   "showroom.inventory": "Explore la colección",
   "showroom.filters": "Ajuste su búsqueda",

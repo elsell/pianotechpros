@@ -15,13 +15,18 @@ do not substitute individual interaction fixes for complete three-client parity.
 The readiness correction now blocks confirmable review and targets missing
 controls on web and mobile. Focused voice clarification now replaces only the
 requested candidate, clears its selection for renewed review, preserves Undo,
-and retains editor serialization through cancelled provider settlement. All 493
+and retains editor serialization through cancelled provider settlement. All 505
 shared client behavioral tests, client type checks, structural/i18n checks and
 code review pass. The complete dealer browser acceptance journey passed using
 Paul’s existing Chrome through CDP, including missing-field focus and focused
 clarification with reselection, Apply and Undo. This is controlled-fixture browser
-evidence; live provider and native interaction acceptance are still required. Native public navigation remains
-unimplemented. Provider configuration and spoken/physical-device acceptance are
+evidence; live provider and native interaction acceptance are still required. Native public directory, filtered catalog and listing navigation are now
+implemented through anonymous adapters, with ephemeral media, published details,
+contact actions, related pianos and canonical sharing. Android development-client
+interaction against the isolated real API has exercised signed-out navigation,
+reserved filtering, public media/listing and share dismissal. An iOS signed-out
+journey is added but not yet executed. Native inquiry submission, wider device
+and accessibility acceptance remain open. Provider configuration and spoken/physical-device acceptance are
 separate unresolved external/evidence requirements.
 
 PR #66 run `40982410120` at `7c96772` passed both iOS profile journeys, including

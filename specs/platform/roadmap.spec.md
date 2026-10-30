@@ -25,15 +25,25 @@ implemented through anonymous adapters, with ephemeral media, published details,
 contact actions, related pianos and canonical sharing. Android development-client
 interaction against the isolated real API has exercised signed-out navigation,
 reserved filtering, public media/listing and share dismissal. An iOS signed-out
-journey is added but not yet executed. Native inquiry submission, wider device
+journey is added but not yet executed. Native inquiry submission is now implemented
+with native contact controls, explicit failure retry, confirmed clearing and a
+restricted hosted Turnstile widget. Controlled browser bridge acceptance passed
+configuration mismatch, no-store, proof-only messages, expiry/failure and Spanish.
+The 512 shared/config behavioral tests and client type checks pass; pinned WebView
+13.16.0 passes the fourteen-day dependency-age gate. A review-found stale-widget
+callback race is fixed with generation-guarded callbacks and a regression. iOS
+validation/retry/confirmation/disposal acceptance is added but not yet executed.
+Native builds, real buyer submission and real provider interaction remain open;
+these are implementation evidence, not a claim of three-client acceptance. Wider device
 and accessibility acceptance remain open. Provider configuration and spoken/physical-device acceptance are
 separate unresolved external/evidence requirements.
 
 PR #66 run `40982410120` at `7c96772` passed both iOS profile journeys, including
 exact entry, saves, restart recovery and invalid-time focus. Inventory keyboard
 search then failed with exact input retained but stale results. Follow-up
-`bde7ccd` uses native submit-event text; run `40990491199` remains pending for iOS.
-Android compilation and browser/API acceptance passed; verification still reports
+`bde7ccd` uses native submit-event text; run `40990491199` is terminal with
+iOS native/interaction, Android compilation and browser/API acceptance passing.
+Verification still reports
 the single deepmerge advisory. None of these candidate changes is merged.
 
 The immediate release prerequisite is renewed dependency remediation. CI on

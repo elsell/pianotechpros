@@ -284,3 +284,4 @@ export * from './technician-comparison';
 export {publicationReadiness} from './publication-readiness';
 export * from './public-resource';
 export * from './showroom-browser';
+export * from './inquiry-proof';

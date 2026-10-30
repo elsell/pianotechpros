@@ -46,7 +46,7 @@ export async function startNativeUIFixture({port=0,now=Date.now,onAuthResponse=(
     if(sessions.size>=128)return send(429,{code:'rate_limited'});
     const token=opaque(),expires=now()+7200000;sessions.set(token,{expires});return send(201,{data:{token,expiresAt:new Date(expires).toISOString()}});
    }
-   if(publicRoutes?.(req,url,res,send))return;
+   if(await publicRoutes?.(req,url,res,send,body))return;
    const bearer=req.headers.authorization?.replace(/^Bearer /,''),session=sessions.get(bearer);
    if(!session||req.headers.authorization!=='Bearer '+bearer)return send(401,{code:'unauthenticated'});
    if(req.method==='GET'&&path==='/v1/me')return send(200,{data:{id:'native-ui-owner',email:'owner@example.test',displayName:'Native UI Owner'}});

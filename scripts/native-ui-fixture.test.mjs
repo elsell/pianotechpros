@@ -107,3 +107,13 @@ test('public native fixture exposes only anonymous synthetic publications',async
  const image=await api(f,'/v1/showrooms/native-public-shop/pianos/public-grand/photos/front');assert.equal(image.headers.get('content-type'),'image/jpeg');assert.ok((await image.arrayBuffer()).byteLength>4);
  assert.equal((await api(f,'/v1/dealers')).status,401);
 });
+test('native inquiry fake preserves explicit retry and rejects credentials and hidden listings',async t=>{
+ const f=await startNativeUIFixture({inventory:true});t.after(()=>f.close());
+ const path='/v1/showrooms/native-public-shop/pianos/public-grand/inquiries';
+ const body={name:'Synthetic Buyer',email:'buyer@example.test',phone:'',message:'Arrange a visit',preference:'email',challenge:'',honeypot:''};
+ assert.equal((await api(f,path,body,'private-session')).status,400);
+ assert.equal((await api(f,path.replace('public-grand','hidden'),body)).status,404);
+ assert.equal((await api(f,path,{...body,message:''})).status,400);
+ assert.equal((await api(f,path,body)).status,503);
+ const accepted=await api(f,path,body);assert.equal(accepted.status,204);assert.equal(await accepted.text(),'');
+});

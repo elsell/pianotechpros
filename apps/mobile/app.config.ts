@@ -23,6 +23,8 @@ export default ({ config }: { config: Record<string, unknown> }) => ({
   extra: {
     ...((config.extra as Record<string, unknown> | undefined) ?? {}),
     application: {
+      inquiryChallengePolicy: process.env.PIANOTECHPROS_INQUIRY_CHALLENGE_POLICY,
+      turnstileSiteKey: process.env.PIANOTECHPROS_TURNSTILE_SITE_KEY,
       environment: process.env.PIANOTECHPROS_APP_ENV ?? 'development',
       webURL: process.env.PIANOTECHPROS_WEB_URL,
       apiURL: process.env.PIANOTECHPROS_API_URL ?? 'http://localhost:8080',

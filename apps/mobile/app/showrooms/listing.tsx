@@ -27,6 +27,7 @@ function ListingContent({profile,piano,related,relatedFailed}:{profile:PublicSho
  {failed?<Text accessibilityRole="alert" style={text}>{t('contactFailed')}</Text>:null}
  <Text accessibilityRole="header" style={heading}>{t('details')}</Text>{piano.description?<Text selectable style={text}>{piano.description}</Text>:null}
  {facts.filter(fact=>fact.value).map(fact=><View key={fact.label} style={{gap:6,paddingVertical:8,borderBottomWidth:1,borderColor:theme.border}}><Text style={{color:theme.secondary,fontSize:16}}>{i18n.t(fact.label)}</Text><Text selectable style={text}>{fact.value}</Text></View>)}
+ <NativeButton title={i18n.t('inquiry.heading')} onPress={()=>router.push({pathname:'/showrooms/inquiry',params:{slug:profile.slug,id:piano.id}})}/>
  <Text accessibilityRole="header" style={heading}>{profile.name}</Text>{profile.description?<Text style={text}>{profile.description}</Text>:null}
  {profile.phone?<NativeButton title={t('call')} disabled={busy} onPress={()=>void action(()=>Linking.openURL('tel:'+profile.phone.replace(/[^+0-9]/g,'')))}/>:null}
  <NativeButton title={t('email')} disabled={busy} onPress={()=>void action(()=>Linking.openURL('mailto:'+encodeURIComponent(profile.email)+'?subject='+encodeURIComponent(piano.title)))}/>

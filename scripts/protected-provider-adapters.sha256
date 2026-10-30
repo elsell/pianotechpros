@@ -10,3 +10,5 @@ ab5c36d3499d061dd199e9010fbdde05f8b1ead3e5523b90b00fc1984807eb35  apps/web/src/l
 b40878f0efd5717295b415fc69fefd33b3f489ee4a645ff9ca3ed3be5ccf07e5  apps/web/src/lib/technician/ownership.ts
 497e5c7710446a63e7178c8c59bd2f158454f980392b971ac027e4a31e469d1c  apps/mobile/src/technician/ownership.ts
 6affa3b46931a81e9d6c279b604808282187c67331414494e5eebde2e8b4b8c9  apps/mobile/src/technician/presentation.ts
+4163469e4d17d6b02c7f63129e4a688963daab7a14801ea59a2e94b30467a138  apps/mobile/src/showroom/InquiryVerification.tsx
+2652834ffb2a0181c24e2a81420b2a7386d5dd5a5b42e822acca9c9c899e68d5  apps/web/src/lib/inquiry/native-bridge.ts

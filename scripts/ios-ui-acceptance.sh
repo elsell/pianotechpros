@@ -20,6 +20,7 @@ node scripts/run-native-ui-fixture.mjs 18082 > "$evidence/fixture.log" 2>&1 &
 fixture_pid=$!
 export PIANOTECHPROS_APP_ENV=development PIANOTECHPROS_API_URL=http://127.0.0.1:18082
 export PIANOTECHPROS_OIDC_ISSUER=http://127.0.0.1:18082/oidc PIANOTECHPROS_MOBILE_OIDC_CLIENT_ID=pianotechpros-mobile
+export PIANOTECHPROS_INQUIRY_CHALLENGE_POLICY=disabled
 export CI=1
 for endpoint in http://127.0.0.1:18082/oidc/.well-known/openid-configuration; do
   ready=false

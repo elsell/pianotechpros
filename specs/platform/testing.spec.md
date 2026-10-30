@@ -912,3 +912,127 @@ closing each ephemeral allocation immediately, then failed with EADDRINUSE.
 Real-socket tests must prove distinct ports remain occupied until release and can
 be rebound afterward. This is harness isolation, not a reason to retry or waive
 browser behavior assertions.
+
+## Production image scans before publication
+
+The existing standalone production-image verification must scan both loaded API
+and web images with the checksum-verified, pinned Grype installer already used by
+release. Use the Docker image source explicitly so a missing local image cannot
+silently turn into a registry scan. Fail on high/critical findings, matching the
+release gate, and fail closed on scanner or database errors. Attempt both scans
+so a failure in the first image does not hide the second report. Never publish,
+tag a release, load credentials or touch GitOps to obtain this evidence.
+
+Controlled executable fixtures must prove both scans occur, the unchanged high
+threshold is passed, and either an advisory or scanner failure makes verification
+fail. The existing BuildKit/cache tests remain. Actual hosted image scan results
+are required separately; fixture success is not a clean vulnerability report.
+Image-verification scripts and scanner installation changes select both image
+build gates; they do not change native artifacts. Unknown paths remain full-suite.
+
+### Runtime scan remediation baseline
+
+Run 41070478287 executed both production-image scans and failed the unchanged
+high-severity gate. The API image reports go-jose GHSA-mgcc-cww5-fp2q and a base
+certificate-package advisory; the web base contains additional Node, libc and
+SQLite findings. These are unresolved findings, not waived by callable Go scans.
+Upgrade go-jose to v4.1.6 (published 2026-10-14T22:46:21Z, outside fourteen days).
+A regression must reject private JWK parameters in untrusted JOSE headers while
+retaining ordinary signed public-JWK behavior. Keep existing OIDC adversarial
+coverage and require image scans on the final rebuilt artifacts.
+
+### Hardened image security refresh (2026-10-30)
+
+Refresh the Node builder/runtime and static API runtime to the exact reviewed
+releases below. Their age exceptions are security-only, not vulnerability waivers.
+Release identities and multi-platform index digests were verified with RSA/SHA256
+using Red Hat's official `63405576` public key; transparency-log inclusion was
+not verified. Per-platform SPDX layer bytes match their registry SHA256 digests.
+Catalog version aliases resolved to the same index digests before CVE review.
+
+- `registry.access.redhat.com/hi/nodejs:24.22.2-1793297445@sha256:873692b4d4b6107a9b831ed56333d29bc721fc441ac6dbc7839f49598be430d7`
+  - arm64 SPDX SHA256 `34f64535496b83f5ac353cc6abec07a1e318817d9eedc81b3cc576b43b3dd4e1` (245 packages).
+  - amd64 SPDX SHA256 `ac281ad736484587ad0b3a87837b1acba2be7c6bbd6be0af14c05c6d14e553b7` (245 packages).
+  - Catalog: 2 high, 9 medium, 1 low; no critical.
+- `registry.access.redhat.com/hi/nodejs:24.22.2-builder-1793297445@sha256:8f3b89ebd2f48f84e7d7adbd5ec0264cfb0bcf946b5a6cff86e99a137b2723bb`
+  - arm64 SPDX SHA256 `c618d7482ffaf2cfebc1f28857276e70edf1d634cb9e833514ecdcdf657b6089` (365 packages).
+  - amd64 SPDX SHA256 `508057abab0935a0994be92f027d85ef25efec980a4a5212b6be57c1b01fd131` (365 packages).
+  - Catalog: 9 high, 14 medium, 1 low; no critical.
+- `registry.access.redhat.com/hi/static:latest-1792647314@sha256:c51e17de4a96e3bd68361830ec54f3c43ffcf398b82765a1ce250bd4a0d99d1f`
+  - arm64 SPDX SHA256 `2c9691890b7dac51ade9a334bd029a3b36d22a032ee586dfb84b34466497267d` (19 packages).
+  - amd64 SPDX SHA256 `0722e321fff0930b775d8206286758a8263511ca427eb7284fe0743b36685569` (19 packages).
+  - s390x SPDX SHA256 `23b7bae108dbd85637cd87a28ca9985f3869ffc2ec518ad02b95839e0d4ab9bc` (18 packages).
+  - Catalog: 0 high, 0 medium, 0 low; no critical.
+
+The Node runtime SBOM contains Node 24.22.2, glibc 2.43-9.2.hum1,
+SQLite 3.54.1-1.hum1 and the updated 2026.2.92_v9.0.319-2.hum1 certificate
+bundle. The static image contains that same certificate bundle. Builder-only
+packages are not copied into the final web image; its findings do not establish
+a clean build environment. The seven additional builder high findings concern
+RPM parsing/macros (CVE-2026-95519, CVE-2026-95520, CVE-2026-95521,
+CVE-2026-103242), Cyrus SASL DIGEST-MD5 (CVE-2026-107161),
+rpm-sequoia key flags (CVE-2026-42784), and util-linux partition parsing
+(CVE-2026-53615). The Dockerfile does not install source/binary RPMs, probe disk
+images or configure SASL authentication. This limits direct build-path exposure
+but does not authorize processing untrusted inputs through those components.
+
+The Node catalog still reports CVE-2026-105482 and CVE-2026-106069, whereas
+[Node's 24.22.1 release notes](https://nodejs.org/en/blog/release/v24.22.1)
+identify both as fixed. Treat this as an unresolved metadata/runtime discrepancy.
+No ignore, VEX override or threshold change is authorized by this review. Require
+fresh final-image scans and inspect residual findings before merge or release.
+
+For the remaining Node discrepancy, execute bounded offline regressions in the
+exact pinned runtime: callback/promise DNS resolution must reject embedded NUL
+before resolution; TLS identity checking must reject non-canonical numeric hosts
+while accepting canonical IP and ordinary DNS SAN matches. These checks establish
+specific fixed behavior only; they do not suppress findings or change the scan.
+Run 41073803164 passes the API high-severity threshold (two uncalled/unknown Go
+module findings remain), but the web scan still fails on the two Node CVEs and
+bundled brace-expansion 5.0.9. Do not call either dependency graph vulnerability-free.
+
+The exact amd64 Node 24.22.2 runtime passes the offline DNS/TLS regressions on
+Paul with networking disabled. This supports the upstream fix claim for those
+specific CVEs; scanner reconciliation is still required. Remove the unused npm
+and npx commands and their `/usr/lib/node_modules_24/npm` dependency tree from
+the final web stage, after all installation/build/deploy work. Runtime remains
+UID 65532. Assert the tools are absent and rerun actual application/image gates;
+do not remove application dependencies or suppress their findings.
+
+A stripped-base check built with BuildKit on Paul produced image ID
+`sha256:ed6a7aea96e0964de8af451638d08c951931ef951faf3bac452b1d939be7ee89`.
+It passes offline runtime/absence assertions. Grype 0.111.1 reports no
+brace-expansion matches; its remaining high matches are the two documented Node
+CVEs across five RPM records. This is base-runtime evidence, not a rebuilt
+application-image result or authorization to ignore the remaining findings.
+
+### Exact-runtime fixed-status reconciliation
+
+The raw scanner findings remain retained. Permit OpenVEX `fixed` reconciliation
+only for CVE-2026-105482 and CVE-2026-106069 in the reviewed amd64 Node 24.22.2
+RPM package versions, after offline behavioral checks and exact SHA256 checks of
+`/usr/bin/node-24` (`b942d31a91e21be08b5737ad064370569b03915477fec7f951db5647de9b7860`)
+and `/usr/lib64/libnode.so.137` (`d2debb699db612ad3825398c5c7a41ab057006b5382344348047a5069c7c0c87`).
+These bytes came from the signature-verified immutable Red Hat image reviewed
+above; upstream 24.22.1 identifies both fixes. This supersedes the earlier
+unresolved-discrepancy prohibition only for these exact verified artifacts.
+
+Grype 0.111.1 derives local-image VEX identities from tags/repository digests, not
+its reported imageID or manifestDigest. A temporary tag must therefore contain
+the full immutable Docker image ID, and its target must be checked before and
+after scanning. Bind the raw scan and runtime evidence to that same image ID;
+use exact RPM PURLs as subcomponents. Never generate package-wide or version-range
+statements. Reject unknown runtime hashes, non-amd64 evidence, missing fields,
+changed source IDs and unexpected preexisting ignored findings. Retain raw and
+reconciled reports, VEX and runtime evidence. The final Grype scan must retain
+`--fail-on high`; unrelated advisories, scanner errors and evidence failures block
+verification/publication. CI and manual release use the same web scanner. No
+legacy deployment hook or publication trigger is added.
+
+The pinned Grype 0.111.1 integration check against the stripped base image above
+retained 10 raw high matches and reconciled exactly those 10 fixed RPM/CVE
+matches, leaving zero high matches. A negative run changed every VEX package
+version: Grype retained the findings and exited 2 at the unchanged high threshold.
+Controlled boundary tests separately reject altered runtime evidence, retagging,
+scanner errors and unreviewed suppressions. This evidence does not replace the
+full application-image CI gate or establish general vulnerability absence.

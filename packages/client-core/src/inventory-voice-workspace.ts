@@ -17,6 +17,7 @@ export type InventoryVoiceWorkspaceState={busy:boolean;paused:boolean;voice:Inve
 export function createInventoryVoiceWorkspace(port:InventoryVoiceWorkspacePort){
  let disposed=false,busy=false,paused=false,generation=0,issue:InventoryVoiceIssue|null=null;
  let workflow:ReturnType<typeof createInventoryVoiceWorkflow>|null=null,off=()=>{},release:(()=>void)|null=null;
+ let clarification:Promise<void>|null=null;
  const listeners=new Set<(state:InventoryVoiceWorkspaceState)=>void>();
  const allowed=()=>!disposed&&port.active()&&!port.snapshot().denied;
  const snapshot=():InventoryVoiceWorkspaceState=>({busy,paused,voice:allowed()?workflow?.snapshot()??null:null,issue});
@@ -45,6 +46,8 @@ export function createInventoryVoiceWorkspace(port:InventoryVoiceWorkspacePort){
     if(!live())return;
     try{if(audio)await active.process(audio,mime);else await active.extractTranscript(text);}finally{audio?.fill(0);}
     if(live()&&active.snapshot().phase==='review')await new Promise<void>(resolve=>{release=resolve;});
+    // Cancellation hides review immediately; retain serialization until provider settlement.
+    if(clarification)await clarification;
    });
   }catch(error){if(live()){try{issue=port.classify(error);}catch{issue='unavailable';}if(issue==='denied')clear();}}
   finally{audio?.fill(0);busy=false;paused=false;emit();}
@@ -52,6 +55,11 @@ export function createInventoryVoiceWorkspace(port:InventoryVoiceWorkspacePort){
  return Object.freeze({snapshot,
   subscribe(listener:(state:InventoryVoiceWorkspaceState)=>void){if(!disposed)listeners.add(listener);listener(snapshot());return()=>{listeners.delete(listener);};},
   extractTranscript:(text:string)=>run(text.trim(),null,''),process:(audio:Uint8Array,mime:string)=>run('',audio,mime),
+  async clarify(field:InventoryVoiceField,answer:string){
+   if(!allowed()){reconcile();return;}if(!workflow||clarification)return;
+   const task=workflow.clarify(field,answer);clarification=task;
+   try{await task;}finally{if(clarification===task)clarification=null;}
+  },
   apply(selection:readonly string[]){if(!allowed()){reconcile();return;}workflow?.apply(selection);if(workflow?.snapshot().phase==='applied'){release?.();release=null;}},
   refreshReview(){if(allowed())workflow?.refreshReview();else reconcile();},
   undo(){if(!busy&&allowed())workflow?.undo();else reconcile();},

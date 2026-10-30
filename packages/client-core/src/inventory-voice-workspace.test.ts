@@ -60,3 +60,12 @@ test('review coordinator forwards accepted origins and keeps Undo manual across 
  const w=createInventoryVoiceWorkspace(f.port);const run=w.extractTranscript('Grand piano');await reviewed(w);
  w.apply(['title']);await run;w.undo();assert.deepEqual(origins,[['title'],undefined]);w.dispose();
 });
+
+test('cancelled clarification retains the editor queue until the provider settles',async()=>{
+ const f=fixture(),w=createInventoryVoiceWorkspace(f.port);const run=w.extractTranscript('Grand piano');await reviewed(w);await new Promise(resolve=>setImmediate(resolve));
+ const gate=deferred<unknown>();let calls=0,signal!:AbortSignal;
+ f.port.extract=async(_id,_r,_t,s)=>{calls++;signal=s;return gate.promise;};
+ const clarification=w.clarify('title','Concert grand');w.cancel();await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(signal.aborted,true);assert.equal(f.held,true);assert.equal(w.snapshot().busy,true);assert.equal(w.snapshot().voice,null);
+ await w.extractTranscript('Grand piano');assert.equal(calls,1);gate.resolve({});await clarification;await run;assert.equal(f.held,false);
+});

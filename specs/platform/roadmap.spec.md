@@ -12,9 +12,15 @@ missing device evidence: actionable publication readiness before confirmation,
 field-specific voice ambiguity clarification, and public showroom/listing
 navigation. Close these as product work alongside the full acceptance matrix;
 do not substitute individual interaction fixes for complete three-client parity.
-The readiness correction now blocks confirmable review and targets the missing
-native control; shared behavioral/type/structural checks and code review pass,
-but native interaction acceptance is still required. The other two gaps remain
+The readiness correction now blocks confirmable review and targets missing
+controls on web and mobile. Focused voice clarification now replaces only the
+requested candidate, clears its selection for renewed review, preserves Undo,
+and retains editor serialization through cancelled provider settlement. All 493
+shared client behavioral tests, client type checks, structural/i18n checks and
+code review pass. The complete dealer browser acceptance journey passed using
+Paul’s existing Chrome through CDP, including missing-field focus and focused
+clarification with reselection, Apply and Undo. This is controlled-fixture browser
+evidence; live provider and native interaction acceptance are still required. Native public navigation remains
 unimplemented. Provider configuration and spoken/physical-device acceptance are
 separate unresolved external/evidence requirements.
 

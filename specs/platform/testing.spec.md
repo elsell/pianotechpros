@@ -901,3 +901,14 @@ Reject empty, duplicate, nested, truncated or inconsistent slices. Preserve XML
 and DER section checks plus the separate exact synthetic identity/Keychain gate.
 Never modify the signed product or select a slice to evade a failing architecture.
 Format reference: [Apple fat.h](https://github.com/apple-oss-distributions/cctools/blob/main/include/mach-o/fat.h); no implementation is imported.
+
+## Browser acceptance port reservations
+
+The dealer browser runner must reserve distinct loopback ports for its web and
+controlled API processes. Keep both sockets bound while allocating the pair;
+release each reservation only before its consumer starts. Always release remaining
+reservations on failure. Run 41042187883 assigned both processes port 40837 after
+closing each ephemeral allocation immediately, then failed with EADDRINUSE.
+Real-socket tests must prove distinct ports remain occupied until release and can
+be rebound afterward. This is harness isolation, not a reason to retry or waive
+browser behavior assertions.

@@ -7,6 +7,13 @@ The detailed requirements remain in `product-parity.spec.md`; website-specific
 closure is tracked in `web-parity-audit.spec.md` and device evidence in
 `native-experience.spec.md`.
 
+Run `41042187883` passes verification but its browser acceptance stopped before
+behavior assertions because the runner assigned the same ephemeral port to Vite
+and the controlled API. Hold distinct loopback reservations until each consumer
+starts; a real-socket regression fails with immediate release and passes with
+reservations. Native jobs are still live. This harness correction requires the
+full acceptance result and does not waive any product check.
+
 Run `41031001582`, source `50dff0650c0630eb794b741aed903fee6dab1baf`,
 passed verification, real-service acceptance and Android compilation but failed
 iOS. Profile creation could not reach City behind the keyboard: full-window

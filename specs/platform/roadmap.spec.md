@@ -33,8 +33,11 @@ The 512 shared/config behavioral tests and client type checks pass; pinned WebVi
 13.16.0 passes the fourteen-day dependency-age gate. A review-found stale-widget
 callback race is fixed with generation-guarded callbacks and a regression. iOS
 validation/retry/confirmation/disposal acceptance is added but not yet executed.
-Native builds, real buyer submission and real provider interaction remain open;
-these are implementation evidence, not a claim of three-client acceptance. Wider device
+Android compilation and a real-API buyer journey now pass: validation, interrupted
+delivery with retained contact fields, explicit retry, exactly one persisted inquiry
+with the expected public snapshot, and cleared reopening. The isolated test used
+explicitly disabled Turnstile; enabled provider and iOS interaction remain open.
+This is not a claim of three-client acceptance. Wider device
 and accessibility acceptance remain open. Provider configuration and spoken/physical-device acceptance are
 separate unresolved external/evidence requirements.
 
@@ -46,8 +49,11 @@ unhelpful filters while preserving sold discovery; applied filters and editable
 search independently retain recovery controls. A review-found clear-search race
 has failing-then-passing regression coverage. The 512 shared tests, ten native
 fixture tests, mobile/core types, structure/i18n and review pass. Signed-out iOS
-empty-showroom navigation assertions are added; native runtime evidence is still
-pending, so this is not SH-01/SH-02 completion.
+empty-showroom navigation assertions are added. Android on Paul now passes the
+real-API empty-showroom visit, sold-discovery controls and no-result search followed
+by clearing before submission. JavaScript source `403e20e` ran on the native APK
+from `39424dd` (run `41002451234`); iOS and spoken accessibility remain open,
+so this is not SH-01/SH-02 completion.
 
 PR #66 run `40982410120` at `7c96772` passed both iOS profile journeys, including
 exact entry, saves, restart recovery and invalid-time focus. Inventory keyboard
@@ -74,8 +80,8 @@ reported as installed-graph or native build passes.
 | Client | Verified scope | Next required evidence |
 | --- | --- | --- |
 | Web | Recurring real-service dealer/staff, inventory fields/search/lifecycle, photos/publication, inquiry, profiles and public catalog journeys; public pagination in Chromium/Firefox/Linux WebKit | Dedicated speech/Turnstile provider integration, screen-reader and broader supported-browser/device acceptance |
-| Android | Real API photo recovery, publication/unpublish, profile/location persistence, inventory date/money recovery, landscape/large-text controls, invitation create/dismiss/revoke, and inquiry read persistence | Remaining full native field/staff/sharing journeys, spoken accessibility, provider and physical-device checks |
-| iOS | Candidate bundled-app profile creation/save and restart/partial-draft recovery passed run `40982410120`; native builds passed | Finish inventory search acceptance, capture/publication and the broader native journey matrix; merge remains blocked |
+| Android | Real API photo recovery, publication/unpublish, profile/location persistence, inventory date/money recovery, landscape/large-text controls, invitation create/dismiss/revoke, inquiry read/submission persistence, and empty-showroom visits | Remaining full native field/staff/sharing journeys, spoken accessibility, provider and physical-device checks |
+| iOS | Candidate bundled-app profile creation/save, restart/partial-draft recovery and inventory search passed run `40990491199`; native builds passed | Capture/publication and the broader native journey matrix; merge remains blocked |
 
 PR #106 merged visible status/currency selection in editor and QR-scan reviews
 at `103bda5`. Both native builds passed run `40428174526` at `7d085df`;

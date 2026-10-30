@@ -1437,3 +1437,35 @@ native compilation and browser/API acceptance also passed. Verify still fails
 on the single deepmerge advisory; no skipped verification step is evidence.
 This supersedes the prior search failure for that specific journey, not broader
 iOS/public/inquiry/voice/accessibility acceptance.
+
+
+## Android public visits and buyer submission — 2026-10-30
+
+Paul’s API 36 emulator ran JavaScript `403e20e` on the APK built from
+`39424dd014ad966da84dd584f7f712c0030a32d6`, run `41002451234`, artifact
+`12953719670` (SHA-256
+`03f632237fae03ff294a747b948db9a49d1f9dac917beee1dc558df006380287`).
+The signed-out client used an isolated real API and synthetic public records.
+No local emulator or production service was used.
+
+An empty showroom exposed About this showroom, its address, appointment and
+delivery/warranty/service notes, with working back navigation. Initial small
+catalog controls stayed hidden; sold discovery exposed recovery controls. A
+no-match search followed by clearing the input before submission retained the
+search controls; submitting the cleared input restored the real catalog.
+
+Buyer submission exercised empty-field validation, native contact entry, a
+connection dropped before forwarding the inquiry, retained fields and explicit
+retry. The actual owner inbox contained no matching inquiry after the dropped
+request, then exactly one after retry, with exact contact/preference/message and
+the expected entire public piano snapshot. Confirmed delivery cleared the form;
+reopening also showed cleared contact fields. The relay supplied no substitute
+API responses and rejected credential-bearing inquiry requests.
+
+Evidence is retained under `~/.cache/pianotechpros-evidence/2026-10-30/` in
+`native-showroom-visit/` and `native-inquiries/`: screenshots, accessibility XML,
+APK provenance and a synthetic persistence receipt. Visit, failure and confirmation
+screenshots were visually inspected. Turnstile was explicitly disabled for this
+isolated native journey. Enabled-provider acceptance, iOS execution, spoken
+screen-reader testing and physical-device acceptance remain open. Displayed
+contact actions were not used to place calls or send email.

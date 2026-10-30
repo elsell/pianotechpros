@@ -280,3 +280,5 @@ export * from './technician-workspace';
 export * from './technician-ownership';
 export * from './technician-presentation';
 export * from './technician-comparison';
+
+export {publicationReadiness} from './publication-readiness';

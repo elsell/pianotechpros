@@ -80,3 +80,27 @@ for(const invalidation of ['dispose','account'] as const)test(`observer ${invali
  w.subscribe(s=>{if(s.busy&&s.outcome==='unknown'){if(invalidation==='dispose')w.dispose();else f.leave();}});
  await assert.rejects(w.confirm());assert.equal(f.calls(),0);assert.equal(w.snapshot().state,null);
 });
+
+
+test('publish readiness blocks confirmation until a fresh authorized review is ready',async()=>{
+ const f=fixture();let missing:('form'|'photo')[]=['form','photo'];
+ const w=createInventoryPublicationWorkspace({...f.port,missing:()=>missing});
+ await w.review({kind:'publish'});
+ assert.equal(w.snapshot().review,null);assert.deepEqual(w.snapshot().missing,['form','photo']);
+ await assert.rejects(w.confirm());assert.equal(f.calls(),0);
+ w.snapshot().missing.pop();assert.deepEqual(w.snapshot().missing,['form','photo']);
+ missing=[];await w.review({kind:'publish'});assert.ok(w.snapshot().review);
+ await w.confirm();assert.equal(f.calls(),1);assert.deepEqual(w.snapshot().missing,[]);
+});
+test('missing publication fields do not prevent unpublish or leak after cancellation',async()=>{
+ const f=fixture();const w=createInventoryPublicationWorkspace({...f.port,missing:()=>['photo'] as const});
+ await w.review({kind:'publish'});w.cancel();assert.deepEqual(w.snapshot().missing,[]);
+ await w.review({kind:'unpublish'});assert.ok(w.snapshot().review);await w.confirm();assert.equal(f.calls(),1);
+});
+
+for(const invalidation of ['denial','scope'] as const)test(`readiness guidance is hidden after ${invalidation}`,async()=>{
+ const f=fixture();const w=createInventoryPublicationWorkspace({...f.port,missing:()=>['photo'] as const});
+ await w.review({kind:'publish'});assert.deepEqual(w.snapshot().missing,['photo']);
+ if(invalidation==='denial'){f.deny();await assert.rejects(w.review({kind:'publish'}));}else f.leave();
+ assert.deepEqual(w.snapshot().missing,[]);assert.equal(w.snapshot().review,null);assert.equal(f.calls(),0);
+});

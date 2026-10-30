@@ -2,10 +2,28 @@
 
 ## Current milestone: feature-complete product
 
-Current acceptance position (2026-10-29): feature completeness is not yet proven.
+Current acceptance position (2026-10-30): feature completeness is not yet proven.
 The detailed requirements remain in `product-parity.spec.md`; website-specific
 closure is tracked in `web-parity-audit.spec.md` and device evidence in
 `native-experience.spec.md`.
+
+A renewed native implementation review found three product gaps, distinct from
+missing device evidence: actionable publication readiness before confirmation,
+field-specific voice ambiguity clarification, and public showroom/listing
+navigation. Close these as product work alongside the full acceptance matrix;
+do not substitute individual interaction fixes for complete three-client parity.
+The readiness correction now blocks confirmable review and targets the missing
+native control; shared behavioral/type/structural checks and code review pass,
+but native interaction acceptance is still required. The other two gaps remain
+unimplemented. Provider configuration and spoken/physical-device acceptance are
+separate unresolved external/evidence requirements.
+
+PR #66 run `40982410120` at `7c96772` passed both iOS profile journeys, including
+exact entry, saves, restart recovery and invalid-time focus. Inventory keyboard
+search then failed with exact input retained but stale results. Follow-up
+`bde7ccd` uses native submit-event text; run `40990491199` remains pending for iOS.
+Android compilation and browser/API acceptance passed; verification still reports
+the single deepmerge advisory. None of these candidate changes is merged.
 
 The immediate release prerequisite is renewed dependency remediation. CI on
 2026-10-29 reported decode-uri-component and deepmerge findings in addition to
@@ -25,7 +43,7 @@ reported as installed-graph or native build passes.
 | --- | --- | --- |
 | Web | Recurring real-service dealer/staff, inventory fields/search/lifecycle, photos/publication, inquiry, profiles and public catalog journeys; public pagination in Chromium/Firefox/Linux WebKit | Dedicated speech/Turnstile provider integration, screen-reader and broader supported-browser/device acceptance |
 | Android | Real API photo recovery, publication/unpublish, profile/location persistence, inventory date/money recovery, landscape/large-text controls, invitation create/dismiss/revoke, and inquiry read persistence | Remaining full native field/staff/sharing journeys, spoken accessibility, provider and physical-device checks |
-| iOS | Native builds have passed; profile interaction attempts have reached sign-in and editing but have not completed save/restart acceptance | Finish bundled-app profile/recovery acceptance, then inventory/capture/publication and the broader native journey matrix |
+| iOS | Candidate bundled-app profile creation/save and restart/partial-draft recovery passed run `40982410120`; native builds passed | Finish inventory search acceptance, capture/publication and the broader native journey matrix; merge remains blocked |
 
 PR #106 merged visible status/currency selection in editor and QR-scan reviews
 at `103bda5`. Both native builds passed run `40428174526` at `7d085df`;

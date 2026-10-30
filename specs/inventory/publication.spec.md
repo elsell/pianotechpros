@@ -210,3 +210,17 @@ including clearing the amount, survive switching statuses and cancelled reviews.
 Do not overwrite them after a refresh or a changed list price. Confirmed change,
 access denial or disposal resets this entry state. Explicit sale review and
 confirmation remain mandatory, and the selected sale price stays private history.
+
+
+## Native readiness before confirmation
+
+The native publish review must fetch a fresh authorized, saved record and photo
+collection through the existing serialized workspace before opening confirmation.
+Check piano type, condition, title-or-make, and at least one ready photo. Missing
+requirements produce no confirmable review and issue no publication command.
+Show localized actionable requirements and take the user to the first missing
+editor control: open the type/condition choice, focus title, or reveal Photos
+without opening a camera or requesting permission. Selecting another requirement
+uses the same navigation. Cancellation, denial and scope changes clear guidance.
+The API remains the final authority; server readiness rejection uses these same
+safe field identifiers and navigation. Saving and checking readiness never publish.

@@ -12,7 +12,13 @@ final class ProfileInteractionTests: XCTestCase {
         XCTAssertTrue(element.waitForExistence(timeout: 15), "Control must appear before scrolling")
         for _ in 0..<10 {
             if element.exists && element.isHittable { return }
-            app.swipeUp()
+            // Keyboard dismissal and sheets can leave the next control above us.
+            // Move toward its current frame instead of always scrolling downward.
+            if element.frame.midY < app.windows.firstMatch.frame.midY {
+                app.swipeDown()
+            } else {
+                app.swipeUp()
+            }
         }
         capture("unreachable-control")
         let tree = XCTAttachment(string: app.debugDescription)

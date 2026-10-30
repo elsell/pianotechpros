@@ -7,6 +7,21 @@ The detailed requirements remain in `product-parity.spec.md`; website-specific
 closure is tracked in `web-parity-audit.spec.md` and device evidence in
 `native-experience.spec.md`.
 
+Combined run `41017531680` passed controlled-fixture iOS profile creation,
+partial-draft process restoration, normal inventory browsing and incomplete
+publication focus. Full editing failed because the harness scrolled away from
+the Model field after keyboard dismissal; retained hierarchy places it above
+the viewport. The helper now scrolls toward each control with the same bounded
+attempts and hit-testing requirements. Editing/persisted/reopen acceptance remains
+pending. Public and accessibility journeys still encountered the currency crash
+addressed by the newer candidate. A separately observed SafariViewService startup
+watchdog in run `41015631133` did not reproduce in this combined run.
+
+The iOS job budget is raised from 120 to 180 minutes to accommodate both clean
+native builds, all independent journeys and retained evidence. The prior run
+reached its job limit during final evidence collection; no test assertion,
+individual deadline, failure propagation or retry policy is relaxed.
+
 The first corrected iOS public-flow run `41013141538` is terminal and exposed
 an application crash when rendering a priced catalog card. Retained xcresult
 stderr identifies an undefined function in PianoCard; the shared exact-money

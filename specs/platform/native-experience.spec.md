@@ -1627,3 +1627,22 @@ Use the runtime's currency layout and grouping; never round the minor-unit value
 through floating-point division. A capability-limited regression must exercise
 both locales and maximum safe values. The existing priced iOS catalog journey
 remains required; a Node regression alone does not prove native acceptance.
+
+## Bidirectional native control reachability
+
+Native interaction helpers must scroll toward the target control, including
+controls above the viewport after keyboard dismissal or returning from a sheet.
+They must retain bounded attempts, existence/hit-testing checks and failure
+screenshots/hierarchy evidence. Never replace a failed interaction with a direct
+state mutation. Run `41017531680` reached inventory editing but its upward-only
+helper scrolled the Model field to y=-1335 while continuing toward the bottom.
+The same run passed profile creation, draft restoration, inventory browsing and
+publication readiness; this is controlled-fixture iOS evidence, not real-API
+parity. Full editing and restart persistence remain unproven.
+
+Allow 180 minutes for the combined clean Debug build, Release interaction build,
+independent journey execution and artifact retention. The previous 120-minute
+job limit interrupted evidence retention after the complete schedule ran; the
+Release interaction build alone took about 69 minutes. This job budget changes
+no individual assertion deadline, required journey, failure propagation or retry
+policy, and does not convert a failing result into a pass.

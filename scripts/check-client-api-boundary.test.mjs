@@ -7,6 +7,8 @@ import { spawnSync } from 'node:child_process';
 
 const checker = resolve('scripts/check-client-api-boundary.mjs');
 const protectedPaths = [
+  'apps/mobile/src/showroom/InquiryVerification.tsx',
+  'apps/web/src/lib/inquiry/native-bridge.ts',
   'apps/web/src/lib/technician/ownership.ts',
   'apps/mobile/src/technician/ownership.ts',
   'apps/mobile/src/technician/presentation.ts',
@@ -37,6 +39,8 @@ function check(files) {
 }
 
 const bypasses = {
+  'apps/mobile/src/webview-bypass.ts': "import {WebView} from 'react-native-webview'; export const Unsafe=WebView;",
+  'apps/web/src/lib/bridge-bypass.ts': "window.ReactNativeWebView.postMessage('private');",
   'apps/mobile/src/voice-outside-adapter.ts': "import {AudioModule} from 'expo-audio'; export const audio=AudioModule;",
   'apps/web/src/lib/direct.ts': "fetch(apiURL + '/v1/me');",
   'apps/web/src/lib/computed.ts': "(globalThis as any)['fe' + 'tch'](apiURL + '/v1/me');",
@@ -313,7 +317,7 @@ assert.notEqual(result.status,0);
 result=check({'apps/mobile/src/inventory/scan-camera.tsx':"fetch('/unreviewed');"});
 assert.notEqual(result.status,0);
 
-for (const path of ["apps/web/src/lib/technician/ownership.ts","apps/mobile/src/technician/ownership.ts","apps/mobile/src/technician/presentation.ts","apps/web/src/lib/customer/ownership.ts", "apps/mobile/src/customer/ownership.ts", "apps/mobile/src/customer/presentation.ts"]) {
+for (const path of ["apps/mobile/src/showroom/InquiryVerification.tsx","apps/web/src/lib/inquiry/native-bridge.ts","apps/web/src/lib/technician/ownership.ts","apps/mobile/src/technician/ownership.ts","apps/mobile/src/technician/presentation.ts","apps/web/src/lib/customer/ownership.ts", "apps/mobile/src/customer/ownership.ts", "apps/mobile/src/customer/presentation.ts"]) {
  const result=check({[path]:protectedBaseline[path]+"\nfetch('/bypass');\n"});
  assert.notEqual(result.status,0);assert.ok(result.stderr.includes(path));
 }

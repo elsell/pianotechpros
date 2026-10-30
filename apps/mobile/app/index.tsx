@@ -50,6 +50,7 @@ export default function Home() {
       {auth.errorKey?<Text accessibilityRole="alert" style={{color:theme.text}}>{i18n.t(auth.errorKey)}</Text>:null}
       {auth.session?<NavigationRow label={i18n.t('auth.signOut')} disclosure={false} disabled={!auth.ready} onPress={()=>{void auth.signOut();}}/>:<Button title={i18n.t('auth.signIn')} disabled={!auth.ready||!auth.signInReady} onPress={()=>{void auth.signIn();}}/>}
     </View>
+    <NavigationRow label={i18n.t('showroom.discovery.showrooms')} onPress={()=>router.push('/showrooms')}/>
     <Button title={i18n.t('scan.native.open')} disabled={!auth.ready} onPress={()=>router.push('/scan')}/>
     {signedIn?<View style={{borderRadius:12,overflow:'hidden'}}>
       <NavigationRow label={i18n.t('customer.heading')} onPress={()=>router.push('/customer')}/>

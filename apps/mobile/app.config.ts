@@ -14,14 +14,17 @@ export default ({ config }: { config: Record<string, unknown> }) => ({
    ['expo-localization',{supportedLocales:{ios:['en','es'],android:['en','es']}}],
    ['expo-audio',{microphonePermission:en['voice.microphonePermission'],recordAudioAndroid:true,enableBackgroundRecording:false,enableBackgroundPlayback:false}],
    ['expo-camera',{cameraPermission:en['inventory.photos.cameraPermission'],microphonePermission:en['voice.microphonePermission'],recordAudioAndroid:false,barcodeScannerEnabled:true}],
-   './plugins/with-native-system-bars.cjs'],
+   './plugins/with-native-system-bars.cjs','./plugins/with-native-text-input.cjs'],
   locales:{en:permissionStrings(en),es:permissionStrings(es)},
   ios:{...((config.ios as Record<string,unknown>|undefined)??{}),infoPlist:{
    ...(((config.ios as Record<string,unknown>|undefined)?.infoPlist as Record<string,unknown>|undefined)??{}),CFBundleAllowMixedLocalizations:true,
+   UIViewControllerBasedStatusBarAppearance:true,
   }},
   extra: {
     ...((config.extra as Record<string, unknown> | undefined) ?? {}),
     application: {
+      inquiryChallengePolicy: process.env.PIANOTECHPROS_INQUIRY_CHALLENGE_POLICY,
+      turnstileSiteKey: process.env.PIANOTECHPROS_TURNSTILE_SITE_KEY,
       environment: process.env.PIANOTECHPROS_APP_ENV ?? 'development',
       webURL: process.env.PIANOTECHPROS_WEB_URL,
       apiURL: process.env.PIANOTECHPROS_API_URL ?? 'http://localhost:8080',

@@ -326,6 +326,8 @@
   "inventory.publication.missing.title": "Add a title or manufacturer before publishing.",
   "inventory.publication.missing.photo": "Upload at least one photo before publishing.",
   "inventory.publication.saveFirst": "Save or resolve your private draft before reviewing publication.",
+  "showroom.directoryEmpty": "No public showrooms are available yet.",
+  "showroom.contactFailed": "This action could not be completed. Please try again.",
   "showroom.title": "Find your next piano",
   "showroom.inventory": "Explore the collection",
   "showroom.filters": "Refine your search",
@@ -342,6 +344,7 @@
   "showroom.apply": "Show pianos",
   "showroom.clear": "Clear filters",
   "showroom.priceHelp": "Choose a currency when filtering by price.",
+  "showroom.priceLabel": "Asking price: {{price}}",
   "showroom.requestPrice": "Price on request",
   "showroom.empty": "No pianos match these filters.",
   "showroom.next": "See more pianos",
@@ -470,6 +473,10 @@
   "voice.transcript": "Transcript",
   "voice.extract": "Review suggestions",
   "voice.review": "Choose the fields you want to apply.",
+  "voice.clarify": "Clarify {{field}}",
+  "voice.clarification": "Clarification for {{field}}",
+  "voice.clarifySubmit": "Review clarification",
+  "voice.clarifying": "Reviewing your clarification…",
   "voice.select": "Apply {{field}}",
   "voice.current": "Current value",
   "voice.proposed": "Suggested value",
@@ -764,5 +771,6 @@
   "technician.kind.available": "Available",
   "technician.kind.unavailable": "Unavailable",
   "technician.done": "Done",
-  "technician.noChoices": "No matching options. Try a different search."
+  "technician.noChoices": "No matching options. Try a different search.",
+  "showroom.about": "About this showroom"
 }

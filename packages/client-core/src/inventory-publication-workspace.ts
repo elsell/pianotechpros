@@ -1,3 +1,4 @@
+export type PublicationMissingField = 'form'|'condition'|'title'|'photo';
 export type PublicationCommand = {kind:'publish'} | {kind:'unpublish'} | {kind:'transition';status:'draft'|'available'|'reserved'|'in_service'|'sold'|'archived';salePrice:{minor_units:number;currency:string}|null;reason:string};
 export interface PublicationReviewState {record:{id:string;dealer_id:string;revision:number;status:string}}
 export type PublicationReviewFailure = 'denied'|'conflict'|'rejected'|'uncertain';
@@ -6,6 +7,7 @@ export interface InventoryPublicationWorkspacePort<S extends PublicationReviewSt
  copy(state:S):S;
  withMutation<T>(work:()=>Promise<T>):Promise<T>;
  get():Promise<S>;
+ missing?(state:S):readonly PublicationMissingField[];
  execute(command:PublicationCommand,expectedRevision:number):Promise<S>;
  classify(error:unknown):PublicationReviewFailure;
 }
@@ -14,6 +16,7 @@ const copyCommand=(command:PublicationCommand):PublicationCommand=>command.kind=
 /** A review is ephemeral and single-use. Ports serialize with editor saves and validate transport. */
 export function createInventoryPublicationWorkspace<S extends PublicationReviewState>(port:InventoryPublicationWorkspacePort<S>){
  let disposed=false;let busy=false;let state:S|null=null;let review:{command:PublicationCommand;state:S}|null=null;
+ let missing:PublicationMissingField[]=[];
  let failure:PublicationReviewFailure|null=null;let outcome:'none'|'succeeded'|'unknown'='none';
  const listeners=new Set<(value:ReturnType<typeof snapshot>)=>void>();
  const alive=()=>!disposed&&port.active();
@@ -21,6 +24,7 @@ export function createInventoryPublicationWorkspace<S extends PublicationReviewS
  function snapshot(){const visible=alive()&&failure!=='denied';return {
   state:visible&&state?port.copy(state):null,
   review:visible&&review?{command:copyCommand(review.command),state:port.copy(review.state)}:null,
+  missing:visible?[...missing]:[],
   busy:alive()&&busy,failure:alive()?failure:null,outcome:alive()?outcome:'none' as const,
  };}
  function notify(){if(!disposed)for(const listener of listeners){try{listener(snapshot());}catch{/* Presentation cannot interrupt a command. */}}}
@@ -36,10 +40,15 @@ export function createInventoryPublicationWorkspace<S extends PublicationReviewS
  return Object.freeze({
   snapshot,
   subscribe(listener:(value:ReturnType<typeof snapshot>)=>void){if(!disposed)listeners.add(listener);listener(snapshot());return()=>{listeners.delete(listener);};},
-  refresh(){return run(async()=>{review=null;state=check(await port.get());});},
+  refresh(){return run(async()=>{review=null;missing=[];state=check(await port.get());});},
   review(command:PublicationCommand){
    const intent=copyCommand(command);
-   return run(async()=>{review=null;outcome='none';state=check(await port.get());review={command:intent,state:port.copy(state)};});
+   return run(async()=>{review=null;missing=[];outcome='none';state=check(await port.get());
+    if(intent.kind==='publish'){const fields=port.missing?.(port.copy(state))??[];active();
+     if(fields.some(field=>!['form','condition','title','photo'].includes(field)))throw unavailable();
+     missing=[...new Set(fields)];if(missing.length)return;
+    }
+    review={command:intent,state:port.copy(state)};});
   },
   confirm(){
    if(busy||!alive()||!review)return Promise.reject(unavailable());
@@ -53,7 +62,7 @@ export function createInventoryPublicationWorkspace<S extends PublicationReviewS
     state=result;
    },success=>{outcome=success?'succeeded':attempted&&failure==='uncertain'?'unknown':'none';});
   },
-  cancel(){if(!busy){review=null;notify();}},
-  dispose(){disposed=true;state=null;review=null;listeners.clear();},
+  cancel(){if(!busy){review=null;missing=[];notify();}},
+  dispose(){disposed=true;state=null;review=null;missing=[];listeners.clear();},
  });
 }

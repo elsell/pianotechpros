@@ -106,16 +106,17 @@ Regression coverage resolves both legacy EAS and modern Expo glob consumers,
 preserves their matching behavior and verifies bounded nesting through the real
 patched package. Run the complete audit, age gate, web build/browser journey,
 repository/contract tests, Expo compatibility/Doctor and native build gates.
-Until a fixed node-forge release exists, backport only the nested DigestAlgorithm
-element-count validation from upstream PR 1152, commit
-ceba34402e329f0365134f23fe19898756527d65, onto 1.4.0. Record source, license,
-patch and installed-source hashes. This is an unmerged upstream fix, requiring
-local adversarial coverage and review. Exercise actual Expo CLI and EAS consumers
-with ephemeral RSA keys: valid SHA-256 signatures, changed messages, signatures
-from another key, valid optional-NULL encodings and extra nested ASN.1 children.
-Malformed encodings must be rejected before digest comparison. Preserve the
-package version and audit finding; do not suppress the advisory or claim an
-upstream release. Native tooling checks remain required before merging.
+Pin node-forge 1.4.1, the 2026-10-27 upstream security release, across all
+Expo and EAS signing consumers. Retire the temporary 1.4.0 nested-element patch;
+record the upstream release, registry integrity and installed-source hashes.
+Retain adversarial coverage using ephemeral RSA keys: valid SHA-256 signatures,
+changed messages, another signer, valid optional-NULL encodings and extra nested
+ASN.1 children. Add non-minimal and indefinite BER length encodings: signature
+verification must reject these non-canonical DigestInfo values before digest
+comparison. Preserve actual Expo/EAS certificate and buffer signing workflows.
+The exact version has a fourteen-day age exception for urgent remediation of
+GHSA-86w9-cpqp-85rv, with registry verification, consumer tests, frozen dependency
+graph, full audit and hosted native build gates. No advisory suppression is added.
 
 The web runtime must use SvelteKit 3.0.1 and adapter-node 6.0.0 to remove
 GHSA-pfhg-q3qv-9q6r and GHSA-27mw-82g8-phjj. Pin compatible Svelte 5.57.2,
@@ -141,7 +142,7 @@ bounded subprocess; never run potentially unbounded parser inputs in the test
 runner itself. Keep the package's supported named/default CommonJS exports;
 Metro consumes its default export and passes a buffer, not a filesystem path.
 
-Pin decode-uri-component 0.5.0 to replace the unbounded malformed-percent decoder
+Pin decode-uri-component 0.5.1 to replace the unbounded malformed-percent decoder
 used by React Navigation's query-string adapter (GHSA-vcc3-ghjq-m6fr). Its fixed
 scanner must remain upstream-identical. A minimal reviewed packaging patch may
 retain callable CommonJS consumption by query-string: change the package module
@@ -151,6 +152,34 @@ Unicode, plus/escaped-plus, duplicate keys and malformed percent input. Bound
 adversarial subprocess execution and preserve non-throwing malformed-input
 behavior without executing any decoded content. Run compatibility, exports,
 contracts, full tests, age and native integration gates before release.
+The 0.5.1 follow-up also removes the distinct-percent-run quadratic replacement
+loop (GHSA-qr28-fpjm-wq7f). Exercise 32,000 distinct encoded runs plus a malformed
+suffix through query-string in a bounded subprocess, and verify decoded percent
+bytes are not decoded a second time. Keep the scanner upstream-identical and
+refresh the packaging-only patch and source hashes. The exact release has a
+fourteen-day age exception for this availability fix; no vulnerability waiver.
+Replace the vulnerable deepmerge dependency in its exact Expo 55.0.21 and
+Svelte Vite plugin 7.1.2 consumers with @fastify/deepmerge 3.2.2. Use scoped
+package extensions and dependency removals, plus reviewed source patches that
+adapt each consumer to the replacement factory. Do not alias vulnerable source
+under another package name or suppress the advisory. Remove the earlier
+closed-unmerged PR 274 backport only when the installed graph no longer contains
+deepmerge. Keep the audit gate unchanged.
+Preserve Expo nested configuration and plugin property merging (including array
+concatenation), and Svelte compiler/preprocessor options with array replacement.
+Exercise the actual installed Expo, EAS and Svelte consumer paths; test symbols,
+functions, dates, regular expressions, null placeholders, unchanged inputs and
+prototype-key attacks. Reject __proto__, constructor and prototype payloads at
+nested and array boundaries. Verify the returned prototype and own keys as well
+as global Object.prototype. Record replacement release, MIT provenance, integrity
+and patch/source hashes. Compare each patch hash directly with its lockfile entry;
+an install reporting "already up to date" is not evidence that edited patches
+were reapplied. Disable pnpm optimistic repeat installs so patch-only edits are not skipped.
+After a patch edit, regenerate lockfile resolution and verify a fresh
+frozen install before claiming installed-source coverage. Run the fourteen-day age gate without a new exception,
+full audit, web/Expo configuration checks and native CI before release. The
+replacement is a scoped consumer migration, not a promise of general deepmerge
+API compatibility (customMerge/all are not used by these consumers).
 
 Zod must use the exact 4.6.6 security release for both EAS and Expo CLI
 consumers (GHSA-mrhx-c7xc-m3w5). Test that leading array/set size limits reject
@@ -590,6 +619,57 @@ Do not race a manual click against autosave or assert wall-clock scheduler timin
 Preserve pending-command replay, newer-draft recovery and current-token rejection
 assertions without extending interaction timeouts.
 
+## iOS simulator interaction acceptance
+
+Unsigned Xcode compilation remains separate from interaction acceptance. Exercise
+normal application screens in a booted simulator through XCTest UI automation;
+never add production authentication, secure-store or navigation bypasses for tests.
+Use the existing Bundler-locked Xcodeproj dependency to compose the UI test target.
+The test runner activates the installed development app after its ordinary Metro
+URL is opened; it must not replace production screen models with test components.
+
+A loopback-only controlled HTTP fixture may provide synthetic provider and API
+responses for presentation journeys. It is test infrastructure, never a production
+adapter or evidence of backend authorization. Exercise the ordinary authorization
+code/PKCE redirect, token exchange and opaque application session flow. Bind codes
+to the exact synthetic client and callback, require S256 PKCE, consume codes once,
+and reject unknown identities/sessions. Never seed app credentials directly or
+accept arbitrary bearer tokens. Persist synthetic fixture state only in memory.
+Reject unsupported routes and bound request bodies. Fixture tests cover malformed
+PKCE, mismatched redirects, code reuse, unauthenticated APIs and successful flow.
+
+Profile interaction journeys must create/edit/reopen customer and technician
+profiles, preserve incomplete drafts across application restarts, exercise explicit
+conflict and retry choices, and verify choice-sheet dismissal/validation focus.
+Screenshots and XCTest results are synthetic-only artifacts. They supplement the
+real PostgreSQL/SpiceDB/API tests and Android interaction evidence; neither a
+fixture test nor a screenshot of the sign-in page completes product acceptance.
+Physical camera/audio, VoiceOver and manual interaction quality remain separate.
+
+### iOS fixture readiness addressing
+
+The iOS interaction harness starts Metro with Node's IPv4-first DNS ordering
+while retaining its localhost-only listener. Its readiness probe, development
+URL and synthetic API use explicit IPv4 loopback addresses. Expo's native bundle
+request resolves to 127.0.0.1; a successful IPv6 localhost probe alone does not
+prove that address is reachable. The fourth hosted run retained a red-box error
+showing the failed IPv4 bundle URL; keep this as failed interaction evidence. Readiness requests have bounded connect/total
+timeouts and identify the failed local endpoint. A failed prerequisite remains
+a failing gate, never a skipped interaction test.
+
+After Xcode finishes building, request the iOS development manifest and fully
+fetch its launch bundle before starting XCTest. Require a nonempty JavaScript
+bundle served by the same explicit loopback origin, bounded timeouts and no
+redirects. Status readiness alone does not prove manifest/bundle availability.
+Record only byte counts and stage failures; do not log manifest contents. The
+eighth hosted run passed signature/identity inspection but its development
+launcher timed out loading Metro before Sign in existed. This is a failed
+project-load prerequisite, not authentication or profile acceptance.
+
+The generated iOS UI-test target must set an explicit nonempty product name.
+The simulator build must produce `PianoInteractionTests.xctest` inside its named
+runner; an empty test product is a harness failure, not device acceptance evidence.
+
 ## Persisted web profile acceptance
 
 The recurring isolated real-service acceptance must exercise customer and
@@ -706,6 +786,16 @@ URLs and price, exclude private sentinels, and verify private edits leave discov
 unchanged. After explicit unpublishing, require the listing URL to disappear from
 the showroom sitemap and old canonical/alias URLs to return 404 without redirect.
 
+### iOS development-client launch ownership
+
+XCTest setup must open the development-client URL itself with
+`XCUIApplication.open(_:)` on a supported simulator. A shell `simctl openurl`
+before starting XCTest is insufficient: runner initialization can relaunch the
+app on the development launcher, discarding that URL. Preserve explicit process
+termination between create and restore journeys. Unsupported simulator versions
+must fail, never skip the interaction gate. The third hosted run reached the
+launcher but not Sign in; this is failed interaction evidence, not acceptance.
+
 ## Persisted photo management
 
 Use a separate real photo-first journey with a second uploaded photo, paced in
@@ -715,3 +805,110 @@ API reads. Open and dismiss preview with the keyboard and verify focus returns
 to its trigger. Cancel removal without changing stored photos, then confirm it
 and prove the removed private image is inaccessible while the retained photo
 remains readable. Do not replace HTTP responses or suppress revisions.
+
+### Simulator Keychain identity
+
+Keep unsigned compilation as its own gate. Interactive simulator builds must use
+local ad-hoc signing, without a developer account, provisioning profile or store
+credential. The generated test-only app entitlements use the synthetic
+`PIANOTESTS.com.pianotechpros.pianotechpros` application identifier and sole
+Keychain access group. Preserve real SecureStore reads/writes and encrypted draft
+storage; do not substitute a memory store to pass interaction tests.
+Before installation, verify Xcode's ad-hoc signature and inspect the executable's
+embedded simulator entitlements in `__TEXT,__entitlements`. Require the exact
+synthetic identity and sole Keychain group, and a nonempty `__TEXT,__ents_der`
+section. Never apply iOS entitlements to the macOS-hosted simulator code signature.
+These settings belong only to the generated simulator interaction target, never
+release config. Preserve the separate real SecureStore and UI interaction gate.
+
+The fifth run reached the app but failed after sign-in with saved-session cleanup
+failure. The sixth stopped at an incorrect signature-entitlement inspection:
+Xcode embeds simulator entitlements in Mach-O sections. The seventh manually
+re-signed with iOS entitlements and failed at launch with `Taskgated Invalid
+Signature`. Preserve Xcode signing and validate the embedded sections instead.
+The binary inspector must reject missing, malformed, truncated or duplicate
+sections and foreign/shared identity values. Fresh hosted interaction evidence
+is required; correcting the harness alone does not prove Keychain access.
+
+Reference: upstream simulator signing behavior is documented in
+https://github.com/bazelbuild/rules_apple/blob/main/doc/common_info.md.
+
+### Development-client onboarding overlay
+
+The ninth iOS run (`40387476671`, source `7579825`) fetched its complete launch
+bundle and reached Ready to sign in, but Expo's first-launch developer-menu
+tutorial covered the product button. XCTest reported Sign in as not hittable.
+Before product interaction, recognize that exact tutorial text, tap its visible
+Continue button, then close the identified developer menu using its Close button.
+Require the menu's own Source code explorer marker before closing it. Never tap
+an arbitrary Continue/Close button, bypass product UI, or treat overlay dismissal
+as authentication acceptance. Repeat this bounded handling when reopening the
+development client; absent overlays need no action.
+
+### Native fixture authentication diagnostics
+
+The tenth iOS interaction run (`40392649040`, source `7d76e09`) dismissed the
+identified developer overlay and tapped Sign in, but timed out before the
+signed-in home screen. Its retained app hierarchy remained signed out without
+an error; this does not establish whether the provider flow started or completed.
+The controlled native fixture must expose optional response observations with
+only a fixed authentication-stage name and HTTP status. Unknown and product
+routes emit nothing. Never include URLs, query parameters, headers, credentials,
+profile data or exception text. The standalone fixture runner records these
+observations for retained CI diagnostics; application behavior is unchanged.
+
+The retained tenth-run recording shows the iOS authentication consent dialog
+appearing after the harness's five-second optional consent wait. On the fresh
+simulator, require the alert identifying `127.0.0.1` and `Sign In`, scoped to
+application or Springboard alerts, with a bounded 30-second readiness wait.
+Tap Continue only inside that identified, hittable alert. A missing consent
+must fail at this boundary rather than silently proceeding to profile lookup.
+The recording establishes a harness timing gap, not successful authentication.
+
+The eleventh run (`40398609369`, source `6c1835f`) accepted the identified
+consent dialog. Fixture diagnostics recorded authorization 303, token 200 and
+application session 201; XCTest reached My customer profile and tapped it.
+The journey then failed in `reach` for the Name text field before entering
+profile data. This establishes successful initial sign-in through the controlled
+fixture, not profile save, process-restart recovery or live-provider compatibility.
+
+The eleventh-run recording identifies the profile failure as the native
+react-native-screens status-bar assertion: `UIViewControllerBasedStatusBarAppearance`
+was disabled while navigation requests per-screen status-bar styles. Set this
+Info.plist capability explicitly to true in the generated application config,
+even when an inherited config supplies false. The post-prebuild gate must reject
+an absent or false value. Preserve per-screen light/dark styling; do not dismiss
+the native error or remove styling to make the interaction test advance.
+
+## Hosted browser dependency acquisition budget
+
+Acceptance retains a bounded 60-minute job budget for clean hosted runners. Run
+`40422404970` at `d4bfc01` exhausted the former 30-minute budget during Ubuntu
+browser-library downloads, before `make acceptance` began. The retained log shows
+continued package acquisition rather than an executed failing product assertion.
+The longer job budget covers dependency acquisition plus the unchanged full
+acceptance suite. It does not extend per-interaction deadlines, suppress setup
+failures, skip browser engines or permit an unexecuted suite to count as passing.
+
+## Universal simulator entitlement inspection
+
+The bundled Release product in run `40422404970` built successfully as a universal
+arm64/x86_64 executable. The existing thin-only entitlement reader cannot inspect
+that product. Accept thin Mach-O 64 or standard big-endian FAT32/FAT64 containers;
+validate every contained thin slice, require matching architecture declarations,
+nonoverlapping in-bounds aligned slices, and identical XML entitlement payloads.
+Reject empty, duplicate, nested, truncated or inconsistent slices. Preserve XML
+and DER section checks plus the separate exact synthetic identity/Keychain gate.
+Never modify the signed product or select a slice to evade a failing architecture.
+Format reference: [Apple fat.h](https://github.com/apple-oss-distributions/cctools/blob/main/include/mach-o/fat.h); no implementation is imported.
+
+## Browser acceptance port reservations
+
+The dealer browser runner must reserve distinct loopback ports for its web and
+controlled API processes. Keep both sockets bound while allocating the pair;
+release each reservation only before its consumer starts. Always release remaining
+reservations on failure. Run 41042187883 assigned both processes port 40837 after
+closing each ephemeral allocation immediately, then failed with EADDRINUSE.
+Real-socket tests must prove distinct ports remain occupied until release and can
+be rebound afterward. This is harness isolation, not a reason to retry or waive
+browser behavior assertions.

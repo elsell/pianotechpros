@@ -1,0 +1,28 @@
+{
+  "package": "@fastify/deepmerge",
+  "version": "3.2.2",
+  "source": "https://github.com/fastify/deepmerge",
+  "license": "MIT",
+  "released": "2026-10-04T20:14:58.993Z",
+  "integrity": "sha512-155eqA/WMQdN6gUD4RrhS2K0Pcz2Ou9pQ86L0sipOpP9ONbTA6oYw/hW4VdBjR4egcDHqmWUK9x80oUX7S1mDQ==",
+  "purpose": "Replace deepmerge in actual Expo and Svelte consumers. No advisory waiver.",
+  "patches": {
+    "expo-config-deepmerge.patch": "df24eee92436c615604f3971b6238adf87a87a4f68ecf8dc095e9f9a29c4badc",
+    "svelte-config-deepmerge.patch": "ae494d2f6eeea68746a1664fb756b61a16a0302c41a91b9eac2643ec7343a3e5"
+  },
+  "files": {
+    "index.js": "44fa3c0716e603bf9a033c63e2e8543d2990f928b662b9e8fcf1402950d04881",
+    "package.json": "4bb8c7698cf173dafa7838b0785da1d603925f9c45c4ddf50b00712d5c04ff9c",
+    "LICENSE": "e2d09f74a77005e85e9f9bd501e3b7599ccae19d918538461196dde42f7f1b97"
+  },
+  "consumers": {
+    "expo": {
+      "file": "build/Config.js",
+      "sha256": "b390235de9049f04b7c47bc571d7aaadcdc174bfe8f70d56297fbb01cef68ceb"
+    },
+    "svelte": {
+      "file": "src/utils/options.js",
+      "sha256": "21d99efc2a798d8c428cbaee67265b3f332710a992806eaa3db7ccca227c2388"
+    }
+  }
+}

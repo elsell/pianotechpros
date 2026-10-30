@@ -326,6 +326,8 @@
   "inventory.publication.missing.title": "Añade un título o fabricante antes de publicar.",
   "inventory.publication.missing.photo": "Carga al menos una foto antes de publicar.",
   "inventory.publication.saveFirst": "Guarda o resuelve el borrador privado antes de revisar la publicación.",
+  "showroom.directoryEmpty": "Todavía no hay salas de exposición públicas disponibles.",
+  "showroom.contactFailed": "No se pudo completar esta acción. Inténtalo de nuevo.",
   "showroom.title": "Encuentre su próximo piano",
   "showroom.inventory": "Explore la colección",
   "showroom.filters": "Ajuste su búsqueda",
@@ -342,6 +344,7 @@
   "showroom.apply": "Mostrar pianos",
   "showroom.clear": "Borrar filtros",
   "showroom.priceHelp": "Elija una moneda para filtrar por precio.",
+  "showroom.priceLabel": "Precio de venta: {{price}}",
   "showroom.requestPrice": "Precio a consultar",
   "showroom.empty": "Ningún piano coincide con estos filtros.",
   "showroom.next": "Ver más pianos",
@@ -470,6 +473,10 @@
   "voice.transcript": "Transcripción",
   "voice.extract": "Revisar sugerencias",
   "voice.review": "Elige los campos que quieres aplicar.",
+  "voice.clarify": "Aclarar {{field}}",
+  "voice.clarification": "Aclaración de {{field}}",
+  "voice.clarifySubmit": "Revisar aclaración",
+  "voice.clarifying": "Revisando tu aclaración…",
   "voice.select": "Aplicar {{field}}",
   "voice.current": "Valor actual",
   "voice.proposed": "Valor sugerido",
@@ -764,5 +771,6 @@
   "technician.kind.available": "Disponible",
   "technician.kind.unavailable": "No disponible",
   "technician.done": "Listo",
-  "technician.noChoices": "No hay opciones coincidentes. Prueba otra búsqueda."
+  "technician.noChoices": "No hay opciones coincidentes. Prueba otra búsqueda.",
+  "showroom.about": "Acerca de esta tienda"
 }

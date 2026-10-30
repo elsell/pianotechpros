@@ -36,6 +36,9 @@ check:
 	node --test scripts/zod-security.test.mjs
 	node --test scripts/fast-uri-security.test.mjs
 	node --test scripts/forge-security.test.mjs
+	node --test scripts/native-ui-fixture.test.mjs scripts/ios-journey-schedule.test.mjs scripts/loopback-ports.test.mjs
+	node --test scripts/mobile-native-text-build.test.mjs
+	node --test scripts/deepmerge-security.test.mjs
 	node scripts/check-app-env.mjs
 	./scripts/plan-release_test.sh
 	./scripts/test-start-postgres-for-acceptance.sh

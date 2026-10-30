@@ -70,7 +70,7 @@ const server = createServer(async (req, res) => {
     if(body.expectedRevision!==editorRecord.revision)return send(409,{code:'conflict'});
     return send(200,{data:{revision:editorRecord.revision,transcript:body.transcript,candidates:[
       {field:'make',value:{text:'Steinway'},confidence:'high',evidence:'Steinway'},
-      {field:'model',value:{text:'Model B'},confidence:'uncertain',evidence:'Model B'},
+      {field:'model',value:{text:body.transcript.includes('Clarification for model: Model D')?'Model D':'Model B'},confidence:body.transcript.includes('Clarification for model: Model D')?'high':'uncertain',evidence:body.transcript.includes('Clarification for model: Model D')?'Model D':'Model B'},
     ]}});
   }
   if(url.pathname.startsWith('/v1/dealers/created-shop/inquiries')){if(inquiryDenied)return send(404,{code:'not_found'});if(req.method==='POST'){inquiryWrites++;inquiryRead=true;return send(409,{code:'conflict'});}return send(200,url.pathname.endsWith('/inquiries')?{data:[inquiryEntry()],meta:{}}:{data:inquiryEntry()});}
@@ -381,7 +381,21 @@ try {
   await voicePanel.getByRole('button',{name:'Revisar sugerencias',exact:true}).click();
   await voicePanel.getByText('Elige los campos que quieres aplicar.',{exact:true}).waitFor();
   assert.equal(voiceCalls,5);
-  await voicePanel.getByRole('button',{name:'Cancelar voz',exact:true}).click();
+  const writesBeforeClarification=editorWrites;
+  await voicePanel.getByRole('checkbox',{name:'Aplicar Modelo',exact:true}).check();
+  await voicePanel.getByRole('button',{name:'Aclarar Modelo',exact:true}).click();
+  await voicePanel.getByLabel('Aclaración de Modelo',{exact:true}).fill('Model D');
+  await voicePanel.getByRole('button',{name:'Revisar aclaración',exact:true}).click();
+  await voicePanel.getByRole('button',{name:'Revisar aclaración',exact:true}).waitFor({state:'detached'});
+  await voicePanel.locator('dd').getByText('Model D',{exact:true}).waitFor();
+  assert.equal(await voicePanel.getByRole('checkbox',{name:'Aplicar Modelo',exact:true}).isChecked(),false);
+  assert.equal(editorWrites,writesBeforeClarification);assert.equal(editorRecord.attributes.model,'');
+  assert.equal(await voicePanel.locator('dd').getByText('Steinway',{exact:true}).count(),1);
+  await voicePanel.getByRole('checkbox',{name:'Aplicar Modelo',exact:true}).check();
+  await voicePanel.getByRole('button',{name:'Aplicar campos seleccionados',exact:true}).click();
+  await page.getByText('Guardado',{exact:true}).waitFor();assert.equal(editorRecord.attributes.model,'Model D');
+  await voicePanel.getByRole('button',{name:'Deshacer sugerencias',exact:true}).click();
+  await page.getByText('Guardado',{exact:true}).waitFor();assert.equal(editorRecord.attributes.model,'');
   await page.getByText('Guardado',{exact:true}).waitFor();
   await page.setViewportSize({width:1280,height:900});
 
@@ -530,7 +544,15 @@ try {
   await page.getByRole('heading',{name:'Publicación y disponibilidad',exact:true}).waitFor();
   assert.equal(await page.getByRole('button',{name:'Revisar publicación',exact:true}).isDisabled(),true);
   await page.getByLabel('Precio de venta',{exact:true}).fill('1200,50');
-  await page.getByLabel('Tipo de piano',{exact:true}).selectOption('grand');await page.getByLabel('Estado del piano',{exact:true}).selectOption('used');
+  await page.getByRole('button',{name:'Guardar ahora',exact:true}).click();await page.getByText('Guardado',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Revisar publicación',exact:true}).click();
+  await page.waitForFunction(()=>document.activeElement?.id==='form');
+  assert.equal(await page.getByRole('dialog').count(),0);assert.equal(publicationCommands,0);
+  await page.getByLabel('Tipo de piano',{exact:true}).selectOption('grand');
+  await page.getByRole('button',{name:'Revisar publicación',exact:true}).click();
+  await page.waitForFunction(()=>document.activeElement?.id==='condition');
+  assert.equal(await page.getByRole('dialog').count(),0);assert.equal(publicationCommands,0);
+  await page.getByLabel('Estado del piano',{exact:true}).selectOption('used');
   await page.locator('summary').filter({hasText:'Datos internos'}).click();await page.getByLabel('Notas privadas',{exact:true}).fill('PRIVATE-PUBLICATION-REVIEW');
   await page.getByRole('button',{name:'Guardar ahora',exact:true}).click();await page.getByText('Guardado',{exact:true}).waitFor();
   const previewRecord=capturedRecords.get('captured-1');capturedRecords.set('captured-1',{...previewRecord,revision:previewRecord.revision+1});recordPhotos.set('captured-1',[...recordPhotos.get('captured-1'),...Array.from({length:6},(_,i)=>({id:`review-photo-${i}`,altText:`Review ${i}`}))]);

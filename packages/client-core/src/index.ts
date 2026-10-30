@@ -204,7 +204,7 @@ export {createNativePickerSession} from './native-picker-session';
 export {createPhotoViewport,type PhotoTouch} from './photo-viewport';
 export {createInventoryPublicationWorkspace,type InventoryPublicationWorkspacePort,type PublicationCommand,type PublicationReviewState,type PublicationReviewFailure} from './inventory-publication-workspace';
 export {inventoryMoneyFromInput} from './inventory-form';
-export {showroomFilters,type ShowroomFilterFields} from './showroom-browse';
+export {showroomFilters,showroomFilterControlsVisible,type ShowroomFilterFields} from './showroom-browse';
 export {publicationStatuses,publicationTransitionFromInput,type PublicationTransitionInput} from './publication-transition';
 export {createInquiryComposer,validateInquiryContact,type InquiryContactFields,type InquiryContactField,type InquiryComposerState,type InquiryDeliveryIssue} from './inquiry-composer';
 export {inquiryChallengeConfig,type InquiryChallengeConfig} from './inquiry-config';
@@ -280,3 +280,10 @@ export * from './technician-workspace';
 export * from './technician-ownership';
 export * from './technician-presentation';
 export * from './technician-comparison';
+
+export {publicationReadiness} from './publication-readiness';
+export * from './public-resource';
+export * from './showroom-browser';
+export * from './inquiry-proof';
+
+export * from './public-listing-resource';

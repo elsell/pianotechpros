@@ -57,7 +57,18 @@ export function createTranslator(candidates: readonly (string | null | undefined
       const digits = formatter.resolvedOptions().maximumFractionDigits ?? 2;
       const base = 10n ** BigInt(digits), units = BigInt(minorUnits);
       const fraction = (units % base).toString().padStart(digits, '0');
-      return formatter.formatToParts(Number(units / base)).map(part => part.type === 'fraction' ? fraction : part.value).join('');
+      const whole = formatter.format(Number(units / base));
+      if (digits === 0) return whole;
+      // Both supported locales use Latin digits. Derive the fractional suffix
+      // from Intl so currency symbols, placement, grouping and spacing stay native.
+      // iOS Hermes lacks formatToParts; formatting the exact integer avoids rounding.
+      const zero = new Intl.NumberFormat(locale, {
+        useGrouping: false, minimumFractionDigits: digits, maximumFractionDigits: digits
+      }).format(0);
+      const suffix = zero.slice(1);
+      const offset = whole.lastIndexOf(suffix);
+      if (offset < 0) throw new Error('invalid_currency_format');
+      return whole.slice(0, offset + 1) + fraction + whole.slice(offset + suffix.length);
     },
     date: (value, options) => new Intl.DateTimeFormat(locale, options).format(value)
   };

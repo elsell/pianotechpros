@@ -67,9 +67,28 @@ export function createInventoryVoiceWorkflow(port:InventoryVoiceWorkflowPort){
    if(!transcriptOK(transcript)){clear();state={...state,phase:'failed',issue:'invalid_input'};emit();return;}
    await run(null,'',transcript);
   },
-  refreshReview(){const c=current();if(!c||state.phase!=='review'||!state.proposal)return;if(c.revision!==state.proposal.revision){state={...state,issue:'conflict'};emit();return;}state={...state,reviewed:{...c.form},conflicts:[],issue:null};emit();},
+  async clarify(field:InventoryVoiceField,answer:string){
+   const c=current();if(!c||inFlight||state.phase!=='review'||!state.proposal||!state.reviewed)return;
+   const prior=copy(state.proposal);
+   if(c.revision!==prior.revision){state={...state,issue:'conflict'};emit();return;}
+   const transcript=`${prior.transcript}\nClarification for ${field}: ${answer}`;
+   if(!prior.candidates.some(candidate=>candidate.field===field)||!transcriptOK(answer)||!transcriptOK(transcript)){state={...state,issue:'invalid_input'};emit();return;}
+   inFlight=true;const ticket=generation,controller=new AbortController();pending=controller;state={...state,issue:null};emit();
+   try{
+    if(!live(ticket,c.revision))return;
+    const result=await port.extract(c.revision,transcript,controller.signal);
+    if(!live(ticket,c.revision))return;
+    if(!validInventoryVoiceProposal(result)||result.revision!==c.revision||result.transcript!==transcript)throw new WorkflowFailure('protocol_error');
+    const candidate=result.candidates.find(value=>value.field===field);if(!candidate)throw new WorkflowFailure('protocol_error');
+    state={...state,transcript,proposal:{revision:prior.revision,transcript,candidates:prior.candidates.map(value=>value.field===field?copy(candidate):value)},issue:null};
+   }catch(error){
+    if(!live(ticket))return;const code=issue(error);if(code==='denied'){clear();return;}
+    state={...state,issue:code};
+   }finally{inFlight=false;if(ticket===generation)pending=null;emit();}
+  },
+  refreshReview(){const c=current();if(!c||inFlight||state.phase!=='review'||!state.proposal)return;if(c.revision!==state.proposal.revision){state={...state,issue:'conflict'};emit();return;}state={...state,reviewed:{...c.form},conflicts:[],issue:null};emit();},
   apply(selection:readonly string[]){
-   const c=current();if(!c||state.phase!=='review'||!state.proposal||!state.reviewed)return;
+   const c=current();if(!c||inFlight||state.phase!=='review'||!state.proposal||!state.reviewed)return;
    if(c.revision!==state.proposal.revision){state={...state,issue:'conflict'};emit();return;}
    try{
     const result=applyInventoryVoiceProposal(state.proposal,state.reviewed,c.form,selection);

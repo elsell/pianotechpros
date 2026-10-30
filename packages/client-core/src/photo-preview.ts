@@ -1,6 +1,7 @@
 const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 /** Memory-only bridge for native Image; callers release the URI on scope loss. */
-export function photoPreviewURI(bytes:Uint8Array):string {
+export function photoPreviewURI(input:Uint8Array|ArrayBuffer):string {
+ const bytes=input instanceof ArrayBuffer?new Uint8Array(input):input;
  if(!(bytes instanceof Uint8Array)||bytes.length<4||bytes.length>20*1024*1024||bytes[0]!==255||bytes[1]!==216||bytes.at(-2)!==255||bytes.at(-1)!==217)throw new Error('photo_preview_unavailable');
  const parts:string[]=[];let chunk='';
  for(let i=0;i<bytes.length;i+=3){

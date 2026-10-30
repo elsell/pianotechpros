@@ -4,7 +4,7 @@ import {useEffect,useRef,useState} from 'react';
 import {InputAccessoryView,Keyboard,KeyboardAvoidingView,Modal,Platform,Pressable,ScrollView,Text,TextInput,View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {InventoryClientError,InventoryPublicationError,type InventoryPhoto,type InventoryPublicationState,type PublicationReadinessField} from '@pianotechpros/api-client';
-import {publicationSaleDefaults,createInventoryPublicationWorkspace,inventoryCurrencies,publicationStatuses,publicationTransitionFromInput,type InventoryFormWorkspace,type PublicationCommand} from '@pianotechpros/client-core';
+import {publicationReadiness,publicationSaleDefaults,createInventoryPublicationWorkspace,inventoryCurrencies,publicationStatuses,publicationTransitionFromInput,type InventoryFormWorkspace,type PublicationCommand} from '@pianotechpros/client-core';
 import type {MessageKey} from '@pianotechpros/i18n';
 import {useMobileSession} from '../session-provider';
 import {useNativeTheme} from '../native-theme';
@@ -13,7 +13,7 @@ import {InventoryPublicShare} from './InventoryPublicShare';
 import {InventoryPhotoImage} from './InventoryPhotos';
 type ReviewState=InventoryPublicationState&{photos:InventoryPhoto[]};
 type Controller=ReturnType<typeof createInventoryPublicationWorkspace<ReviewState>>;
-export function InventoryPublication({workspace,userID,dealerID,recordID,publishReady,otherBusy,onBusy}:{workspace:InventoryFormWorkspace;userID:string;dealerID:string;recordID:string;publishReady:boolean;otherBusy:boolean;onBusy:(busy:boolean)=>void}){
+export function InventoryPublication({workspace,userID,dealerID,recordID,publishReady,otherBusy,onBusy,onMissing}:{workspace:InventoryFormWorkspace;userID:string;dealerID:string;recordID:string;publishReady:boolean;otherBusy:boolean;onBusy:(busy:boolean)=>void;onMissing:(field:PublicationReadinessField)=>void}){
  const {i18n}=useMobileSession();const theme=useNativeTheme();const request=useInventoryPublicationRequest();const photos=useInventoryPhotoRequest();
  const model=useRef<{controller:Controller;active():boolean}|null>(null);const operation=useRef(false);
  const [state,setState]=useState<ReturnType<Controller['snapshot']>|null>(null);const [screen,setScreen]=useState<'closed'|'edit'|'review'>('closed');
@@ -23,11 +23,12 @@ export function InventoryPublication({workspace,userID,dealerID,recordID,publish
   let alive=true;const active=()=>alive&&workspace.recordID()===recordID&&!!workspace.snapshot().draft;
   const controller=createInventoryPublicationWorkspace<ReviewState>({userID,dealerID,recordID,active,copy:value=>JSON.parse(JSON.stringify(value)),withMutation:work=>workspace.withMediaMutation(work),
    get:async()=>{const value=await request(api=>api.get(dealerID,recordID));const collection=await photos(api=>api.list(dealerID,recordID));if(collection.record.revision!==value.record.revision)throw new InventoryClientError('conflict',409);return {...value,photos:collection.photos};},
+   missing:value=>publicationReadiness(value.record.attributes,value.photos.length),
    execute:async(command,revision)=>{try{return {...await request(api=>command.kind==='publish'?api.publish(dealerID,recordID,revision):command.kind==='unpublish'?api.unpublish(dealerID,recordID,revision):api.transition(dealerID,recordID,revision,command.status,command.salePrice,command.reason)),photos:[]};}catch(error){if(active()&&error instanceof InventoryPublicationError)setMissing(error.missing);throw error;}},
    classify:error=>error instanceof InventoryClientError&&[401,403,404].includes(error.status)?'denied':error instanceof InventoryClientError&&error.code==='conflict'?'conflict':error instanceof InventoryClientError&&[400,422].includes(error.status)?'rejected':'uncertain',
   });
   const current={controller,active};model.current=current;operation.current=false;setScreen('closed');setMissing([]);setAmount('');setReason('');saleSeeded.current=false;
-  const unsubscribe=controller.subscribe(value=>{if(active()){setState(value);if(value.failure==='denied'){setScreen('closed');setAmount('');setReason('');saleSeeded.current=false;}}});
+  const unsubscribe=controller.subscribe(value=>{if(active()){setState(value);if(value.failure==='denied'){setScreen('closed');setMissing([]);setAmount('');setReason('');saleSeeded.current=false;}}});
   void controller.refresh().catch(()=>{});
   return()=>{alive=false;unsubscribe();controller.dispose();if(model.current===current)model.current=null;};
  },[workspace,userID,dealerID,recordID,request,photos]);
@@ -40,10 +41,10 @@ export function InventoryPublication({workspace,userID,dealerID,recordID,publish
  function chooseStatus(value:string){setTarget(value);if(value==='sold'&&!saleSeeded.current){saleSeeded.current=true;const defaults=publicationSaleDefaults(state?.state?.record.attributes.asking_price,i18n.locale==='es'?',':'.');setAmount(defaults.amount);setCurrency(defaults.currency);}}
  function cancel(){const current=model.current;if(operation.current||current?.controller.snapshot().busy)return;current?.controller.cancel();Keyboard.dismiss();setScreen('closed');setChoice(null);setMissing([]);}
  async function run(work:(current:NonNullable<typeof model.current>)=>Promise<void>){const current=model.current;if(!current||!current.active()||operation.current)return;operation.current=true;setMissing([]);setInvalid(false);try{await work(current);}catch{/* Stable controller state and validated readiness identifiers own feedback. */}finally{if(model.current===current&&current.active())operation.current=false;}}
- function review(command:PublicationCommand){if(command.kind==='publish'&&!publishReady)return;Keyboard.dismiss();void run(async current=>{await current.controller.review(command);if(current.active()){setPage(0);setChoice(null);setScreen('review');}});}
+ function review(command:PublicationCommand){if(command.kind==='publish'&&!publishReady)return;Keyboard.dismiss();void run(async current=>{await current.controller.review(command);if(current.active()){const snapshot=current.controller.snapshot();if(snapshot.missing.length){setMissing(snapshot.missing);setScreen('closed');onMissing(snapshot.missing[0]!);}else if(snapshot.review){setPage(0);setChoice(null);setScreen('review');}}});}
  function changeStatus(){let command:PublicationCommand;try{command=publicationTransitionFromInput({status:target,amount,currency,reason},state?.state?.record.status??'',i18n.locale==='es'?',':'.');}catch{setInvalid(true);return;}review(command);}
  function confirm(){void run(async current=>{const command=current.controller.snapshot().review?.command;try{await current.controller.confirm();}finally{if(current.active()){const result=current.controller.snapshot();if(result.outcome==='succeeded'){setAmount('');setReason('');saleSeeded.current=false;}setScreen(result.failure==='rejected'&&command?.kind==='transition'?'edit':'closed');}}});}
- const feedback=<>{busy?<Text accessibilityLiveRegion="polite" style={text}>{t('busy')}</Text>:null}{state?.outcome==='unknown'?<Text accessibilityRole="alert" style={text}>{t('unknown')}</Text>:state?.failure?<Text accessibilityRole="alert" style={text}>{state.failure==='denied'?i18n.t('inventory.denied'):t(state.failure==='conflict'?'conflict':'failed')}</Text>:screen==='closed'&&state?.outcome==='succeeded'?<Text accessibilityLiveRegion="polite" style={text}>{t('success')}</Text>:null}{missing.map(field=><Text key={field} accessibilityRole="alert" style={text}>{t(`missing.${field}`)}</Text>)}</>;
+ const feedback=<>{busy?<Text accessibilityLiveRegion="polite" style={text}>{t('busy')}</Text>:null}{state?.outcome==='unknown'?<Text accessibilityRole="alert" style={text}>{t('unknown')}</Text>:state?.failure?<Text accessibilityRole="alert" style={text}>{state.failure==='denied'?i18n.t('inventory.denied'):t(state.failure==='conflict'?'conflict':'failed')}</Text>:screen==='closed'&&state?.outcome==='succeeded'?<Text accessibilityLiveRegion="polite" style={text}>{t('success')}</Text>:null}{missing.map(field=><Button key={field} title={t(`missing.${field}`)} disabled={busy} onPress={()=>{setScreen('closed');onMissing(field);}} />)}</>;
  const reviewed=state?.review;const attributes=reviewed?.state.record.attributes;
  function row(label:string,value:string){return <View key={label} style={{gap:4}}><Text style={secondary}>{label}</Text><Text style={text}>{value}</Text></View>;}
  return <View style={{gap:12,paddingVertical:20,borderTopWidth:1,borderColor:theme.border}}>

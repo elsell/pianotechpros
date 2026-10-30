@@ -8,6 +8,7 @@
  import {createBrowserVoiceRecorder,type VoiceCaptureState,type BrowserVoiceAudio} from './voice-recorder';
  export let workspace:InventoryFormWorkspace;export let accountId:string;export let dealerID:string;export let apiURL:string;export let credential:SessionCredential;export let i18n:Translator;export let onSessionRejected:()=>void;export let onBusy:(busy:boolean)=>void;export let onPaused:(paused:boolean)=>void;export let otherBusy=false;
  let active=false,working=false,denied=false;let transcript='',failure='';let selected:InventoryVoiceField[]=[];
+ let clarificationField:InventoryVoiceField|null=null,answer='';
  let capture:VoiceCaptureState={phase:'idle',issue:null,level:null};let voice:InventoryVoiceState|null=null;let heading:HTMLHeadingElement;
  let recorder:ReturnType<typeof createBrowserVoiceRecorder>|null=null;let workflow:ReturnType<typeof createInventoryVoiceWorkspace>|null=null;
  let unsubscribe=()=>{};
@@ -24,11 +25,11 @@
   return field==='form'||field==='condition'?i18n.t(`inventory.${field}.${v}` as MessageKey):v;
  }
  function proposed(c:InventoryVoiceCandidate){const v=c.value;return value(inventoryFormFromAttributes({stock_number:'', [c.field]:v.text??v.boolean??v.money??v.date},voice?.reviewed?.decimal??'.'),c.field);}
- function clear(){recorder?.cancel();workflow?.cancel();voice=null;selected=[];transcript='';failure='';}
+ function clear(){clarificationField=null;answer='';recorder?.cancel();workflow?.cancel();voice=null;selected=[];transcript='';failure='';}
  async function request<T>(run:(client:ReturnType<typeof createInventoryVoiceApiClient>)=>Promise<T>){
   const session=credential;
   try{return await run(createInventoryVoiceApiClient(apiURL,()=>Date.parse(session.expiresAt)>Date.now()?session.token:null));}
-  catch(error){error=sessionScopedFailure(error,session.token,credential.token);if(error instanceof VoiceClientError&&['unauthenticated','not_found'].includes(error.code)){denied=true;failure='denied';transcript='';workflow?.cancel();voice=null;if(active&&session.token===credential.token&&error.code==='unauthenticated')onSessionRejected();}throw error;}
+  catch(error){error=sessionScopedFailure(error,session.token,credential.token);if(error instanceof VoiceClientError&&['unauthenticated','not_found'].includes(error.code)){denied=true;failure='denied';transcript='';clarificationField=null;answer='';workflow?.cancel();voice=null;if(active&&session.token===credential.token&&error.code==='unauthenticated')onSessionRejected();}throw error;}
  }
  async function process(audio:BrowserVoiceAudio|null=null){
   if(!active||working||otherBusy||denied){audio?.bytes.fill(0);return;}
@@ -36,6 +37,12 @@
   if(audio)await workflow?.process(audio.bytes,audio.mimeType);else await workflow?.extractTranscript(text);
  }
  function apply(){workflow?.apply(selected);if(workflow?.snapshot().voice?.phase==='applied')transcript='';}
+ async function clarify(){
+  if(!workflow||!clarificationField||voice?.busy)return;
+  const field=clarificationField;selected=selected.filter(value=>value!==field);
+  await workflow.clarify(field,answer.trim());
+  if(active&&!workflow.snapshot().voice?.issue){clarificationField=null;answer='';await tick();heading?.focus();}
+ }
  function editTranscript(){const text=voice?.transcript??transcript;clear();transcript=text;}
  function renew(){workflow?.refreshReview();selected=[];void tick().then(()=>heading?.focus());}
  onMount(()=>{
@@ -47,7 +54,7 @@
    extract:(recordID,revision,text,signal)=>request(client=>client.extract(dealerID,recordID,revision,text,signal)),
    classify:error=>error instanceof VoiceClientError?error.code==='unauthenticated'||error.code==='not_found'?'denied':error.code==='cancelled'?'unavailable':error.code:'unavailable',
   });
-  unsubscribe=workflow.subscribe(next=>{if(!active)return;const entered=next.voice?.phase==='review'&&voice?.phase!=='review';voice=next.voice;working=next.busy;onPaused(next.paused);if(next.issue)failure=next.issue;if(voice?.transcript)transcript=voice.transcript;if(entered){selected=[];void tick().then(()=>{if(active)heading?.focus();});}});
+  unsubscribe=workflow.subscribe(next=>{if(!active)return;const entered=next.voice?.phase==='review'&&voice?.phase!=='review';voice=next.voice;working=next.busy;onPaused(next.paused);if(next.issue)failure=next.issue;if(next.issue==='denied'){clarificationField=null;answer='';transcript='';selected=[];}if(voice?.transcript)transcript=voice.transcript;if(entered){selected=[];void tick().then(()=>{if(active)heading?.focus();});}});
   const events=browserEvents('pianotechpros.voice');const hidden=()=>{if(!events.visible())clear();};events.addVisibility(hidden);
   recorder=createBrowserVoiceRecorder({changed:state=>{if(active)capture=state;},completed:audio=>{if(active)void process(audio);else audio.bytes.fill(0);}});
   const unwatch=workspace.subscribe(state=>{if(state.denied){clear();denied=true;failure='denied';}});
@@ -73,13 +80,20 @@
   {#if !voice.proposal.candidates.length}<p>{i18n.t('voice.empty')}</p>{/if}
   {#each voice.proposal.candidates as candidate}
    <article>
-    <label class="choice"><input type="checkbox" checked={selected.includes(candidate.field)} onchange={event=>selected=event.currentTarget.checked?[...selected,candidate.field]:selected.filter(field=>field!==candidate.field)} />{i18n.t('voice.select',{field:label(candidate.field)})}</label>
+    <label class="choice"><input type="checkbox" disabled={voice.busy} checked={selected.includes(candidate.field)} onchange={event=>selected=event.currentTarget.checked?[...selected,candidate.field]:selected.filter(field=>field!==candidate.field)} />{i18n.t('voice.select',{field:label(candidate.field)})}</label>
     <dl><div><dt>{i18n.t('voice.current')}</dt><dd>{value(voice.reviewed,candidate.field)}</dd></div><div><dt>{i18n.t('voice.proposed')}</dt><dd>{proposed(candidate)}</dd></div></dl>
     <p class="confidence">{i18n.t(`voice.confidence.${candidate.confidence}` as MessageKey)}</p><blockquote>{candidate.evidence}</blockquote>
+    <button type="button" disabled={voice.busy} onclick={()=>{clarificationField=candidate.field;answer='';void tick().then(()=>document.getElementById('voice-clarification')?.focus());}}>{i18n.t('voice.clarify',{field:label(candidate.field)})}</button>
+    {#if clarificationField===candidate.field}
+     <label for="voice-clarification">{i18n.t('voice.clarification',{field:label(candidate.field)})}</label>
+     <textarea id="voice-clarification" bind:value={answer} rows="2" maxlength="16000" disabled={voice.busy}></textarea>
+     <button type="button" disabled={voice.busy||!answer.trim()} onclick={()=>void clarify()}>{i18n.t('voice.clarifySubmit')}</button>
+    {/if}
    </article>
   {/each}
-  {#if voice.conflicts.length}<button type="button" onclick={renew}>{i18n.t('voice.renew')}</button>{/if}
-  <button type="button" class="primary" disabled={!selected.length} onclick={apply}>{i18n.t('voice.apply')}</button>
+  {#if voice.busy}<p role="status">{i18n.t('voice.clarifying')}</p>{/if}
+  {#if voice.conflicts.length}<button type="button" disabled={voice.busy} onclick={renew}>{i18n.t('voice.renew')}</button>{/if}
+  <button type="button" class="primary" disabled={voice.busy||!selected.length} onclick={apply}>{i18n.t('voice.apply')}</button>
   <button type="button" onclick={editTranscript}>{i18n.t('voice.editTranscript')}</button>
  {:else if !busy}
   <label for="voice-transcript">{i18n.t('voice.transcript')}</label><textarea id="voice-transcript" bind:value={transcript} rows="3" maxlength="32000" disabled={denied}></textarea>

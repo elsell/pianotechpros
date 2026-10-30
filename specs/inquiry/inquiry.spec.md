@@ -204,3 +204,47 @@ Read acknowledgments return the receipt reloaded inside the same transaction,
 including the database's timestamp precision. A successful first response,
 subsequent detail read and repeated acknowledgment must report the exact same
 first-read timestamp even when the injected application clock has nanoseconds.
+
+## Native buyer submission
+
+A listing opens a native inquiry screen with labeled name, email, phone, contact
+preference and multiline message controls. Only listing identifiers are navigation
+parameters. The shared composer owns validation, deliberate retries, serialization,
+confirmed delivery and memory disposal. Leaving the screen clears contact input;
+backgrounding clears verification proof but retains the in-memory form. No draft,
+provider token or buyer field is persisted. A network error must not imply delivery
+failed or trigger replay. Submission remains anonymous even when the app is signed in.
+
+The pushed form identifies the current piano title and published showroom name
+from an anonymous listing read, never from navigation-supplied display data. It
+reloads publication context on focus/foreground and removes stale context while
+loading or after failure. Submission requires available context; an unavailable
+listing offers explicit retry without discarding entered contact fields. Context
+refresh does not dispose the buyer composer or replay submission. Confirmed
+receipt remains visible independently of a subsequent listing-read failure.
+
+Native configuration explicitly selects enabled, disabled or unavailable challenge
+policy with the same fail-closed parser as web. Enabled verification embeds only
+the widget in a restricted WebView at the configured web origin's
+`/inquiry-verification` page; buyer fields stay in native controls. The hosted page
+uses its server-configured site key, exact `inquiry` action and localized provider
+widget. It sends bounded token/status messages through the WebView bridge, never
+URLs, browser history, logs or storage. Only messages from that exact page and
+current mounted verification instance are accepted. Foreign navigation, unexpected
+message shapes, expiry, provider failure and application background invalidate
+proof. Each submission consumes proof once, even on transport failure. The server
+remains authoritative for hostname, action, age and token reuse. A missing or
+mismatched hosted configuration never falls back to disabled verification.
+
+Use Expo's compatible pinned `react-native-webview@13.16.0` (published August 25,
+2025) solely for the provider browser requirement. Disable file/universal file
+access, native cookie sharing, geolocation, window opening and mixed content;
+retain normal JavaScript, DOM storage and stable default user agent within a
+challenge session. Review native builds and real widget interaction separately
+from controlled fake-provider acceptance. Follow the provider's
+[mobile integration contract](https://developers.cloudflare.com/turnstile/get-started/mobile-implementation/).
+
+The native widget adapter and web proof-only bridge are exact, hash-protected
+provider adapters in the client transport gate. Other client modules may not
+import WebView or access the browser message bridge. Gate regressions must reject
+alternate adapters and unreviewed changes to either protected file.

@@ -15,3 +15,10 @@ test('native permission configuration uses shared catalogs and declares foregrou
  }
  assert.equal(config.ios.bundleIdentifier,'example.app');assert.equal(config.ios.infoPlist.existing,true);assert.equal(config.ios.infoPlist.CFBundleAllowMixedLocalizations,true);
 });
+test('native navigation owns iOS status-bar appearance even with inherited disabled configuration',()=>{
+ for(const inherited of [undefined,false,true]){
+  const config=configure({config:{ios:{infoPlist:{UIViewControllerBasedStatusBarAppearance:inherited,existing:true}}}});
+  assert.equal(config.ios.infoPlist.UIViewControllerBasedStatusBarAppearance,true);
+  assert.equal(config.ios.infoPlist.existing,true);
+ }
+});

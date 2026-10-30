@@ -1,0 +1,45 @@
+require 'xcodeproj'
+root = File.expand_path('..', __dir__)
+project_path = Dir[File.join(root, 'apps/mobile/ios/*.xcodeproj')].first
+abort 'Generated iOS project missing' unless project_path
+project = Xcodeproj::Project.open(project_path)
+app = project.targets.find { |target| target.product_type == 'com.apple.product-type.application' }
+abort 'Application target missing' unless app
+# Simulator-only identity: no developer account or distribution credentials.
+entitlements = File.join(root, 'build/ios-ui-evidence/simulator.entitlements')
+Xcodeproj::Plist.write_to_path({
+  'application-identifier' => 'PIANOTESTS.com.pianotechpros.pianotechpros',
+  'keychain-access-groups' => ['PIANOTESTS.com.pianotechpros.pianotechpros'],
+  'get-task-allow' => true
+}, entitlements)
+app.build_configurations.each do |config|
+  next unless config.name == 'Release'
+  config.build_settings['CODE_SIGN_ENTITLEMENTS'] = entitlements
+end
+# The generated simulator acceptance product alone may contact its loopback fixture.
+# Source app configuration and separately generated distribution builds stay unchanged.
+info_path = File.join(File.dirname(project_path), app.name, 'Info.plist')
+info = Xcodeproj::Plist.read_from_path(info_path)
+info['NSAppTransportSecurity'] = { 'NSAllowsArbitraryLoads' => true }
+Xcodeproj::Plist.write_to_path(info, info_path)
+name = 'PianoInteractionTests'
+abort 'UI test target already exists' if project.targets.any? { |target| target.name == name }
+target = project.new_target(:ui_test_bundle, name, :ios, '15.1', nil, :swift)
+target.add_dependency(app)
+target.build_configurations.each do |config|
+  config.build_settings.merge!({
+    'PRODUCT_NAME' => name,
+    'PRODUCT_BUNDLE_IDENTIFIER' => 'com.pianotechpros.interaction-tests',
+    'GENERATE_INFOPLIST_FILE' => 'YES', 'SWIFT_VERSION' => '5.0',
+    'TEST_TARGET_NAME' => app.name,
+    'TARGETED_DEVICE_FAMILY' => '1,2'
+  })
+end
+source = project.main_group.new_file(File.join(root, 'scripts/ios-ui/ProfileInteractionTests.swift'))
+target.source_build_phase.add_file_reference(source)
+project.root_object.attributes['TargetAttributes'] ||= {}
+project.root_object.attributes['TargetAttributes'][target.uuid] = { 'TestTargetID' => app.uuid }
+project.save
+scheme = Xcodeproj::XCScheme.new
+scheme.configure_with_targets(app, target, launch_target: true)
+scheme.save_as(project_path, name)

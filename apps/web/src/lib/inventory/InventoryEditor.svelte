@@ -7,7 +7,7 @@ import {onMount,tick} from 'svelte';
  import InventoryVoice from './InventoryVoice.svelte';
  import InventoryPublication from './InventoryPublication.svelte';
  import InventoryPhotos from './InventoryPhotos.svelte';
- import {createInventoryApiClient, InventoryClientError} from '@pianotechpros/api-client';
+ import {createInventoryApiClient, InventoryClientError,type PublicationReadinessField} from '@pianotechpros/api-client';
  import {openInventoryCapture, openInventoryFormWorkspace, handoffCapturePhoto, discardCapturePhoto, inventoryTextFields, inventoryForms, inventoryConditions, inventoryCurrencies, inventoryFormErrors, type InventoryForm, type InventoryFormField, type InventoryFormWorkspace, type SessionCredential} from '@pianotechpros/client-core';
  import type {Translator,MessageKey} from '@pianotechpros/i18n';
  import {claimBrowserInventoryCapture,claimBrowserInventoryPhotos,protectPendingNavigation} from '../browser-events';
@@ -40,6 +40,11 @@ import {onMount,tick} from 'svelte';
  function display(form:InventoryForm,key:InventoryFormField){const value=form[key];if(typeof value==='boolean')return i18n.t(value?'inventory.edit.yes':'inventory.edit.no');if(!value)return i18n.t('inventory.edit.unknown');if(key==='form'||key==='condition')return i18n.t(`inventory.${key}.${value}` as MessageKey);return value;}
  async function back(){if(photosBusy||publicationBusy||voiceBusy)return;if(!workspace||await workspace.flush()||state?.denied)onBack();}
  onMount(()=>{heading.focus();const unprotect=protectPendingNavigation(()=>!!state&&!state.denied&&state.recovery!=='ready');void load();return()=>{active=false;unprotect();unsubscribe();workspace?.dispose();};});
+ let photoTarget:HTMLDivElement;
+ function focusRequirement(field:PublicationReadinessField){
+  const control=field==='photo'?photoTarget:formElement?.querySelector<HTMLElement>(`#${field}`);
+  control?.scrollIntoView({block:'center'});control?.focus({preventScroll:true});
+ }
 </script>
 <section aria-labelledby="inventory-heading">
  <button type="button" disabled={photosBusy||publicationBusy||voiceBusy} onclick={back}>{i18n.t('inventory.edit.backList')}</button>
@@ -51,7 +56,7 @@ import {onMount,tick} from 'svelte';
   {@const draft=state.draft}
   <p class="hint">{i18n.t('inventory.edit.privateDraft')}</p>
   <div class="save-state" role="status">{i18n.t(voicePaused&&state.recovery==='ready'?'voice.paused':state.recovery==='failed'?'inventory.edit.storageFailed':state.recovery==='writing'?'inventory.edit.localSaving':state.busy?'inventory.edit.saving':state.restored?'inventory.edit.restored':state.conflict?'inventory.edit.conflict':state.uncertain?'inventory.edit.uncertain':state.failure?'inventory.edit.saveFailed':state.invalid?'inventory.edit.invalid':state.dirty?'inventory.edit.unsaved':!state.baseline?'inventory.edit.newReady':'inventory.edit.saved')}</div>
-  {#if workspace}<InventoryPhotos otherBusy={voiceBusy||publicationBusy} onBusy={value=>photosBusy=value} {workspace} {accountId} {dealerID} {apiURL} {credential} {i18n} {onSessionRejected} />{/if}
+  {#if workspace}<div role="region" tabindex="-1" aria-label={i18n.t('inventory.photos.heading')} bind:this={photoTarget}><InventoryPhotos otherBusy={voiceBusy||publicationBusy} onBusy={value=>photosBusy=value} {workspace} {accountId} {dealerID} {apiURL} {credential} {i18n} {onSessionRejected} /></div>{/if}
   {#if workspace}<InventoryVoice {workspace} {accountId} {dealerID} {apiURL} {credential} {i18n} {onSessionRejected} otherBusy={photosBusy||publicationBusy} onBusy={value=>voiceBusy=value} onPaused={value=>voicePaused=value} />{/if}
   <form bind:this={formElement} onsubmit={(event)=>{event.preventDefault();void workspace?.save();}}>
    <fieldset><legend>{i18n.t('inventory.edit.identity')}</legend>
@@ -82,7 +87,7 @@ import {onMount,tick} from 'svelte';
    <footer><button type="submit" disabled={state.busy||state.conflict}>{i18n.t('inventory.edit.save')}</button></footer>
   </form>
   {#if workspace&&state.baseline&&!state.denied}{#key historyScope(workspace.recordID())}<InventoryScanLabel {dealerID} recordID={workspace.recordID()} stock={state.baseline.attributes.stock_number} title={inventoryScanLabelTitle(state.baseline.attributes)} {apiURL} {credential} {i18n} {onSessionRejected} /><InventoryHistory {accountId} {dealerID} recordID={workspace.recordID()} {apiURL} {credential} {i18n} {onSessionRejected} />{/key}{/if}
-  {#if workspace&&state.baseline}{#key workspace.recordID()}<InventoryPublication {workspace} {accountId} {dealerID} recordID={workspace.recordID()} {apiURL} {credential} {i18n} {onSessionRejected} otherBusy={photosBusy||voiceBusy} publishReady={!state.restored&&!state.invalid&&!state.conflict&&!state.uncertain} onBusy={value=>publicationBusy=value} />{/key}{/if}
+  {#if workspace&&state.baseline}{#key workspace.recordID()}<InventoryPublication {workspace} {accountId} {dealerID} recordID={workspace.recordID()} {apiURL} {credential} {i18n} {onSessionRejected} otherBusy={photosBusy||voiceBusy} publishReady={!state.restored&&!state.invalid&&!state.conflict&&!state.uncertain} onBusy={value=>publicationBusy=value} onMissing={focusRequirement} />{/key}{/if}
  {/if}
 </section>
 <style>

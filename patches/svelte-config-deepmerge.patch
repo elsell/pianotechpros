@@ -1,0 +1,24 @@
+--- a/src/utils/options.js
++++ b/src/utils/options.js
+@@ -27,7 +27,8 @@
+ } from './constants.js';
+ 
+ import path from 'node:path';
+-import deepmerge from 'deepmerge';
++import createDeepmerge from '@fastify/deepmerge';
++const deepmerge = createDeepmerge({ symbols: true, mergeArray: ({ clone }) => (_target, source) => clone(source) });
+ import {
+ 	crawlFrameworkPkgs,
+ 	isDepExcluded,
+@@ -182,10 +183,7 @@
+ 	/** @type {Partial<T>} */
+ 	let result = {};
+ 	for (const config of configs.filter((x) => x != null)) {
+-		result = deepmerge(result, /** @type {Partial<T>} */ (config), {
+-			// replace arrays
+-			arrayMerge: (target, source) => source ?? target
+-		});
++		result = deepmerge(result, /** @type {Partial<T>} */ (config));
+ 	}
+ 	return /** @type {T} */ result;
+ }

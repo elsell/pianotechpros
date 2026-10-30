@@ -20,7 +20,7 @@ const approvedExternalImports = new Set([
   '@sveltejs/kit', '@sveltejs/kit/hooks', '$app/state', 'expo-auth-session', 'expo-constants', 'expo-crypto',
   'expo-localization', 'expo-router', 'expo-secure-store', 'expo-web-browser',
   'node:assert/strict', 'node:test', 'oidc-client-ts', 'react', 'react-native',
-  'svelte', 'react-native-safe-area-context', '@react-navigation/native',
+  'svelte', 'react-native-webview', 'react-native-safe-area-context', '@react-navigation/native',
 ]);
 for (const packagePath of [
   'packages/api-client/package.json',
@@ -33,6 +33,7 @@ for (const packagePath of [
   } catch { /* Missing or malformed manifests cannot expand the import allowlist. */ }
 }
 const providerImports = new Map([
+  ['apps/mobile/src/showroom/InquiryVerification.tsx', new Set(['react-native-webview'])],
   ['apps/mobile/src/provider-auth.ts', new Set(['expo-auth-session', 'expo-web-browser'])],
   ['apps/web/src/lib/provider-auth.ts', new Set(['oidc-client-ts'])],
 ]);
@@ -53,6 +54,8 @@ const browserGlobalReferences = new Set([
 ]);
 const windowProxyMembers = new Set(['contentWindow', 'defaultView', 'view']);
 const protectedProviderAdapters = new Set([
+  'apps/mobile/src/showroom/InquiryVerification.tsx',
+  'apps/web/src/lib/inquiry/native-bridge.ts',
   'apps/web/src/lib/technician/ownership.ts',
   'apps/mobile/src/technician/ownership.ts',
   'apps/mobile/src/technician/presentation.ts',
@@ -281,6 +284,7 @@ function importAllowed(specifier, relative, file) {
 }
 
 function inspectSource(relative, file, source, index) {
+  if(relative==='apps/web/src/lib/inquiry/native-bridge.ts'||relative==='apps/mobile/src/showroom/InquiryVerification.tsx')return false;
   if (relative === 'apps/web/src/lib/technician/ownership.ts' || relative === 'apps/mobile/src/technician/ownership.ts' || relative === 'apps/mobile/src/technician/presentation.ts' || relative === 'apps/mobile/src/customer/presentation.ts' || relative === 'apps/web/src/lib/customer/ownership.ts' || relative === 'apps/mobile/src/customer/ownership.ts' || relative === 'apps/web/src/lib/browser-events.ts' || relative === 'apps/web/src/lib/inquiry/turnstile.ts' || relative === 'apps/web/src/lib/inventory/voice-recorder.ts') return false;
 
   const kind = relative.endsWith('.tsx') || relative.endsWith('.jsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS;

@@ -7,11 +7,16 @@ packages:
   - tools/eas-cli
 
 ignoreScripts: true
+# Re-evaluate patch contents even when manifests and lockfile are unchanged.
+optimisticRepeatInstall: false
 
 overrides:
+  '@expo/config@55.0.21>deepmerge': '-'
+  '@sveltejs/vite-plugin-svelte@7.1.2>deepmerge': '-'
+  node-forge: '1.4.1'
   'expo-camera>barcode-detector': '3.2.2'
   zod: '4.6.6'
-  decode-uri-component: '0.5.0'
+  decode-uri-component: '0.5.1'
   image-size: '2.0.3'
   moment: '2.31.0'
   'joi@17': '17.13.8'
@@ -107,8 +112,18 @@ overrides:
   'ws@8': '8.21.0'
   yargs: '17.7.2'
 
+packageExtensions:
+  '@expo/config@55.0.21':
+    dependencies:
+      '@fastify/deepmerge': '3.2.2'
+  '@sveltejs/vite-plugin-svelte@7.1.2':
+    dependencies:
+      '@fastify/deepmerge': '3.2.2'
+
 patchedDependencies:
-  node-forge@1.4.0: patches/node-forge@1.4.0.patch
-  decode-uri-component@0.5.0: patches/decode-uri-component@0.5.0.patch
+  '@expo/config@55.0.21': patches/expo-config-deepmerge.patch
+  '@sveltejs/vite-plugin-svelte@7.1.2': patches/svelte-config-deepmerge.patch
+  react-native@0.83.10: patches/react-native@0.83.10.patch
+  decode-uri-component@0.5.1: patches/decode-uri-component@0.5.1.patch
   brace-expansion@5.0.12: patches/brace-expansion@5.0.12.patch
   react-native-screens@4.23.0: patches/react-native-screens@4.23.0.patch

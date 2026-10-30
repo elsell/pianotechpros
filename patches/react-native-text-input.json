@@ -1,0 +1,25 @@
+{
+  "package": "react-native",
+  "version": "0.83.10",
+  "license": "MIT",
+  "licenseSha256": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93",
+  "upstream": "https://github.com/react/react-native/pull/59197",
+  "upstreamCommit": "a91468ffe62122bc49d964a08b493374f0af4775",
+  "upstreamStatus": "open-unmerged",
+  "scope": "Three native implementation files only; header context adapted for 0.83.10 SharedEventEmitter alias. Upstream tests are not imported or represented as passing here.",
+  "patchSha256": "6c0d9c94fe0a957aec31ec8a26b7cfeca853c2ff5ad05debc01cd270b81c0331",
+  "files": {
+    "React/Fabric/Mounting/ComponentViews/TextInput/RCTTextInputComponentView.mm": {
+      "originalSha256": "c4fb3c8b25420339188bd99fa1e3669b62a2c5278b06a45e511555a149043a33",
+      "patchedSha256": "d2b20c9ec4d4a40b56a1fa87e8a9377855f47fce2ee8d774d511863390e424d5"
+    },
+    "ReactCommon/react/renderer/textlayoutmanager/platform/ios/react/renderer/textlayoutmanager/RCTAttributedTextUtils.h": {
+      "originalSha256": "e83f9585c4ba82831821d405ed04bd74a34d6edbd44f7bb6933c7f9f953b05f3",
+      "patchedSha256": "a4779102bf10d967727c06331a026cc2c009b213aea309b6b8828f5976385bdd"
+    },
+    "ReactCommon/react/renderer/textlayoutmanager/platform/ios/react/renderer/textlayoutmanager/RCTAttributedTextUtils.mm": {
+      "originalSha256": "2b0d5a14d309e18edd31d5a238fc8f1bde13f4d85f4e8d30602e731dbd61b8b8",
+      "patchedSha256": "3a19f33bba6989964722eab9d2b1a7749d4f214a4896e883dbd8062ac35427d7"
+    }
+  }
+}

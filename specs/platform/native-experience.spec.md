@@ -70,6 +70,36 @@ large text, rotation and iPad/window resizing before claiming tablet support.
 Use browser semantics and keyboard/focus behavior for web; do not impose mobile
 controls on desktop. Shared domain orchestration does not require shared markup.
 
+The hosted iOS inventory journey must open an incomplete saved draft through
+normal navigation and verify publication readiness before any confirmation.
+Missing form/condition guidance opens the corresponding native choice sheet;
+dismissing it preserves the saved value. Missing-photo guidance returns to the
+photo controls. No confirmation action is offered for the incomplete record.
+The controlled HTTP fixture exposes scoped, read-only record/photo/publication
+state for this presentation test and rejects unknown records and mutations.
+This does not prove real publication persistence, capture, or provider behavior.
+
+The hosted iOS interaction gate must also run XCTest accessibility audits of
+stable home, public directory/catalog/listing, empty-showroom visit information,
+and both upper/lower native buyer-form viewports. Run all audit categories without
+an issue-suppression handler. Retain a named screenshot and accessibility tree
+for every audited viewport, including failures. Require an audit-capable iOS
+runtime instead of silently skipping on older simulators. An audit failure fails
+the job. These automated checks do not establish VoiceOver spoken order,
+physical-device usability, all scroll positions or full application conformance.
+The audit contract follows Apple's
+[XCUIAccessibilityAuditType documentation](https://developer.apple.com/documentation/xcuiautomation/xcuiaccessibilityaudittype).
+
+The hosted journey scheduler must retain independent failure evidence in one
+build. A failed public journey must not prevent profile or accessibility checks;
+a failed profile setup blocks its restoration and authenticated inventory chain.
+Inventory browsing and readiness remain independent after successful profile
+setup. Inventory restart verification requires both successful editing and the
+independent persisted-state check. Record passed, failed and blocked results;
+any failed or blocked required journey fails the overall gate. Restart the app
+between journeys and preserve result attachments even on failures. This changes
+execution scheduling, never assertion strength or acceptance scope.
+
 For each interaction, record task, selected pattern, commit/cancel semantics,
 loading/empty/error/denied states, implementation adapter, and acceptance evidence.
 Custom substitutes need a concrete platform limitation and a revisit condition.
@@ -497,6 +527,25 @@ the exact original saved name. No save was performed. Native evidence:
 client interactions, not every field/keyboard, dirty process recovery, save
 conflicts, spoken TalkBack, iOS or physical-device usability.
 
+## Android voice permission and cancellation — 2026-10-26
+
+The existing Android development client reopened the isolated synthetic
+CameraCancelAcceptance draft. Record voice note requested microphone permission
+at use; denying it displayed the localized Settings/manual-transcript recovery
+message. Typing an unapplied transcript and choosing Cancel voice returned to
+the editor without applying it. After restoring permission, Record voice note
+showed recording state, an input meter and Stop and review. Cancel voice returned
+to the existing draft with its saved Make unchanged. Android appops reported a
+completed 14.143-second microphone use after cancellation, not active recording.
+
+Native trees are retained as `android-voice-denied.xml`,
+`android-voice-denied-cancel.xml`, `android-voice-recording.xml` and
+`android-voice-recording-cancel.xml` in the local 2026-10-25 evidence root.
+The original microphone grant and permission flags were restored and the app
+force-stopped. Stop and review and Apply were not invoked. This verifies emulator
+permission/cancellation behavior, not speech-provider integration, recording
+quality, physical-device or iOS acceptance.
+
 ## Android button state repaint
 
 A 2026-10-26 photo-inspection runtime check exposed stale button fills after
@@ -555,6 +604,24 @@ review header/actions and initial content, not every field or photo at 2x text.
 After cancellation, Refresh publication status again returned Draft · Not
 published yet (`android-publication-refreshed-after-cancel.xml`). The app was
 force-stopped after the check. No Confirm change action was invoked.
+
+## iOS choice-control acceptance selectors
+
+Run `40403194496` at source `7ae6c7d` passed iOS compilation and loopback sign-in,
+then entered customer contact/location fields and opened Timezone. The create
+journey failed at `app.buttons["UTC"]`; it did not reach profile save or restart.
+The status-bar transition error from the earlier run no longer prevented entry.
+The pinned React Native iOS implementation gives radio/checkbox controls no button
+trait and exposes their role plus checked state in the accessibility value.
+Customer and technician choices intentionally use those roles.
+
+The XCTest journey must locate exact option labels together with the expected
+radio/checkbox value, require reachability, and activate that element. Checkbox
+selection must additionally assert the resulting checked value. Do not change
+product roles to satisfy a button-only selector, use coordinates, silently skip
+missing options, or omit selection. Retain the synthetic picker accessibility
+tree to diagnose role/value disagreements in hosted runs. A new successful hosted
+journey is required; source inspection and local checks do not prove execution.
 
 ## Android short-display photo inspection — 2026-10-26
 
@@ -623,6 +690,36 @@ spoken TalkBack, iOS interaction or complete CU-01/PH acceptance. The same run
 passed browser/API acceptance; its verification job reported only the previously
 reviewed node-forge advisory and passed all 21 mitigation tests. Its iOS
 interaction result was still pending when these Android results were recorded.
+
+## iOS simulator-side launch readiness
+
+Run `40409134653` compiled successfully but failed before sign-in: the retained
+accessibility hierarchy shows the development launcher reporting a timeout for
+`http://127.0.0.1:18081`. Host-side manifest/bundle priming passed, so it does
+not establish connectivity from the simulator process. The choice-selector
+correction was not exercised in this run.
+
+Before opening the development URL, the XCTest runner must check Metro's status
+from inside the simulator with a bounded request, validate the HTTP response and
+exact readiness body, and launch the app to the foreground before delivering
+the URL. This separates simulator connectivity failure from application loading
+and avoids delivering the URL during a cold application launch. The cold-launch
+race is a hypothesis, not a proven diagnosis. Keep every existing sign-in, save
+and process-restart assertion; do not retry product mutations or accept the
+launcher as a successful application start. Hosted execution remains required.
+
+## iOS launcher request-path diagnostics
+
+Run `40413380865` at `9b9498b` passed simulator-side `/status` readiness,
+Android compilation and the broader acceptance job, but failed before sign-in.
+Its retained hierarchy shows the development launcher reporting a request timeout;
+this is not profile interaction acceptance. The pinned Expo launcher first probes
+the development URL with HEAD before fetching its manifest. Host readiness must
+exercise HEAD followed by manifest/bundle GET, and the simulator diagnostic must
+probe HEAD with the same iOS platform/Accept headers before launching the app.
+A HEAD failure must stop readiness and preserve a stage-specific diagnostic;
+never hide it by retrying sign-in or increasing product waits. This expands
+observability, not a claim that HEAD caused the observed failure or fixes it.
 
 ## Native control boundary contrast
 
@@ -986,6 +1083,93 @@ log reported only the authorized node-forge advisory, with all 21 mitigation
 tests passing. Acceptance routing skipped the real-service suite for this native
 UI-only change; it is not fresh backend acceptance evidence.
 
+## Bundled iOS simulator interaction gate
+
+Run `40418370993` at `679afd1` passed host HEAD/manifest/bundle readiness and
+simulator status/HEAD probes, then failed before Sign in with the development
+launcher's request timeout. Broader browser/API acceptance and Android compilation
+passed. The HEAD diagnostic does not fix launcher startup.
+
+The product interaction gate must launch a simulator Release configuration with
+its JavaScript bundle and synthetic configuration embedded, independently of
+Metro and the development launcher. Retain the separate Debug native-build gate.
+Require a nonempty bundled entrypoint and exact loopback fixture API/identity
+configuration before installation. Preserve normal sign-in, profile editing,
+secure-storage restart and recovery assertions; do not inject authenticated state.
+Simulator-only identity and Keychain entitlements remain required. Any HTTP
+transport allowance belongs only to the generated acceptance project and must
+never alter source app configuration or distribution artifacts. This gate is
+unsigned-for-distribution simulator acceptance, not a signed store release or
+proof of real-provider/backend integration. Successful hosted execution remains
+required before this change can be called a working startup correction.
+
+## iOS inventory browse presentation journey
+
+After profile and process-restart recovery acceptance, the simulator must open a
+synthetic shop through normal home navigation, browse inventory, search stock,
+switch availability filters, and return to the shop and home. A controlled
+loopback fixture may seed six synthetic records spanning the lifecycle states;
+it must preserve normal sign-in and opaque-session checks, dealer scope, search,
+active/inactive filtering and bounded pagination. Fixture records must never be
+mistaken for real API/domain authorization evidence. Retain screenshots and
+assert actual native rows and empty states; source/tests alone do not establish
+an executed iOS interaction or complete inventory parity.
+
+Run `40422404970` at `d4bfc01` subsequently passed the Release test build but
+stopped before installation: its universal arm64/x86_64 executable was rejected
+by the thin-only entitlement parser. The exact log reports Invalid simulator
+executable; no create/restore journey or screenshot was produced. The follow-up
+parser validates all FAT32/FAT64 slices and requires matching XML entitlements,
+retaining each slice's XML/DER checks and exact synthetic identity validation.
+The new valid-universal regressions failed first; six parser, two identity and
+three bundle checks now pass locally. Hosted launch and interaction remain open.
+## Fresh Android staff/inventory choice artifact — 2026-10-27
+
+Installed artifact `12698674244` from run `40424324959`, source `eacce91`, and
+verified its installed APK SHA-256 matches
+`fdc9a01179b0245c265c70fe5e461d21c8a8a8c15d79c54f702b23017ae4cb66`. With merged
+Metro source `5b73605` and no overlays, native staff Editor → Viewer switching
+and inventory Active selection/Back dismissal passed at 2x text. Inspected
+screenshots show explicit radio marks and readable labels. No invitation was
+created and no inventory value was changed by this check. Source provenance,
+matching native trees and screenshots are retained as `android-pr104-*` in the
+local 2026-10-25 evidence directory. Font scale was restored and the app stopped.
+This is a development APK plus Metro check, not an embedded production bundle,
+iOS, physical-device or spoken accessibility acceptance.
+
+## iOS exact text-entry regression — 2026-10-27
+
+Run `40427405957` at `a88012b` passed simulator identity/bundle validation and
+the create-profile test, but failed the restart test: customer name read back
+as `istomer` instead of the entered `iOS Customer`. The retained saved-location
+screenshot also shows region `M` after the test entered `MA`. This is not a
+passing profile round trip; neither the typing boundary nor persisted exact
+values were asserted by the creation helper. The cause remains under diagnosis.
+Native input acceptance must assert the exact entered/replaced value immediately
+after keyboard entry and after dismissal, retaining a screenshot and full UI
+tree on mismatch. Do not slow typing, retry replacement, disable correction, or
+relax expected values to conceal lost characters. Restart assertions remain
+required, and the later recovery/inventory journeys are not yet accepted.
+
+Run `40433093231` at `b981b5c` now fails the new immediate entry assertion:
+XCTest types `iOS Customer` into Name, then reads `istomer` before Done, Save
+or restart. This reproduces character loss at the text-entry boundary; it does
+not establish a persistence defect. The create test stopped there, so restore
+and inventory interaction remain unexecuted. Artifact `12703673474` contains
+`create.log` and the `incorrect-entry-Name` screenshot/tree. On 2026-10-29 the
+small create log was read using explicit byte ranges without downloading the
+full artifact. Android build and real-service browser acceptance passed this
+run; iOS interaction remains failed.
+
+Customer native text entry must retain native ownership while editing rather than
+echoing each React snapshot into the input. Every change still synchronously
+updates the recovery editor. Non-editing synchronization and blur must read the
+current editor snapshot, not a potentially stale render closure; deliberate
+external replacements remain visible after editing ends. Explicitly choosing “Use saved version” must end native text editing before applying the replacement, even when Android Back hid the keyboard without blurring the input. Preserve accessibility,
+keyboard behavior, validation focus and exact restart assertions. The immediate
+XCTest failure is the regression gate; no typing delay or autocorrection change
+is an acceptable substitute.
+
 ## Native lifecycle review choice marks
 
 Inventory-editor and QR-scan availability review must display an explicit radio
@@ -1021,6 +1205,50 @@ and readable labels. Provenance matches the editor check, with the two view file
 from `7d085df` overlaid on Metro `a88012b`. Temporary overlays, font scale and
 rotation were restored, and the app stopped. This does not establish an actual
 sale submission, signed release, iOS interaction or spoken accessibility.
+
+## Native persisted sale and correction acceptance
+
+For an isolated synthetic available piano with an exact USD asking price, open
+native availability review, choose Sold and verify the sale amount defaults to
+the asking price. Enter a different amount, review and explicitly confirm; verify
+the persisted sale event contains the exact minor-unit amount. Correct the sale
+back to Available with an explicit reason through the native UI and verify a new
+event, preserving the original sale event unchanged. This private fixture does
+not prove published snapshot behavior or all lifecycle transitions.
+
+Partial Android execution (2026-10-27), PR #104 development APK with unmodified
+Metro `b981b5c`: sale review defaulted to USD 1234.56; an explicit USD 1100.25
+sale persisted as 110025 minor units with unchanged inventory attributes.
+That attempt did not establish correction: entering `NativeSaleCorrection` returned the app to
+home before confirmation. A focused retry asserted the multiline input had focus
+and reproduced home navigation before any Back key. No JavaScript/runtime error
+was captured; development-client keyboard handling versus product behavior is
+still under investigation. Retained `android-native-sale-*` evidence includes
+the exact saved sale, inspected review screenshot and failed reason-entry state.
+That attempt alone does not establish a completed sale/correction journey.
+
+Follow-up source inspection (2026-10-29) found a plausible development-runtime
+cause for reason-entry navigation: React Native Modal forwards non-Back key-up
+events to the activity, whose development reload recognizer treats two R keys
+within 200 ms as reload unless the activity currentFocus is an EditText. Modal
+focus is separate, and the synthetic reason contains adjacent R characters.
+This matches the observed bundle reloads; source inspection alone does not
+establish the cause or a passing correction.
+
+
+Android software-keyboard follow-up (2026-10-29): the same PR #104 development
+APK, with Metro restarted on unmodified `fef96ea`, reopened the existing Sold
+fixture after normal owner browser sign-in. Tapping Gboard keys entered the exact
+`NativeSaleCorrection` reason; the visible field and review screen retained it.
+Native confirmation persisted Available with a new Sold-to-Available event and
+that exact reason. The original sale event and inventory attributes remained
+identical parsed API values. Retained `android-native-sale-ime-*`
+evidence includes keyboard/review screenshots, native trees and sanitized API
+history. The earlier USD 1100.25 sale and this correction occurred on different
+recorded Metro revisions; this is development-runtime evidence, not one embedded
+release run, physical-device acceptance, iOS interaction or public snapshot proof.
+The software-keyboard path passes; it does not independently prove that the
+hardware-keyboard development reload shortcut caused the earlier failure.
 
 ## Native public-link sharing acceptance
 
@@ -1177,3 +1405,340 @@ helper expected an uppercase navigation label and stopped before entering a
 code; correcting that helper matched the actual Join a shop navigation row.
 This proves the named Android development-runtime path, not iOS, physical-device
 or every invitation failure/expiry journey.
+
+
+Focused customer replacement regression (2026-10-29): Android PR #104 development
+APK with Metro `fef96ea` retained exact rapid entry and applied a conflict's saved
+version after Name was blurred. With Name still focused after hiding the keyboard,
+the same native Save / Review latest version / Use saved version journey instead
+left `NativeLocalEdit` visible while reporting the profile up to date. The real
+API held `Native Saved Replacement`. Retained
+`android-customer-focused-replacement-*` evidence records the failing visible
+state. Explicit saved-version selection must dismiss editing before replacement;
+verify that exact focused journey again without weakening the value assertion.
+
+The focused journey then passed with the same APK and Metro `fef96ea` plus the
+single `Keyboard.dismiss()` change on Use saved version. Name remained focused
+after Android Back hid the keyboard; the fixture API advanced the saved profile,
+and native Save / Review latest version / Use saved version displayed exactly
+`Native Saved Replacement` in the existing Name input. Evidence is retained as
+`android-customer-focused-fixed-*`. The synthetic fixture was restored through
+the concurrency-guarded API helper at revision 20. Mobile type checking, the full
+mobile test suite, structural checks and i18n checks passed. This is Android
+development-runtime interaction evidence; the changed code still requires hosted
+native builds and iOS interaction acceptance.
+
+iOS run `40944776765` at `fef96ea` subsequently failed the unchanged immediate
+Name assertion: `iOS Customer` became `iomer`, confirmed by the retained native
+tree and screenshot. Save/restart and inventory journeys did not execute.
+The native-owned JavaScript wrapper alone therefore does not resolve the iOS
+failure. Diagnostics are retained under `pr66-ios-fef96ea`; only selected logs
+and attachments were fetched, not the complete build artifact.
+
+Investigate the native attributed-text round trip described in React Native
+issue [58904](https://github.com/react/react-native/issues/58904) and proposed
+PR [59197](https://github.com/react/react-native/pull/59197), pinned investigation
+head `a91468ffe62122bc49d964a08b493374f0af4775`. That proposal remains unmerged.
+Any backport must record provenance and source integrity, preserve real text and
+style changes, preserve multiline paragraph semantics and IME behavior, and be
+compiled into the actual native binary. Patching source while consuming an
+unmodified prebuilt core is insufficient. Keep rapid-entry exact-value assertions;
+do not mask loss with slower typing, repeated correction or clipboard insertion.
+Require native build and interaction evidence before accepting the mitigation.
+
+The candidate backport pins the three native implementation files from that PR
+in `patches/react-native@0.83.10.patch`; its manifest records original/patched
+SHA-256 values, license identity and the unmerged upstream revision. Only header
+context is adapted to the pinned 0.83.10 event-emitter alias. The prebuild plugin
+requires those patched sources and selects source compilation, overriding an
+inherited prebuilt-core default and clearing the test-only local core tarball
+override. Local build-guard tests reject original, tampered and wrong-version
+sources and conflicting generated Podfile assignments. Upstream unit tests have
+not been imported or run; this candidate is not accepted until the unchanged
+native journey passes.
+
+Source-build execution budget (2026-10-29): run `40951901793` at `5cc917d`
+passed the initial native iOS build, Android compilation and browser/API
+acceptance. Its interaction step was cancelled near the 60-minute job limit
+while the separate Release test application was still compiling React native
+sources. The retained artifact contains `build.log` but no test execution logs;
+no typing, save/restart or inventory result is claimed. Allow a bounded
+120-minute iOS job budget for both source builds and the full unchanged journey.
+Keep source-integrity enforcement, Release bundling and exact rapid-entry
+assertions intact. The larger budget is not acceptance evidence.
+
+iOS source-backport run `40960703462` at `4f9300c` completed both source builds.
+The create-profile journey passed exact rapid entry, customer/technician saves
+and protection of the incomplete `09:` availability draft. The restart journey
+verified the saved customer name, then failed its exact `Monday` button query.
+The inspected recording shows the restored-draft notice and a visible Monday
+row containing `Available · 09:–17:00 · UTC`; the row combines weekday and
+schedule text in its accessibility label. Query that unique composite row
+without removing its useful spoken summary. Preserve the exact reopened `09:`
+assertion and invalid-save keyboard/focus assertions. This recording proves the
+visible restored summary, not successful row activation or the remaining journey.
+
+
+Run `40973187094` at `8637ceb` passed native builds and browser/API acceptance,
+but the create-profile test queried Location name before the protected Add
+location transition completed. Its recording at 60 seconds shows the new
+location editor at the top with Location name visible and the keyboard dismissed;
+the subsequent unconditional upward swipes move past that field. The harness
+must wait for a target to exist before scrolling. After Add location, explicitly
+wait for the first field to be hittable without scrolling, asserting the product
+requirement that a new section opens at the top. Retain exact text-value checks
+and capture the accessibility tree and screenshot on reach failures. This
+correction still requires a full native CI journey; it is not acceptance evidence.
+
+
+Run `40982410120` at `7c96772` passed native compilation, browser/API acceptance,
+and both iOS profile journeys: exact rapid entry, saves, restart restoration of
+`09:`, and invalid-time keyboard/focus assertions. Inventory navigation and Sold
+selection passed, but typing `UI-002` and Return did not yield the empty result.
+The failure accessibility tree retains exact `UI-002` in the search field with
+Status: Sold and the old UI Sold Piano row visible. Submission currently reads
+render-captured React search state; use the native submit event text and retain
+the unchanged keyboard-submission journey to verify the correction. This does
+not establish inventory acceptance. Verification still fails only on the visible
+deepmerge advisory; no remaining gate is waived.
+
+
+Run `40990491199` at `bde7ccdc1b6de63886c5ae56e8d6b68730619afb`
+is terminal with iOS native compilation and the configured create, restore and
+inventory journeys passing. Exact profile typing, saved/partial draft reopening,
+invalid-time focus and submitted native-event search remain asserted. Android
+native compilation and browser/API acceptance also passed. Verify still fails
+on the single deepmerge advisory; no skipped verification step is evidence.
+This supersedes the prior search failure for that specific journey, not broader
+iOS/public/inquiry/voice/accessibility acceptance.
+
+
+## Android public visits and buyer submission — 2026-10-30
+
+Paul’s API 36 emulator ran JavaScript `403e20e` on the APK built from
+`39424dd014ad966da84dd584f7f712c0030a32d6`, run `41002451234`, artifact
+`12953719670` (SHA-256
+`03f632237fae03ff294a747b948db9a49d1f9dac917beee1dc558df006380287`).
+The signed-out client used an isolated real API and synthetic public records.
+No local emulator or production service was used.
+
+An empty showroom exposed About this showroom, its address, appointment and
+delivery/warranty/service notes, with working back navigation. Initial small
+catalog controls stayed hidden; sold discovery exposed recovery controls. A
+no-match search followed by clearing the input before submission retained the
+search controls; submitting the cleared input restored the real catalog.
+
+Buyer submission exercised empty-field validation, native contact entry, a
+connection dropped before forwarding the inquiry, retained fields and explicit
+retry. The actual owner inbox contained no matching inquiry after the dropped
+request, then exactly one after retry, with exact contact/preference/message and
+the expected entire public piano snapshot. Confirmed delivery cleared the form;
+reopening also showed cleared contact fields. The relay supplied no substitute
+API responses and rejected credential-bearing inquiry requests.
+
+Evidence is retained under `~/.cache/pianotechpros-evidence/2026-10-30/` in
+`native-showroom-visit/` and `native-inquiries/`: screenshots, accessibility XML,
+APK provenance and a synthetic persistence receipt. Visit, failure and confirmation
+screenshots were visually inspected. Turnstile was explicitly disabled for this
+isolated native journey. Enabled-provider acceptance, iOS execution, spoken
+screen-reader testing and physical-device acceptance remain open. Displayed
+contact actions were not used to place calls or send email.
+
+
+## Native public fixture contract — 2026-10-30
+
+Run `41000713809` compiled the native applications but failed its first iOS public
+catalog assertion. The retained accessibility tree shows the unavailable state.
+The controlled fixture supplied publication revision 1; the production anonymous
+client correctly requires a published revision of at least 2. A real-client HTTP
+contract regression reproduces `protocol_error` before correction. Give synthetic
+publications valid revision 2 and run the contract regression before the expensive
+iOS build: directory, catalog, detail, sold search and empty-shop profile must
+pass the production adapter. Preserve strict client validation. This diagnosis
+and fixture correction are not a successful iOS interaction result.
+
+## iOS inventory editing and restart acceptance
+
+The iOS interaction gate must edit a private inventory record through ordinary
+navigation, including identity, piano type and condition, manufacture date,
+public description and price, and internal stock/location/cost/notes. It must
+save, terminate the application, reopen the record and assert exact persisted
+values and selected choices. Independently read and compare the complete saved
+fixture record before restart so local draft recovery cannot impersonate a
+server save. Capture accessibility trees and screenshots.
+
+The controlled HTTP fixture may retain revision-checked inventory edits across
+application restarts, but never manufacture publication or upload success.
+Conflicting revisions and malformed commands must not alter saved data. Fixture
+interaction evidence establishes native control behavior only; real API
+persistence, ownership, audit and publication acceptance remain separate gates.
+
+## Read-only iOS visit text acceptance — 2026-10-30
+
+Run 41005082780 failed on the delivery note's `isHittable` assertion even though
+its retained screenshot and accessibility tree show all visit notes fully visible
+inside the scroll view. Read-only selectable text can expose nested static text
+nodes and is not an interactive control. Assert the exact note exists and its
+nonempty frame fits inside the visible scroll viewport, scrolling only when
+needed; retain screenshots and diagnostics. Buttons, inputs and choice controls
+still require hit testing before interaction. This corrects test semantics and
+does not waive accessibility audits or establish a successful native journey.
+
+## Native inventory access-denied presentation
+
+When a scoped inventory read confirms access denial, clear record rows and hide
+New piano, search, refresh and filter controls, including an open filter sheet.
+Retain the localized denial notice, explicit retry and normal back navigation.
+The API remains the authorization boundary; hidden controls are presentation,
+not a replacement for denial checks. A subsequent authorized retry must restore
+the ordinary inventory controls. Preserve confirmed denial while retrying and
+through transient retry failures until a current successful response revalidates
+access. A transient failure alone must not infer denial; stale successful
+responses must not clear a newer denial.
+
+Android baseline evidence `android-staff-access-removed.png` shows the denied
+notice and cleared rows alongside New piano and filters. This is a presentation
+gap despite correct API denial. The synthetic same-session journey confirmed
+editor creation, rejected writes after downgrade with continued viewer reads,
+and revoked inventory reads after removal. Fixture provisioning and owner role
+changes used ordinary API calls; the member signed in through the native browser
+flow. This does not prove native invitation acceptance or owner-side removal UI.
+
+Corrected Android execution (2026-10-27) passed denial, authorized retry and a
+second revocation against the real API in the same native member session.
+Inspected screenshots and UI trees show only feedback/retry/back when denied;
+authorized retry restores controls and the persisted draft. Evidence is retained
+as `android-inventory-denied-*` in the local 2026-10-25 directory. Execution
+used the checksum-verified PR #104 development APK with Metro `b981b5c` and
+exact working-source overlays of the inventory screen and shared inventory
+browser controller. This is development-runtime evidence, not an embedded release
+or iOS interaction result. Six controller regressions pass, including denial
+retention through pending/transient retries and suppression of stale success;
+the existing 475-test client-core suite, mobile TypeScript, structural and
+two-locale i18n gates also pass.
+
+## Exact currency formatting on native engines
+
+Public catalog, listing, inquiry and private review prices must render on iOS
+Hermes without `Intl.NumberFormat.prototype.formatToParts`, which is unavailable
+on that platform. Shared formatting must preserve every safe integer minor unit,
+including zero-, two- and three-decimal currencies, for both supported locales.
+Use the runtime's currency layout and grouping; never round the minor-unit value
+through floating-point division. A capability-limited regression must exercise
+both locales and maximum safe values. The existing priced iOS catalog journey
+remains required; a Node regression alone does not prove native acceptance.
+
+## Bidirectional native control reachability
+
+Native interaction helpers must scroll toward the target control, including
+controls above the viewport after keyboard dismissal or returning from a sheet.
+They must retain bounded attempts, existence/hit-testing checks and failure
+screenshots/hierarchy evidence. Never replace a failed interaction with a direct
+state mutation. Run `41017531680` reached inventory editing but its upward-only
+helper scrolled the Model field to y=-1335 while continuing toward the bottom.
+The same run passed profile creation, draft restoration, inventory browsing and
+publication readiness; this is controlled-fixture iOS evidence, not real-API
+parity. Full editing and restart persistence remain unproven.
+
+Allow 180 minutes for the combined clean Debug build, Release interaction build,
+independent journey execution and artifact retention. The previous 120-minute
+job limit interrupted evidence retention after the complete schedule ran; the
+Release interaction build alone took about 69 minutes. This job budget changes
+no individual assertion deadline, required journey, failure propagation or retry
+policy, and does not convert a failing result into a pass.
+
+## Public photo accessibility semantics
+
+A successfully loaded public photo must expose one labeled native image element,
+not an unlabeled picture or a generic accessibility element. Keep its preview
+button separate and actionable. A semantic container may own the image role and
+label while its rendering child stays hidden from accessibility to prevent
+repeated announcements. Loading/error states and retry behavior remain unchanged.
+Run `41022035854` rendered the priced catalog/listing after the currency fix, but
+the visible photo appeared in the retained iOS hierarchy as Other with its alt
+label; the required image query failed in both public and accessibility journeys.
+Preserve the image-role assertion and verify the correction on the hosted device.
+
+
+## Android public photo semantics and inspection — 2026-10-30
+
+JavaScript `e33a3e6bbf89fa29f12035e5507943e34566ce02` ran on a remote API 36
+emulator using the development APK from source
+`3acc88d74aec27b272c80c741e058665058e3b43`, SHA-256
+`86a245ec6668151b3cab45e6ba99b052df3be8b5bc96a66dddfba28525aadb7a`.
+The signed-out client loaded a synthetic publication through the isolated real
+API; no HTTP responses were substituted.
+
+The loaded primary photo exposed exactly one labeled `android.widget.ImageView`.
+Preview remained a separate actionable control. Inspection opened at 100%, zoomed
+to 150%, reset to 100%, and closed while preserving the listing and selected
+photo. Backgrounding closed inspection without reopening it on foregrounding.
+Screenshots and accessibility trees were retained and inspected under
+`~/.cache/pianotechpros-evidence/2026-10-30/public-photo-semantics/`, alongside
+`result.json`, APK identity and the runtime check script. The synthetic color-block
+image establishes processing/layout, not photographic detail. The temporary
+emulator, Metro server and tunnel were stopped after execution.
+
+This is Android development-runtime evidence with the stated JavaScript/native
+build combination. It does not establish embedded release behavior, iOS image
+semantics, spoken TalkBack/VoiceOver order or physical-device usability. Hosted
+iOS assertions remain unchanged and must pass separately.
+
+
+## Android public journey at 200% text — 2026-10-30
+
+Using the same JavaScript and native APK combination as the preceding public
+photo check, the remote API 36 emulator ran at system `font_scale=2.0` against
+the isolated real API. Home, showroom directory, catalog and listing navigation
+remained usable. Photo inspection exposed reachable close, zoom and reset actions;
+the captured zoom state was 150%. The inquiry form scrolled to its contact choices
+and Send inquiry action. Submitting empty fields returned focus to Your name,
+opened the keyboard and displayed readable name/email validation. Screenshots
+of the enlarged preview, bottom of the form and focused validation were inspected.
+
+Evidence is retained under
+`~/.cache/pianotechpros-evidence/2026-10-30/public-large-text/`, including XML,
+screenshots, the runtime script and build/scale receipt. No valid inquiry was
+submitted. Font scale was restored to 1.0, and the temporary emulator, Metro and
+tunnel were stopped. This establishes only the named Android large-text journey;
+spoken screen-reader order, iOS Dynamic Type, physical devices, all other product
+screens and enabled-provider acceptance remain separate requirements.
+
+## iOS keyboard-obscured control navigation
+
+Run `41031001582` failed profile creation while reaching City. The retained
+hierarchy places that field at y=615 below a keyboard beginning at y=583, with
+its accessory strip at y=539. Full-window swipes alternated directions without
+making the field hittable; dependent editing/restart journeys were blocked.
+The test helper must drag inside the visible scroll viewport, excluding the
+keyboard and its accessory area. Bound each movement toward the target and
+recompute geometry after every gesture. Preserve the ten-attempt limit,
+existence/hittability requirements and failure screenshot/tree attachments.
+Do not substitute coordinate taps for control hit testing. Actual hosted
+execution must establish that creation and subsequent editing both pass.
+
+## Contextual native price labels
+
+Run `41032889517` passes the complete controlled-fixture iOS public journey,
+including photo role, zoom/reset, background recovery and buyer inquiry behavior.
+Its accessibility audit then rejects the standalone `$1,250.00` price element as
+not human-readable. Native public price text must expose a localized asking-price
+label containing the same exact formatted amount while preserving its visible
+currency formatting. Apply the same presentation to public cards, listing detail
+and historical inquiry snapshots; hidden prices retain Price on request.
+Keep the full native accessibility audit enabled and require hosted execution;
+this correction alone does not establish spoken screen-reader acceptance.
+
+## iOS multiline editing completion
+
+Hosted run 41042187883 passed creation, restoration, inventory and readiness,
+but inventory editing stopped after entering Public description because no Done
+button existed. The retained recording confirms the keyboard obscures the lower
+form without a completion action. React Native documents that InputAccessoryView
+does not support multiline TextInput. Preserve multiline/newline entry and expose
+a localized Done action in the navigation bar while either description or private
+notes has focus on iOS. Done dismisses editing without saving or discarding text;
+single-line decimal fields retain their accessory. The existing controlled-fixture XCTest
+journey must verify keyboard dismissal and exact retained text for both multiline
+fields before continuing through persistence and reopening. Hosted runtime
+acceptance remains pending; a type check is not interaction evidence.

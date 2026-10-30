@@ -2,16 +2,240 @@
 
 ## Current milestone: feature-complete product
 
-Current acceptance position (2026-10-27): feature completeness is not yet proven.
+Current acceptance position (2026-10-30): feature completeness is not yet proven.
 The detailed requirements remain in `product-parity.spec.md`; website-specific
 closure is tracked in `web-parity-audit.spec.md` and device evidence in
 `native-experience.spec.md`.
 
+Run `41032889517` now proves the complete controlled-fixture iOS public journey:
+photo image semantics, zoom/reset, background recovery and buyer inquiry behavior
+pass. The full accessibility audit then rejects the standalone symbolic price
+label. Add localized asking-price context while preserving the exact visible
+amount; require the existing audit to pass. Profile creation encountered the
+keyboard-obscured City navigation addressed by the newer candidate, so dependent
+editing/restart checks remained blocked. This is not overall iOS acceptance.
+
+Run `41042187883` passes verification but its browser acceptance stopped before
+behavior assertions because the runner assigned the same ephemeral port to Vite
+and the controlled API. Hold distinct loopback reservations until each consumer
+starts; a real-socket regression fails with immediate release and passes with
+reservations. Native jobs are still live. This harness correction requires the
+full acceptance result and does not waive any product check.
+
+Run `41031001582`, source `50dff0650c0630eb794b741aed903fee6dab1baf`,
+passed verification, real-service acceptance and Android compilation but failed
+iOS. Profile creation could not reach City behind the keyboard: full-window
+swipes alternated directions, so dependent editing/restart journeys were blocked.
+The next harness correction drags within the unobscured scroll viewport toward
+the target, retaining hit testing and the same attempt limit. Public/accessibility
+still failed at the image-role assertion addressed in the newer candidate.
+Run `41032889517`, source `e33a3e6bbf89fa29f12035e5507943e34566ce02`,
+passed verification, real-service acceptance and Android compilation; its iOS
+failures are recorded above. No candidate is cleared to merge until all required
+gates pass.
+
+The newer candidate's public photo semantics and inspection passed on a remote
+Android API 36 emulator against the isolated real API: one labeled image element,
+a separate Preview action, zoom/reset, preserved selection on close and cleared
+inspection after backgrounding. Exact JavaScript/APK identity and limitations are
+recorded in `native-experience.spec.md`. This closes that Android interaction
+check only; iOS, spoken screen-reader and physical-device acceptance remain open.
+
+Run `41022035854` confirms that the iOS currency crash is corrected: the
+public journey reaches the filtered sold listing with its $1,250.00 price and
+rendered photo. Both public and accessibility journeys then fail the image-role
+assertion: retained hierarchy exposes the labeled photo as Other. Move semantic
+image ownership to a native View and hide only its rendering child from
+accessibility; keep the preview button separate and retain the image assertion.
+This correction still requires native execution. The same run again passed
+profile creation, draft restoration, inventory browsing and publication readiness;
+editing encountered the upward-only harness issue addressed in the newer branch.
+
+Combined run `41017531680` passed controlled-fixture iOS profile creation,
+partial-draft process restoration, normal inventory browsing and incomplete
+publication focus. Full editing failed because the harness scrolled away from
+the Model field after keyboard dismissal; retained hierarchy places it above
+the viewport. The helper now scrolls toward each control with the same bounded
+attempts and hit-testing requirements. Editing/persisted/reopen acceptance remains
+pending. Public and accessibility journeys still encountered the currency crash
+addressed by the newer candidate. A separately observed SafariViewService startup
+watchdog in run `41015631133` did not reproduce in this combined run.
+
+The iOS job budget is raised from 120 to 180 minutes to accommodate both clean
+native builds, all independent journeys and retained evidence. The prior run
+reached its job limit during final evidence collection; no test assertion,
+individual deadline, failure propagation or retry policy is relaxed.
+
+The first corrected iOS public-flow run `41013141538` is terminal and exposed
+an application crash when rendering a priced catalog card. Retained xcresult
+stderr identifies an undefined function in PianoCard; the shared exact-money
+formatter used `Intl.NumberFormat.formatToParts`, unavailable in iOS Hermes.
+The correction uses Intl's integer currency layout and decimal suffix while
+preserving exact minor units. A capability-limited regression failed before the
+fix; both supported locales and zero-/two-/three-/four-decimal currencies are
+covered. Native execution of the correction remains required. This is a product
+runtime defect, not a reason to weaken the existing priced-catalog assertion.
+
+The delivery branch now integrates the native typing/acceptance stack, public
+showroom/inquiry/photo workflows, inventory access-denial handling and recorded
+sale-correction evidence. The inventory merge retains native submit-event text
+and denial until successful revalidation. All task-owned open PR heads through
+#130 are ancestors of this integration; a single PR against main must pass full
+CI before merge. Earlier per-branch results are supporting evidence, not a waiver
+for the combined result. The corrected security candidate run `41015317303`
+has passed full hosted verification and Android compilation. Its checksum-matched
+APK also passes signed-out real-API listing/photo zoom/reset/foreground checks on
+Paul; iOS and the remaining full acceptance are still pending.
+
+The dependency remediation candidate now removes deepmerge from the frozen npm
+graph and migrates its actual Expo/EAS and Svelte consumers to pinned
+@fastify/deepmerge 3.2.2. The unchanged low-threshold audit reports no known
+vulnerabilities. Eleven installed-consumer regression tests, web checks/build,
+Expo compatibility, structural checks and the npm fourteen-day age gate pass.
+The first hosted candidate (run `41014984525`) failed frozen installation because
+pnpm's optimistic repeat-install shortcut skipped a patch-only update locally.
+The correction disables that shortcut, checks patch hashes against lockfile
+entries and refreshes the installed-source hash. A fresh isolated frozen install
+and all eleven consumer regressions now pass; prior local claims did not prove
+the final patch was installed. Hosted acceptance must still pass on the correction.
+No new advisory waiver or age exception is introduced. Required review and full
+hosted verification/native acceptance remain merge prerequisites; this local
+result does not establish three-client parity or close provider/accessibility work.
+
+Hosted iOS scheduling now collects independent journey failures within one build
+instead of stopping after the first public-flow failure. Failed profile setup
+blocks dependent authenticated checks; failed inventory editing or independent
+persistence verification blocks restart acceptance. Accessibility still runs,
+and any failed or blocked required journey fails the job. Scheduler regression
+checks pass; this is feedback coverage, not new device acceptance evidence.
+
+The iOS gate now includes full private-record editing and a separate app-restart
+reopen journey. Before restart, an independently authenticated fixture read must
+match every expected attribute, preventing local draft recovery from masquerading
+as a server save. Controlled HTTP and production-adapter regressions pass;
+execution of these new native journeys is pending CI. This does not close real
+API persistence or the overall native acceptance milestone.
+
+Native listing content now loads independently of optional related pianos.
+A stalled or failed related request no longer withholds primary details and
+contact actions. Refresh/background cancellation suppresses late secondary
+results, and malformed routes retain unavailable-state handling. Shared-model
+regressions pass; native interaction confirmation remains pending CI.
+
+Public native listing photos now expose full-screen inspection using the existing
+native zoom/reset controls and ephemeral anonymous image bytes. Close preserves
+the selected listing photo; backgrounding invalidates inspection. The iOS journey
+now checks zoom, reset, dismissal and foreground non-reopening. Type checks,
+shared viewport/resource regressions and locale checks pass; device acceptance
+of this public-photo presentation remains pending CI.
+
+The older iOS visit journey exposed a harness failure before catalog loading:
+read-only delivery text was fully visible in retained screenshot/tree evidence,
+but the test incorrectly required it to be tappable. Exact text/viewport checks
+now cover visit notes; interactive controls keep hit-testing requirements. The
+corrected journey still requires CI execution, including later accessibility
+and inventory checks.
+
+A renewed native implementation review found three product gaps, distinct from
+missing device evidence: actionable publication readiness before confirmation,
+field-specific voice ambiguity clarification, and public showroom/listing
+navigation. Close these as product work alongside the full acceptance matrix;
+do not substitute individual interaction fixes for complete three-client parity.
+The readiness correction now blocks confirmable review and targets missing
+controls on web and mobile. Focused voice clarification now replaces only the
+requested candidate, clears its selection for renewed review, preserves Undo,
+and retains editor serialization through cancelled provider settlement. All 505
+shared client behavioral tests, client type checks, structural/i18n checks and
+code review pass. The complete dealer browser acceptance journey passed using
+Paul’s existing Chrome through CDP, including missing-field focus and focused
+clarification with reselection, Apply and Undo. This is controlled-fixture browser
+evidence; live provider and native interaction acceptance are still required. Native public directory, filtered catalog and listing navigation are now
+implemented through anonymous adapters, with ephemeral media, published details,
+contact actions, related pianos and canonical sharing. Android development-client
+interaction against the isolated real API has exercised signed-out navigation,
+reserved filtering, public media/listing and share dismissal. An iOS signed-out
+journey is added but not yet executed. Native inquiry submission is now implemented
+with native contact controls, explicit failure retry, confirmed clearing and a
+restricted hosted Turnstile widget. Controlled browser bridge acceptance passed
+configuration mismatch, no-store, proof-only messages, expiry/failure and Spanish.
+The 512 shared/config behavioral tests and client type checks pass; pinned WebView
+13.16.0 passes the fourteen-day dependency-age gate. A review-found stale-widget
+callback race is fixed with generation-guarded callbacks and a regression. iOS
+validation/retry/confirmation/disposal acceptance is added but not yet executed.
+Android compilation and a real-API buyer journey now pass: validation, interrupted
+delivery with retained contact fields, explicit retry, exactly one persisted inquiry
+with the expected public snapshot, and cleared reopening. The isolated test used
+explicitly disabled Turnstile; enabled provider and iOS interaction remain open.
+This is not a claim of three-client acceptance. Wider device
+and accessibility acceptance remain open. Provider configuration and spoken/physical-device acceptance are
+separate unresolved external/evidence requirements.
+
+Run `41000713809` is terminal: Android and browser/API acceptance passed, while
+iOS compiled but the public catalog journey showed unavailable. The synthetic
+fixture used publication revision 1, rejected correctly by the production client.
+A new real-client HTTP regression reproduces the error before revision 2 fixes
+the fixture; it now runs before native test builds. No client validation is relaxed.
+The following native readiness journey opens an incomplete saved draft and checks
+form/condition sheets and photo focus without offering publication confirmation.
+Its scoped read-only fixture has failing-then-passing coverage; 18 fixture/readiness
+tests and the public adapter regression pass. Hosted execution remains pending.
+
+A separate hosted iOS accessibility journey is now wired after the existing
+interaction journeys. It runs all XCTest audit categories without suppression on
+home, public directory/catalog/listing, empty-showroom visits and upper/lower
+buyer-form viewports, retaining screenshots and accessibility trees. Seventeen
+fixture/readiness tests and eleven simulator entitlement/bundle/Mach-O tests
+pass; shell validation and read-only review pass. Swift compilation and audit
+execution remain pending. This is new coverage, not accessibility acceptance.
+
+The native buyer form now identifies the piano and showroom using a fresh
+anonymous public listing read. Context is cleared/reloaded on foreground and
+submission is disabled while context is absent, without disposing contact input.
+Existing public-resource/composer tests pass; the iOS journey now asserts listing
+identity and retained contact after background/foreground. Device execution of
+this extension remains pending and must not be counted as accepted behavior.
+
+The native catalog review also found contact/visit information unreachable when
+a showroom has no listings. A dedicated About this showroom route now exposes
+public description, contact actions, address and trust notes independently of
+inventory, sharing its presentation with listings. Small initial collections hide
+unhelpful filters while preserving sold discovery; applied filters and editable
+search independently retain recovery controls. A review-found clear-search race
+has failing-then-passing regression coverage. The 512 shared tests, ten native
+fixture tests, mobile/core types, structure/i18n and review pass. Signed-out iOS
+empty-showroom navigation assertions are added. Android on Paul now passes the
+real-API empty-showroom visit, sold-discovery controls and no-result search followed
+by clearing before submission. JavaScript source `403e20e` ran on the native APK
+from `39424dd` (run `41002451234`); iOS and spoken accessibility remain open,
+so this is not SH-01/SH-02 completion.
+
+PR #66 run `40982410120` at `7c96772` passed both iOS profile journeys, including
+exact entry, saves, restart recovery and invalid-time focus. Inventory keyboard
+search then failed with exact input retained but stale results. Follow-up
+`bde7ccd` uses native submit-event text; run `40990491199` is terminal with
+iOS native/interaction, Android compilation and browser/API acceptance passing.
+Verification still reports
+the single deepmerge advisory. None of these candidate changes is merged.
+
+The immediate release prerequisite is renewed dependency remediation. CI on
+2026-10-29 reported decode-uri-component and deepmerge findings in addition to
+node-forge; the prior single-advisory exception cannot authorize these failures.
+PR #115 pins the decoder fix with a failing-then-passing bounded query regression.
+PR #116 replaces the temporary Forge backport with upstream 1.4.1 and adds six
+non-canonical signature regressions (27 candidate-source checks pass). A narrow
+unreleased deepmerge guard now passes ten candidate-source/consumer checks;
+its version and audit finding remain visible. Combined PR #117 now has passing
+frozen-graph mitigation checks, browser acceptance and native builds as recorded
+below. Its advisory disposition and subsequent combined native-change checks
+remain pending. Disk is constrained, so local candidate verification used
+installed consumers with isolated source overlays; those local results are not
+reported as installed-graph or native build passes.
+
 | Client | Verified scope | Next required evidence |
 | --- | --- | --- |
 | Web | Recurring real-service dealer/staff, inventory fields/search/lifecycle, photos/publication, inquiry, profiles and public catalog journeys; public pagination in Chromium/Firefox/Linux WebKit | Dedicated speech/Turnstile provider integration, screen-reader and broader supported-browser/device acceptance |
-| Android | Real API photo recovery, publication/unpublish, profile/location persistence, inventory date/money recovery, landscape/large-text controls, invitation create/dismiss/revoke, and inquiry read persistence | Remaining full native field/staff/sharing journeys, spoken accessibility, provider and physical-device checks |
-| iOS | Native builds have passed; profile interaction attempts have reached sign-in and editing but have not completed save/restart acceptance | Finish bundled-app profile/recovery acceptance, then inventory/capture/publication and the broader native journey matrix |
+| Android | Real API photo recovery, publication/unpublish, profile/location persistence, inventory date/money recovery, landscape/large-text controls, invitation create/dismiss/revoke, inquiry read/submission persistence, and empty-showroom visits | Remaining full native field/staff/sharing journeys, spoken accessibility, provider and physical-device checks |
+| iOS | Candidate bundled-app profile creation/save, restart/partial-draft recovery and inventory search passed run `40990491199`; native builds passed | Capture/publication and the broader native journey matrix; merge remains blocked |
 
 PR #106 merged visible status/currency selection in editor and QR-scan reviews
 at `103bda5`. Both native builds passed run `40428174526` at `7d085df`;
@@ -34,13 +258,28 @@ checks used the checksum-verified PR #102 development APK with primary Metro
 source `fa2898e`, without overlays. These are development-runtime observations,
 not embedded release or physical-device evidence.
 
-PR #66's bundled iOS run `40422404970` at `d4bfc01` remains active. Its separate
-Android build passed. Browser/API acceptance did not run: Ubuntu library downloads
-exhausted the 30-minute job budget. A reviewed local change gives acceptance a
-bounded 60-minute budget without changing assertions. The next inventory UI
-journey and timeout change are held locally to preserve the active iOS run.
-Provider configuration remains a separate external dependency; useful native
-work continues. Legacy hosting, GitOps, DNS and live data remain untouched.
+PR #66's later run `40433093231` failed an immediate exact-text assertion during
+iOS customer entry, before save/restart. The native text ownership fix is under
+run `40944776765` at `fef96ea`; Android compilation and browser acceptance passed,
+while iOS again lost Name characters (`iomer` instead of `iOS Customer`) before
+save/restart. A native attributed-text round-trip fix is under investigation;
+the JavaScript ownership correction alone is insufficient. A focused saved-version
+replacement regression was subsequently reproduced and fixed on Android; commit
+`7d136b8` still requires hosted native checks. PR #110's inventory authorization
+presentation correction passed actual Android/iOS builds and browser acceptance
+in run `40943947832`, but verification reports the new security findings.
+Neither candidate is merged. Provider configuration remains a separate external
+dependency; useful native work continues. Legacy hosting, GitOps, DNS and live
+data remain untouched.
+
+Combined security PR #117 at `dc27e0a` passed actual Android/iOS builds and browser
+acceptance in run `40946702782`. Frozen-install verification passed 27 Forge and
+10 deepmerge checks, then failed on the single remaining deepmerge advisory.
+The unchanged Ruby graph separately passed vulnerability checks for 45 gems.
+The patch's narrow merge exception has been requested and is not yet authorized;
+the advisory remains visible. No skipped verification step is counted as passed.
+
+
 
 As of 2026-10-26, PR #80 merged the combined inventory browse, sale/unpublish
 lifecycle, public gallery/contact/sharing and showroom-filter journeys plus
@@ -61,6 +300,7 @@ Earlier attempts progressed from simulator signing failures through development
 launcher startup and profile editing. The current bundled-app attempt and its
 remaining acceptance scope are summarized above; historical build success does
 not establish profile save/restart or complete iOS interaction acceptance. Remaining
+
 release work includes that iOS interaction evidence, broader device/accessibility
 checks and dedicated non-production speech/Turnstile integration. Legacy hosting,
 GitOps, DNS and live data remain unchanged; signing and cutover stay deferred.
@@ -1658,3 +1898,8 @@ security remediation in issue #2, product vertical slices, interactive native
 and physical-device QA, final store identities and signing remain outstanding.
 The legacy service, GitOps, DNS and data have not been changed. No production
 credentials, deployment hooks or signing material were added.
+
+- iOS run 41042187883 advanced through creation, restoration, inventory and
+  readiness; editing exposed a missing multiline Done action. Add a focused
+  navigation-bar completion action and retain exact-text/keyboard-dismissal
+  assertions. Runtime acceptance and full parity remain pending.

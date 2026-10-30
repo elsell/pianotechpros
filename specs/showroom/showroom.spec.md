@@ -223,6 +223,11 @@ current piano and non-available records. Conflicting showroom identity or malfor
 results fail closed. Optional related-content failure leaves the main listing
 usable with a localized unavailable notice and an ordinary showroom link; it
 must never synthesize candidates from private inventory or cached editor data.
+Native listing reads must expose the primary publication immediately after it
+loads, without awaiting optional related requests. Refresh, route loss and
+backgrounding clear both projections and cancel their requests; late related
+responses cannot attach to a newer listing. A secondary failure must not clear
+primary content or prevent contact, inquiry or sharing actions.
 Cards use publication-derived readable links and scoped public thumbnails. All
 copy and photo accessibility labels use the shared catalog.
 
@@ -316,3 +321,62 @@ the reviewed legacy crawler routes; no legacy code is imported.
 
 Protocol references: https://www.sitemaps.org/protocol.html and
 https://developers.google.com/search/docs/crawling-indexing/robots/intro.
+
+## Native public browsing
+
+The native home offers public showroom discovery without requiring a restored
+session or OIDC discovery. A native navigation stack leads from published shops
+to a photo-led collection and a published listing. Use the anonymous public API
+adapter, never private inventory or an application credential. Back navigation,
+pull-to-refresh, explicit pagination and field-labeled filter controls remain
+native. Filtering supports literal search, piano form, availability, currency and
+localized inclusive price bounds through the shared filter parser.
+
+Public read orchestration lives in client-core. Each route owns its lifetime;
+refresh/filter changes abort prior work, clear old content, and suppress late
+responses. Failed reads must not leave previously public content visible. Page
+continuations preserve showroom identity and filters; duplicate records or
+repeated cursors fail closed. Copy snapshots and inputs. Navigation/background
+loss clears public data and aborts media/read work; returning revalidates visibility.
+
+Listing presentation includes ordered photos with accessible selection, published
+attributes and price, availability, dealer contact/visit/service information,
+canonical sharing, and related available pianos. Public media must use the
+validated anonymous byte adapter with ephemeral display storage and cleanup.
+Do not reuse protected editor photo caches. Public listing photos offer explicit
+full-screen inspection with native zoom, accessible zoom/reset/close controls,
+safe areas and portrait/landscape support. Closing returns to the same listing
+and selected photo. Backgrounding, route loss, changed photo or failed media
+invalidates and closes inspection; revalidation must never reopen it without
+another user action. Inspection is read-only and uses the same ephemeral public
+bytes, without protected-photo requests or persistence. Provider-backed inquiry submission
+remains a separate native acceptance requirement; a browser handoff does not
+prove native inquiry parity. Both platforms require interaction acceptance,
+including signed-out navigation, filters/pagination, unpublished content, large
+text, screen-reader order, contact actions and share-sheet dismissal.
+
+CI exercises signed-out directory, catalog search, listing media and availability
+filters before the authenticated profile journeys. Its loopback public fixture
+rejects credential-bearing public requests and contains only synthetic published
+projections. This presentation proof supplements, rather than replaces, real API
+visibility/authorization tests and Android real-service interaction evidence.
+
+### Native showroom visit and small collections
+
+Public showroom contact, address, description, appointment, delivery, warranty
+and service notes must remain reachable when the published collection is empty.
+The native catalog offers a labeled About this showroom action opening a pushed
+screen, with only the public slug in navigation state. Refresh visibility through
+the anonymous API on focus/foreground; failure or hiding clears all retained
+profile content. Use the same contact/visit presentation on individual listings.
+Email/phone/site actions remain deliberate native actions, use sanitized URLs,
+and report unavailable handlers without discarding the published page.
+
+Hide search/filter controls for an initial zero/one-piano collection without a
+continuation. Preserve controls whenever filters or pagination are active, so an
+empty filtered result can be recovered. Keep Include sold pianos available even
+when the filter panel is hidden. Typed but unsubmitted search remains visible.
+This is the same product threshold as web, expressed through native navigation
+and sheets. Test empty/one/many, continuation, active and cleared filters, and
+normal signed-out navigation to visit notes; source presence alone does not
+establish native interaction acceptance.

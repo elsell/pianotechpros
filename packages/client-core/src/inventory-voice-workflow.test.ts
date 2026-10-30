@@ -57,3 +57,43 @@ test('Apply attributes only actual changes and Undo uses manual input',async()=>
  f.current.form.title='Grand piano';await w.extractTranscript('Grand piano');w.apply(['title']);
  assert.deepEqual(fields[2],[]);assert.equal(w.snapshot().canUndo,false);
 });
+
+test('focused clarification replaces only its candidate and still requires Apply and supports Undo',async()=>{
+ const f=fixture(),w=createInventoryVoiceWorkflow(f.port);await w.extractTranscript('Grand piano');
+ f.port.extract=async(_revision,transcript)=>({revision:1,transcript,candidates:[{field:'title',value:{text:'Concert grand'},confidence:'high',evidence:'Concert grand'},{field:'make',value:{text:'Other'},confidence:'high',evidence:'Grand'}]} as any);
+ await w.clarify('title','Concert grand');
+ assert.equal(f.current.form.title,'');assert.deepEqual(w.snapshot().proposal?.candidates.map(c=>c.field),['title']);
+ assert.equal(w.snapshot().proposal?.candidates[0]?.value.text,'Concert grand');
+ w.apply(['title']);assert.equal(f.current.form.title,'Concert grand');w.undo();assert.equal(f.current.form.title,'');
+});
+test('clarification failure preserves prior review and manual edit conflicts',async()=>{
+ const f=fixture(),w=createInventoryVoiceWorkflow(f.port);await w.extractTranscript('Grand piano');
+ f.port.extract=async()=>{throw Error('private provider response');};await w.clarify('title','Concert grand');
+ assert.equal(w.snapshot().phase,'review');assert.equal(w.snapshot().issue,'unavailable');assert.equal(w.snapshot().proposal?.candidates[0]?.value.text,'Grand piano');
+ f.current.form.title='Manual';w.apply(['title']);assert.deepEqual(w.snapshot().conflicts,['title']);
+});
+for(const cause of ['cancel','dispose','scope','revision','malformed'] as const)test(`clarification suppresses ${cause} completion`,async()=>{
+ const f=fixture(),w=createInventoryVoiceWorkflow(f.port);await w.extractTranscript('Grand piano');const pending=deferred<any>();let calls=0,signal!:AbortSignal;
+ f.port.extract=async(_r,_t,s)=>{calls++;signal=s;return pending.promise;};
+ const job=w.clarify('title','Concert grand');w.apply(['title']);w.refreshReview();assert.equal(f.current.form.title,'');
+ if(cause==='cancel')w.cancel();if(cause==='dispose')w.dispose();if(cause==='scope')f.current.accountID='other';if(cause==='revision')f.current.revision=2;
+ await w.clarify('title','Again');await w.extractTranscript('Grand piano');assert.equal(calls,1);
+ pending.resolve(proposal);await job;assert.equal(f.current.form.title,'');
+ if(['cancel','dispose','scope'].includes(cause)){assert.equal(w.snapshot().proposal,null);assert.equal(signal.aborted,true);}else{assert.equal(w.snapshot().proposal?.candidates[0]?.value.text,'Grand piano');assert.equal(w.snapshot().issue,cause==='revision'?'conflict':'protocol_error');}
+});
+
+test('clarification retains unrelated candidates and cannot erase them with provider output',async()=>{
+ const f=fixture();f.port.extract=async()=>({...structuredClone(proposal),candidates:[...proposal.candidates,{field:'make',value:{text:'Grand'},confidence:'uncertain',evidence:'Grand'}]} as any);
+ const w=createInventoryVoiceWorkflow(f.port);await w.extractTranscript('Grand piano');
+ f.port.extract=async(_r,transcript)=>({revision:1,transcript,candidates:[{field:'title',value:{text:'Concert grand'},confidence:'high',evidence:'Concert grand'},{field:'make',value:{text:'Concert'},confidence:'high',evidence:'Concert'}]} as any);
+ await w.clarify('title','Concert grand');assert.deepEqual(w.snapshot().proposal?.candidates[1],{field:'make',value:{text:'Grand'},confidence:'uncertain',evidence:'Grand'});
+});
+test('invalid clarification answers and fields never call the provider',async()=>{
+ const f=fixture(),w=createInventoryVoiceWorkflow(f.port);await w.extractTranscript('Grand piano');
+ for(const [field,answer] of [['title',''],['title','x'.repeat(16000)],['make','Different']] as const){await w.clarify(field,answer);assert.equal(f.extracts,1);assert.equal(w.snapshot().issue,'invalid_input');assert.equal(w.snapshot().phase,'review');}
+});
+test('clarification denial clears private review and observer cancellation prevents dispatch',async()=>{
+ const g=fixture();const x=createInventoryVoiceWorkflow({...g.port,classify:()=> 'denied',extract:(...args)=>g.port.extract(...args)});await x.extractTranscript('Grand piano');g.port.extract=async()=>{throw Error('private');};
+ await x.clarify('title','Concert grand');assert.equal(x.snapshot().proposal,null);assert.equal(x.snapshot().transcript,'');
+ const h=fixture(),y=createInventoryVoiceWorkflow(h.port);await y.extractTranscript('Grand piano');y.subscribe(state=>{if(state.phase==='review'&&state.busy)y.cancel();});await y.clarify('title','Concert grand');assert.equal(h.extracts,1);assert.equal(y.snapshot().proposal,null);
+});

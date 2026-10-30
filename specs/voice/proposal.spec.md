@@ -102,3 +102,25 @@ form application, never durable/server save success.
 Review refresh is explicit; stale revision requires re-extraction. Subscriptions
 and snapshots return private copies and cannot mutate workflow state. An observer
 may cancel/dispose during state notification; no subsequent provider work may start.
+
+## Focused clarification
+
+During proposal review, the user may clarify one existing candidate field with a
+bounded typed answer. Send the existing transcript plus an explicit field and
+answer to the same authorized extraction port at the reviewed revision. Do not
+send the draft or other private record context. The combined transcript must
+remain within the existing 16,000 code-point limit.
+
+Validate the entire returned proposal and require a candidate for the selected
+field. Replace only that candidate; retain all other candidates and the original
+reviewed form snapshot. Clarification never applies, saves, publishes, or selects
+a field. A subsequent explicit Apply and conditional Undo retain their existing
+semantics. Answers that remain uncertain remain visibly uncertain.
+
+While clarification is in flight, prevent Apply, renewed review, and overlapping
+provider calls. Cancellation clears private state and aborts the request, but the
+editor mutation queue stays reserved until that request settles. Scope loss and
+revocation clear private review; stale revisions and malformed or unavailable
+responses cannot replace candidates. Retryable failure retains the prior review
+for explicit retry. Both clients provide a field-specific labeled answer control
+and action and require review of the updated candidate before Apply.

@@ -70,6 +70,15 @@ large text, rotation and iPad/window resizing before claiming tablet support.
 Use browser semantics and keyboard/focus behavior for web; do not impose mobile
 controls on desktop. Shared domain orchestration does not require shared markup.
 
+The hosted iOS inventory journey must open an incomplete saved draft through
+normal navigation and verify publication readiness before any confirmation.
+Missing form/condition guidance opens the corresponding native choice sheet;
+dismissing it preserves the saved value. Missing-photo guidance returns to the
+photo controls. No confirmation action is offered for the incomplete record.
+The controlled HTTP fixture exposes scoped, read-only record/photo/publication
+state for this presentation test and rejects unknown records and mutations.
+This does not prove real publication persistence, capture, or provider behavior.
+
 The hosted iOS interaction gate must also run XCTest accessibility audits of
 stable home, public directory/catalog/listing, empty-showroom visit information,
 and both upper/lower native buyer-form viewports. Run all audit categories without
@@ -1480,3 +1489,16 @@ screenshots were visually inspected. Turnstile was explicitly disabled for this
 isolated native journey. Enabled-provider acceptance, iOS execution, spoken
 screen-reader testing and physical-device acceptance remain open. Displayed
 contact actions were not used to place calls or send email.
+
+
+## Native public fixture contract — 2026-10-30
+
+Run `41000713809` compiled the native applications but failed its first iOS public
+catalog assertion. The retained accessibility tree shows the unavailable state.
+The controlled fixture supplied publication revision 1; the production anonymous
+client correctly requires a published revision of at least 2. A real-client HTTP
+contract regression reproduces `protocol_error` before correction. Give synthetic
+publications valid revision 2 and run the contract regression before the expensive
+iOS build: directory, catalog, detail, sold search and empty-shop profile must
+pass the production adapter. Preserve strict client validation. This diagnosis
+and fixture correction are not a successful iOS interaction result.

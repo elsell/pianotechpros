@@ -123,3 +123,22 @@ test('published empty showroom still exposes visit information anonymously',asyn
  const value=await response.json();assert.equal(value.data.pianos.length,0);assert.equal(value.data.profile.name,'Native Empty Showroom');assert.equal(value.data.profile.appointment_note,'Please arrange a visit before travelling.');
  assert.equal((await api(f,'/v1/showrooms/native-empty-shop/pianos?limit=1',undefined,'private-session')).status,400);
 });
+
+test('native editor fixture exposes consistent scoped read-only readiness state',async t=>{
+ const f=await startNativeUIFixture({inventory:true});t.after(()=>f.close());
+ const session=(await (await api(f,'/v1/sessions',{identityToken:await login(f)})).json()).data.token;
+ const shop=(await (await api(f,'/v1/dealers',undefined,session)).json()).data[0];
+ const record=(await (await api(f,`/v1/dealers/${shop.id}/inventory`,undefined,session)).json()).data[0];
+ const path=`/v1/dealers/${shop.id}/inventory/${record.id}`;
+ for(const suffix of ['', '/photos', '/publication']){
+  assert.equal((await api(f,path+suffix)).status,401);
+  assert.equal((await api(f,path.replace(shop.id,'foreign')+suffix,undefined,session)).status,404);
+  assert.equal((await api(f,path.replace(record.id,'missing')+suffix,undefined,session)).status,404);
+ }
+ const read=async suffix=>{const response=await api(f,path+suffix,undefined,session);assert.equal(response.status,200);return (await response.json()).data;};
+ assert.deepEqual(await read(''),record);
+ assert.deepEqual(await read('/photos'),{record,photos:[]});
+ assert.deepEqual(await read('/publication'),{record,publication:null});
+ assert.equal((await api(f,path+'/publish',{expectedRevision:record.revision},session)).status,404);
+ assert.deepEqual(await read(''),record);
+});

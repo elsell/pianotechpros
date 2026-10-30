@@ -9,6 +9,16 @@ export function createNativeInventoryFixture(now){
   if(req.method!=='GET')return false;
   if(url.pathname==='/v1/dealers'){send(200,{data:[dealer],meta:{}});return true;}
   if(url.pathname==='/v1/dealers/'+dealer.id){send(200,{data:dealer});return true;}
+  const recordPath=`/v1/dealers/${dealer.id}/inventory/`;
+  if(url.pathname.startsWith(recordPath)){
+   const [id,surface,...extra]=url.pathname.slice(recordPath.length).split('/');
+   const record=records.find(value=>value.id===id);
+   if(!record||extra.length)return false;
+   if(surface===undefined){send(200,{data:record});return true;}
+   if(surface==='photos'){send(200,{data:{record,photos:[]}});return true;}
+   if(surface==='publication'){send(200,{data:{record,publication:null}});return true;}
+   return false;
+  }
   if(url.pathname!==`/v1/dealers/${dealer.id}/inventory`)return false;
   const p=url.searchParams,status=p.get('status'),search=(p.get('search')??'').trim().toLowerCase();
   const rawLimit=p.get('limit')??'30',cursor=p.get('cursor');

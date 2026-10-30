@@ -41,6 +41,16 @@ This is not a claim of three-client acceptance. Wider device
 and accessibility acceptance remain open. Provider configuration and spoken/physical-device acceptance are
 separate unresolved external/evidence requirements.
 
+Run `41000713809` is terminal: Android and browser/API acceptance passed, while
+iOS compiled but the public catalog journey showed unavailable. The synthetic
+fixture used publication revision 1, rejected correctly by the production client.
+A new real-client HTTP regression reproduces the error before revision 2 fixes
+the fixture; it now runs before native test builds. No client validation is relaxed.
+The following native readiness journey opens an incomplete saved draft and checks
+form/condition sheets and photo focus without offering publication confirmation.
+Its scoped read-only fixture has failing-then-passing coverage; 18 fixture/readiness
+tests and the public adapter regression pass. Hosted execution remains pending.
+
 A separate hosted iOS accessibility journey is now wired after the existing
 interaction journeys. It runs all XCTest audit categories without suppression on
 home, public directory/catalog/listing, empty-showroom visits and upper/lower

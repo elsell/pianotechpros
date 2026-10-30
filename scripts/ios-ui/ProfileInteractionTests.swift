@@ -20,12 +20,15 @@ final class ProfileInteractionTests: XCTestCase {
         XCTAssertTrue(element.exists && element.isHittable, "Control must be reachable")
     }
     func tap(_ name: String) { let element = button(name); reach(element); element.tap() }
+    func choice(_ name: String, role: String) -> XCUIElement {
+        let predicate = NSPredicate(format: "label == %@ AND (value == %@ OR value == %@)",
+                                    name, "\(role), checked", "\(role), unchecked")
+        return app.descendants(matching: .any).matching(predicate).firstMatch
+    }
     func selectChoice(_ name: String, role: String) {
         let tree = XCTAttachment(string: app.debugDescription)
         tree.name = "choice-\(name)-before"; tree.lifetime = .keepAlways; add(tree)
-        let predicate = NSPredicate(format: "label == %@ AND (value == %@ OR value == %@)",
-                                    name, "\(role), checked", "\(role), unchecked")
-        let option = app.descendants(matching: .any).matching(predicate).firstMatch
+        let option = choice(name, role: role)
         reach(option); option.tap()
         if role == "checkbox" {
             let checked = XCTNSPredicateExpectation(
@@ -242,6 +245,37 @@ final class ProfileInteractionTests: XCTestCase {
     func inventoryRow(_ title: String) -> XCUIElement {
         app.buttons.matching(NSPredicate(format: "label CONTAINS %@", title)).firstMatch
     }
+    func testIncompletePublicationReturnsToRequiredControls() throws {
+        XCTAssertTrue(button("Native UI Shop").waitForExistence(timeout: 60))
+        tap("Native UI Shop"); tap("Browse inventory")
+        let draft = inventoryRow("UI Draft Piano")
+        reach(draft); draft.tap()
+        let title = app.textFields["Display title"].firstMatch
+        XCTAssertTrue(title.waitForExistence(timeout: 15))
+        exactText(title, "UI Draft Piano", "saved draft title")
+        tap("Review publication")
+        XCTAssertTrue(choice("Grand", role: "radio button").waitForExistence(timeout: 15))
+        XCTAssertFalse(button("Confirm change").exists)
+        capture("publication-missing-form")
+        tap("Done")
+        tap("Choose the condition before publishing.")
+        XCTAssertTrue(choice("Restored", role: "radio button").waitForExistence(timeout: 15))
+        XCTAssertFalse(button("Confirm change").exists)
+        capture("publication-missing-condition")
+        tap("Done")
+        tap("Upload at least one photo before publishing.")
+        let photo = button("Choose a photo")
+        XCTAssertTrue(photo.waitForExistence(timeout: 15))
+        let reachable = XCTNSPredicateExpectation(predicate: NSPredicate(format: "hittable == true"), object: photo)
+        XCTAssertEqual(XCTWaiter.wait(for: [reachable], timeout: 10), .completed,
+                       "Missing-photo guidance must return to the photo controls without test scrolling")
+        XCTAssertFalse(button("Confirm change").exists)
+        capture("publication-missing-photo")
+        back(); XCTAssertTrue(inventoryRow("UI Draft Piano").waitForExistence(timeout: 15))
+        back(); back()
+        XCTAssertTrue(button("My customer profile").waitForExistence(timeout: 15))
+    }
+
     func testBrowseInventoryThroughNormalNavigation() throws {
         XCTAssertTrue(button("Native UI Shop").waitForExistence(timeout: 60))
         tap("Native UI Shop"); tap("Browse inventory")

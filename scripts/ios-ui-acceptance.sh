@@ -13,6 +13,7 @@ cleanup() {
 }
 trap cleanup EXIT
 node --test scripts/native-ui-fixture.test.mjs scripts/ios-metro-ready.test.mjs
+pnpm --dir packages/api-client exec tsx --test ../../scripts/native-public-contract.test.mjs
 python3 scripts/test_ios_simulator_entitlements.py
 python3 scripts/test_ios_ui_bundle.py
 python3 scripts/test_simulator_macho.py
@@ -73,5 +74,7 @@ run_journey restore testRestorePartialDraftAfterProcessRestart
 xcrun simctl terminate "$simulator" com.pianotechpros.pianotechpros || true
 run_journey inventory testBrowseInventoryThroughNormalNavigation
 
+xcrun simctl terminate "$simulator" com.pianotechpros.pianotechpros || true
+run_journey readiness testIncompletePublicationReturnsToRequiredControls
 xcrun simctl terminate "$simulator" com.pianotechpros.pianotechpros || true
 run_journey accessibility testPublicAccessibility

@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
-import {chromium} from 'playwright';
+import {chromium,firefox,webkit} from 'playwright';
 import {verifyPhotoManagement} from './persisted-photo-management.mjs';
 const base=process.env.INQUIRY_ACCEPTANCE_WEB_URL??'http://localhost:5173';
 const dealerName=process.env.INQUIRY_ACCEPTANCE_DEALER_NAME;
 const local=value=>{const u=new URL(value);return u.protocol==='http:'&&['localhost','127.0.0.1','[::1]'].includes(u.hostname)&&!u.username&&!u.password;};
 assert.ok(local(base)&&dealerName,'provide isolated synthetic fixture');
-const browser=await chromium.launch({headless:true});let page;
+for(const [engine,type] of Object.entries({chromium,firefox,webkit})){
+ if(engine!=='chromium'){console.log('Waiting for a fresh audit window before '+engine);await new Promise(resolve=>setTimeout(resolve,61000));}
+ const browser=await type.launch({headless:true});let page;
 try{
  const context=await browser.newContext();page=await context.newPage();
  page.on('response',r=>{if(r.status()>=400)console.error(JSON.stringify({status:r.status(),path:new URL(r.url()).pathname}));});
@@ -22,5 +24,6 @@ try{
  const api=new URL(upload.url()).origin;assert.ok(local(api));const authorization=(await upload.request().allHeaders()).authorization;assert.ok(authorization);
  const recordURL=`${api}/v1/dealers/${photoData.record.dealer_id}/inventory/${recordID}`;
  await verifyPhotoManagement({page,context,recordURL,authorization,buffer});assert.equal(creates,1);
- console.log(JSON.stringify({result:'PASS',recordID,checks:['real processed uploads','persisted cover and earlier/later order','persisted photo description','keyboard preview restores focus','cancelled removal retains both photos','confirmed removal denies old image']}));
+ console.log(JSON.stringify({result:'PASS',engine,version:browser.version(),recordID,checks:['real processed uploads','persisted cover and earlier/later order','persisted photo description','keyboard preview restores focus','cancelled removal retains both photos','confirmed removal denies old image']}));
 }finally{await browser.close();}
+}

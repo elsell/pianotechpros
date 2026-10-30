@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
-import {chromium} from 'playwright';
+import {chromium,firefox,webkit} from 'playwright';
 const base=process.env.INQUIRY_ACCEPTANCE_WEB_URL??'http://localhost:5173';
 const occupiedSlug=process.env.INQUIRY_ACCEPTANCE_SHOWROOM_SLUG;
 const local=value=>{const u=new URL(value);return u.protocol==='http:'&&['localhost','127.0.0.1','[::1]'].includes(u.hostname)&&!u.username&&!u.password;};
 assert.ok(local(base)&&occupiedSlug,'provide isolated synthetic dealer fixture');
-const browser=await chromium.launch({headless:true});let page;
+for(const [engine,type] of Object.entries({chromium,firefox,webkit})){
+ if(engine!=='chromium'){console.log('Waiting for a fresh audit window before '+engine);await new Promise(resolve=>setTimeout(resolve,61000));}
+ const browser=await type.launch({headless:true});let page;
 try{
  const context=await browser.newContext();page=await context.newPage();
  await page.goto(base);await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.locator('input[name=login]').waitFor();assert.ok(local(page.url()));
@@ -44,5 +46,6 @@ try{
  await page.getByRole('button',{name:'Remove banner',exact:true}).click();const [removed]=await Promise.all([page.waitForResponse(r=>r.request().method()==='DELETE'&&new URL(r.url()).pathname.endsWith('/banner')),page.getByRole('button',{name:'Remove banner now',exact:true}).click()]);assert.equal(removed.status(),200);assert.equal((await anonymous.request.get(publicBanner(secondBanner))).status(),404);assert.equal((await read()).banner_alt_text,values.banner_alt_text);
  await buyer.reload();assert.equal(await buyer.getByRole('img',{name:values.banner_alt_text,exact:true}).count(),0);await page.getByRole('button',{name:'Back to shop',exact:true}).click();
  await page.getByRole('button',{name:'Edit profile',exact:true}).click();await page.getByLabel('Enable public showroom',{exact:true}).uncheck();const [hidden]=await Promise.all([page.waitForResponse(r=>r.request().method()==='PUT'&&r.url()===path),page.getByRole('button',{name:'Save changes',exact:true}).click()]);assert.equal(hidden.status(),200);assert.equal((await anonymous.request.get(showroom)).status(),404);
- console.log(JSON.stringify({result:'PASS',dealerID:dealer.id,checks:['duplicate slug retains form','all settings persisted','reload and edit','explicit showroom visibility','public projection excludes ownership metadata','explicit hide','real banner upload/render/replace/cancel/remove']}));
+ console.log(JSON.stringify({result:'PASS',engine,version:browser.version(),dealerID:dealer.id,checks:['duplicate slug retains form','all settings persisted','reload and edit','explicit showroom visibility','public projection excludes ownership metadata','explicit hide','real banner upload/render/replace/cancel/remove']}));
 }catch(error){if(page)console.error(await page.locator('body').innerText());throw error;}finally{await browser.close();}
+}

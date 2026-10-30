@@ -23,6 +23,10 @@ class Routing(unittest.TestCase):
             with self.subTest(path=path):
                 self.assertEqual(classify([path]), Plan(native=True))
 
+    def test_authenticated_browser_matrix_selects_real_service_acceptance(self):
+        for path in ['scripts/photo-management-persisted-acceptance.mjs', 'scripts/dealer-profile-persisted-acceptance.mjs']:
+            with self.subTest(path=path):
+                self.assertEqual(classify([path]), Plan(acceptance=True))
     def test_uncertain_changes_run_everything(self):
         for paths in [[], ['new-component/file'], ['/absolute'], ['../escape'], ['docs/readme.md', 'unknown']]:
             with self.subTest(paths=paths): self.assertEqual(classify(paths), ALL)

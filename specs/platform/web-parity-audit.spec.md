@@ -273,3 +273,15 @@ and the same three engine versions and six assertions. Both native builds and
 combined acceptance passed; verification reported only the authorized advisory
 with all 21 mitigation tests passing. PR #87 merged at
 `f2ad82c3603873997f49cda118bc5384945ab2c4`.
+
+### Authenticated browser-engine matrix
+
+Require the real-service photo-first capture/photo-management and dealer profile/
+banner journeys in Chromium, Firefox and Linux WebKit. Each engine uses a fresh
+browser context and creates its own synthetic record or dealer through normal
+OIDC sign-in. Preserve all existing persisted-state and anonymous projection
+assertions, including no premature draft creation, processed image bytes, focus
+return, duplicate slug recovery and explicit visibility. Wait for a fresh audit
+window between engines without changing production limits. A failure in any
+engine fails acceptance; record engine/version in each result. This expands these
+journeys only and does not establish physical Safari or spoken accessibility.

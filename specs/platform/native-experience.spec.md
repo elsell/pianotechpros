@@ -1703,3 +1703,16 @@ submitted. Font scale was restored to 1.0, and the temporary emulator, Metro and
 tunnel were stopped. This establishes only the named Android large-text journey;
 spoken screen-reader order, iOS Dynamic Type, physical devices, all other product
 screens and enabled-provider acceptance remain separate requirements.
+
+## iOS keyboard-obscured control navigation
+
+Run `41031001582` failed profile creation while reaching City. The retained
+hierarchy places that field at y=615 below a keyboard beginning at y=583, with
+its accessory strip at y=539. Full-window swipes alternated directions without
+making the field hittable; dependent editing/restart journeys were blocked.
+The test helper must drag inside the visible scroll viewport, excluding the
+keyboard and its accessory area. Bound each movement toward the target and
+recompute geometry after every gesture. Preserve the ten-attempt limit,
+existence/hittability requirements and failure screenshot/tree attachments.
+Do not substitute coordinate taps for control hit testing. Actual hosted
+execution must establish that creation and subsequent editing both pass.

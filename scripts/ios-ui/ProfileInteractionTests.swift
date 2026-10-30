@@ -12,13 +12,27 @@ final class ProfileInteractionTests: XCTestCase {
         XCTAssertTrue(element.waitForExistence(timeout: 15), "Control must appear before scrolling")
         for _ in 0..<10 {
             if element.exists && element.isHittable { return }
-            // Keyboard dismissal and sheets can leave the next control above us.
-            // Move toward its current frame instead of always scrolling downward.
-            if element.frame.midY < app.windows.firstMatch.frame.midY {
-                app.swipeDown()
-            } else {
-                app.swipeUp()
+            let window = app.windows.firstMatch
+            let scroll = app.scrollViews.allElementsBoundByIndex.first {
+                $0.exists && $0.isHittable
             }
+            var viewport = (scroll?.frame ?? window.frame).intersection(window.frame)
+            let keyboard = app.keyboards.firstMatch
+            if keyboard.exists {
+                // Keep the gesture above both the keyboard and its accessory strip.
+                viewport.size.height = max(0, min(viewport.maxY, keyboard.frame.minY - 64) - viewport.minY)
+            }
+            guard !viewport.isEmpty && viewport.height > 80 else { break }
+            let upward = element.frame.midY >= viewport.midY
+            let distance = min(viewport.height * 0.55,
+                               max(40, abs(element.frame.midY - viewport.midY)))
+            let startY = viewport.minY + viewport.height * (upward ? 0.8 : 0.2)
+            let origin = window.coordinate(withNormalizedOffset: .zero)
+            let start = origin.withOffset(CGVector(dx: viewport.midX - window.frame.minX,
+                                                  dy: startY - window.frame.minY))
+            let end = origin.withOffset(CGVector(dx: viewport.midX - window.frame.minX,
+                                                dy: startY + (upward ? -distance : distance) - window.frame.minY))
+            start.press(forDuration: 0.05, thenDragTo: end)
         }
         capture("unreachable-control")
         let tree = XCTAttachment(string: app.debugDescription)

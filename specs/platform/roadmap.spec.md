@@ -8,11 +8,15 @@ closure is tracked in `web-parity-audit.spec.md` and device evidence in
 `native-experience.spec.md`.
 
 Run `41031001582`, source `50dff0650c0630eb794b741aed903fee6dab1baf`,
-has passed verification, real-service acceptance and Android compilation; its
-iOS gate is still running. The newer integrated photo-semantics candidate,
-source `e33a3e6bbf89fa29f12035e5507943e34566ce02`, has passed verification in
-run `41032889517`; remaining hosted gates are pending. Neither result authorizes
-a merge until the complete candidate passes all required checks.
+passed verification, real-service acceptance and Android compilation but failed
+iOS. Profile creation could not reach City behind the keyboard: full-window
+swipes alternated directions, so dependent editing/restart journeys were blocked.
+The next harness correction drags within the unobscured scroll viewport toward
+the target, retaining hit testing and the same attempt limit. Public/accessibility
+still failed at the image-role assertion addressed in the newer candidate.
+Run `41032889517`, source `e33a3e6bbf89fa29f12035e5507943e34566ce02`,
+has passed verification, real-service acceptance and Android compilation; iOS is
+still running. No candidate is cleared to merge until all required gates pass.
 
 The newer candidate's public photo semantics and inspection passed on a remote
 Android API 36 emulator against the isolated real API: one labeled image element,

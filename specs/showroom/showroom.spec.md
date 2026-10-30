@@ -343,7 +343,13 @@ Listing presentation includes ordered photos with accessible selection, publishe
 attributes and price, availability, dealer contact/visit/service information,
 canonical sharing, and related available pianos. Public media must use the
 validated anonymous byte adapter with ephemeral display storage and cleanup.
-Do not reuse protected editor photo caches. Provider-backed inquiry submission
+Do not reuse protected editor photo caches. Public listing photos offer explicit
+full-screen inspection with native zoom, accessible zoom/reset/close controls,
+safe areas and portrait/landscape support. Closing returns to the same listing
+and selected photo. Backgrounding, route loss, changed photo or failed media
+invalidates and closes inspection; revalidation must never reopen it without
+another user action. Inspection is read-only and uses the same ephemeral public
+bytes, without protected-photo requests or persistence. Provider-backed inquiry submission
 remains a separate native acceptance requirement; a browser handoff does not
 prove native inquiry parity. Both platforms require interaction acceptance,
 including signed-out navigation, filters/pagination, unpublished content, large

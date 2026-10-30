@@ -20,6 +20,13 @@ contact actions. Refresh/background cancellation suppresses late secondary
 results, and malformed routes retain unavailable-state handling. Shared-model
 regressions pass; native interaction confirmation remains pending CI.
 
+Public native listing photos now expose full-screen inspection using the existing
+native zoom/reset controls and ephemeral anonymous image bytes. Close preserves
+the selected listing photo; backgrounding invalidates inspection. The iOS journey
+now checks zoom, reset, dismissal and foreground non-reopening. Type checks,
+shared viewport/resource regressions and locale checks pass; device acceptance
+of this public-photo presentation remains pending CI.
+
 A renewed native implementation review found three product gaps, distinct from
 missing device evidence: actionable publication readiness before confirmation,
 field-specific voice ambiguity clarification, and public showroom/listing

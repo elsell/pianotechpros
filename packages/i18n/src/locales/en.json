@@ -344,6 +344,7 @@
   "showroom.apply": "Show pianos",
   "showroom.clear": "Clear filters",
   "showroom.priceHelp": "Choose a currency when filtering by price.",
+  "showroom.priceLabel": "Asking price: {{price}}",
   "showroom.requestPrice": "Price on request",
   "showroom.empty": "No pianos match these filters.",
   "showroom.next": "See more pianos",

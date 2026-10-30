@@ -344,6 +344,7 @@
   "showroom.apply": "Mostrar pianos",
   "showroom.clear": "Borrar filtros",
   "showroom.priceHelp": "Elija una moneda para filtrar por precio.",
+  "showroom.priceLabel": "Precio de venta: {{price}}",
   "showroom.requestPrice": "Precio a consultar",
   "showroom.empty": "Ningún piano coincide con estos filtros.",
   "showroom.next": "Ver más pianos",

@@ -14,3 +14,11 @@ test('falls back when the device reports no supported locale', () => {
   assert.equal(translator.locale, 'en');
   assert.equal(translator.t('auth.signIn'), 'Sign in');
 });
+
+test('public asking-price labels include the exact localized amount',()=>{
+ for(const [locale,expected] of [['en','Asking price: $1,250.00'],['es','Precio de venta: 1250,00 US$']] as const){
+  const translator=createDeviceTranslator(()=>[{languageTag:locale}]);
+  const price=translator.money(125000,'USD');
+  assert.equal(translator.t('showroom.priceLabel',{price}),expected);
+ }
+});

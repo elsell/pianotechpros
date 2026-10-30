@@ -1716,3 +1716,15 @@ recompute geometry after every gesture. Preserve the ten-attempt limit,
 existence/hittability requirements and failure screenshot/tree attachments.
 Do not substitute coordinate taps for control hit testing. Actual hosted
 execution must establish that creation and subsequent editing both pass.
+
+## Contextual native price labels
+
+Run `41032889517` passes the complete controlled-fixture iOS public journey,
+including photo role, zoom/reset, background recovery and buyer inquiry behavior.
+Its accessibility audit then rejects the standalone `$1,250.00` price element as
+not human-readable. Native public price text must expose a localized asking-price
+label containing the same exact formatted amount while preserving its visible
+currency formatting. Apply the same presentation to public cards, listing detail
+and historical inquiry snapshots; hidden prices retain Price on request.
+Keep the full native accessibility audit enabled and require hosted execution;
+this correction alone does not establish spoken screen-reader acceptance.

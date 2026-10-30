@@ -1,3 +1,4 @@
+import {PublicPrice} from '../../src/showroom/PublicPrice';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {RefreshControl,ScrollView,Text,View} from 'react-native';
 import {useLocalSearchParams,useRouter} from 'expo-router';
@@ -23,7 +24,7 @@ function ListingContent({profile,piano,related,relatedFailed,relatedLoading}:{pr
  return <View style={{gap:20}}>
  {photo?<PublicImage slug={profile.slug} pianoID={piano.id} photoID={photo.id} previewLabel={i18n.t('inventory.photos.preview',{number:i18n.number(selected+1)})} alt={photo.alt_text||i18n.t('showroom.photo',{title:piano.title,number:selected+1})}/>:null}
  {piano.photos.length>1?<View style={{gap:8}}><Text accessibilityLiveRegion="polite" style={text}>{i18n.t('showroom.photoPosition',{number:selected+1,total:piano.photos.length})}</Text><View style={{flexDirection:'row',flexWrap:'wrap',justifyContent:'space-between'}}><NativeButton title={t('previousPhoto')} onPress={()=>setSelected(value=>(value-1+piano.photos.length)%piano.photos.length)}/><NativeButton title={t('nextPhoto')} onPress={()=>setSelected(value=>(value+1)%piano.photos.length)}/></View></View>:null}
- <Text accessibilityRole="header" style={{...heading,fontSize:30}}>{piano.title}</Text><Text style={text}>{i18n.t(`inventory.status.${piano.status}` as MessageKey)}</Text><Text style={{...text,fontSize:22}}>{piano.price?i18n.money(piano.price.minor_units,piano.price.currency):t('requestPrice')}</Text><Text style={text}>{i18n.t(`inventory.form.${piano.form}` as MessageKey)}</Text>
+ <Text accessibilityRole="header" style={{...heading,fontSize:30}}>{piano.title}</Text><Text style={text}>{i18n.t(`inventory.status.${piano.status}` as MessageKey)}</Text><PublicPrice price={piano.price} style={{...text,fontSize:22}}/><Text style={text}>{i18n.t(`inventory.form.${piano.form}` as MessageKey)}</Text>
  <NativeButton title={t('sharing.share')} disabled={busy} onPress={()=>void action(()=>sharePublicLink({url:new URL(publicPianoPath(profile.slug,piano),webURL).href,title:piano.title},nativePublicSharing))}/>
  {failed?<Text accessibilityRole="alert" style={text}>{t('contactFailed')}</Text>:null}
  <Text accessibilityRole="header" style={heading}>{t('details')}</Text>{piano.description?<Text selectable style={text}>{piano.description}</Text>:null}

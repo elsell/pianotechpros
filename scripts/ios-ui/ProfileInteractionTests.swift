@@ -146,6 +146,7 @@ final class ProfileInteractionTests: XCTestCase {
         inventoryRow("Native Public Grand").tap()
         XCTAssertTrue(app.staticTexts["Native Public Grand"].waitForExistence(timeout: 15))
         XCTAssertTrue(app.images["Synthetic public piano photo"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.staticTexts["Asking price: $1,250.00"].waitForExistence(timeout: 15))
         try auditAccessibility("listing-top")
         tap("Ask about this piano")
         XCTAssertTrue(app.staticTexts["Native Public Grand"].waitForExistence(timeout: 15))

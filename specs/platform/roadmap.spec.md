@@ -7,6 +7,14 @@ The detailed requirements remain in `product-parity.spec.md`; website-specific
 closure is tracked in `web-parity-audit.spec.md` and device evidence in
 `native-experience.spec.md`.
 
+Run `41032889517` now proves the complete controlled-fixture iOS public journey:
+photo image semantics, zoom/reset, background recovery and buyer inquiry behavior
+pass. The full accessibility audit then rejects the standalone symbolic price
+label. Add localized asking-price context while preserving the exact visible
+amount; require the existing audit to pass. Profile creation encountered the
+keyboard-obscured City navigation addressed by the newer candidate, so dependent
+editing/restart checks remained blocked. This is not overall iOS acceptance.
+
 Run `41042187883` passes verification but its browser acceptance stopped before
 behavior assertions because the runner assigned the same ephemeral port to Vite
 and the controlled API. Hold distinct loopback reservations until each consumer
@@ -22,8 +30,9 @@ The next harness correction drags within the unobscured scroll viewport toward
 the target, retaining hit testing and the same attempt limit. Public/accessibility
 still failed at the image-role assertion addressed in the newer candidate.
 Run `41032889517`, source `e33a3e6bbf89fa29f12035e5507943e34566ce02`,
-has passed verification, real-service acceptance and Android compilation; iOS is
-still running. No candidate is cleared to merge until all required gates pass.
+passed verification, real-service acceptance and Android compilation; its iOS
+failures are recorded above. No candidate is cleared to merge until all required
+gates pass.
 
 The newer candidate's public photo semantics and inspection passed on a remote
 Android API 36 emulator against the isolated real API: one labeled image element,

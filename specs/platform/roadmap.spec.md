@@ -1898,3 +1898,8 @@ security remediation in issue #2, product vertical slices, interactive native
 and physical-device QA, final store identities and signing remain outstanding.
 The legacy service, GitOps, DNS and data have not been changed. No production
 credentials, deployment hooks or signing material were added.
+
+- iOS run 41042187883 advanced through creation, restoration, inventory and
+  readiness; editing exposed a missing multiline Done action. Add a focused
+  navigation-bar completion action and retain exact-text/keyboard-dismissal
+  assertions. Runtime acceptance and full parity remain pending.

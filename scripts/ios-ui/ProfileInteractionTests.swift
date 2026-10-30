@@ -336,6 +336,9 @@ final class ProfileInteractionTests: XCTestCase {
         let field = app.textViews[label].firstMatch
         reach(field); field.tap(); field.typeText(value)
         exactText(field, value, label); tap("Done")
+        XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 5),
+                      "Done must dismiss the multiline keyboard")
+        exactText(field, value, label)
     }
     func setInventorySwitch(_ label: String, enabled: Bool) {
         let control = app.switches[label].firstMatch

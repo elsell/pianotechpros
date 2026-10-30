@@ -1728,3 +1728,17 @@ currency formatting. Apply the same presentation to public cards, listing detail
 and historical inquiry snapshots; hidden prices retain Price on request.
 Keep the full native accessibility audit enabled and require hosted execution;
 this correction alone does not establish spoken screen-reader acceptance.
+
+## iOS multiline editing completion
+
+Hosted run 41042187883 passed creation, restoration, inventory and readiness,
+but inventory editing stopped after entering Public description because no Done
+button existed. The retained recording confirms the keyboard obscures the lower
+form without a completion action. React Native documents that InputAccessoryView
+does not support multiline TextInput. Preserve multiline/newline entry and expose
+a localized Done action in the navigation bar while either description or private
+notes has focus on iOS. Done dismisses editing without saving or discarding text;
+single-line decimal fields retain their accessory. The existing controlled-fixture XCTest
+journey must verify keyboard dismissal and exact retained text for both multiline
+fields before continuing through persistence and reopening. Hosted runtime
+acceptance remains pending; a type check is not interaction evidence.

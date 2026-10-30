@@ -1759,3 +1759,101 @@ These are simulator journeys against controlled HTTP fixtures. The persisted
 check reads fixture state. They are not production database, provider, spoken
 screen-reader, physical-device or complete native parity acceptance. The broader
 real-service/device requirements above remain in force.
+
+### Hosted iOS profiles against production services
+
+Add a second, isolated simulator phase for customer/technician creation, protected
+partial-draft restoration and independently authenticated persisted profile reads.
+Run the actual API, PostgreSQL and SpiceDB with the typed capability proxy and
+separate migration/runtime database roles. Keep the existing controlled-fixture
+journeys, including deliberate failure/retry assertions, intact.
+
+The synthetic OIDC provider may forward `/v1/` requests to a fixed loopback API;
+it must never answer those requests with fixture sessions or domain state in this
+mode. Validate the destination before listening, forward bounded request bodies,
+refuse upstream redirects, and surface dependency failure without fixture fallback.
+OIDC authorization/code/JWKS remain synthetic and cryptographically verified by
+the real API. No provider credentials or deployment endpoints are used. Native
+PostgreSQL/SpiceDB tooling must be exact and checksum-verified; download/build only
+on hosted CI or Paul. Record actual service versions and results. This phase
+proves only the exercised profile workflows, not all native parity.
+
+The native service baseline matches Compose's PostgreSQL 18.4 and SpiceDB 1.54.0.
+PostgreSQL source SHA256 is `81a81ec695fb0c7901407defaa1d2f7973617154cf27ba74e3a7ab8e64436094`
+from its official release directory (2026-05-11). SpiceDB's immutable 2026-06-18
+release supplies checksummed darwin-arm64/amd64 and linux-amd64 archives; these
+versions exceed fourteen days. Verify checksums before extraction/execution and
+versions afterward. Build PostgreSQL without optional ICU/readline/compression
+libraries to avoid unpinned package-manager installation; SQL storage, role
+separation and authorization behavior remain real. These are acceptance tools,
+not replacement deployment images or a claim that their full dependency graphs
+are vulnerability-free.
+
+The second phase reuses the verified application/test bundle on a fresh simulator;
+it cannot reuse the fixture session, profile database or keychain. It requires
+creation, partial-draft restart recovery and independently authenticated API reads.
+The read-back gate checks exact saved contact/location/service fields and confirms
+the incomplete weekday was not persisted. Failed creation blocks dependent tests;
+failed recovery or read-back fails the phase. Record separate real-service logs,
+journey results and screenshots. Fixed loopback ports default to 18082/18083;
+service-only remote validation may select different validated unprivileged ports.
+Never terminate an unrelated process to claim a port.
+
+On 2026-10-30, the checksum-verified PostgreSQL 18.4 and SpiceDB 1.54.0 native
+install completed on the remote Linux validation host. The real API/proxy/database
+stack then passed fresh-profile, unauthenticated/malformed/provider-token rejection,
+synthetic profile creation and independent read-back checks. These were HTTP
+service checks, not native interaction evidence. macOS installation and iOS
+profile interaction remain pending hosted execution.
+
+### Real-service native inventory acceptance
+
+Extend the fresh-simulator service phase to inventory browsing/status/search,
+missing-publication guidance, complete field editing and process-restart reopening.
+Provision only synthetic owner/dealer/records through the actual authenticated
+API, including real lifecycle commands for available/sold records. Never insert
+inventory directly into PostgreSQL or let the forwarding provider supply domain
+responses. Discover generated IDs from an explicit seed manifest; do not rely on
+fixture UUIDs. Require a fresh owner without dealers before provisioning.
+
+Retain the existing XCTest assertions for normal navigation, native text/choice
+controls, exact money/date values, multiline keyboard dismissal and reopening.
+After editing, independently exchange a new application session and compare the
+actual persisted record with the complete expected attributes. Require the record
+to remain private/draft with no publication. A failed edit or persisted check must
+block dependent reopen acceptance; independent browse/readiness failures still
+fail the phase. This covers the named inventory workflows, not photo capture,
+provider voice, successful publication/sale interaction or full device parity.
+
+Route the explicitly enumerated iOS/native service harness scripts to native CI
+plus the always-run verification job. They do not change production API/web
+artifacts. Keep unknown paths, workflow changes and release runs fail-safe/full;
+do not suppress the native runtime gate to shorten feedback.
+
+Remote service validation of this inventory harness passed: the real API created
+all three lifecycle states without a publication. The persisted-edit checker
+failed against the untouched seed, then passed only after the full expected
+attributes were saved through the actual API. The final record remained draft,
+unpublished and revision-advanced. This validates provisioning/read-back behavior;
+XCTest execution on the built iOS app remains a separate required hosted gate.
+
+### Hosted native sale/correction sequence
+
+After real-service profile sign-in, exercise the available synthetic piano through
+the iOS availability UI. Assert the seeded USD 1234.56 asking price initializes
+the sale input, replace it with USD 1100.25, review and explicitly confirm. Read
+the real API history independently before permitting the correction journey.
+Restart the app, locate the now-sold piano using the Sold filter, select Available,
+enter an exact correction reason and confirm it from review. Read history again:
+the sale event must be byte-for-byte equivalent as parsed JSON, the correction
+must be a new event with the exact reason, and inventory attributes must remain
+unchanged. Neither operation publishes the fixture. Record separate UI and API
+results; a sale failure blocks dependent correction. Run this independently of
+inventory-field editing once authenticated profile setup succeeded.
+
+Remote real-service validation passed for this gate: the untouched available seed
+failed sale acceptance; the USD 1100.25 transition passed sale read-back; missing
+correction failed correction acceptance; the actual Sold-to-Available command
+passed; altering the saved original sale evidence caused correction verification
+to fail. These checks exercised API/PostgreSQL/SpiceDB and the read-back scripts,
+not the new XCTest interactions, which remain pending hosted execution.

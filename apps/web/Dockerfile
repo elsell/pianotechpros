@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
-FROM registry.access.redhat.com/hi/nodejs:24.18.0-builder-1784114937@sha256:0493d282a3e210a3f95d98326f3e2e2c6b151b13830a9fbdb03ff52d1f60354e AS build
+FROM registry.access.redhat.com/hi/nodejs:24.22.2-builder-1793297445@sha256:8f3b89ebd2f48f84e7d7adbd5ec0264cfb0bcf946b5a6cff86e99a137b2723bb AS build
 ENV NPM_CONFIG_PREFIX=/tmp/npm-global PATH=/tmp/npm-global/bin:$PATH
 WORKDIR /app
 RUN npm install --global pnpm@11.0.7
@@ -18,7 +18,9 @@ COPY --chown=65532:0 packages/i18n packages/i18n
 RUN pnpm --dir apps/web build
 RUN pnpm --filter @pianotechpros/web deploy --legacy --prod /app/prod
 
-FROM registry.access.redhat.com/hi/nodejs:24.18.0-1784114937@sha256:c0fd66cf088af1c6f122bcdbbf5d701ffea303fe84ebb23575ac75edde625113
+FROM registry.access.redhat.com/hi/nodejs:24.22.2-1793297445@sha256:873692b4d4b6107a9b831ed56333d29bc721fc441ac6dbc7839f49598be430d7
+USER 0
+RUN ["node", "-e", "for (const p of ['/usr/bin/npm','/usr/bin/npx','/usr/lib/node_modules_24/npm']) require('node:fs').rmSync(p,{recursive:true})"]
 ENV NODE_ENV=production PIANOTECHPROS_APP_ENV=production HOST=0.0.0.0 PORT=3000
 WORKDIR /app
 COPY --from=build --chown=65532:0 /app/prod ./

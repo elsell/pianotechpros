@@ -44,6 +44,7 @@ check:
 	./scripts/test-start-postgres-for-acceptance.sh
 	./scripts/test-install-docker-buildx.sh
 	./scripts/test-require-docker-buildkit.sh
+	python3 scripts/test_node_runtime_vex.py
 	./scripts/test-verify-docker-builds.sh
 	./scripts/check-structure.sh
 	cd apps/api && test -z "$$(gofmt -l .)"

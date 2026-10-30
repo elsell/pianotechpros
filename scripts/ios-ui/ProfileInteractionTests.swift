@@ -413,6 +413,43 @@ final class ProfileInteractionTests: XCTestCase {
         back(); back(); back()
     }
 
+    func chooseAvailability(_ value: String) {
+        let controls = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "New availability"))
+        let control = controls.firstMatch
+        reach(control); XCTAssertEqual(controls.count, 1); control.tap()
+        selectChoice(value, role: "radio button")
+    }
+    func testSellAvailableInventory() throws {
+        XCTAssertTrue(button("Native UI Shop").waitForExistence(timeout: 60))
+        tap("Native UI Shop"); tap("Browse inventory")
+        let piano = inventoryRow("UI Available Piano"); reach(piano); piano.tap()
+        tap("Review availability change"); chooseAvailability("Sold")
+        let amount = app.textFields["Final sale amount"].firstMatch
+        reach(amount); exactText(amount, "1234.56", "sale default")
+        replace("Final sale amount", "1100.25")
+        tap("Review availability change")
+        XCTAssertTrue(app.staticTexts["$1,100.25"].waitForExistence(timeout: 15))
+        capture("sale-review"); tap("Confirm change")
+        XCTAssertTrue(app.staticTexts["Change confirmed."].waitForExistence(timeout: 20))
+        capture("sale-confirmed"); back(); back(); back()
+    }
+    func testCorrectSoldInventoryAfterRestart() throws {
+        XCTAssertTrue(button("Native UI Shop").waitForExistence(timeout: 60))
+        tap("Native UI Shop"); tap("Browse inventory")
+        tap("Status: Active"); selectChoice("Sold", role: "radio button")
+        let piano = inventoryRow("UI Available Piano"); reach(piano); piano.tap()
+        tap("Review availability change"); chooseAvailability("Available")
+        let reason = app.textViews["Correction reason"].firstMatch
+        reach(reason); reason.tap(); reason.typeText("Native iOS correction")
+        exactText(reason, "Native iOS correction", "sale correction reason")
+        tap("Review availability change")
+        XCTAssertTrue(app.staticTexts["Native iOS correction"].waitForExistence(timeout: 15))
+        XCTAssertFalse(app.keyboards.firstMatch.exists)
+        capture("sale-correction-review"); tap("Confirm change")
+        XCTAssertTrue(app.staticTexts["Change confirmed."].waitForExistence(timeout: 20))
+        capture("sale-correction-confirmed"); back(); back(); back()
+    }
+
     func testBrowseInventoryThroughNormalNavigation() throws {
         XCTAssertTrue(button("Native UI Shop").waitForExistence(timeout: 60))
         tap("Native UI Shop"); tap("Browse inventory")

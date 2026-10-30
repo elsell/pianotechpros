@@ -85,10 +85,10 @@ if [[ ! -f "$release_workflow" ]]; then
 else
   grep -Fq 'run: ./scripts/install-grype.sh' "$release_workflow" || report "release workflow does not install verified Grype"
   grep -Fq 'run: ./.bin/grype "${{ steps.images.outputs.api }}" --fail-on high' "$release_workflow" || report "release workflow does not scan the API image with local Grype"
-  grep -Fq 'run: ./.bin/grype "${{ steps.images.outputs.web }}" --fail-on high' "$release_workflow" || report "release workflow does not scan the web image with local Grype"
+  grep -Fq 'run: ./scripts/scan-web-image.sh "${{ steps.images.outputs.web }}"' "$release_workflow" || report "release workflow does not scan the web image with local Grype"
   install_line="$(awk 'index($0, "run: ./scripts/install-grype.sh") { print NR; exit }' "$release_workflow")"
   api_scan_line="$(awk 'index($0, "run: ./.bin/grype \"${{ steps.images.outputs.api }}\"") { print NR; exit }' "$release_workflow")"
-  web_scan_line="$(awk 'index($0, "run: ./.bin/grype \"${{ steps.images.outputs.web }}\"") { print NR; exit }' "$release_workflow")"
+  web_scan_line="$(awk 'index($0, "run: ./scripts/scan-web-image.sh \"${{ steps.images.outputs.web }}\"") { print NR; exit }' "$release_workflow")"
   publish_line="$(awk 'index($0, "id: publish") { print NR; exit }' "$release_workflow")"
   if [[ -z "$install_line" || -z "$api_scan_line" || -z "$web_scan_line" || -z "$publish_line" ]] ||
     (( install_line >= api_scan_line || install_line >= web_scan_line || api_scan_line >= publish_line || web_scan_line >= publish_line )); then

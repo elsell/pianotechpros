@@ -167,3 +167,29 @@ test('inventory fixture retains edits across sessions and rejects stale or malfo
  for(const surface of ['photos','publication'])assert.deepEqual((await (await api(f,path+'/'+surface,undefined,reopenedSession)).json()).data.record,saved);
  assert.equal((await api(f,path+'/publish',{},session)).status,404);
 });
+
+test('real-service mode delegates sessions and profiles without fixture fallback',async t=>{
+ const {createServer}=await import('node:http');const {once}=await import('node:events');
+ const seen=[];const backend=createServer(async(req,res)=>{
+  if(req.url==='/v1/redirect'){res.writeHead(302,{location:'https://example.com'});res.end();return;}
+  let body='';for await(const chunk of req)body+=chunk;
+  seen.push({path:req.url,method:req.method,authorization:req.headers.authorization,idempotency:req.headers['idempotency-key'],body});
+  res.writeHead(409,{'content-type':'application/json'});res.end(JSON.stringify({code:'real_backend_conflict'}));
+ });backend.listen(0,'127.0.0.1');await once(backend,'listening');
+ const apiOrigin='http://127.0.0.1:'+backend.address().port;
+ const f=await startNativeUIFixture({apiOrigin});t.after(()=>f.close());
+ t.after(()=>{backend.closeAllConnections();backend.close();});
+ const identity=await login(f);assert.equal(seen.length,0);
+ const exchanged=await api(f,'/v1/sessions',{identityToken:identity});assert.equal(exchanged.status,409);assert.deepEqual(await exchanged.json(),{code:'real_backend_conflict'});
+ const response=await fetch(f.origin+'/v1/customer-profile?probe=1',{method:'PUT',headers:{authorization:'Bearer backend-session','content-type':'application/json','idempotency-key':'synthetic-idempotency'},body:'{"attributes":{}}'});
+ assert.equal(response.status,409);assert.deepEqual(seen[1],{path:'/v1/customer-profile?probe=1',method:'PUT',authorization:'Bearer backend-session',idempotency:'synthetic-idempotency',body:'{"attributes":{}}'});
+ assert.equal((await api(f,'/v1/redirect')).status,503);
+ assert.equal((await api(f,'/v1/sessions',{identityToken:'x'.repeat(70000)})).status,413);
+ backend.closeAllConnections();await new Promise(resolve=>backend.close(resolve));
+ assert.equal((await api(f,'/v1/me',undefined,'backend-session')).status,503);
+});
+test('real-service mode rejects remote, credentialed and ambiguous targets before listening',async()=>{
+ for(const apiOrigin of ['https://example.com','http://localhost:18083','http://127.0.0.1:80','http://user:pass@127.0.0.1:18083','http://127.0.0.1:18083/path','http://127.0.0.1:18083/?query=1','http://127.0.0.1:18083/#fragment']){
+  await assert.rejects(async()=>{const accepted=await startNativeUIFixture({apiOrigin});await accepted.close();},/Invalid native API origin/);
+ }
+});

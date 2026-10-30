@@ -55,6 +55,8 @@ def _classify_path(path: str) -> Plan | None:
         return Plan()
     if path in {".github/workflows/ci.yml", "Makefile"}:
         return ALL
+    if path in {"scripts/verify-docker-builds.sh", "scripts/test-verify-docker-builds.sh", "scripts/install-grype.sh", "scripts/check-node-runtime-security.mjs", "scripts/node-runtime-vex.py", "scripts/scan-web-image.sh", "scripts/test_node_runtime_vex.py"}:
+        return Plan(api_image=True, web_image=True)
     if _starts_with(path, "apps/api/"):
         return Plan(acceptance=True, api_image=True)
     if _starts_with(path, "apps/web/"):
@@ -88,6 +90,17 @@ def _classify_path(path: str) -> Plan | None:
     }:
         return Plan(acceptance=True)
     if path in {
+        "scripts/ios-ui-acceptance.sh",
+        "scripts/ios-journey-schedule.sh",
+        "scripts/ios-journey-schedule.test.mjs",
+        "scripts/native-real-service-session.mjs",
+        "scripts/seed-native-real-inventory.mjs",
+        "scripts/check-native-real-inventory.mjs",
+        "scripts/check-native-real-lifecycle.mjs",
+        "scripts/ios-ui/ProfileInteractionTests.swift",
+        "scripts/check-native-real-profiles.mjs",
+        "scripts/install-native-acceptance-services.sh",
+        "scripts/with-native-acceptance-services.sh",
         "scripts/build-ios-simulator.sh",
         "scripts/run-eas.mjs",
         "scripts/run-eas.test.mjs",

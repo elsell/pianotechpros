@@ -110,7 +110,7 @@ packageExtensionsChecksum: sha256-p8phLg3kEHh1SeG2uEvsDX0V65228tF8hRBXTyLWRB0=
 
 patchedDependencies:
   '@expo/config@55.0.21': df24eee92436c615604f3971b6238adf87a87a4f68ecf8dc095e9f9a29c4badc
-  '@sveltejs/vite-plugin-svelte@7.1.2': 53cc6d3ca05e0960fc49e474126040fc97ce41bcebe28b1d9489f32048694058
+  '@sveltejs/vite-plugin-svelte@7.1.2': ae494d2f6eeea68746a1664fb756b61a16a0302c41a91b9eac2643ec7343a3e5
   brace-expansion@5.0.12: c136bca8a6d8b2ddd2f117941434c1dfe9bf0bf7faa1bdf91a7d65c133e87880
   decode-uri-component@0.5.1: 137924859be3e13225bc9eabd9cfb87245d70bdf30689b2c5ed5c8d3196f9f6b
   react-native-screens@4.23.0: 860a71748751cc4caef98ed82700c7c723851e103a92c565b1ae98e3382d99a4
@@ -246,7 +246,7 @@ importers:
         version: link:../../packages/i18n
       '@sveltejs/kit':
         specifier: 3.0.1
-        version: 3.0.1(@sveltejs/vite-plugin-svelte@7.1.2(patch_hash=53cc6d3ca05e0960fc49e474126040fc97ce41bcebe28b1d9489f32048694058)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.57.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
+        version: 3.0.1(@sveltejs/vite-plugin-svelte@7.1.2(patch_hash=ae494d2f6eeea68746a1664fb756b61a16a0302c41a91b9eac2643ec7343a3e5)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.57.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
       oidc-client-ts:
         specifier: 3.3.0
         version: 3.3.0
@@ -256,10 +256,10 @@ importers:
     devDependencies:
       '@sveltejs/adapter-node':
         specifier: 6.0.0
-        version: 6.0.0(@sveltejs/kit@3.0.1(@sveltejs/vite-plugin-svelte@7.1.2(patch_hash=53cc6d3ca05e0960fc49e474126040fc97ce41bcebe28b1d9489f32048694058)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.57.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))
+        version: 6.0.0(@sveltejs/kit@3.0.1(@sveltejs/vite-plugin-svelte@7.1.2(patch_hash=ae494d2f6eeea68746a1664fb756b61a16a0302c41a91b9eac2643ec7343a3e5)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.57.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))
       '@sveltejs/vite-plugin-svelte':
         specifier: 7.1.2
-        version: 7.1.2(patch_hash=53cc6d3ca05e0960fc49e474126040fc97ce41bcebe28b1d9489f32048694058)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
+        version: 7.1.2(patch_hash=ae494d2f6eeea68746a1664fb756b61a16a0302c41a91b9eac2643ec7343a3e5)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
       '@types/node':
         specifier: 24.13.1
         version: 24.13.1
@@ -6802,15 +6802,15 @@ snapshots:
     dependencies:
       acorn: 8.16.0
 
-  '@sveltejs/adapter-node@6.0.0(@sveltejs/kit@3.0.1(@sveltejs/vite-plugin-svelte@7.1.2(patch_hash=53cc6d3ca05e0960fc49e474126040fc97ce41bcebe28b1d9489f32048694058)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.57.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))':
+  '@sveltejs/adapter-node@6.0.0(@sveltejs/kit@3.0.1(@sveltejs/vite-plugin-svelte@7.1.2(patch_hash=ae494d2f6eeea68746a1664fb756b61a16a0302c41a91b9eac2643ec7343a3e5)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.57.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))':
     dependencies:
-      '@sveltejs/kit': 3.0.1(@sveltejs/vite-plugin-svelte@7.1.2(patch_hash=53cc6d3ca05e0960fc49e474126040fc97ce41bcebe28b1d9489f32048694058)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.57.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
+      '@sveltejs/kit': 3.0.1(@sveltejs/vite-plugin-svelte@7.1.2(patch_hash=ae494d2f6eeea68746a1664fb756b61a16a0302c41a91b9eac2643ec7343a3e5)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.57.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
 
-  '@sveltejs/kit@3.0.1(@sveltejs/vite-plugin-svelte@7.1.2(patch_hash=53cc6d3ca05e0960fc49e474126040fc97ce41bcebe28b1d9489f32048694058)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.57.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))':
+  '@sveltejs/kit@3.0.1(@sveltejs/vite-plugin-svelte@7.1.2(patch_hash=ae494d2f6eeea68746a1664fb756b61a16a0302c41a91b9eac2643ec7343a3e5)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.57.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))':
     dependencies:
       '@rolldown/pluginutils': 1.0.1
       '@standard-schema/spec': 1.1.0
-      '@sveltejs/vite-plugin-svelte': 7.1.2(patch_hash=53cc6d3ca05e0960fc49e474126040fc97ce41bcebe28b1d9489f32048694058)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
+      '@sveltejs/vite-plugin-svelte': 7.1.2(patch_hash=ae494d2f6eeea68746a1664fb756b61a16a0302c41a91b9eac2643ec7343a3e5)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
       cookie: 2.0.1
       devalue: 5.9.3
       esm-env: 1.2.2
@@ -6824,7 +6824,7 @@ snapshots:
 
   '@sveltejs/load-config@0.2.3': {}
 
-  '@sveltejs/vite-plugin-svelte@7.1.2(patch_hash=53cc6d3ca05e0960fc49e474126040fc97ce41bcebe28b1d9489f32048694058)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))':
+  '@sveltejs/vite-plugin-svelte@7.1.2(patch_hash=ae494d2f6eeea68746a1664fb756b61a16a0302c41a91b9eac2643ec7343a3e5)(svelte@5.57.2)(vite@8.1.6(@types/node@24.13.1)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))':
     dependencies:
       '@fastify/deepmerge': 3.2.2
       magic-string: 0.30.21

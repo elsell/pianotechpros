@@ -22,7 +22,7 @@
     },
     "svelte": {
       "file": "src/utils/options.js",
-      "sha256": "42cc8447c4b02ab08d8925ddaa6a41c713e94ca5a1b209a4df85cf5486050ff3"
+      "sha256": "21d99efc2a798d8c428cbaee67265b3f332710a992806eaa3db7ccca227c2388"
     }
   }
 }

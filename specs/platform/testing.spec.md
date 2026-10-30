@@ -172,7 +172,11 @@ functions, dates, regular expressions, null placeholders, unchanged inputs and
 prototype-key attacks. Reject __proto__, constructor and prototype payloads at
 nested and array boundaries. Verify the returned prototype and own keys as well
 as global Object.prototype. Record replacement release, MIT provenance, integrity
-and patch/source hashes. Run the fourteen-day age gate without a new exception,
+and patch/source hashes. Compare each patch hash directly with its lockfile entry;
+an install reporting "already up to date" is not evidence that edited patches
+were reapplied. Disable pnpm optimistic repeat installs so patch-only edits are not skipped.
+After a patch edit, regenerate lockfile resolution and verify a fresh
+frozen install before claiming installed-source coverage. Run the fourteen-day age gate without a new exception,
 full audit, web/Expo configuration checks and native CI before release. The
 replacement is a scoped consumer migration, not a promise of general deepmerge
 API compatibility (customMerge/all are not used by these consumers).

@@ -7,6 +7,8 @@ packages:
   - tools/eas-cli
 
 ignoreScripts: true
+# Re-evaluate patch contents even when manifests and lockfile are unchanged.
+optimisticRepeatInstall: false
 
 overrides:
   '@expo/config@55.0.21>deepmerge': '-'

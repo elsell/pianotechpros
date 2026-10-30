@@ -12,6 +12,12 @@ graph and migrates its actual Expo/EAS and Svelte consumers to pinned
 @fastify/deepmerge 3.2.2. The unchanged low-threshold audit reports no known
 vulnerabilities. Eleven installed-consumer regression tests, web checks/build,
 Expo compatibility, structural checks and the npm fourteen-day age gate pass.
+The first hosted candidate (run `41014984525`) failed frozen installation because
+pnpm's optimistic repeat-install shortcut skipped a patch-only update locally.
+The correction disables that shortcut, checks patch hashes against lockfile
+entries and refreshes the installed-source hash. A fresh isolated frozen install
+and all eleven consumer regressions now pass; prior local claims did not prove
+the final patch was installed. Hosted acceptance must still pass on the correction.
 No new advisory waiver or age exception is introduced. Required review and full
 hosted verification/native acceptance remain merge prerequisites; this local
 result does not establish three-client parity or close provider/accessibility work.

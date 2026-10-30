@@ -114,7 +114,10 @@ test('Svelte merges real config with inline array replacement and callable prepr
 test('all consumers use the reviewed replacement and no vulnerable dependency remains', () => {
   const manifest = JSON.parse(readFileSync(new URL('../patches/deepmerge.json', import.meta.url)));
   const sha = data => createHash('sha256').update(data).digest('hex');
+  const lock = readFileSync(new URL('../pnpm-lock.yaml', import.meta.url), 'utf8');
   for (const [file, hash] of Object.entries(manifest.patches)) {
+    const key = file === 'expo-config-deepmerge.patch' ? '@expo/config@55.0.21' : '@sveltejs/vite-plugin-svelte@7.1.2';
+    assert.ok(lock.includes(`  '${key}': ${hash}\n`), `${file} patch hash does not match its lockfile entry`);
     assert.equal(sha(readFileSync(new URL(`../patches/${file}`, import.meta.url))), hash);
   }
   for (const [name, consumer] of consumers) {
@@ -124,7 +127,6 @@ test('all consumers use the reviewed replacement and no vulnerable dependency re
     assert.equal(consumer('@fastify/deepmerge/package.json').version, '3.2.2');
     for (const [file, hash] of Object.entries(manifest.files)) assert.equal(sha(readFileSync(join(root, file))), hash, file);
   }
-  const lock = readFileSync(new URL('../pnpm-lock.yaml', import.meta.url), 'utf8');
   assert.doesNotMatch(lock, /^  ['"]?deepmerge@/m);
   assert.ok(lock.includes(manifest.integrity));
 });

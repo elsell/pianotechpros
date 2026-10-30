@@ -41,6 +41,13 @@ This is not a claim of three-client acceptance. Wider device
 and accessibility acceptance remain open. Provider configuration and spoken/physical-device acceptance are
 separate unresolved external/evidence requirements.
 
+The native buyer form now identifies the piano and showroom using a fresh
+anonymous public listing read. Context is cleared/reloaded on foreground and
+submission is disabled while context is absent, without disposing contact input.
+Existing public-resource/composer tests pass; the iOS journey now asserts listing
+identity and retained contact after background/foreground. Device execution of
+this extension remains pending and must not be counted as accepted behavior.
+
 The native catalog review also found contact/visit information unreachable when
 a showroom has no listings. A dedicated About this showroom route now exposes
 public description, contact actions, address and trust notes independently of

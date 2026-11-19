@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
-FROM registry.access.redhat.com/hi/nodejs:24.18.0-builder-1784114937@sha256:0493d282a3e210a3f95d98326f3e2e2c6b151b13830a9fbdb03ff52d1f60354e AS build
+FROM registry.access.redhat.com/hi/nodejs:26.13.1-builder-1794592837@sha256:8dd0c730a05feb7e7419833775bf20cab39ce70a3dbc156faa2c6160f8297e12 AS build
 ENV NPM_CONFIG_PREFIX=/tmp/npm-global PATH=/tmp/npm-global/bin:$PATH
 WORKDIR /app
 RUN npm install --global pnpm@11.0.7
@@ -18,7 +18,7 @@ COPY --chown=65532:0 packages/i18n packages/i18n
 RUN pnpm --dir apps/web build
 RUN pnpm --filter @pianotechpros/web deploy --legacy --prod /app/prod
 
-FROM registry.access.redhat.com/hi/nodejs:24.18.0-1784114937@sha256:c0fd66cf088af1c6f122bcdbbf5d701ffea303fe84ebb23575ac75edde625113
+FROM registry.access.redhat.com/hi/nodejs:26.13.1-fips-builder-1794592837@sha256:06bd282688af0539000a9856620d959cc98a81cb6441be2da3dde5480620eced
 ENV NODE_ENV=production PIANOTECHPROS_APP_ENV=production HOST=0.0.0.0 PORT=3000
 WORKDIR /app
 COPY --from=build --chown=65532:0 /app/prod ./
